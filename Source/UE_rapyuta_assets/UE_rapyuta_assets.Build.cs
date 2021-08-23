@@ -38,6 +38,7 @@ public class UE_rapyuta_assets : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"rclUE"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
