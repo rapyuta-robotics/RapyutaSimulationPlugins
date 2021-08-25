@@ -26,29 +26,15 @@ public class UE_rapyuta_assets : ModuleRules
 			new string[]
 			{
 				"Core",
-				// ... add other public dependencies that you statically link with here ...
-			}
-			);
-			
-		
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
 				"CoreUObject",
 				"Engine",
 				"Slate",
 				"SlateCore",
 				"rclUE"
-				// ... add private dependencies that you statically link with here ...	
+				// ... add other public dependencies that you statically link with here ...
 			}
 			);
-		
-		
-		DynamicallyLoadedModuleNames.AddRange(
-			new string[]
-			{
-				// ... add any modules that your module loads dynamically here ...
-			}
-			);
+			
+
 	}
 }
