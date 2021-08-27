@@ -37,7 +37,7 @@ void ASensorLidar::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ASensorLidar::LidarMessageUpdate(UROS2GenericMsg *TopicMessage)
 {
 	UROS2LaserScanMsg* ScanMessage = Cast<UROS2LaserScanMsg>(TopicMessage);
-	ScanMessage->Update(GetROS2Data());
+	ScanMessage->SetMsg(GetROS2Data());
 }
 
 // Called every frame
@@ -198,7 +198,7 @@ void ASensorLidar::InitLidar(AROS2Node* Node, FString TopicName)
 {
 	LidarPublisher->TopicName = TopicName;
 	LidarPublisher->PublicationFrequencyHz = ScanFrequency;
-	LidarPublisher->ownerNode = Node;
+	LidarPublisher->OwnerNode = Node;
 	
 	InitToNode(Node);
 
@@ -236,14 +236,14 @@ float ASensorLidar::GetMaxAngleRadians() const
 	//return FMath::DegreesToRadians(StartAngle+180);
 }
 
-FLaserScanData ASensorLidar::GetROS2Data() const
+FROSLaserScan ASensorLidar::GetROS2Data() const
 {
-	FLaserScanData retValue;
-	retValue.sec = (int32_t)TimeOfLastScan;
+	FROSLaserScan retValue;
+	retValue.header_stamp_sec = (int32_t)TimeOfLastScan;
 	unsigned long long ns = (unsigned long long)(TimeOfLastScan * 1000000000.0f);
-	retValue.nanosec = (uint32_t)(ns - (retValue.sec * 1000000000ul));
+	retValue.header_stamp_nanosec = (uint32_t)(ns - (retValue.header_stamp_sec * 1000000000ul));
 	
-	retValue.frame_id = FrameId;
+	retValue.header_frame_id = FrameId;
 
 	retValue.angle_min = GetMinAngleRadians();
 	retValue.angle_max = GetMaxAngleRadians();

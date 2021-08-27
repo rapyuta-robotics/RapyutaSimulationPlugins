@@ -27,7 +27,7 @@ FTransform UConversionUtils::TransformUEToROS(const FTransform &Input)
     return ConversionUtils::TransformUEToROS(Input);
 }
 
-FOdometryData UConversionUtils::OdomUEToROS(const FOdometryData &Input)
+FROSOdometry UConversionUtils::OdomUEToROS(const FROSOdometry &Input)
 {
     return ConversionUtils::OdomUEToROS(Input);
 }
@@ -52,7 +52,7 @@ FTransform UConversionUtils::TransformROSToUE(const FTransform &Input)
     return ConversionUtils::TransformROSToUE(Input);
 }
 
-FOdometryData UConversionUtils::OdomROSToUE(const FOdometryData &Input)
+FROSOdometry UConversionUtils::OdomROSToUE(const FROSOdometry &Input)
 {
     return ConversionUtils::OdomROSToUE(Input);
 }

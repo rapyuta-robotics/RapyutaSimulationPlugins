@@ -30,7 +30,7 @@ public:
 	FVector AngularVelocity;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	FOdometryData OdomData;
+	FROSOdometry OdomData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString FrameId = TEXT("");
@@ -42,7 +42,7 @@ public:
 	FTransform InitialTransform;
 
 	// UFUNCTION(BlueprintCallable)
-	// FOdometryData getOdomDataROS();
+	// FROSOdometry getOdomDataROS();
 
 	UFUNCTION(BlueprintCallable)
 	FTransform GetOdomTF();

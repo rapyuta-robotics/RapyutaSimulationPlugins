@@ -54,7 +54,7 @@ public:
 
 	// this should probably be removed so that the sensor can be decoupled from the message types
 	UFUNCTION(BlueprintCallable)
-	FLaserScanData GetROS2Data() const;
+	FROSLaserScan GetROS2Data() const;
 
 	UFUNCTION(BlueprintCallable)
 	float GetMinAngleRadians() const;

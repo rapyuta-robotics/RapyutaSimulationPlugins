@@ -21,6 +21,13 @@ namespace ConversionUtils
 
         return Output;
     }
+
+    inline static void VectorUEToROS(const double &InputX, const double &InputY, const double &InputZ, double &OutputX, double &OutputY, double &OutputZ)
+    {
+        OutputX = InputX/100.0f;
+        OutputY = -InputY/100.0f;
+        OutputZ = InputZ/100.0f;
+    }
     
     inline static FVector RotationUEToROS(const FVector &Input)
     {
@@ -52,15 +59,20 @@ namespace ConversionUtils
         return Output;
     }
 
-    inline static FOdometryData OdomUEToROS(const FOdometryData &Input)
+    inline static FROSOdometry OdomUEToROS(const FROSOdometry &Input)
     {
-        FOdometryData Output = Input;
+        FROSOdometry Output = Input;
 
-        Output.position = VectorUEToROS(Output.position);
-        Output.orientation = QuatUEToROS(Output.orientation);
+        VectorUEToROS(Input.pose_pose_position_x,
+                      Input.pose_pose_position_y,
+                      Input.pose_pose_position_z,
+                      Output.pose_pose_position_x,
+                      Output.pose_pose_position_y,
+                      Output.pose_pose_position_z);
+        Output.pose_pose_orientation = QuatUEToROS(Output.pose_pose_orientation);
 
-        Output.linear = VectorUEToROS(Output.linear);
-        Output.angular = VectorUEToROS(Output.angular);
+        Output.twist_twist_linear = VectorUEToROS(Output.twist_twist_linear);
+        Output.twist_twist_angular = VectorUEToROS(Output.twist_twist_angular);
 
         return Output;
     }
@@ -78,6 +90,13 @@ namespace ConversionUtils
         Output.Z = Output.Z*100.0f;
 
         return Output;
+    }
+
+    inline static void VectorROSToUE(const double &InputX, const double &InputY, const double &InputZ, double &OutputX, double &OutputY, double &OutputZ)
+    {
+        OutputX = InputX*100.0f;
+        OutputY = -InputY*100.0f;
+        OutputZ = InputZ*100.0f;
     }
 
     inline static FVector RotationROSToUE(const FVector &Input)
@@ -110,15 +129,20 @@ namespace ConversionUtils
         return Output;
     }
 
-    inline static FOdometryData OdomROSToUE(const FOdometryData &Input)
+    inline static FROSOdometry OdomROSToUE(const FROSOdometry &Input)
     {
-        FOdometryData Output = Input;
+        FROSOdometry Output = Input;
 
-        Output.position = VectorROSToUE(Output.position);
-        Output.orientation = QuatROSToUE(Output.orientation);
+        VectorROSToUE(Input.pose_pose_position_x,
+                      Input.pose_pose_position_y,
+                      Input.pose_pose_position_z,
+                      Output.pose_pose_position_x,
+                      Output.pose_pose_position_y,
+                      Output.pose_pose_position_z);
+        Output.pose_pose_orientation = QuatROSToUE(Output.pose_pose_orientation);
 
-        Output.linear = VectorROSToUE(Output.linear);
-        Output.angular = VectorROSToUE(Output.angular);
+        Output.twist_twist_linear = VectorROSToUE(Output.twist_twist_linear);
+        Output.twist_twist_angular = VectorROSToUE(Output.twist_twist_angular);
 
         return Output;
     }
@@ -147,7 +171,7 @@ class UConversionUtils : public UBlueprintFunctionLibrary
     static FTransform TransformUEToROS(const FTransform &Input);
 
     UFUNCTION(BlueprintCallable, Category="Conversion")
-    static FOdometryData OdomUEToROS(const FOdometryData &Input);
+    static FROSOdometry OdomUEToROS(const FROSOdometry &Input);
     
     // ROS to UE conversion
     // m -> cm
@@ -166,5 +190,5 @@ class UConversionUtils : public UBlueprintFunctionLibrary
     static FTransform TransformROSToUE(const FTransform &Input);
 
     UFUNCTION(BlueprintCallable, Category="Conversion")
-    static FOdometryData OdomROSToUE(const FOdometryData &Input);
+    static FROSOdometry OdomROSToUE(const FROSOdometry &Input);
 };

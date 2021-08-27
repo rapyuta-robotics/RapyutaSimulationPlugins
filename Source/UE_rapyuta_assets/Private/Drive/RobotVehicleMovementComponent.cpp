@@ -17,8 +17,10 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
 	DesiredMovement = (OldRotation * position);
 
 }
-void URobotVehicleMovementComponent::InitOdom(){
-	OdomData.frame_id = FrameId;
+
+void URobotVehicleMovementComponent::InitOdom()
+{
+	OdomData.header_frame_id = FrameId;
 	OdomData.child_frame_id = ChildFrameId;
 	
 	InitialTransform.SetTranslation(PawnOwner->GetActorLocation());
@@ -42,6 +44,7 @@ void URobotVehicleMovementComponent::InitOdom(){
 
 	IsOdomInitialized = true;
 }
+
 void URobotVehicleMovementComponent::UpdateOdom()
 {
 	if(!IsOdomInitialized){
@@ -49,17 +52,20 @@ void URobotVehicleMovementComponent::UpdateOdom()
 	}
 	// time
 	float TimeNow = UGameplayStatics::GetTimeSeconds(GWorld);
-	OdomData.sec = (int32_t)TimeNow;
+	OdomData.header_stamp_sec = (int32_t)TimeNow;
 	unsigned long long ns = (unsigned long long)(TimeNow * 1000000000.0f);
-	OdomData.nanosec = (uint32_t)(ns - (OdomData.sec * 1000000000ul));
+	OdomData.header_stamp_nanosec = (uint32_t)(ns - (OdomData.header_stamp_sec * 1000000000ul));
 
 	// position
-	OdomData.position = PawnOwner->GetActorLocation() - InitialTransform.GetTranslation();
-	OdomData.orientation = FQuat(PawnOwner->GetActorRotation() - InitialTransform.GetRotation().Rotator());
+	FVector Pos = PawnOwner->GetActorLocation() - InitialTransform.GetTranslation();
+	OdomData.pose_pose_position_x = Pos.X;
+	OdomData.pose_pose_position_y = Pos.Y;
+	OdomData.pose_pose_position_z = Pos.Z;
+	OdomData.pose_pose_orientation = FQuat(PawnOwner->GetActorRotation() - InitialTransform.GetRotation().Rotator());
 
 	// velocity
-	OdomData.linear = Velocity;
-	OdomData.angular = FMath::DegreesToRadians(AngularVelocity);
+	OdomData.twist_twist_linear = Velocity;
+	OdomData.twist_twist_angular = FMath::DegreesToRadians(AngularVelocity);
 }
 
 void URobotVehicleMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
@@ -88,9 +94,11 @@ void URobotVehicleMovementComponent::TickComponent(float DeltaTime, enum ELevelT
 	}
 }
 
-FTransform URobotVehicleMovementComponent::GetOdomTF(){
+FTransform URobotVehicleMovementComponent::GetOdomTF()
+{
 	FTransform TF;
-	TF.SetTranslation(OdomData.position);
-	TF.SetRotation(OdomData.orientation);
+	FVector Pos(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
+	TF.SetTranslation(Pos);
+	TF.SetRotation(OdomData.pose_pose_orientation);
 	return TF;
 }
