@@ -52,9 +52,9 @@ void URobotVehicleMovementComponent::UpdateOdom()
 	}
 	// time
 	float TimeNow = UGameplayStatics::GetTimeSeconds(GWorld);
-	OdomData.header_stamp_sec = (int32_t)TimeNow;
-	unsigned long long ns = (unsigned long long)(TimeNow * 1000000000.0f);
-	OdomData.header_stamp_nanosec = (uint32_t)(ns - (OdomData.header_stamp_sec * 1000000000ul));
+	OdomData.header_stamp_sec = (int32)TimeNow;
+	uint64 ns = (uint64)(TimeNow * 1000000000.0f);
+	OdomData.header_stamp_nanosec = (uint32)(ns - (OdomData.header_stamp_sec * 1000000000ul));
 
 	// position
 	FVector Pos = PawnOwner->GetActorLocation() - InitialTransform.GetTranslation();

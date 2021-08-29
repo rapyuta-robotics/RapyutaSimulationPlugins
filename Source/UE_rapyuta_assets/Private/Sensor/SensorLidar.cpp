@@ -239,9 +239,9 @@ float ASensorLidar::GetMaxAngleRadians() const
 FROSLaserScan ASensorLidar::GetROS2Data() const
 {
 	FROSLaserScan retValue;
-	retValue.header_stamp_sec = (int32_t)TimeOfLastScan;
-	unsigned long long ns = (unsigned long long)(TimeOfLastScan * 1000000000.0f);
-	retValue.header_stamp_nanosec = (uint32_t)(ns - (retValue.header_stamp_sec * 1000000000ul));
+	retValue.header_stamp_sec = (int32)TimeOfLastScan;
+	uint64 ns = (uint64)(TimeOfLastScan * 1000000000.0f);
+	retValue.header_stamp_nanosec = (uint32)(ns - (retValue.header_stamp_sec * 1000000000ul));
 	
 	retValue.header_frame_id = FrameId;
 
