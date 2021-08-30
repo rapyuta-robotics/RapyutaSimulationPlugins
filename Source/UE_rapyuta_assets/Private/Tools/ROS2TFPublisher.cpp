@@ -33,9 +33,9 @@ void UROS2TFPublisher::UpdateTFMsg(UROS2GenericMsg *Message){
 
     FTFData tfdata;
 	float TimeNow = UGameplayStatics::GetTimeSeconds(GWorld);
-	tfdata.sec = (int32_t)TimeNow;
-	unsigned long long ns = (unsigned long long)(TimeNow * 1000000000.0f);
-	tfdata.nanosec = (uint32_t)(ns - (tfdata.sec * 1000000000ul));
+	tfdata.sec = (int32)TimeNow;
+	uint64 ns = (uint64)(TimeNow * 1000000000.0f);
+	tfdata.nanosec = (uint32)(ns - (tfdata.sec * 1000000000ul));
 
 	tfdata.frame_id = FrameId;
 	tfdata.child_frame_id = ChildFrameId;
