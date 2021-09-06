@@ -53,13 +53,14 @@ void ASensorLidar::Tick(float DeltaTime)
         return;
     }
 #if TRACE_ASYNC
-    for (int i = 0; i < NSamplesPerScan; ++i)
+    UWorld* world = GetWorld();
+    for (auto i = 0; i < NSamplesPerScan; ++i)
     {
         if (TraceHandles[i]._Data.FrameNumber != 0)
         {
             FTraceDatum Output;
 
-            if (GWorld->QueryTraceData(TraceHandles[i], Output))
+            if (world->QueryTraceData(TraceHandles[i], Output))
             {
                 if (Output.OutHits.Num() > 0)
                 {
@@ -92,7 +93,7 @@ void ASensorLidar::Run()
     TraceHandles.Init(FTraceHandle{}, NSamplesPerScan);
 #endif
 
-    GWorld->GetGameInstance()->GetTimerManager().SetTimer(
+    GetWorld()->GetGameInstance()->GetTimerManager().SetTimer(
         TimerHandle, this, &ASensorLidar::Scan, 1.f / static_cast<float>(ScanFrequency), true);
     IsInitialized = true;
 }
@@ -116,6 +117,7 @@ void ASensorLidar::Scan()
     // This is not good if done on other threads and only works because both timers and actor ticks happen on the game thread.
     if (TraceHandles[0]._Data.FrameNumber == 0)
     {
+        UWorld* world = GetWorld();
         for (auto i = 0; i < NSamplesPerScan; ++i)
         {
             const float HAngle = StartAngle + DHAngle * i;
@@ -130,13 +132,13 @@ void ASensorLidar::Scan()
                                rot);    // += WithNoise *
                                         // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
-            TraceHandles[i] = GWorld->AsyncLineTraceByChannel(EAsyncTraceType::Single,
-                                                              startPos,
-                                                              endPos,
-                                                              ECC_Visibility,
-                                                              TraceParams,
-                                                              FCollisionResponseParams::DefaultResponseParam,
-                                                              nullptr);
+            TraceHandles[i] = world->AsyncLineTraceByChannel(EAsyncTraceType::Single,
+                                                             startPos,
+                                                             endPos,
+                                                             ECC_Visibility,
+                                                             TraceParams,
+                                                             FCollisionResponseParams::DefaultResponseParam,
+                                                             nullptr);
         }
     }
 #else
@@ -156,7 +158,7 @@ void ASensorLidar::Scan()
                                rot);    // += WithNoise *
                                         // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
-            GWorld->LineTraceSingleByChannel(
+            GetWorld()->LineTraceSingleByChannel(
                 RecordedHits[Index], startPos, endPos, ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
         },
         false);
@@ -179,7 +181,7 @@ void ASensorLidar::Scan()
             false);
     }
 
-    TimeOfLastScan = UGameplayStatics::GetTimeSeconds(GWorld);
+    TimeOfLastScan = UGameplayStatics::GetTimeSeconds(GetWorld());
     dt = 1.f / static_cast<float>(ScanFrequency);
 
     // need to store on a structure associating hits with time?
@@ -288,12 +290,12 @@ bool ASensorLidar::Visible(AActor* TargetActor)
                                rot);    // += WithNoise *
                                         // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
-            GWorld->LineTraceSingleByChannel(RecordedVizHits[Index],
-                                             startPos,
-                                             endPos,
-                                             ECC_Visibility,
-                                             TraceParams,
-                                             FCollisionResponseParams::DefaultResponseParam);
+            GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index],
+                                                 startPos,
+                                                 endPos,
+                                                 ECC_Visibility,
+                                                 TraceParams,
+                                                 FCollisionResponseParams::DefaultResponseParam);
         },
         false);
 
