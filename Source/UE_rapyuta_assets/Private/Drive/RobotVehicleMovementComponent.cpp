@@ -10,7 +10,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
     const FQuat OldRotation = UpdatedComponent->GetComponentQuat();
 
     FVector position = UpdatedComponent->ComponentVelocity * DeltaTime;
-    FQuat DeltaRotation(FVector(0.0f, 0.0f, 1.0f), AngularVelocity.Z * DeltaTime);
+    FQuat DeltaRotation(FVector::ZAxisVector, AngularVelocity.Z * DeltaTime);
 
     DesiredRotation = OldRotation * DeltaRotation;
     DesiredMovement = (OldRotation * position);
@@ -52,9 +52,9 @@ void URobotVehicleMovementComponent::UpdateOdom()
     }
     // time
     float TimeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
-    OdomData.header_stamp_sec = (int32)TimeNow;
+    OdomData.header_stamp_sec = static_cast<int32>(TimeNow);
     uint64 ns = (uint64)(TimeNow * 1e+09f);
-    OdomData.header_stamp_nanosec = (uint32)(ns - (OdomData.header_stamp_sec * 1e+09));
+    OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
     // position
     FVector Pos = PawnOwner->GetActorLocation() - InitialTransform.GetTranslation();
