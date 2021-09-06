@@ -82,22 +82,22 @@ public:
     int32 NSamplesPerScan = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 ScanFrequency;
+    int32 ScanFrequency = 0;
 
     // [degrees]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float StartAngle;
+    float StartAngle = 0.f;
 
     // scan goes from StartAngle to StartAngle+FOVHorizontal
     // [degrees]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float FOVHorizontal;
+    float FOVHorizontal = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MinRange;
+    float MinRange = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MaxRange;
+    float MaxRange = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
     FLinearColor ColorMiss = FColor(255, 127, 0, 255);
@@ -116,7 +116,7 @@ public:
 
     // [degrees]
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    float DHAngle;
+    float DHAngle = 0.f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     TArray<FHitResult> RecordedHits;
@@ -132,16 +132,16 @@ public:
     bool ShowLidarRays = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
-    float IntensityNonReflective = 1000;
+    float IntensityNonReflective = 1000.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
-    float IntensityReflective = 6000;
+    float IntensityReflective = 6000.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
-    float IntensityMin = 0;
+    float IntensityMin = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
-    float IntensityMax = 10000;
+    float IntensityMax = 10000.f;
 
     FLinearColor GetColorFromIntensity(const float Intensity);
 
