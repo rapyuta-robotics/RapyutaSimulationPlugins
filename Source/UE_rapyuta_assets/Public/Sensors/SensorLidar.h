@@ -52,7 +52,7 @@ public:
     bool Visible(AActor* TargetActor);
 
     UFUNCTION(BlueprintCallable)
-    void InitLidar(AROS2Node* Node, FString TopicName);
+    void InitLidar(AROS2Node* Node, const FString& TopicName);
 
     UFUNCTION(BlueprintCallable)
     void InitToNode(AROS2Node* Node);
@@ -60,7 +60,7 @@ public:
     // adding the rest of the necessary information might be tedious
     // eventually split into multiple getters
     UFUNCTION(BlueprintCallable)
-    void GetData(TArray<FHitResult>& hits, float& time);
+    void GetData(TArray<FHitResult>& OutHits, float& OutTime);
 
     // this should probably be removed so that the sensor can be decoupled from the message types
     UFUNCTION(BlueprintCallable)
@@ -79,10 +79,10 @@ public:
     FString FrameId = TEXT("base_scan");
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int nSamplesPerScan;
+    int32 NSamplesPerScan = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int ScanFrequency;
+    int32 ScanFrequency;
 
     // [degrees]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -126,7 +126,7 @@ public:
 #endif
 
     UPROPERTY()
-    FTimerHandle timerHandle;
+    FTimerHandle TimerHandle;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool ShowLidarRays = true;
@@ -156,16 +156,16 @@ private:
     std::normal_distribution<> GaussianRNGIntensity;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    float PositionalNoiseMean = 0;
+    float PositionalNoiseMean = 0.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    float PositionalNoiseVariance = 1;
+    float PositionalNoiseVariance = 1.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    float IntensityNoiseMean = 0;
+    float IntensityNoiseMean = 0.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    float IntensityNoiseVariance = .1;
+    float IntensityNoiseVariance = .1f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     bool WithNoise = true;
