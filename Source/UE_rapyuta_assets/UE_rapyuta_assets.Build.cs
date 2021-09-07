@@ -30,6 +30,8 @@ public class UE_rapyuta_assets : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"AIModule", 
+				"NavigationSystem",
 				"rclUE"
 				// ... add other public dependencies that you statically link with here ...
 			}

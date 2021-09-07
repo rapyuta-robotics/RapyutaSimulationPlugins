@@ -3,7 +3,7 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "UE_rapyuta_assets",
-	"Description": "Robot common assets which is used with rclUE",
+	"Description": "Robot common assets",
 	"Category": "Robotics",
 	"CreatedBy": "Rapyuta Robotics",
 	"CreatedByURL": "https://www.rapyuta-robotics.com/",
