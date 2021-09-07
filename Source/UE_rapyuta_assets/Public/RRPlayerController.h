@@ -5,6 +5,8 @@
 
 #include "RRPlayerController.generated.h"
 
+#define RAPYUTA_HUMAN_MOUSE_FOLLOWING (1)
+
 class ARRGameState;
 UCLASS()
 class UE_RAPYUTA_ASSETS_API ARRPlayerController : public APlayerController

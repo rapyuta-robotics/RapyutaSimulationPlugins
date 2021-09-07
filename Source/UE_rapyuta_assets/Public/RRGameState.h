@@ -18,7 +18,7 @@ class UE_RAPYUTA_ASSETS_API ARRGameState : public AGameStateBase
 public:
     ARRGameState();
 
-    static constexpr int32 HUMAN_NUM = 100;
+    static constexpr int8 HUMAN_NUM = 2;
     static constexpr float HUMAN_YAW = 360.f / HUMAN_NUM;
 
     virtual void BeginPlay() override;
@@ -31,6 +31,6 @@ public:
     UPROPERTY()
     TArray<ARRHuman*> HumanGroup;
 
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void SpawnHumans();
 };

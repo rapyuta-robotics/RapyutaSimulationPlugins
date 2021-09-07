@@ -16,13 +16,13 @@ class UE_RAPYUTA_ASSETS_API ARRHuman : public ACharacter
 public:
     ARRHuman();
     static constexpr float HUMAN_SIZE_RADIUS = 42.f;
-    static constexpr float HUMAN_SIZE_HEIGHT = 96.f;
+    static constexpr float HUMAN_SIZE_HALF_HEIGHT = 96.f;
 
     virtual void SetupMovementPlan();
 
     UFUNCTION()
     void SwapDestinations(FAIRequestID RequestID, EPathFollowingResult::Type MovementResult);
-    // (snote) This is the new recommended api, but does not support UFUNCTION() specifier yet.
+    // This is the new recommended api, but does not support UFUNCTION() specifier yet.
     // void SwapDestinations(FAIRequestID RequestID, const FPathFollowingResult& Result);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

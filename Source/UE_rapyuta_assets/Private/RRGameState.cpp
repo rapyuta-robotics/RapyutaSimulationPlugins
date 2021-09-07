@@ -11,40 +11,40 @@
 
 ARRGameState::ARRGameState()
 {
-    static ConstructorHelpers::FObjectFinder<UClass> sHumanBPClass(TEXT("/UE_rapyuta_Assets/Blueprints/BPHuman.BPHuman"));
-    HumanClass = sHumanBPClass.Object;
-    check(HumanClass);
+    HumanClass =
+        ConstructorHelpers::FObjectFinderOptional<UClass>(TEXT("Class'/UE_rapyuta_Assets/Blueprints/BPHuman.BPHuman_C'")).Get();
+    verify(HumanClass);
 }
 
 void ARRGameState::BeginPlay()
 {
     Super::BeginPlay();
-    SpawnHumans();
 
     PlayerController = Cast<ARRPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+    verify(PlayerController);
+
+    SpawnHumans();
 }
 
 void ARRGameState::SpawnHumans()
 {
-    FVector playerLocation;
-    FRotator playerRotation;
-    PlayerController->GetPlayerViewPoint(playerLocation, playerRotation);
-    const FVector centerLocation = FVector(playerLocation.X, playerLocation.Y, 200.f);
+    const FVector centerLocation = FVector(1250.f, -800.f, ARRHuman::HUMAN_SIZE_HALF_HEIGHT);
 
-    static constexpr float HUMAN_GROUP_CIRCLE_RADIUS = 2000.f;
+    static constexpr float HUMAN_GROUP_CIRCLE_RADIUS = 500.f;
     for (auto i = 0; i < HUMAN_NUM; ++i)
     {
-        FRotator rotation = FRotator(0.f, HUMAN_YAW * i, 0.f);
-        const FVector location = centerLocation + HUMAN_GROUP_CIRCLE_RADIUS * rotation.RotateVector(FVector::ForwardVector);
+        FRotator spawnRotation = FRotator(0.f, HUMAN_YAW * i, 0.f);
+        const FVector spawnLocation =
+            centerLocation + HUMAN_GROUP_CIRCLE_RADIUS * spawnRotation.RotateVector(FVector::ForwardVector);
         auto* newHuman = Cast<ARRHuman>(UAIBlueprintHelperLibrary::SpawnAIFromClass(
-            this, HumanClass, nullptr, location, FRotator(0.f, HUMAN_YAW * i + 180.f, 0.f), true));
+            this, HumanClass, nullptr, spawnLocation, FRotator::ZeroRotator /*FRotator(0.f, HUMAN_YAW * (i + 2), 0.f)*/, true));
         if (newHuman)
         {
-            newHuman->DestinationA = location;
+            newHuman->DestinationA = spawnLocation;
             newHuman->DestinationB =
-                centerLocation + FVector(URRMathUtils::FRandRange(-HUMAN_GROUP_CIRCLE_RADIUS, HUMAN_GROUP_CIRCLE_RADIUS),
-                                         URRMathUtils::FRandRange(-HUMAN_GROUP_CIRCLE_RADIUS, HUMAN_GROUP_CIRCLE_RADIUS),
-                                         0.f);
+                spawnLocation + FVector(URRMathUtils::FRandRange(-HUMAN_GROUP_CIRCLE_RADIUS, HUMAN_GROUP_CIRCLE_RADIUS),
+                                        URRMathUtils::FRandRange(-HUMAN_GROUP_CIRCLE_RADIUS, HUMAN_GROUP_CIRCLE_RADIUS),
+                                        0.f);
             newHuman->SetupMovementPlan();
             HumanGroup.Add(newHuman);
         }

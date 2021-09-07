@@ -9,16 +9,15 @@
 #include "NavigationSystem.h"
 
 // RRSim
+#include "Humans/RRHuman.h"
 #include "RRGameState.h"
-
-#define RAPYUTA_HUMAN_MOUSE_FOLLOWING (0)
 
 ARRPlayerController::ARRPlayerController()
 {
 #if RAPYUTA_HUMAN_MOUSE_FOLLOWING
     bShowMouseCursor = true;
-#endif
     DefaultMouseCursor = EMouseCursor::Crosshairs;
+#endif
 }
 
 void ARRPlayerController::BeginPlay()
@@ -27,7 +26,6 @@ void ARRPlayerController::BeginPlay()
 
     GameState = Cast<ARRGameState>(UGameplayStatics::GetGameState(GetWorld()));
     check(GameState);
-    SetHumansNewDestination(FVector::ZeroVector);
 }
 
 void ARRPlayerController::PlayerTick(float DeltaTime)
@@ -37,6 +35,7 @@ void ARRPlayerController::PlayerTick(float DeltaTime)
 #if RAPYUTA_HUMAN_MOUSE_FOLLOWING
     if (bMoveToMouseCursor)
     {
+        UE_LOG(LogTemp, Warning, TEXT("ARRPlayerController::MoveToMouseCursor"));
         MoveToMouseCursor();
     }
 #endif
@@ -48,6 +47,7 @@ void ARRPlayerController::SetupInputComponent()
 
     InputComponent->BindAction("SetDestination", IE_Pressed, this, &ARRPlayerController::OnSetDestinationPressed);
     InputComponent->BindAction("SetDestination", IE_Released, this, &ARRPlayerController::OnSetDestinationReleased);
+    verify(PlayerInput);
 }
 
 void ARRPlayerController::MoveToMouseCursor()
@@ -58,7 +58,6 @@ void ARRPlayerController::MoveToMouseCursor()
 
     if (Hit.bBlockingHit)
     {
-        // We hit something, move there
         SetHumansNewDestination(Hit.ImpactPoint);
     }
 }
@@ -69,7 +68,8 @@ void ARRPlayerController::SetHumansNewDestination(const FVector& InNewDestinatio
                 [this, InNewDestination](uint32 InHumanIndex)
                 {
                     ARRHuman* human = GameState->HumanGroup[InHumanIndex];
-                    UAIBlueprintHelperLibrary::GetAIController((AActor*)human)->MoveToLocation(InNewDestination);
+                    UAIBlueprintHelperLibrary::GetAIController(human)->MoveToLocation(
+                        (InNewDestination != FVector::ZeroVector) ? InNewDestination : human->DestinationB);
                 });
 }
 
