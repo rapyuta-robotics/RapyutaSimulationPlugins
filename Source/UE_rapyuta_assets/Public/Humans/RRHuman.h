@@ -18,7 +18,7 @@ public:
     static constexpr float HUMAN_SIZE_RADIUS = 42.f;
     static constexpr float HUMAN_SIZE_HEIGHT = 96.f;
 
-    virtual void InitilizeMovementPlan();
+    virtual void SetupMovementPlan();
 
     UFUNCTION()
     void SwapDestinations(FAIRequestID RequestID, EPathFollowingResult::Type MovementResult);

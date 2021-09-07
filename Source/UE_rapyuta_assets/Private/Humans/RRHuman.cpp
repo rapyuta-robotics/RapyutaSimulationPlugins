@@ -24,7 +24,7 @@ ARRHuman::ARRHuman()
     }
 }
 
-void ARRHuman::InitilizeMovementPlan()
+void ARRHuman::SetupMovementPlan()
 {
     // (snote) [ReceiveMoveCompleted] is a dynamic delegate, which does not support [AddLambda] yet :(
     UAIBlueprintHelperLibrary::GetAIController((AActor*)this)->ReceiveMoveCompleted.AddDynamic(this, &ARRHuman::SwapDestinations);
