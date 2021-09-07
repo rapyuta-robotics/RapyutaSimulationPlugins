@@ -28,17 +28,17 @@ void URobotVehicleMovementComponent::InitOdom()
     OdomData.pose_covariance.Init(0, 36);
     OdomData.pose_covariance[0] = 1e-05f;
     OdomData.pose_covariance[7] = 1e-05f;
-    OdomData.pose_covariance[14] = 1e+12f;
-    OdomData.pose_covariance[21] = 1e+12f;
-    OdomData.pose_covariance[28] = 1e+12f;
+    OdomData.pose_covariance[14] = 1e+12;
+    OdomData.pose_covariance[21] = 1e+12;
+    OdomData.pose_covariance[28] = 1e+12;
     OdomData.pose_covariance[35] = 1e-03f;
 
     OdomData.twist_covariance.Init(0, 36);
     OdomData.twist_covariance[0] = 1e-05f;
     OdomData.twist_covariance[7] = 1e-05f;
-    OdomData.twist_covariance[14] = 1e+12f;
-    OdomData.twist_covariance[21] = 1e+12f;
-    OdomData.twist_covariance[28] = 1e+12f;
+    OdomData.twist_covariance[14] = 1e+12;
+    OdomData.twist_covariance[21] = 1e+12;
+    OdomData.twist_covariance[28] = 1e+12;
     OdomData.twist_covariance[35] = 1e-03f;
 
     IsOdomInitialized = true;
