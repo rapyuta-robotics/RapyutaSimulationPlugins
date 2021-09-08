@@ -142,7 +142,7 @@ void ASensorLidar::Scan()
     }
 #else
     ParallelFor(
-        nSamplesPerScan,
+        NSamplesPerScan,
         [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
         {
             const float HAngle = StartAngle + DHAngle * Index;
