@@ -68,7 +68,8 @@ void ASensorLidar::Tick(float DeltaTime)
                     check(i < RecordedHits.Num());
                     check(i < TraceHandles.Num());
                     TraceHandles[i]._Data.FrameNumber = 0;
-                    RecordedHits[i] = Output.OutHits[0];    // We should only be tracing the first hit anyhow
+                    // We should only be tracing the first hit anyhow
+                    RecordedHits[i] = Output.OutHits[0];
                 }
                 else
                 {
@@ -102,9 +103,10 @@ void ASensorLidar::Scan()
 {
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
-    FCollisionQueryParams TraceParams =
-        FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, this);    // complex collisions: true
+    // complex collisions: true
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, this);
     TraceParams.bReturnPhysicalMaterial = true;
+
     // TraceParams.bIgnoreTouches = true;
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnFaceIndex = true;
@@ -126,11 +128,8 @@ void ASensorLidar::Scan()
             FRotator rot = UKismetMathLibrary::ComposeRotators(laserRot, lidarRot);
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
-            FVector endPos =
-                lidarPos +
-                MaxRange * UKismetMathLibrary::GetForwardVector(
-                               rot);    // += WithNoise *
-                                        // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
+            // To be considered: += WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             TraceHandles[i] = world->AsyncLineTraceByChannel(EAsyncTraceType::Single,
                                                              startPos,
@@ -155,7 +154,7 @@ void ASensorLidar::Scan()
             FVector endPos =
                 lidarPos +
                 MaxRange * UKismetMathLibrary::GetForwardVector(
-                               rot);    // += WithNoise *
+                               rot);	// += WithNoise *
                                         // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             GetWorld()->LineTraceSingleByChannel(
@@ -167,7 +166,7 @@ void ASensorLidar::Scan()
     if (WithNoise)
     {
         // this approach to noise is different from the above:
-        // 	noise on the linetrace input means that the further the hit, the larger the error, while here the error is independent
+        // noise on the linetrace input means that the further the hit, the larger the error, while here the error is independent
         // from distance
         ParallelFor(
             NSamplesPerScan,
@@ -225,7 +224,8 @@ void ASensorLidar::Scan()
                         NormalAlignment *= NormalAlignment;
                         NormalAlignment *= NormalAlignment;
                         NormalAlignment *= NormalAlignment;
-                        NormalAlignment *= NormalAlignment;    // pow 32
+                        NormalAlignment *= NormalAlignment;
+                        // pow 32
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, FLinearColor::LerpUsingHSV(ColorHit, ColorReflected,
                         // NormalAlignment), 10, .5, dt); NormalAlignment =
                         // (NormalAlignment*(IntensityReflective-IntensityNonReflective) + IntensityNonReflective)/IntensityMax;
@@ -264,8 +264,8 @@ bool ASensorLidar::Visible(AActor* TargetActor)
 
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
-    FCollisionQueryParams TraceParams =
-        FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, this);    // complex collisions: true
+    // complex collisions: true
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, this);
     TraceParams.bReturnPhysicalMaterial = true;
     // TraceParams.bIgnoreTouches = true;
     TraceParams.bTraceComplex = true;
@@ -284,11 +284,8 @@ bool ASensorLidar::Visible(AActor* TargetActor)
             FRotator rot = UKismetMathLibrary::ComposeRotators(laserRot, lidarRot);
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
-            FVector endPos =
-                lidarPos +
-                MaxRange * UKismetMathLibrary::GetForwardVector(
-                               rot);    // += WithNoise *
-                                        // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
+            // To be considered: += WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index],
                                                  startPos,
@@ -342,13 +339,13 @@ void ASensorLidar::GetData(TArray<FHitResult>& OutHits, float& OutTime)
 float ASensorLidar::GetMinAngleRadians() const
 {
     return FMath::DegreesToRadians(-StartAngle - FOVHorizontal);
-    // return FMath::DegreesToRadians(StartAngle+FOVHorizontal+180);
+    // To be considered: return FMath::DegreesToRadians(StartAngle+FOVHorizontal+180);
 }
 
 float ASensorLidar::GetMaxAngleRadians() const
 {
     return FMath::DegreesToRadians(-StartAngle);
-    // return FMath::DegreesToRadians(StartAngle+180);
+    // To be considered: return FMath::DegreesToRadians(StartAngle+180);
 }
 
 FROSLaserScan ASensorLidar::GetROS2Data()
@@ -375,11 +372,11 @@ FROSLaserScan ASensorLidar::GetROS2Data()
     // UE4 is left handed
     for (auto i = 0; i < RecordedHits.Num(); i++)
     {
-        retValue.ranges.Add((MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) *
-                            .01f);    // convert to [m]
-        // retValue.intensities.Add(0);
+        // convert to [m]
+        retValue.ranges.Add((MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f);
+        // To be considered: retValue.intensities.Add(0);
 
-        float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
+        const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
 
         UStaticMeshComponent* ComponentHit = Cast<UStaticMeshComponent>(RecordedHits.Last(i).GetComponent());
         if (RecordedHits.Last(i).PhysMaterial != nullptr)
@@ -402,10 +399,11 @@ FROSLaserScan ASensorLidar::GetROS2Data()
                 RayDirection.Normalize();
 
                 // the dot product for this should always be between 0 and 1
-                float Intensity = FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
-                                                                            FVector::DotProduct(HitSurfaceNormal, -RayDirection),
-                                               IntensityNonReflective,
-                                               IntensityReflective);
+                const float Intensity =
+                    FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
+                                                              FVector::DotProduct(HitSurfaceNormal, -RayDirection),
+                                 IntensityNonReflective,
+                                 IntensityReflective);
                 check(Intensity >= IntensityNonReflective);
                 check(Intensity <= IntensityReflective);
                 retValue.intensities.Add(IntensityScale * Intensity);
@@ -428,7 +426,8 @@ FLinearColor ASensorLidar::GetColorFromIntensity(const float Intensity)
 
 FLinearColor ASensorLidar::InterpolateColor(float x)
 {
-    x = x + WithNoise * GaussianRNGIntensity(Gen);    // this means that viz and data sent won't correspond, which should be ok
+    // this means that viz and data sent won't correspond, which should be ok
+    x = x + WithNoise * GaussianRNGIntensity(Gen);
     return x > .5 ? FLinearColor::LerpUsingHSV(ColorMid, ColorMax, 2 * x - 1)
                   : FLinearColor::LerpUsingHSV(ColorMin, ColorMid, 2 * x);
 }
