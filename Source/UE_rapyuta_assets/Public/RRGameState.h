@@ -8,7 +8,7 @@
 
 #include "RRGameState.generated.h"
 
-class ARRHuman;
+class APawn;
 class ARRPlayerController;
 UCLASS(Config = RRSimSettings)
 class UE_RAPYUTA_ASSETS_API ARRGameState : public AGameStateBase
@@ -18,8 +18,7 @@ class UE_RAPYUTA_ASSETS_API ARRGameState : public AGameStateBase
 public:
     ARRGameState();
 
-    static constexpr int8 HUMAN_NUM = 2;
-    static constexpr float HUMAN_YAW = 360.f / HUMAN_NUM;
+    static constexpr int8 HUMAN_DEFAULT_NUM = 10;
 
     virtual void BeginPlay() override;
     UPROPERTY()
@@ -29,8 +28,11 @@ public:
     TSubclassOf<ACharacter> HumanClass;
 
     UPROPERTY()
-    TArray<ARRHuman*> HumanGroup;
+    TArray<APawn*> HumanGroup;
 
     UFUNCTION(BlueprintCallable)
-    void SpawnHumans();
+    void SpawnHumansAtRandomLocations(const FVector& InLocationA, const FVector& InLocationB);
+
+    UFUNCTION(BlueprintCallable)
+    void SpawnHumans(const TArray<FRRHumanInfo>& InHumanGroupInfo);
 };

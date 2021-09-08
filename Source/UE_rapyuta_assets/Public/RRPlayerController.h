@@ -5,8 +5,9 @@
 
 #include "RRPlayerController.generated.h"
 
-#define RAPYUTA_HUMAN_MOUSE_FOLLOWING (1)
+#define RAPYUTA_PAWN_MOUSE_FOLLOWING (1)
 
+class APawn;
 class ARRGameState;
 UCLASS()
 class UE_RAPYUTA_ASSETS_API ARRPlayerController : public APlayerController
@@ -16,7 +17,7 @@ public:
     ARRPlayerController();
 
     UPROPERTY()
-    uint32 bMoveToMouseCursor : 1;
+    uint32 bMovePawnsToMouseCursor : 1;
 
     UPROPERTY()
     ARRGameState* GameState = nullptr;
@@ -29,15 +30,15 @@ public:
 
     /** Navigate player to the current mouse cursor location. */
     UFUNCTION()
-    void MoveToMouseCursor();
+    void MovePawnsToMouseCursor();
 
     /** Navigate player to the given world location. */
     UFUNCTION()
-    void SetHumansNewDestination(const FVector& DestLocation);
+    void SetPawnsNewDestination(const TArray<APawn*> InPawnGroup, const FVector& DestLocation);
 
     /** Input handlers for SetDestination action. */
     UFUNCTION()
-    void OnSetDestinationPressed();
+    void OnSetPawnsDestinationPressed();
     UFUNCTION()
-    void OnSetDestinationReleased();
+    void OnSetPawnsDestinationReleased();
 };

@@ -28,8 +28,13 @@ ARRHuman::ARRHuman()
     }
 }
 
-void ARRHuman::SetupMovementPlan()
+void ARRHuman::SetupMovementPlan(const TArray<FVector>& InMovementDestinations)
 {
+    verify(InMovementDestinations.Num() > 0);
+    MovementDestinations = InMovementDestinations;
+    CurrentDestinationIdx = 0;
+
+    // To make the human rotate toward the destination only
     bUseControllerRotationYaw = false;
     bUseControllerRotationPitch = false;
     bUseControllerRotationRoll = false;
@@ -45,14 +50,15 @@ void ARRHuman::SetupMovementPlan()
         characterMovement->RotationRate = FRotator(0.f, 640.f, 0.f);
     }
 
-#if !RAPYUTA_HUMAN_MOUSE_FOLLOWING
     // [ReceiveMoveCompleted] is a dynamic delegate, which does not support [AddLambda] yet :(
-    UAIBlueprintHelperLibrary::GetAIController((AActor*)this)->ReceiveMoveCompleted.AddDynamic(this, &ARRHuman::SwapDestinations);
-#endif
+    UAIBlueprintHelperLibrary::GetAIController(this)->ReceiveMoveCompleted.AddDynamic(this, &ARRHuman::MoveToNextDestination);
 }
 
-void ARRHuman::SwapDestinations(FAIRequestID RequestID, EPathFollowingResult::Type MovementResult)
+void ARRHuman::MoveToNextDestination(FAIRequestID RequestID, EPathFollowingResult::Type MovementResult)
 {
-    Swap(DestinationA, DestinationB);
-    UAIBlueprintHelperLibrary::GetAIController((AActor*)this)->MoveToLocation(DestinationA);
+    if (++CurrentDestinationIdx == MovementDestinations.Num())
+    {
+        CurrentDestinationIdx = 0;
+    }
+    UAIBlueprintHelperLibrary::GetAIController(this)->MoveToLocation(MovementDestinations[CurrentDestinationIdx]);
 }

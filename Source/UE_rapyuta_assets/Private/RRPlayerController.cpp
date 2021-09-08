@@ -5,6 +5,7 @@
 #include "AIController.h"
 #include "Async/ParallelFor.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
 #include "NavigationSystem.h"
 
@@ -14,10 +15,8 @@
 
 ARRPlayerController::ARRPlayerController()
 {
-#if RAPYUTA_HUMAN_MOUSE_FOLLOWING
     bShowMouseCursor = true;
     DefaultMouseCursor = EMouseCursor::Crosshairs;
-#endif
 }
 
 void ARRPlayerController::BeginPlay()
@@ -32,11 +31,10 @@ void ARRPlayerController::PlayerTick(float DeltaTime)
 {
     Super::PlayerTick(DeltaTime);
 
-#if RAPYUTA_HUMAN_MOUSE_FOLLOWING
-    if (bMoveToMouseCursor)
+#if RAPYUTA_PAWN_MOUSE_FOLLOWING
+    if (bMovePawnsToMouseCursor)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ARRPlayerController::MoveToMouseCursor"));
-        MoveToMouseCursor();
+        MovePawnsToMouseCursor();
     }
 #endif
 }
@@ -45,12 +43,12 @@ void ARRPlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
 
-    InputComponent->BindAction("SetDestination", IE_Pressed, this, &ARRPlayerController::OnSetDestinationPressed);
-    InputComponent->BindAction("SetDestination", IE_Released, this, &ARRPlayerController::OnSetDestinationReleased);
+    InputComponent->BindAction("SetPawnsDestination", IE_Pressed, this, &ARRPlayerController::OnSetPawnsDestinationPressed);
+    InputComponent->BindAction("SetPawnsDestination", IE_Released, this, &ARRPlayerController::OnSetPawnsDestinationReleased);
     verify(PlayerInput);
 }
 
-void ARRPlayerController::MoveToMouseCursor()
+void ARRPlayerController::MovePawnsToMouseCursor()
 {
     // Trace to see what is under the mouse cursor
     FHitResult Hit;
@@ -58,27 +56,26 @@ void ARRPlayerController::MoveToMouseCursor()
 
     if (Hit.bBlockingHit)
     {
-        SetHumansNewDestination(Hit.ImpactPoint);
+        SetPawnsNewDestination(GameState->HumanGroup, Hit.ImpactPoint);
     }
 }
 
-void ARRPlayerController::SetHumansNewDestination(const FVector& InNewDestination)
+void ARRPlayerController::SetPawnsNewDestination(const TArray<APawn*> InPawnGroup, const FVector& InNewDestination)
 {
-    ParallelFor(GameState->HumanGroup.Num(),
-                [this, InNewDestination](uint32 InHumanIndex)
+    ParallelFor(InPawnGroup.Num(),
+                [this, &InPawnGroup, InNewDestination](uint32 InPawnIndex)
                 {
-                    ARRHuman* human = GameState->HumanGroup[InHumanIndex];
-                    UAIBlueprintHelperLibrary::GetAIController(human)->MoveToLocation(
-                        (InNewDestination != FVector::ZeroVector) ? InNewDestination : human->DestinationB);
+                    APawn* pawn = InPawnGroup[InPawnIndex];
+                    UAIBlueprintHelperLibrary::GetAIController(pawn)->MoveToLocation(InNewDestination);
                 });
 }
 
-void ARRPlayerController::OnSetDestinationPressed()
+void ARRPlayerController::OnSetPawnsDestinationPressed()
 {
-    bMoveToMouseCursor = true;
+    bMovePawnsToMouseCursor = true;
 }
 
-void ARRPlayerController::OnSetDestinationReleased()
+void ARRPlayerController::OnSetPawnsDestinationReleased()
 {
-    bMoveToMouseCursor = false;
+    bMovePawnsToMouseCursor = false;
 }
