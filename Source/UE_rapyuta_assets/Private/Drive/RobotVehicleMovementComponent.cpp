@@ -14,6 +14,15 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
 
     DesiredRotation = OldRotation * DeltaRotation;
     DesiredMovement = (OldRotation * position);
+
+    FHitResult Hit;
+    SafeMoveUpdatedComponent(DesiredMovement, DesiredRotation, true, Hit);
+    
+    // If we bumped into something, try to slide along it
+    if (Hit.IsValidBlockingHit())
+    {
+        SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
+    }
 }
 
 void URobotVehicleMovementComponent::InitOdom()
@@ -50,6 +59,7 @@ void URobotVehicleMovementComponent::UpdateOdom()
     {
         InitOdom();
     }
+
     // time
     float TimeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
     OdomData.header_stamp_sec = static_cast<int32>(TimeNow);
@@ -81,15 +91,6 @@ void URobotVehicleMovementComponent::TickComponent(float DeltaTime,
         {
             UpdateMovement(DeltaTime);
             UpdateOdom();
-
-            FHitResult Hit;
-            SafeMoveUpdatedComponent(DesiredMovement, DesiredRotation, true, Hit);
-            // UE_LOG(LogTemp, Error, TEXT("INNNN movementtickcomponent %ds"), Hit.IsValidBlockingHit());
-            // If we bumped into something, try to slide along it
-            if (Hit.IsValidBlockingHit())
-            {
-                SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
-            }
         }
 
         UpdateComponentVelocity();
@@ -103,4 +104,8 @@ FTransform URobotVehicleMovementComponent::GetOdomTF()
     TF.SetTranslation(Pos);
     TF.SetRotation(OdomData.pose_pose_orientation);
     return TF;
+}
+
+void URobotVehicleMovementComponent::InitMovementComponent(){
+    InitOdom();
 }

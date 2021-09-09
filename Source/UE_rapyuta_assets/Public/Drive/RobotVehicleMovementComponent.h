@@ -41,11 +41,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	FTransform InitialTransform;
 
-	// UFUNCTION(BlueprintCallable)
-	// FROSOdometry getOdomDataROS();
-
 	UFUNCTION(BlueprintCallable)
 	FTransform GetOdomTF();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void InitMovementComponent();
 
 private:
 	virtual void InitOdom();

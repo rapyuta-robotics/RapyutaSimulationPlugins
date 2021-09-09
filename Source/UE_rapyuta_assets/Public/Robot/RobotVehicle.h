@@ -24,13 +24,14 @@ public:
 	URobotVehicleMovementComponent *MoveComponent;
 
 public:
-
 	ARobotVehicle(const FObjectInitializer& ObjectInitializer);
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	UFUNCTION(BlueprintCallable)
 	virtual void SetLinearVel(FVector velocity);
 
+	UFUNCTION(BlueprintCallable)
 	virtual void SetAngularVel(FVector velocity);
 
 protected:
