@@ -4,95 +4,19 @@
 // UE
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
+#include "Materials/Material.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Templates/UniquePtr.h"
 
 // RapyutaSim
+#include "RRObjectCommon.h"
 #include "Tools/RRAssetUtils.h"
 #include "Tools/RRTypeUtils.h"
 #include "UE_rapyuta_assets.h"
 
 #include "RRGameSingleton.generated.h"
 
-// SIM RESOURCE DATA --
-//
-UENUM(BlueprintType)
-enum class ERRResourceDataType : uint8
-{
-    NONE,
-    // UASSET --
-    STATIC_MESH,
-    MATERIAL,
-    TEXTURE,
-
-    // URDF/SDF--
-    URDF_SDF,
-
-    TOTAL
-};
-
-// The atomic Sim resource
-USTRUCT()
-struct UE_RAPYUTA_ASSETS_API FRRResource
-{
-    GENERATED_BODY()
-    FRRResource()
-    {
-    }
-    FRRResource(const FString& InUniqueName, const FSoftObjectPath& InAssetPath, UObject* InAssetData)
-        : UniqueName(InUniqueName), AssetPath(InAssetPath), AssetData(InAssetData)
-    {
-    }
-
-    UPROPERTY()
-    FString UniqueName;
-
-    UPROPERTY()
-    FSoftObjectPath AssetPath;
-    FString GetAssetPath() const
-    {
-        return AssetPath.ToString();
-    }
-
-    UPROPERTY()
-    UObject* AssetData = nullptr;
-};
-
-USTRUCT()
-struct UE_RAPYUTA_ASSETS_API FRRResourceInfo
-{
-    GENERATED_BODY()
-    FRRResourceInfo()
-    {
-    }
-    FRRResourceInfo(ERRResourceDataType InDataType) : DataType(InDataType)
-    {
-    }
-
-    UPROPERTY()
-    ERRResourceDataType DataType = ERRResourceDataType::NONE;
-    UPROPERTY()
-    int32 ToBeAsyncLoadedResourceNum = 0;
-    UPROPERTY()
-    bool HasBeenAllLoaded = false;
-
-    UPROPERTY()
-    TMap<FString, FRRResource> Data;
-
-    void AddResource(const FString& InUniqueName, const FSoftObjectPath& InAssetPath, UObject* InAssetData)
-    {
-        Data.Add(InUniqueName, FRRResource(InUniqueName, InAssetPath, InAssetData));
-    }
-
-    void Finalize()
-    {
-        DataType = ERRResourceDataType::NONE;
-        ToBeAsyncLoadedResourceNum = 0;
-        HasBeenAllLoaded = false;
-        Data.Empty();
-    }
-};
-
-UCLASS()
+UCLASS(Config = RapyutaSimSettings)
 class UE_RAPYUTA_ASSETS_API URRGameSingleton : public UObject
 {
     GENERATED_BODY()
@@ -106,7 +30,7 @@ public:
     // SIM RESOURCES ==
     //
     UFUNCTION()
-    void InitializeResources();
+    bool InitializeResources();
     UFUNCTION()
     void FinalizeResources();
 
@@ -129,10 +53,6 @@ public:
         return (assetDataList.Num() > 0);
     }
 
-    virtual bool InitializeRuntimeResources();
-    UFUNCTION()
-    void SetResourcesLoadingResult(const ERRResourceDataType DataType, bool Result);
-
     // ASSETS --
     // This list specifically host names of which module houses the UE assets based on their data type
     static TMap<ERRResourceDataType, const TCHAR*> SASSET_OWNING_MODULE_NAMES;
@@ -147,94 +67,61 @@ public:
         return FString(ASSETS_ROOT_PATH) / InModuleName;
     }
 
-    static constexpr const TCHAR* STARTUP_CONTENT_FOLDER_NAME = TEXT("StartUp");
-    static FString GetStartUpContentPath()
+    static constexpr const TCHAR* DYNAMIC_CONTENTS_FOLDER_NAME = TEXT("DynamicContents");
+    static FString GetDynamicAssetsPath(const ERRResourceDataType InDataType)
     {
-        static FString startUpContentPath = GetAssetsBasePath(UE_RAPYUTA_ASSETS_MODULE_NAME) / STARTUP_CONTENT_FOLDER_NAME;
-        return startUpContentPath;
+        static FString runtimeAssetsPath = GetAssetsBasePath(SASSET_OWNING_MODULE_NAMES[InDataType]) / DYNAMIC_CONTENTS_FOLDER_NAME;
+        return runtimeAssetsPath;
     }
 
-    // All assets under [GetStartUpContentPath()]
-    UPROPERTY()
-    TArray<FAssetData> AssetDataList;
-    void FetchAllAssetsDataList();
+    // All assets under [GetDynamicAssetsPath()]
+    // UPROPERTY()
+    // TArray<FAssetData> AssetDataList;
+    // void FetchAllAssetsDataList();
 
-    template<typename T>
-    FORCEINLINE T* GetAssetObject(const FString& InAssetName) const
-    {
-        for (const auto& asset : AssetDataList)
-        {
-            if (asset.AssetName.ToString() == InAssetName)
-            {
-                // This will load the asset if needed then return it
-                return Cast<T>(asset.GetAsset());
-            }
-        }
-        return nullptr;
-    }
+    // template<typename T>
+    // FORCEINLINE T* GetAssetObject(const FString& InAssetName) const
+    //{
+    //    for (const auto& asset : AssetDataList)
+    //    {
+    //        if (asset.AssetName.ToString() == InAssetName)
+    //        {
+    //            // This will load the asset if needed then return it
+    //            return Cast<T>(asset.GetAsset());
+    //        }
+    //    }
+    //    return nullptr;
+    //}
 
     //  RESOURCE STORE --
     //
     UFUNCTION()
     bool HaveAllResourcesBeenLoaded(bool bIsLogged = false);
 
-    bool RequestResourcesLoading(const ERRResourceDataType DataType, const FRRResourceInfo& InResourceInfo)
-    {
-        if (GetSimResourceInfo(DataType).HasBeenAllLoaded || (0 == resourceMetaData.Num()))
-        {
-            return false;
-        }
-        // REQUEST FOR LOADING THE RESOURCES ASYNCHRONOUSLY
-        //
-        GetSimResourceInfo(DataType).ToBeAsyncLoadedResourceNum = InResourceInfo.Data.Num();
-        UE_LOG(LogTemp,
-               Display,
-               TEXT("[%s] TO BE LOADED NUM: %d"),
-               *URRTypeUtils::GetERRResourceDataTypeAsString(DataType),
-               ToBeAsyncLoadedResourceNum);
-        UAssetManager* assetManager = UAssetManager::GetIfValid();
-        if (assetManager)
-        {
-            for (const auto& resourceMeta : InResourceInfo.Data)
-            {
-                // https://docs.unrealengine.com/en-US/Resources/SampleGames/ARPG/BalancingBlueprintAndCPP/index.html
-                // "Avoid Referencing Assets by String"
-                FSoftObjectPath resourceSoftObjPath(resourceMeta.Value.GetAssetDataPath());
-                assetManager->GetStreamableManager().RequestAsyncLoad(
-                    resourceSoftObjPath,
-                    FStreamableDelegate::CreateUObject(
-                        this, &URRGameSingleton::OnResourceLoaded, DataType, resourceSoftObjPath, resourceMeta.Value.UniqueName));
-            }
-            return true;
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("[InitializeResources] UNABLE TO GET ASSET MANAGER!"))
-            return false;
-        }
-    }
+    UFUNCTION()
+    bool RequestResourcesLoading(const ERRResourceDataType InDataType, const FRRResourceInfo& InResourceInfo);
 
-    FORCEINLINE void OnResourceLoaded(ERRResourceDataType DataType, FSoftObjectPath ResourcePath, FString ResourceUniqueName)
+    FORCEINLINE void OnResourceLoaded(ERRResourceDataType InDataType, FSoftObjectPath InResourcePath, FString InResourceUniqueName)
     {
-        verify(IsInGameThread());
+        check(IsInGameThread());
 
-        switch (DataType)
+        switch (InDataType)
         {
-            case ERRResourceDataType::STATIC_MESH:
-                ProcessAsyncLoadedResource<UStaticMesh>(DataType, ResourcePath, ResourceUniqueName);
+            case ERRResourceDataType::UE_STATIC_MESH:
+                ProcessAsyncLoadedResource<UStaticMesh>(InDataType, InResourcePath, InResourceUniqueName);
                 break;
 
-            case ERRResourceDataType::MATERIAL:
+            case ERRResourceDataType::UE_MATERIAL:
                 // Either [UMaterialInterface] or [UPhysicalMaterial] type that is resolved into a non-null resource will be
                 // processed
-                if (!ProcessAsyncLoadedResource<UMaterialInterface>(DataType, ResourcePath, ResourceUniqueName))
+                if (!ProcessAsyncLoadedResource<UMaterialInterface>(InDataType, InResourcePath, InResourceUniqueName))
                 {
-                    ProcessAsyncLoadedResource<UPhysicalMaterial>(DataType, ResourcePath, ResourceUniqueName);
+                    ProcessAsyncLoadedResource<UPhysicalMaterial>(InDataType, InResourcePath, InResourceUniqueName);
                 }
                 break;
 
-            case ERRResourceDataType::TEXTURE:
-                ProcessAsyncLoadedResource<UTexture2D>(DataType, ResourcePath, ResourceUniqueName);
+            case ERRResourceDataType::UE_TEXTURE:
+                ProcessAsyncLoadedResource<UTexture2D>(InDataType, InResourcePath, InResourceUniqueName);
                 break;
 
             default:
@@ -317,17 +204,17 @@ public:
     }
 
     template<typename TResource>
-    TResource* GetSimResource(const ERRResourceDataType DataType, const FString& ResourceUniqueName)
+    TResource* GetSimResource(const ERRResourceDataType InDataType, const FString& InResourceUniqueName)
     {
-        TResource* resourceAsset = Cast<TResource>(GetSimResourceInfo(DataType).Data.FindRef(ResourceUniqueName).AssetData);
+        TResource* resourceAsset = Cast<TResource>(GetSimResourceInfo(InDataType).Data.FindRef(InResourceUniqueName).AssetData);
 
         if (!resourceAsset || !resourceAsset->IsValidLowLevelFast())
         {
             UE_LOG(LogTemp,
                    Fatal,
                    TEXT("[%s] [Unique Name: %s] INVALID RESOURCE %d!"),
-                   *URRTypeUtils::GetERRResourceDataTypeAsString(DataType),
-                   *ResourceUniqueName,
+                   *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                   *InResourceUniqueName,
                    resourceAsset)
             return nullptr;
         }
@@ -353,7 +240,7 @@ public:
     // STATIC MESHES --
     // Mesh Entities Info folder path
     UPROPERTY(config)
-    FString CFOLDER_PATH_SIM_ASSET_STATIC_MESHES = TEXT("StartUp/StaticMeshes");
+    FString CFOLDER_PATH_SIM_ASSET_STATIC_MESHES = TEXT("StaticMeshes");
 
     // (snote) These names must match ones defined in [StaticMeshShapesInfoFileName] file
     // Here we only define specially used shapes for some specific purpose!
@@ -365,7 +252,7 @@ public:
     UFUNCTION()
     FORCEINLINE UStaticMesh* GetStaticMesh(const FString& MeshName)
     {
-        return GetSimResource<UStaticMesh>(ERRResourceDataType::STATIC_MESH, MeshName);
+        return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, MeshName);
     }
 
 private:

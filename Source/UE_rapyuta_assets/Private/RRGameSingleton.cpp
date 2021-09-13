@@ -1,14 +1,17 @@
 #include "RRGameSingleton.h"
 
-#include "Tools/RRUObjectUtils.h"
+#include "Tools/RRTypeUtils.h"
 
-TMap<ERRResourceDataType, const TCHAR*> URRGameSingleton::SASSET_OWNING_MODULE_NAMES;
+TMap<ERRResourceDataType, const TCHAR*> URRGameSingleton::SASSET_OWNING_MODULE_NAMES = {
+    {ERRResourceDataType::UE_STATIC_MESH, UE_RAPYUTA_ASSETS_MODULE_NAME},
+    {ERRResourceDataType::UE_MATERIAL, UE_RAPYUTA_ASSETS_MODULE_NAME},
+    {ERRResourceDataType::UE_TEXTURE, UE_RAPYUTA_ASSETS_MODULE_NAME}};
 
 URRGameSingleton::URRGameSingleton(){UE_LOG(LogTemp, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"))}
 
 URRGameSingleton::~URRGameSingleton()
 {
-    AssetDataList.Empty();
+    // AssetDataList.Empty();
 }
 
 URRGameSingleton* URRGameSingleton::Get()
@@ -21,7 +24,7 @@ URRGameSingleton* URRGameSingleton::Get()
 
     if (IsInGameThread())
     {
-        bool isValidInMemory = URRUObjectUtils::IsEntityValidInMemory(singleton);
+        bool isValidInMemory = IsValid(singleton);
         if (isValidInMemory)
         {
             if (!singleton->HasAnyFlags(EObjectFlags::RF_Standalone))
@@ -40,22 +43,23 @@ URRGameSingleton* URRGameSingleton::Get()
     return singleton;
 }
 
-bool URRGameSingleton::InitializeRuntimeResources()
+bool URRGameSingleton::InitializeResources()
 {
     // Initialize resource meta info
     for (int8 i = (static_cast<int8>(ERRResourceDataType::NONE) + 1); i < static_cast<int8>(ERRResourceDataType::TOTAL); ++i)
     {
-        ResourceMap.Add(static_cast<ERRResourceDataType>(i), FRRResource(dataType));
+        const ERRResourceDataType dataType = static_cast<ERRResourceDataType>(i);
+        ResourceMap.Add(dataType, FRRResourceInfo(dataType));
     }
 
-    // READ ALL SIM RESOURCE INFO FROM DESGINATED [~CONTENT] FOLDERS
+    // READ ALL SIM DYNAMIC RESOURCES INFO FROM DESGINATED [~CONTENT] FOLDERS
     // [STATIC MESH]
-    ERRResourceDataType dataType = ERRResourceDataType::STATIC_MESH;
+    ERRResourceDataType dataType = ERRResourceDataType::UE_STATIC_MESH;
     FRRResourceInfo resourceInfo(dataType);
 
     // Fetch built-in assets meta data to [resourceInfo]
-    bool result = CollateAssetsMetaData<UStaticMesh>(SASSET_HOUSING_MODULE_NAMES[dataType] / CFOLDER_PATH_SIM_ASSET_STATIC_MESHES,
-                                                     resourceInfo);
+    bool result = CollateAssetsMetaData<UStaticMesh>(
+        GetDynamicAssetsPath(ERRResourceDataType::UE_STATIC_MESH) / CFOLDER_PATH_SIM_ASSET_STATIC_MESHES, resourceInfo);
     if (!result)
     {
         return false;
@@ -63,20 +67,53 @@ bool URRGameSingleton::InitializeRuntimeResources()
 
     // Request Runtime resource async loading
     GetSimResourceInfo(dataType).HasBeenAllLoaded = false;
-    if (!RequestResourcesLoading(dataType, resourceInfo))
+    if (false == RequestResourcesLoading(dataType, resourceInfo))
     {
-        UE_LOG(LogTemp,
-               Error,
-               TEXT("[%s] READ MESH META DATA FAILED"),
-               *URRTypeUtils::GetERRResourceDataTypeAsString(dataType, resourceInfo));
+        UE_LOG(LogTemp, Error, TEXT("[%s] READ MESH META DATA FAILED"), *URRTypeUtils::GetERRResourceDataTypeAsString(dataType));
         return false;
     }
 
-    UE_LOG(LogTemp, Display, TEXT("[InitializeRuntimeResources] => RESOURCES REGISTERED TO BE LOADED!"));
+    UE_LOG(LogTemp, Display, TEXT("[InitializeResources] => RESOURCES REGISTERED TO BE LOADED!"));
     return true;
 }
 
-void URRGameSingleton::FinalizeRuntimeResources()
+bool URRGameSingleton::RequestResourcesLoading(const ERRResourceDataType InDataType, const FRRResourceInfo& InResourceInfo)
+{
+    if (GetSimResourceInfo(InDataType).HasBeenAllLoaded || (0 == InResourceInfo.Data.Num()))
+    {
+        return false;
+    }
+
+    // REQUEST FOR LOADING THE RESOURCES ASYNCHRONOUSLY
+    GetSimResourceInfo(InDataType).ToBeAsyncLoadedResourceNum = InResourceInfo.Data.Num();
+    UE_LOG(LogTemp,
+           Display,
+           TEXT("[%s] TO BE LOADED NUM: %d"),
+           *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+           InResourceInfo.Data.Num());
+    UAssetManager* assetManager = UAssetManager::GetIfValid();
+    if (assetManager)
+    {
+        for (const auto& resourceMeta : InResourceInfo.Data)
+        {
+            // https://docs.unrealengine.com/en-US/Resources/SampleGames/ARPG/BalancingBlueprintAndCPP/index.html
+            // "Avoid Referencing Assets by String"
+            FSoftObjectPath resourceSoftObjPath(resourceMeta.Value.GetAssetPath());
+            assetManager->GetStreamableManager().RequestAsyncLoad(
+                resourceSoftObjPath,
+                FStreamableDelegate::CreateUObject(
+                    this, &URRGameSingleton::OnResourceLoaded, InDataType, resourceSoftObjPath, resourceMeta.Value.UniqueName));
+        }
+        return true;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("[InitializeResources] UNABLE TO GET ASSET MANAGER!"))
+        return false;
+    }
+}
+
+void URRGameSingleton::FinalizeResources()
 {
     // Sim Resources (Mesh shapes, materials, textures, curves, and their metadata, etc.)
     SASSET_OWNING_MODULE_NAMES.Empty();
@@ -104,7 +141,8 @@ bool URRGameSingleton::HaveAllResourcesBeenLoaded(bool bIsLogged)
     return bResult;
 }
 
-void URRGameSingleton::FetchAllAssetsDataList()
-{
-    URRAssetUtils::FetchAssetDataListFromRegistry<UObject>(GetSimStartupContentPath(), AssetDataList, true, false);
-}
+// void URRGameSingleton::FetchAllAssetsDataList()
+//{
+//    URRAssetUtils::FetchAssetDataListFromRegistry<UObject>(
+//        GetDynamicAssetsPath(static_cast<ERRResourceDataType>(dataType)), AssetDataList, true, false);
+//}
