@@ -17,7 +17,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
 
     FHitResult Hit;
     SafeMoveUpdatedComponent(DesiredMovement, DesiredRotation, true, Hit);
-    
+
     // If we bumped into something, try to slide along it
     if (Hit.IsValidBlockingHit())
     {
@@ -105,6 +105,7 @@ FTransform URobotVehicleMovementComponent::GetOdomTF()
     return TF;
 }
 
-void URobotVehicleMovementComponent::InitMovementComponent(){
+void URobotVehicleMovementComponent::InitMovementComponent()
+{
     InitOdom();
 }

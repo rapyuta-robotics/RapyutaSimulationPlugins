@@ -154,7 +154,7 @@ void ASensorLidar::Scan()
             FVector endPos =
                 lidarPos +
                 MaxRange * UKismetMathLibrary::GetForwardVector(
-                               rot);	// += WithNoise *
+                               rot);    // += WithNoise *
                                         // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             GetWorld()->LineTraceSingleByChannel(
