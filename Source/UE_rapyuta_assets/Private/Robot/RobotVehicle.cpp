@@ -9,9 +9,7 @@
 ARobotVehicle::ARobotVehicle(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	MoveComponent = CreateDefaultSubobject<URobotVehicleMovementComponent>(TEXT("MoveComponent"));
 }
-
 
 void ARobotVehicle::Tick(float DeltaSeconds)
 {
@@ -35,7 +33,7 @@ void ARobotVehicle::SetAngularVel(FVector Velocity)
 void ARobotVehicle::BeginPlay()
 {
 	Super::BeginPlay();
-
+	MoveComponent->InitMovementComponent();
 /*
 	for (TFieldIterator<FProperty> PropIt(FTestData::StaticStruct()); PropIt; ++PropIt)
 	{
