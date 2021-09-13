@@ -59,7 +59,6 @@ void URobotVehicleMovementComponent::UpdateOdom()
     {
         InitOdom();
     }
-
     // time
     float TimeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
     OdomData.header_stamp_sec = static_cast<int32>(TimeNow);
