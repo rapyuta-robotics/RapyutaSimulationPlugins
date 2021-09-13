@@ -3,7 +3,7 @@
 
 #include "Drive/DifferentialDriveComponent.h"
 
-
+DEFINE_LOG_CATEGORY(LogDifferentialDriveComponent);
 
 UDifferentialDriveComponent::UDifferentialDriveComponent(){
 }
@@ -23,7 +23,7 @@ void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheel
 
 void UDifferentialDriveComponent::SetPerimeter(){
     if (WheelRadius <= 1e-6){
-        UE_LOG(LogTemp, Warning, TEXT("Wheel radius is too small. Wheel radisu is reset to 1.0"));
+        UE_LOG(LogDifferentialDriveComponent, Warning, TEXT("Wheel radius is too small. Wheel radisu is reset to 1.0"));
         WheelRadius = 1.0f;
     }
     WheelPerimeter = WheelRadius * 2.0 * 3.1416;
@@ -41,7 +41,7 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
         WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
     }
     else{
-        UE_LOG(LogTemp, Error, TEXT("Wheel Joints are not set"));
+        UE_LOG(LogDifferentialDriveComponent, Error, TEXT("Wheel Joints are not set"));
     }
 }
 
@@ -49,7 +49,7 @@ void UDifferentialDriveComponent::InitMovementComponent(){
     Super::InitMovementComponent();
 
     if (!IsValid(WheelLeft) || !IsValid(WheelRight)){
-        UE_LOG(LogTemp, Error, TEXT("Wheel Joints are not set"));
+        UE_LOG(LogDifferentialDriveComponent, Error, TEXT("Wheel Joints are not set"));
     }
 
     SetPerimeter();

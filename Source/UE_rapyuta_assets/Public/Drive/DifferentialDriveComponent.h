@@ -12,6 +12,8 @@
 /**
  * 
  */
+DECLARE_LOG_CATEGORY_EXTERN(LogDifferentialDriveComponent, Log, All);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UE_RAPYUTA_ASSETS_API UDifferentialDriveComponent : public URobotVehicleMovementComponent
 {
