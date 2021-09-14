@@ -1,3 +1,5 @@
+// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+
 #pragma once
 
 // UE
@@ -5,6 +7,7 @@
 
 // RapyutaSim
 #include "UE_rapyuta_assets.h"
+
 #include "RRObjectCommon.generated.h"
 
 // Note: For avoiding cyclic inclusion, only UE built-in source header files could be included herein.
@@ -18,10 +21,6 @@ enum class ERRResourceDataType : uint8
     // UASSET --
     UE_STATIC_MESH,
     UE_MATERIAL,
-    UE_TEXTURE,
-
-    // URDF/SDF--
-    URDF_SDF,
 
     TOTAL
 };

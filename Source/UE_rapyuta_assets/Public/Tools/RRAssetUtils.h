@@ -1,9 +1,14 @@
+// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+
 #pragma once
 
 // UE
 #include "AssetRegistryModule.h"
 #include "Engine/ObjectLibrary.h"
+#include "Engine/StaticMesh.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Materials/Material.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 
 // RapyutaSim
 #include "UE_rapyuta_assets.h"
@@ -16,10 +21,10 @@ class UE_RAPYUTA_ASSETS_API URRAssetUtils : public UBlueprintFunctionLibrary
     GENERATED_BODY()
 
 public:
-    static constexpr const TCHAR* CSIM_ASSETS_PATH_ROOT = TEXT("/Game");
-    FORCEINLINE static bool IsProjectLevelAsset(const FString& InAssetPath)
+    static IAssetRegistry& GetAssetRegistry()
     {
-        return InAssetPath.StartsWith("/Game/");
+        FAssetRegistryModule& assetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+        return assetRegistryModule.Get();
     }
 
     static bool IsAssetPackageValid(const FAssetData& InAssetData, bool bIsLogged = false)
@@ -30,7 +35,7 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogTemp, Error, TEXT("[%s] asset's package is not available!"), *InAssetData.AssetName.ToString());
+                UE_LOG(LogRapyutaCore, Error, TEXT("[%s] asset's package is not available!"), *InAssetData.AssetName.ToString());
             }
             return false;
         }
@@ -41,7 +46,7 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogTemp,
+                UE_LOG(LogRapyutaCore,
                        Error,
                        TEXT("[%s] asset's package [%s] does not exist!"),
                        *InAssetData.AssetName.ToString(),
@@ -56,7 +61,7 @@ public:
         TUniquePtr<FArchive> packageReader = TUniquePtr<FArchive>(IFileManager::Get().CreateFileReader(*packageFileName));
         if (nullptr == packageReader)
         {
-            UE_LOG(LogTemp, Error, TEXT("Failed creating Package reader for package [%s]!"), *packageFileName);
+            UE_LOG(LogRapyutaCore, Error, TEXT("Failed creating Package reader for package [%s]!"), *packageFileName);
             return false;
         }
 
@@ -71,7 +76,7 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogTemp,
+                UE_LOG(LogRapyutaCore,
                        Error,
                        TEXT("[%s] asset was saved by a previous UE version which is not backward compatible with this one."
                             "Min Required version: [%d] vs Package version: [%d]"),
@@ -87,7 +92,7 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogTemp,
+                UE_LOG(LogRapyutaCore,
                        Error,
                        TEXT("[%s] asset was saved by a newer UE version [%d], which is not forward compatible "
                             "with the current one[%d]"),
@@ -103,7 +108,7 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogTemp,
+                UE_LOG(LogRapyutaCore,
                        Error,
                        TEXT("[%s] asset's package's version [%s] is incompatible with the current UE version[%s]!"),
                        *InAssetData.AssetName.ToString(),
@@ -126,7 +131,7 @@ public:
                 bIsAssetValid = false;
                 if (bIsLogged)
                 {
-                    UE_LOG(LogTemp, Error, TEXT("[%s] asset data info is invalid!"), *assetData.AssetName.ToString());
+                    UE_LOG(LogRapyutaCore, Error, TEXT("[%s] asset data info is invalid!"), *assetData.AssetName.ToString());
                 }
             }
             else if (false == IsAssetPackageValid(assetData, bIsLogged))
@@ -138,7 +143,7 @@ public:
                 bIsAssetValid = false;
                 if (bIsLogged)
                 {
-                    UE_LOG(LogTemp, Error, TEXT("[%s] asset failed to be loaded!"), *assetData.AssetName.ToString());
+                    UE_LOG(LogRapyutaCore, Error, TEXT("[%s] asset failed to be loaded!"), *assetData.AssetName.ToString());
                 }
             }
 
@@ -177,76 +182,5 @@ public:
 
         objectLibrary->GetAssetDataList(OutAssetDataList);
         verify(IsAssetDataListValid(OutAssetDataList, bIsFullLoad, true));
-    }
-
-    static IAssetRegistry& GetAssetRegistry()
-    {
-        FAssetRegistryModule& assetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
-        return assetRegistryModule.Get();
-    }
-
-    template<typename T>
-    static TArray<T*> FetchAssetDataListFromRegistry(const FString& InAssetsPath,
-                                                     TArray<FAssetData>& OutAssetDataList,
-                                                     bool bIncludeOnlyOnDiskAssets,
-                                                     bool bIsFullLoad = false)
-    {
-        // 1 - RESET THE ASSET LIST --
-        //
-        OutAssetDataList.Empty();
-
-        //
-        // 2 - FETCH THE ASSET LIST INFO FROM ASSET REGISTRY --
-        //
-        IAssetRegistry& assetRegistry = GetAssetRegistry();
-
-        // Fetch asset data info
-        assetRegistry.GetAssetsByPath(*InAssetsPath, OutAssetDataList, true, bIncludeOnlyOnDiskAssets);
-
-        // (snote) If not yet available -> meaning it must have not been loaded by [ObjectLibrary]!
-        if (0 == OutAssetDataList.Num())
-        {
-            LoadAssetDataList<T>(InAssetsPath, OutAssetDataList);
-        }
-
-        // Load asset data into list if requested
-        TArray<T*> assetList;
-        if (bIsFullLoad)
-        {
-            UE_LOG(LogTemp, Verbose, TEXT("::RegisterAssetDataList [%s] %d"), *InAssetsPath, assetList.Num());
-            for (const auto& assetData : OutAssetDataList)
-            {
-                // This will load the asset if needed then return it
-                T* asset = Cast<T>(assetData.GetAsset());
-                if (asset)
-                {
-                    assetList.Add(asset);
-                }
-                UE_LOG(LogTemp, VeryVerbose, TEXT("ASSET CLASS NAME [%s]"), *assetData.AssetName.ToString());
-            }
-        }
-        verify(IsAssetDataListValid(OutAssetDataList, bIsFullLoad, true));
-        return assetList;
-    }
-
-    //(snote) This function must not be used at Sim initialization since it would flush Async loaders away!
-    // Besides, [ConstructorHelpers::FObjectFinder<T> asset(AssetPathName); will call [StaticFindObject()] instead
-    // and requires to be run inside a ctor
-    // This loads synchronously, thus should be avoided as much as possible.
-    template<typename T>
-    FORCEINLINE static T* LoadObjFromAssetPath(UObject* Outer, const FString& InAssetPath)
-    {
-        if (InAssetPath.IsEmpty())
-        {
-            UE_LOG(LogTemp, Error, TEXT("[LoadObjFromAssetPath]::EMPTY PATH!"))
-            return nullptr;
-        }
-        // This invokes [StaticLoadObject()]
-        return LoadObject<T>(Outer, *InAssetPath);
-    }
-
-    FORCEINLINE static UStaticMesh* LoadMeshFromAssetPath(UObject* Outer, const FString& InMeshAssetPath)
-    {
-        return LoadObjFromAssetPath<UStaticMesh>(Outer, InMeshAssetPath);
     }
 };

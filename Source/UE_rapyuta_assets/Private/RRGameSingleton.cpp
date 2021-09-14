@@ -1,13 +1,20 @@
+// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+
 #include "RRGameSingleton.h"
 
+// UE
+#include "Engine/AssetManager.h"
+#include "Engine/Engine.h"
+
+// RapyutaSim
 #include "Tools/RRTypeUtils.h"
 
 TMap<ERRResourceDataType, const TCHAR*> URRGameSingleton::SASSET_OWNING_MODULE_NAMES = {
     {ERRResourceDataType::UE_STATIC_MESH, UE_RAPYUTA_ASSETS_MODULE_NAME},
-    {ERRResourceDataType::UE_MATERIAL, UE_RAPYUTA_ASSETS_MODULE_NAME},
-    {ERRResourceDataType::UE_TEXTURE, UE_RAPYUTA_ASSETS_MODULE_NAME}};
+    {ERRResourceDataType::UE_MATERIAL, UE_RAPYUTA_ASSETS_MODULE_NAME}};
 
-URRGameSingleton::URRGameSingleton(){UE_LOG(LogTemp, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"))}
+URRGameSingleton::URRGameSingleton(){
+    UE_LOG(LogRapyutaCore, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"))}
 
 URRGameSingleton::~URRGameSingleton()
 {
@@ -19,24 +26,24 @@ URRGameSingleton* URRGameSingleton::Get()
     URRGameSingleton* singleton = Cast<URRGameSingleton>(GEngine->GameSingleton);
     if (!singleton)
     {
-        UE_LOG(LogTemp, Fatal, TEXT("[URRGameSingleton] NOT YET SET AS GAME SINGLETON!!"))
+        UE_LOG(LogRapyutaCore, Fatal, TEXT("[URRGameSingleton] NOT YET SET AS GAME SINGLETON!!"));
+        return nullptr;
     }
 
     if (IsInGameThread())
     {
-        bool isValidInMemory = IsValid(singleton);
-        if (isValidInMemory)
+        if (IsValid(singleton))
         {
             if (!singleton->HasAnyFlags(EObjectFlags::RF_Standalone))
             {
-                UE_LOG(LogTemp, Warning, TEXT("[URRGameSingleton] RF_Standalone!!"));
+                UE_LOG(LogRapyutaCore, Warning, TEXT("[URRGameSingleton] RF_Standalone!!"));
                 singleton->SetFlags(EObjectFlags::RF_Standalone);
                 // If needed, also hook it to Root set
             }
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("[URRGameSingleton] Not valid in memory!!"))
+            UE_LOG(LogRapyutaCore, Error, TEXT("[URRGameSingleton] Not valid or pending kill!!"));
         }
     }
 
@@ -45,80 +52,86 @@ URRGameSingleton* URRGameSingleton::Get()
 
 bool URRGameSingleton::InitializeResources()
 {
-    // Initialize resource meta info
-    for (int8 i = (static_cast<int8>(ERRResourceDataType::NONE) + 1); i < static_cast<int8>(ERRResourceDataType::TOTAL); ++i)
+    // Prepare an empty [ResourceMap]
+    for (uint8 i = (static_cast<uint8>(ERRResourceDataType::NONE) + 1); i < static_cast<uint8>(ERRResourceDataType::TOTAL); ++i)
     {
         const ERRResourceDataType dataType = static_cast<ERRResourceDataType>(i);
         ResourceMap.Add(dataType, FRRResourceInfo(dataType));
     }
 
     // READ ALL SIM DYNAMIC RESOURCES INFO FROM DESGINATED [~CONTENT] FOLDERS
-    // [STATIC MESH]
+    // & REGISTER THEM TO BE ASYNC LOADED INTO [ResourceMap]
+    // [STATIC MESH] --
     ERRResourceDataType dataType = ERRResourceDataType::UE_STATIC_MESH;
-    FRRResourceInfo resourceInfo(dataType);
+    CollateAssetsInfo<UStaticMesh>(dataType, FOLDER_PATH_ASSET_STATIC_MESHES);
 
-    // Fetch built-in assets meta data to [resourceInfo]
-    bool result = CollateAssetsMetaData<UStaticMesh>(
-        GetDynamicAssetsPath(ERRResourceDataType::UE_STATIC_MESH) / CFOLDER_PATH_SIM_ASSET_STATIC_MESHES, resourceInfo);
-    if (!result)
-    {
-        return false;
-    }
-
-    // Request Runtime resource async loading
+    // Request StaticMesh resource async loading
     GetSimResourceInfo(dataType).HasBeenAllLoaded = false;
-    if (false == RequestResourcesLoading(dataType, resourceInfo))
-    {
-        UE_LOG(LogTemp, Error, TEXT("[%s] READ MESH META DATA FAILED"), *URRTypeUtils::GetERRResourceDataTypeAsString(dataType));
-        return false;
-    }
+    verify(RequestResourcesLoading(dataType));
 
-    UE_LOG(LogTemp, Display, TEXT("[InitializeResources] => RESOURCES REGISTERED TO BE LOADED!"));
+    // [MATERIAL] --
+    dataType = ERRResourceDataType::UE_MATERIAL;
+    CollateAssetsInfo<UMaterialInterface>(dataType, FOLDER_PATH_ASSET_MATERIALS);
+
+    // Request Material resource async loading
+    GetSimResourceInfo(dataType).HasBeenAllLoaded = false;
+    verify(RequestResourcesLoading(dataType));
+
+    UE_LOG(LogRapyutaCore, Display, TEXT("[InitializeResources] => RESOURCES REGISTERED TO BE LOADED!"));
     return true;
 }
 
-bool URRGameSingleton::RequestResourcesLoading(const ERRResourceDataType InDataType, const FRRResourceInfo& InResourceInfo)
+bool URRGameSingleton::RequestResourcesLoading(const ERRResourceDataType InDataType)
 {
-    if (GetSimResourceInfo(InDataType).HasBeenAllLoaded || (0 == InResourceInfo.Data.Num()))
+    const FRRResourceInfo& resourceInfo = GetSimResourceInfo(InDataType);
+    const int32 resourceNum = resourceInfo.Data.Num();
+    if (resourceInfo.HasBeenAllLoaded)
     {
-        return false;
+        UE_LOG(LogRapyutaCore, Warning, TEXT("All resources have been loaded. No need to request the resources loading again."));
+        return true;
+    }
+    else if (0 == resourceNum)
+    {
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("THERE ARE NO [%] TO BE LOADED."),
+               *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
+        return true;
     }
 
     // REQUEST FOR LOADING THE RESOURCES ASYNCHRONOUSLY
-    GetSimResourceInfo(InDataType).ToBeAsyncLoadedResourceNum = InResourceInfo.Data.Num();
-    UE_LOG(LogTemp,
+    GetSimResourceInfo(InDataType).ToBeAsyncLoadedResourceNum = resourceNum;
+    UE_LOG(LogRapyutaCore,
            Display,
            TEXT("[%s] TO BE LOADED NUM: %d"),
            *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-           InResourceInfo.Data.Num());
+           resourceNum);
+
     UAssetManager* assetManager = UAssetManager::GetIfValid();
     if (assetManager)
     {
-        for (const auto& resourceMeta : InResourceInfo.Data)
+        for (const auto& resourceMetaData : resourceInfo.Data)
         {
             // https://docs.unrealengine.com/en-US/Resources/SampleGames/ARPG/BalancingBlueprintAndCPP/index.html
             // "Avoid Referencing Assets by String"
-            FSoftObjectPath resourceSoftObjPath(resourceMeta.Value.GetAssetPath());
+            FSoftObjectPath resourceSoftObjPath(resourceMetaData.Value.GetAssetPath());
             assetManager->GetStreamableManager().RequestAsyncLoad(
                 resourceSoftObjPath,
                 FStreamableDelegate::CreateUObject(
-                    this, &URRGameSingleton::OnResourceLoaded, InDataType, resourceSoftObjPath, resourceMeta.Value.UniqueName));
+                    this, &URRGameSingleton::OnResourceLoaded, InDataType, resourceSoftObjPath, resourceMetaData.Value.UniqueName));
         }
         return true;
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("[InitializeResources] UNABLE TO GET ASSET MANAGER!"))
+        UE_LOG(LogRapyutaCore, Error, TEXT("[InitializeResources] UNABLE TO GET ASSET MANAGER!"))
         return false;
     }
 }
 
 void URRGameSingleton::FinalizeResources()
 {
-    // Sim Resources (Mesh shapes, materials, textures, curves, and their metadata, etc.)
-    SASSET_OWNING_MODULE_NAMES.Empty();
-
-    for (int8 i = static_cast<int8>(ERRResourceDataType::NONE) + 1; i < static_cast<int8>(ERRResourceDataType::TOTAL); ++i)
+    for (uint8 i = (static_cast<uint8>(ERRResourceDataType::NONE) + 1); i < static_cast<uint8>(ERRResourceDataType::TOTAL); ++i)
     {
         ResourceMap[static_cast<ERRResourceDataType>(i)].Finalize();
     }
@@ -132,17 +145,14 @@ bool URRGameSingleton::HaveAllResourcesBeenLoaded(bool bIsLogged)
     for (const auto& resourceInfo : ResourceMap)
     {
         bResult &= resourceInfo.Value.HasBeenAllLoaded;
+        if (!bResult && bIsLogged)
+        {
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("[%s] Resources have not yet been fully loaded!"),
+                   *URRTypeUtils::GetERRResourceDataTypeAsString(resourceInfo.Key));
+        }
     }
 
-    if (!bResult && bIsLogged)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Resources are not yet fully loaded!"));
-    }
     return bResult;
 }
-
-// void URRGameSingleton::FetchAllAssetsDataList()
-//{
-//    URRAssetUtils::FetchAssetDataListFromRegistry<UObject>(
-//        GetDynamicAssetsPath(static_cast<ERRResourceDataType>(dataType)), AssetDataList, true, false);
-//}

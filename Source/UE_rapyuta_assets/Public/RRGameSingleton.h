@@ -1,8 +1,10 @@
+// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+
 #pragma once
 #include "CoreMinimal.h"
 
 // UE
-#include "Engine/AssetManager.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/StreamableManager.h"
 #include "Materials/Material.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
@@ -35,20 +37,22 @@ public:
     void FinalizeResources();
 
     template<typename T>
-    bool CollateAssetsMetaData(const FString& InAssetFolderPath, FRRResourceInfo& OutResource)
+    bool CollateAssetsInfo(const ERRResourceDataType InDataType, const FString& InAssetRelativeFolderPath)
     {
+        FRRResourceInfo& outResourceInfo = GetSimResourceInfo(InDataType);
+
         TArray<FAssetData> assetDataList;
-        URRAssetUtils::LoadAssetDataList<T>(InAssetFolderPath, assetDataList);
+        URRAssetUtils::LoadAssetDataList<T>(GetDynamicAssetsPath(InDataType) / InAssetRelativeFolderPath, assetDataList);
         for (const auto& asset : assetDataList)
         {
-            UE_LOG(LogTemp,
+            UE_LOG(LogRapyutaCore,
                    VeryVerbose,
                    TEXT("[%s] ASSET [%s] [%s]"),
                    *asset.AssetName.ToString(),
                    *asset.PackagePath.ToString(),
                    *asset.GetFullName(),
                    *asset.ToSoftObjectPath().ToString());
-            OutResource.AddResource(asset.AssetName.ToString(), asset.ToSoftObjectPath().ToString(), nullptr);
+            outResourceInfo.AddResource(asset.AssetName.ToString(), asset.ToSoftObjectPath().ToString(), nullptr);
         }
         return (assetDataList.Num() > 0);
     }
@@ -74,33 +78,15 @@ public:
         return runtimeAssetsPath;
     }
 
-    // All assets under [GetDynamicAssetsPath()]
-    // UPROPERTY()
-    // TArray<FAssetData> AssetDataList;
-    // void FetchAllAssetsDataList();
-
-    // template<typename T>
-    // FORCEINLINE T* GetAssetObject(const FString& InAssetName) const
-    //{
-    //    for (const auto& asset : AssetDataList)
-    //    {
-    //        if (asset.AssetName.ToString() == InAssetName)
-    //        {
-    //            // This will load the asset if needed then return it
-    //            return Cast<T>(asset.GetAsset());
-    //        }
-    //    }
-    //    return nullptr;
-    //}
-
     //  RESOURCE STORE --
     //
     UFUNCTION()
     bool HaveAllResourcesBeenLoaded(bool bIsLogged = false);
 
     UFUNCTION()
-    bool RequestResourcesLoading(const ERRResourceDataType InDataType, const FRRResourceInfo& InResourceInfo);
+    bool RequestResourcesLoading(const ERRResourceDataType InDataType);
 
+    // This is used as param to [FStreamableDelegate::CreateUObject()] thus its params could not be constref-ized
     FORCEINLINE void OnResourceLoaded(ERRResourceDataType InDataType, FSoftObjectPath InResourcePath, FString InResourceUniqueName)
     {
         check(IsInGameThread());
@@ -120,45 +106,9 @@ public:
                 }
                 break;
 
-            case ERRResourceDataType::UE_TEXTURE:
-                ProcessAsyncLoadedResource<UTexture2D>(InDataType, InResourcePath, InResourceUniqueName);
-                break;
-
             default:
                 break;
         }
-    }
-
-    // Callback to handle an synchronously loaded resource, which receives some having been loaded [UObject] handle
-    // Then put it into both [ResourceMap] & [ResourceStore]
-    template<typename TResource>
-    FORCEINLINE bool ProcessSyncLoadedResource(const ERRResourceDataType InDataType,
-                                               UObject* InResource,
-                                               const FString& InResourceUniqueName)
-    {
-        verify(IsInGameThread());
-        TResource* resource = Cast<TResource>(InResource);
-
-        if (resource)
-        {
-            // Resource Info --
-            FRRResourceInfo& simResourceInfo = GetSimResourceInfo(InDataType);
-            simResourceInfo.AddResource(InResourceUniqueName, resource->GetPathName(), resource);
-            UE_LOG(LogTemp,
-                   VeryVerbose,
-                   TEXT("[%s] [%s:%s] RESOURCE LOADED %d"),
-                   *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-                   *InResourceUniqueName,
-                   *InResource->GetPathName(),
-                   resource);
-
-            // Resource Data --
-            // (snote) Still need to store resource handle in a direct UPROPERTY() child TArray of this GameSingleton to bypass
-            // early GC
-            ResourceStore.AddUnique(InResource);
-            return true;
-        }
-        return false;
     }
 
     // Callback to handle an asynchronously loaded resource, which receives a [FSoftObjectPath] that references a valid [UObject]
@@ -173,31 +123,27 @@ public:
 
         if (resource)
         {
-            // Resource Info --
-            FRRResourceInfo& simResourceInfo = GetSimResourceInfo(InDataType);
-            simResourceInfo.AddResource(InResourceUniqueName, InResourcePath, resource);
-            simResourceInfo.ToBeAsyncLoadedResourceNum--;
-            UE_LOG(LogTemp,
+            // Update [ResourceMap] with the newly loaded resource --
+            FRRResourceInfo& resourceInfo = GetSimResourceInfo(InDataType);
+            resourceInfo.AddResource(InResourceUniqueName, InResourcePath, resource);
+            resourceInfo.ToBeAsyncLoadedResourceNum--;
+            UE_LOG(LogRapyutaCore,
                    VeryVerbose,
                    TEXT("%d [%s] [%s:%s] RESOURCE LOADED %d"),
-                   simResourceInfo.ToBeAsyncLoadedResourceNum,
+                   resourceInfo.ToBeAsyncLoadedResourceNum,
                    *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
                    *InResourceUniqueName,
                    *InResourcePath.ToString(),
-                   resource)
-            if (simResourceInfo.ToBeAsyncLoadedResourceNum == 0)
+                   resource);
+            if (resourceInfo.ToBeAsyncLoadedResourceNum == 0)
             {
-                simResourceInfo.HasBeenAllLoaded = true;
+                resourceInfo.HasBeenAllLoaded = true;
             }
 
             // Resource Data --
             // (snote) Still need to store resource handle in a direct UPROPERTY() child TArray of this GameSingleton to bypass
             // early GC
-            UObject* objectResource = Cast<UObject>(resource);
-            if (objectResource)
-            {
-                ResourceStore.AddUnique(objectResource);
-            }
+            ResourceStore.AddUnique(Cast<UObject>(resource));
             return true;
         }
         return false;
@@ -210,7 +156,7 @@ public:
 
         if (!resourceAsset || !resourceAsset->IsValidLowLevelFast())
         {
-            UE_LOG(LogTemp,
+            UE_LOG(LogRapyutaCore,
                    Fatal,
                    TEXT("[%s] [Unique Name: %s] INVALID RESOURCE %d!"),
                    *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
@@ -221,45 +167,59 @@ public:
         return resourceAsset;
     }
 
-    TMap<FString, FRRResource>& GetSimResourceList(const ERRResourceDataType DataType)
+    TMap<FString, FRRResource>& GetSimResourceList(const ERRResourceDataType InDataType)
     {
-        verifyf(ResourceMap.Contains(DataType),
+        verifyf(ResourceMap.Contains(InDataType),
                 TEXT("It seems [ResourceMap][%s] not yet fully initialized!"),
-                *URRTypeUtils::GetERRResourceDataTypeAsString(DataType)) return GetSimResourceInfo(DataType)
-            .Data;
+                *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
+        return GetSimResourceInfo(InDataType).Data;
     }
 
-    FRRResourceInfo& GetSimResourceInfo(const ERRResourceDataType DataType)
+    FRRResourceInfo& GetSimResourceInfo(const ERRResourceDataType InDataType)
     {
-        verifyf(ResourceMap.Contains(DataType),
-                TEXT("It seems [ResourceMap][%s] not yet fully initialized!"),
-                *URRTypeUtils::GetERRResourceDataTypeAsString(DataType));
-        return ResourceMap[DataType];
+        verifyf(ResourceMap.Contains(InDataType),
+                TEXT("It seems [ResourceMap][%s] has not yet been fully initialized!"),
+                *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
+        return ResourceMap[InDataType];
     }
 
     // STATIC MESHES --
-    // Mesh Entities Info folder path
     UPROPERTY(config)
-    FString CFOLDER_PATH_SIM_ASSET_STATIC_MESHES = TEXT("StaticMeshes");
+    FString FOLDER_PATH_ASSET_STATIC_MESHES = TEXT("StaticMeshes");
 
     // (snote) These names must match ones defined in [StaticMeshShapesInfoFileName] file
     // Here we only define specially used shapes for some specific purpose!
-    static constexpr const TCHAR* CSHAPE_NAME_PLANE = TEXT("Shape_Plane");
-    static constexpr const TCHAR* CSHAPE_NAME_CUBE = TEXT("Shape_Cube");
-    static constexpr const TCHAR* CSHAPE_NAME_CYLINDER = TEXT("Shape_Cylinder");
-    static constexpr const TCHAR* CSHAPE_NAME_SPHERE = TEXT("Shape_Sphere");
+    static constexpr const TCHAR* SHAPE_NAME_PLANE = TEXT("Shape_Plane");
+    static constexpr const TCHAR* SHAPE_NAME_CUBE = TEXT("Shape_Cube");
+    static constexpr const TCHAR* SHAPE_NAME_CYLINDER = TEXT("Shape_Cylinder");
+    static constexpr const TCHAR* SHAPE_NAME_SPHERE = TEXT("Shape_Sphere");
 
     UFUNCTION()
-    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& MeshName)
+    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName)
     {
-        return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, MeshName);
+        return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, InStaticMeshName);
+    }
+
+    // MATERIALS --
+    // Material Entities Info folder path
+    UPROPERTY(config)
+    FString FOLDER_PATH_ASSET_MATERIALS = TEXT("Materials");
+
+    // Here we only define specially used materials for some specific purpose!
+    static constexpr const TCHAR* MATERIAL_NAME_FLOOR = TEXT("M_Floor");
+
+    UFUNCTION()
+    FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName)
+    {
+        return GetSimResource<UMaterialInterface>(ERRResourceDataType::UE_MATERIAL, InMaterialName);
     }
 
 private:
     // Async loaded, thus must be thread safe. A map just helps referencing an item faster, though costs some overheads.
+    // Besides, UE does not support UPROPERTY() on a map yet.
     TMap<ERRResourceDataType, FRRResourceInfo> ResourceMap;
 
-    // We need this to bypass UObject-based resources' Garbage Collection
+    // We need this to escape UObject-based resource Garbage Collection
     UPROPERTY()
     TArray<UObject*> ResourceStore;
 };

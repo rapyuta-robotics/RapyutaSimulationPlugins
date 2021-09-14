@@ -16,5 +16,5 @@ void FRapyutaSimulationPluginsModule::ShutdownModule()
 }
 
 #undef LOCTEXT_NAMESPACE
-
+DEFINE_LOG_CATEGORY(LogRapyutaCore);
 IMPLEMENT_MODULE(FRapyutaSimulationPluginsModule, RapyutaSimulationPlugins)
