@@ -2,10 +2,11 @@
 
 #include "Sensors/SensorLidar.h"
 
-#include "Kismet/KismetMathLibrary.h"
-//#include "DrawDebugHelpers.h"
 #include "Components/LineBatchComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+
+#include <limits>
 
 DEFINE_LOG_CATEGORY(LogROS2Sensor);
 
@@ -151,11 +152,8 @@ void ASensorLidar::Scan()
             FRotator rot = UKismetMathLibrary::ComposeRotators(laserRot, lidarRot);
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
-            FVector endPos =
-                lidarPos +
-                MaxRange * UKismetMathLibrary::GetForwardVector(
-                               rot);    // += WithNoise *
-                                        // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
+            // + WithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             GetWorld()->LineTraceSingleByChannel(
                 RecordedHits[Index], startPos, endPos, ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
@@ -224,8 +222,7 @@ void ASensorLidar::Scan()
                         NormalAlignment *= NormalAlignment;
                         NormalAlignment *= NormalAlignment;
                         NormalAlignment *= NormalAlignment;
-                        NormalAlignment *= NormalAlignment;
-                        // pow 32
+                        NormalAlignment *= NormalAlignment;    // pow 32
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, FLinearColor::LerpUsingHSV(ColorHit, ColorReflected,
                         // NormalAlignment), 10, .5, dt); NormalAlignment =
                         // (NormalAlignment*(IntensityReflective-IntensityNonReflective) + IntensityNonReflective)/IntensityMax;
@@ -248,7 +245,7 @@ void ASensorLidar::Scan()
                         h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance)), 5, 10, dt);
                 }
             }
-            else
+            else if (ShowLidarRayMisses)
             {
                 // LineBatcher->DrawLine(h.TraceStart, h.TraceEnd, ColorMiss, 10, .25, dt);
                 LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, 10, dt);
@@ -285,7 +282,7 @@ bool ASensorLidar::Visible(AActor* TargetActor)
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // To be considered: += WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // To be considered: + WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index],
                                                  startPos,
@@ -339,13 +336,11 @@ void ASensorLidar::GetData(TArray<FHitResult>& OutHits, float& OutTime)
 float ASensorLidar::GetMinAngleRadians() const
 {
     return FMath::DegreesToRadians(-StartAngle - FOVHorizontal);
-    // To be considered: return FMath::DegreesToRadians(StartAngle+FOVHorizontal+180);
 }
 
 float ASensorLidar::GetMaxAngleRadians() const
 {
     return FMath::DegreesToRadians(-StartAngle);
-    // To be considered: return FMath::DegreesToRadians(StartAngle+180);
 }
 
 FROSLaserScan ASensorLidar::GetROS2Data()
@@ -374,7 +369,6 @@ FROSLaserScan ASensorLidar::GetROS2Data()
     {
         // convert to [m]
         retValue.ranges.Add((MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f);
-        // To be considered: retValue.intensities.Add(0);
 
         const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
 
@@ -411,7 +405,7 @@ FROSLaserScan ASensorLidar::GetROS2Data()
         }
         else
         {
-            retValue.intensities.Add(10);
+            retValue.intensities.Add(std::numeric_limits<double>::quiet_NaN());
         }
     }
 
