@@ -8,7 +8,7 @@
 #include "OccupancyMapGenerator.generated.h"
 
 UCLASS()
-class UE_RAPYUTA_ASSETS_API AOccupancyMapGenerator : public AActor
+class RAPYUTASIMULATIONPLUGINS_API AOccupancyMapGenerator : public AActor
 {
 	GENERATED_BODY()
 	

@@ -8,7 +8,7 @@
 #include "TimeLogger.generated.h"
 
 UCLASS()
-class UE_RAPYUTA_ASSETS_API ATimeLogger : public AActor
+class RAPYUTASIMULATIONPLUGINS_API ATimeLogger : public AActor
 {
 	GENERATED_BODY()
 	

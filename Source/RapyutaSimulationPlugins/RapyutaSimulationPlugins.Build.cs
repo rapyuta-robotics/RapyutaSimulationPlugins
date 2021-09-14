@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class UE_rapyuta_assets : ModuleRules
+public class RapyutaSimulationPlugins : ModuleRules
 {
-    public UE_rapyuta_assets(ReadOnlyTargetRules Target) : base(Target)
+    public RapyutaSimulationPlugins(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 

@@ -25,7 +25,7 @@ void ATurtlebotBurger::Init()
     if (!IsInitialized)
     {
 
-        FString PluginPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("UE_rapyuta_assets/Content")));
+        FString PluginPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("RapyutaSimulationPlugins/Content")));
 
         // Meshes
         if (VehicleMaterial == nullptr)

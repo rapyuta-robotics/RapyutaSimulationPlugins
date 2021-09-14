@@ -17,7 +17,7 @@
 #include "TurtlebotROSController.generated.h"
 
 UCLASS(ClassGroup=(Custom),  meta=(BlueprintSpawnableComponent))
-class UE_RAPYUTA_ASSETS_API ATurtlebotROSController : public AAIController
+class RAPYUTASIMULATIONPLUGINS_API ATurtlebotROSController : public AAIController
 {
 	GENERATED_BODY()
 

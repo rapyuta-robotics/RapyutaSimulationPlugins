@@ -13,7 +13,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
 
 UCLASS()
-class UE_RAPYUTA_ASSETS_API ATurtlebotBurger : public ARobotVehicle
+class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARobotVehicle
 {
 	GENERATED_BODY()
 	

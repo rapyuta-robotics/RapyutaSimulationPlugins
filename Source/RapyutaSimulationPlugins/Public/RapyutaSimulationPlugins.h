@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FUE_rapyuta_assetsModule : public IModuleInterface
+class FRapyutaSimulationPluginsModule : public IModuleInterface
 {
 public:
     /** IModuleInterface implementation */

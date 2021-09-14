@@ -16,7 +16,7 @@
  * 
  */
 UCLASS( ClassGroup=(Custom), Blueprintable, meta=(BlueprintSpawnableComponent) )
-class UE_RAPYUTA_ASSETS_API UROS2TFPublisher : public UROS2Publisher
+class RAPYUTASIMULATIONPLUGINS_API UROS2TFPublisher : public UROS2Publisher
 {
 	GENERATED_BODY()
 

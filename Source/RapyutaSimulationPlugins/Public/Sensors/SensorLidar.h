@@ -21,7 +21,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 #define TRACE_ASYNC 1
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class UE_RAPYUTA_ASSETS_API ASensorLidar : public AActor
+class RAPYUTASIMULATIONPLUGINS_API ASensorLidar : public AActor
 {
     GENERATED_BODY()
 

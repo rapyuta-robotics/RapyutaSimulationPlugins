@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "UE_rapyuta_assets",
+	"FriendlyName": "RapyutaSimulationPlugins",
 	"Description": "Robot common assets which is used with rclUE",
 	"Category": "Robotics",
 	"CreatedBy": "Rapyuta Robotics",
@@ -17,7 +17,7 @@
 	"Installed": true,
 	"Modules": [
 		{
-			"Name": "UE_rapyuta_assets",
+			"Name": "RapyutaSimulationPlugins",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
