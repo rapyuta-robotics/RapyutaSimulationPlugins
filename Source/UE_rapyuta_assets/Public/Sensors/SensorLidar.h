@@ -131,8 +131,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool ShowLidarRays = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool ShowLidarRayMisses = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool ShowLidarRayMisses = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
     float IntensityNonReflective = 1000.f;
