@@ -8,7 +8,7 @@ public class RapyutaSimulationPlugins : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "rclUE" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "rclUE", "PhysicsCore" });
 
         PrivateDependencyModuleNames.AddRange(new string[] { });
             
