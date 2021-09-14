@@ -2,24 +2,26 @@
 
 #pragma once
 
-#include <random>
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Msgs/ROS2LaserScanMsg.h"
 #include "ROS2Node.h"
 #include "ROS2Publisher.h"
-#include "Msgs/ROS2LaserScanMsg.h"
+
+#include <random>
+
 #include "SensorLidar.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
 #define TRACE_ASYNC 1
 
-UCLASS( ClassGroup=(Custom), Blueprintable, meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class UE_RAPYUTA_ASSETS_API ASensorLidar : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ASensorLidar();
 
@@ -30,9 +32,9 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UFUNCTION()
-	void LidarMessageUpdate(UROS2GenericMsg *TopicMessage);
+	void LidarMessageUpdate(UROS2GenericMsg* TopicMessage);
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -49,7 +51,7 @@ public:
 	void InitLidar(AROS2Node* Node, FString TopicName);
 
 	UFUNCTION(BlueprintCallable)
-	void InitToNode(AROS2Node *Node);
+	void InitToNode(AROS2Node* Node);
 
 	// adding the rest of the necessary information might be tedious
 	// eventually split into multiple getters
@@ -66,76 +68,75 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetMaxAngleRadians() const;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UROS2Publisher *LidarPublisher;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UROS2Publisher* LidarPublisher;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString FrameId = TEXT("base_scan");
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int nSamplesPerScan;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int ScanFrequency;
 
 	// [degrees]
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float StartAngle;
 
 	// scan goes from StartAngle to StartAngle+FOVHorizontal
 	// [degrees]
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float FOVHorizontal;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MinRange;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxRange;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Intensity")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
 	FLinearColor ColorMiss = FColor(255, 127, 0, 255);
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Intensity")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
 	FLinearColor ColorMin = FColor(255, 0, 0, 255);
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Intensity")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
 	FLinearColor ColorMid = FColor(255, 0, 0, 255);
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Intensity")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
 	FColor ColorMax = FColor(255, 255, 255, 255);
 
-
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float TimeOfLastScan = 0.f;
 
 	// [degrees]
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float DHAngle;
 
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
-  	TArray<FHitResult> RecordedHits;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TArray<FHitResult> RecordedHits;
 
 #if TRACE_ASYNC
- 	TArray<FTraceHandle> TraceHandles;
+	TArray<FTraceHandle> TraceHandles;
 #endif
-	
+
 	UPROPERTY()
 	FTimerHandle timerHandle;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool ShowLidarRays = true;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Intensity")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
 	float IntensityNonReflective = 1000;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Intensity")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
 	float IntensityReflective = 6000;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Intensity")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
 	float IntensityMin = 0;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Intensity")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
 	float IntensityMax = 10000;
 
 	FLinearColor GetColorFromIntensity(const float Intensity);
@@ -152,13 +153,13 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Noise")
 	float PositionalNoiseMean = 0;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Noise")
 	float PositionalNoiseVariance = 1;
 
 	UPROPERTY(EditAnywhere, Category = "Noise")
 	float IntensityNoiseMean = 0;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Noise")
 	float IntensityNoiseVariance = .1;
 
