@@ -239,7 +239,7 @@ void ASensorLidar::Scan()
 						h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance)), 5, 10, dt);
 				}
 			}
-			else
+			else if (ShowLidarRayMisses)
 			{
 				// LineBatcher->DrawLine(h.TraceStart, h.TraceEnd, ColorMiss, 10, .25, dt);
 				LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, 10, dt);
