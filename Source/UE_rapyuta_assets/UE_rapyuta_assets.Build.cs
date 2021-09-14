@@ -4,37 +4,14 @@ using UnrealBuildTool;
 
 public class UE_rapyuta_assets : ModuleRules
 {
-	public UE_rapyuta_assets(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
-		PublicIncludePaths.AddRange(
-			new string[] {
-				// ... add public include paths required here ...
-			}
-			);
-				
-		
-		PrivateIncludePaths.AddRange(
-			new string[] {
-				// ... add other private include paths required here ...
-			}
-			);
-			
-		
-		PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"Core",
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
-				"rclUE"
-				// ... add other public dependencies that you statically link with here ...
-			}
-			);
-			
+    public UE_rapyuta_assets(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-	}
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "rclUE" });
+
+        PrivateDependencyModuleNames.AddRange(new string[] { });
+            
+
+    }
 }
