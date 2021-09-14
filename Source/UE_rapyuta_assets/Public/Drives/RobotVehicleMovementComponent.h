@@ -8,9 +8,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "RobotVehicleMovementComponent.generated.h"
 
-/**
- * 
- */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class RCLUE_API URobotVehicleMovementComponent : public UPawnMovementComponent
 {

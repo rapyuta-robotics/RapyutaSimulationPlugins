@@ -9,9 +9,6 @@
 
 #include "DifferentialDriveComponent.generated.h"
 
-/**
- * 
- */
 DECLARE_LOG_CATEGORY_EXTERN(LogDifferentialDriveComponent, Log, All);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

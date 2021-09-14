@@ -8,9 +8,6 @@
 
 #include "RobotVehicle.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class UE_RAPYUTA_ASSETS_API ARobotVehicle : public APawn
 {

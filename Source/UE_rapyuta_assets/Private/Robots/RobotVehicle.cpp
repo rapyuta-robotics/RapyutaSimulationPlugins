@@ -29,17 +29,6 @@ void ARobotVehicle::BeginPlay()
 {
     Super::BeginPlay();
     MoveComponent->InitMovementComponent();
-    /*
-        for (TFieldIterator<FProperty> PropIt(FTestData::StaticStruct()); PropIt; ++PropIt)
-        {
-            FProperty *Property = *PropIt;
-
-            FString Name = Property->GetName();
-            FString Type = Property->GetCPPType();
-
-            UE_LOG(LogTemp, Warning, TEXT("*** Prop: %s (%s)"), *Name, *Type);
-        }
-    */
 }
 
 void ARobotVehicle::EndPlay(const EEndPlayReason::Type EndPlayReason)

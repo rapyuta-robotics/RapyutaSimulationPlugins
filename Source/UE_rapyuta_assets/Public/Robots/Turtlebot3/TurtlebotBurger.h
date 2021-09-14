@@ -10,9 +10,6 @@
 
 #include "TurtlebotBurger.generated.h"
 
-/**
- * 
- */
 DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
 
 UCLASS()

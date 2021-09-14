@@ -26,7 +26,7 @@ void UDifferentialDriveComponent::SetPerimeter()
 {
     if (WheelRadius <= 1e-6)
     {
-        UE_LOG(LogDifferentialDriveComponent, Warning, TEXT("Wheel radius is too small. Wheel radisu is reset to 1.0"));
+        UE_LOG(LogDifferentialDriveComponent, Warning, TEXT("Wheel radius is too small. Wheel radius is reset to 1.0"));
         WheelRadius = 1.0f;
     }
     WheelPerimeter = WheelRadius * 2.0 * 3.1416;

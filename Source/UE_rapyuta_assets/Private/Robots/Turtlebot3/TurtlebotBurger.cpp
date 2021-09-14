@@ -1,7 +1,9 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Misc/Paths.h"
 #include "Robots/Turtlebot3/TurtlebotBurger.h"
+
+#include "Misc/Paths.h"
+
 
 DEFINE_LOG_CATEGORY(LogTurtlebotBurger);
 
@@ -15,6 +17,7 @@ ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) 
     MoveComponent = CreateDefaultSubobject<UDifferentialDriveComponent>(TEXT("MoveComponent"));
     UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(MoveComponent);
     DifferentialDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);
+    DifferentialDriveComponent->SetPerimeter();
 }
 
 void ATurtlebotBurger::Init()
@@ -28,7 +31,6 @@ void ATurtlebotBurger::Init()
         if (VehicleMaterial == nullptr)
         {   
             FString RobotMatPath = FPaths::Combine(PluginPath, TEXT("Materials/M_RobotMat.M_RobotMat"));
-            const TCHAR* RobotMatPathCh = *RobotMatPath;
             static ConstructorHelpers::FObjectFinder<UMaterial> RobotMaterial(*RobotMatPath);
             VehicleMaterial = RobotMaterial.Object;
 
@@ -168,14 +170,8 @@ void ATurtlebotBurger::BeginPlay()
 {
     Super::BeginPlay();
 
-    Base->SetMaterial(0, VehicleMaterial);
-    LidarSensor->SetMaterial(0, VehicleMaterial);
-    WheelLeft->SetMaterial(0, VehicleMaterial);
-    WheelRight->SetMaterial(0, VehicleMaterial);
-    CasterBack->SetMaterial(0, VehicleMaterial);
-
-    UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(MoveComponent);
-    DifferentialDriveComponent->SetPerimeter();
+    // UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(MoveComponent);
+    // DifferentialDriveComponent->SetPerimeter();
 }
 
 void ATurtlebotBurger::EndPlay(const EEndPlayReason::Type EndPlayReason)

@@ -16,9 +16,6 @@
 
 #include "TurtlebotROSController.generated.h"
 
-/**
- * 
- */
 UCLASS(ClassGroup=(Custom),  meta=(BlueprintSpawnableComponent))
 class UE_RAPYUTA_ASSETS_API ATurtlebotROSController : public AAIController
 {
@@ -31,9 +28,6 @@ protected:
 
 	UPROPERTY(Transient)
 	AROS2Node *TurtleNode;
-
-	// UPROPERTY(Transient, BlueprintReadWrite)
-	// ASensorLidar *TurtleLidar;
 
 	UPROPERTY(Transient, BlueprintReadWrite)
 	FVector LidarOffset;
