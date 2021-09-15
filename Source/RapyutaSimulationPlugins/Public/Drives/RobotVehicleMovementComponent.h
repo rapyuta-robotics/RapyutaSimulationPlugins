@@ -44,12 +44,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void InitMovementComponent();
 
-private:
+protected:
 	virtual void InitOdom();
 	virtual void UpdateMovement(float DeltaTime);
-	virtual void UpdateOdom();
+	virtual void UpdateOdom(float DeltaTime);
 	bool IsOdomInitialized = false;
-
+	
 public:
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
