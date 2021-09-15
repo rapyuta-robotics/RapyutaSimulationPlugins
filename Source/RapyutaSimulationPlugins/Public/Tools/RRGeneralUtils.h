@@ -7,7 +7,7 @@
 #include "RRGeneralUtils.generated.h"
 
 UCLASS()
-class UE_RAPYUTA_ASSETS_API URRGeneralUtils : public UBlueprintFunctionLibrary
+class RAPYUTASIMULATIONPLUGINS_API URRGeneralUtils : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 public:

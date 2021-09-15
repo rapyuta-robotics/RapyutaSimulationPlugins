@@ -11,12 +11,12 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 
 // RapyutaSim
-#include "UE_rapyuta_assets.h"
+#include "RapyutaSimulationPlugins.h"
 
 #include "RRAssetUtils.generated.h"
 
 UCLASS()
-class UE_RAPYUTA_ASSETS_API URRAssetUtils : public UBlueprintFunctionLibrary
+class RAPYUTASIMULATIONPLUGINS_API URRAssetUtils : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 

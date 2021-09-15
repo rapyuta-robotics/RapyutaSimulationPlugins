@@ -8,7 +8,7 @@
 #include "RRGameMode.generated.h"
 
 UCLASS()
-class UE_RAPYUTA_ASSETS_API ARRGameMode : public AGameModeBase
+class RAPYUTASIMULATIONPLUGINS_API ARRGameMode : public AGameModeBase
 {
     GENERATED_BODY()
 

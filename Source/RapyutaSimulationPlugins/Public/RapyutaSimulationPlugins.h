@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
-#define UE_RAPYUTA_ASSETS_MODULE_NAME (TEXT("UE_rapyuta_assets"))
+
+#define RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME (TEXT("RapyutaSimulationPlugins"))
 class FRapyutaSimulationPluginsModule : public IModuleInterface
 {
 public:

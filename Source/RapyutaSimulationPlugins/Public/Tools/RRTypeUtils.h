@@ -9,12 +9,12 @@
 // RapyutaSim
 #include "RRGameSingleton.h"
 #include "RRObjectCommon.h"
-#include "UE_rapyuta_assets.h"
+#include "RapyutaSimulationPlugins.h"
 
 #include "RRTypeUtils.generated.h"
 
 UCLASS()
-class UE_RAPYUTA_ASSETS_API URRTypeUtils : public UBlueprintFunctionLibrary
+class RAPYUTASIMULATIONPLUGINS_API URRTypeUtils : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 

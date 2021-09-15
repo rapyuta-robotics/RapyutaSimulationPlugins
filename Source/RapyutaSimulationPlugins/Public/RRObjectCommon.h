@@ -6,7 +6,7 @@
 #include "UObject/Object.h"
 
 // RapyutaSim
-#include "UE_rapyuta_assets.h"
+#include "RapyutaSimulationPlugins.h"
 
 #include "RRObjectCommon.generated.h"
 
@@ -27,7 +27,7 @@ enum class ERRResourceDataType : uint8
 
 // The atomic Sim resource
 USTRUCT()
-struct UE_RAPYUTA_ASSETS_API FRRResource
+struct RAPYUTASIMULATIONPLUGINS_API FRRResource
 {
     GENERATED_BODY()
     FRRResource()
@@ -53,7 +53,7 @@ struct UE_RAPYUTA_ASSETS_API FRRResource
 };
 
 USTRUCT()
-struct UE_RAPYUTA_ASSETS_API FRRResourceInfo
+struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
 {
     GENERATED_BODY()
     FRRResourceInfo()

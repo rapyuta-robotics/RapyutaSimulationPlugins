@@ -12,14 +12,14 @@
 
 // RapyutaSim
 #include "RRObjectCommon.h"
+#include "RapyutaSimulationPlugins.h"
 #include "Tools/RRAssetUtils.h"
 #include "Tools/RRTypeUtils.h"
-#include "UE_rapyuta_assets.h"
 
 #include "RRGameSingleton.generated.h"
 
 UCLASS(Config = RapyutaSimSettings)
-class UE_RAPYUTA_ASSETS_API URRGameSingleton : public UObject
+class RAPYUTASIMULATIONPLUGINS_API URRGameSingleton : public UObject
 {
     GENERATED_BODY()
 protected:
@@ -45,7 +45,7 @@ public:
         URRAssetUtils::LoadAssetDataList<T>(GetDynamicAssetsPath(InDataType) / InAssetRelativeFolderPath, assetDataList);
         for (const auto& asset : assetDataList)
         {
-            UE_LOG(LogRapyutaCore,
+            UE_LOG(LogTemp,
                    VeryVerbose,
                    TEXT("[%s] ASSET [%s] [%s]"),
                    *asset.AssetName.ToString(),
@@ -58,16 +58,16 @@ public:
     }
 
     // ASSETS --
-    // This list specifically host names of which module houses the UE assets based on their data type
+    // This list specifically hosts names of which module houses the UE assets based on their data type
     static TMap<ERRResourceDataType, const TCHAR*> SASSET_OWNING_MODULE_NAMES;
 
-    // (snote) This only returns base path of assets residing in Plugin, not from Project level, which should starts with [/Game/]
+    // This only returns base path of assets residing in Plugin, not from Project level, which should starts with [/Game/]
     // And please note that the Sim does not store assets in Project, just to make them accessible among plugins.
     static constexpr const TCHAR* ASSETS_ROOT_PATH = TEXT("/");
     static FString GetAssetsBasePath(const TCHAR* InModuleName)
     {
         // For particular handling, please set the asset path ending with '/'
-        // (snote) This concatenation operator ensure only a single '/' is put in between
+        // This concatenation operator ensure only a single '/' is put in between
         return FString(ASSETS_ROOT_PATH) / InModuleName;
     }
 
@@ -127,7 +127,7 @@ public:
             FRRResourceInfo& resourceInfo = GetSimResourceInfo(InDataType);
             resourceInfo.AddResource(InResourceUniqueName, InResourcePath, resource);
             resourceInfo.ToBeAsyncLoadedResourceNum--;
-            UE_LOG(LogRapyutaCore,
+            UE_LOG(LogTemp,
                    VeryVerbose,
                    TEXT("%d [%s] [%s:%s] RESOURCE LOADED %d"),
                    resourceInfo.ToBeAsyncLoadedResourceNum,
@@ -141,7 +141,7 @@ public:
             }
 
             // Resource Data --
-            // (snote) Still need to store resource handle in a direct UPROPERTY() child TArray of this GameSingleton to bypass
+            // Still need to store resource handle in a direct UPROPERTY() child TArray of this GameSingleton to bypass
             // early GC
             ResourceStore.AddUnique(Cast<UObject>(resource));
             return true;
@@ -156,7 +156,9 @@ public:
 
         if (!resourceAsset || !resourceAsset->IsValidLowLevelFast())
         {
-            UE_LOG(LogRapyutaCore,
+            // For some reason, [LogRapyutaCore] could not be used here due to a linking error as being invoked from project
+            // sources.
+            UE_LOG(LogTemp,
                    Fatal,
                    TEXT("[%s] [Unique Name: %s] INVALID RESOURCE %d!"),
                    *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
@@ -187,12 +189,12 @@ public:
     UPROPERTY(config)
     FString FOLDER_PATH_ASSET_STATIC_MESHES = TEXT("StaticMeshes");
 
-    // (snote) These names must match ones defined in [StaticMeshShapesInfoFileName] file
+    // These names must match ones defined in [StaticMeshShapesInfoFileName] file
     // Here we only define specially used shapes for some specific purpose!
-    static constexpr const TCHAR* SHAPE_NAME_PLANE = TEXT("Shape_Plane");
-    static constexpr const TCHAR* SHAPE_NAME_CUBE = TEXT("Shape_Cube");
-    static constexpr const TCHAR* SHAPE_NAME_CYLINDER = TEXT("Shape_Cylinder");
-    static constexpr const TCHAR* SHAPE_NAME_SPHERE = TEXT("Shape_Sphere");
+    static constexpr const TCHAR* SHAPE_NAME_PLANE = TEXT("Plane");
+    static constexpr const TCHAR* SHAPE_NAME_CUBE = TEXT("Cube");
+    static constexpr const TCHAR* SHAPE_NAME_CYLINDER = TEXT("Cylinder");
+    static constexpr const TCHAR* SHAPE_NAME_SPHERE = TEXT("Sphere");
 
     UFUNCTION()
     FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName)
@@ -206,7 +208,7 @@ public:
     FString FOLDER_PATH_ASSET_MATERIALS = TEXT("Materials");
 
     // Here we only define specially used materials for some specific purpose!
-    static constexpr const TCHAR* MATERIAL_NAME_FLOOR = TEXT("M_Floor");
+    static constexpr const TCHAR* MATERIAL_NAME_FLOOR = TEXT("M_FloorMat");
 
     UFUNCTION()
     FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName)
