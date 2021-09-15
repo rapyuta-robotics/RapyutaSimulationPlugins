@@ -19,6 +19,7 @@ class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponent : public URobotVe
 public:
 	UDifferentialDriveComponent();
 	virtual void UpdateMovement(float DeltaTime) override;
+	virtual void UpdateOdom(float DeltaTime) override;
 	
 	UFUNCTION(BlueprintCallable)
 	void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);

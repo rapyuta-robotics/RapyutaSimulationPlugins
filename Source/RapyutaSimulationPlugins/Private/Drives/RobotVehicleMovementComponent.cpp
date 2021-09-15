@@ -53,7 +53,7 @@ void URobotVehicleMovementComponent::InitOdom()
     IsOdomInitialized = true;
 }
 
-void URobotVehicleMovementComponent::UpdateOdom()
+void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
 {
     if (!IsOdomInitialized)
     {
@@ -89,7 +89,7 @@ void URobotVehicleMovementComponent::TickComponent(float DeltaTime,
         if (IsValid(UpdatedComponent))
         {
             UpdateMovement(DeltaTime);
-            UpdateOdom();
+            UpdateOdom(DeltaTime);
         }
 
         UpdateComponentVelocity();
