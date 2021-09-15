@@ -13,8 +13,6 @@ ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) 
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-
     Init();
     MoveComponent = CreateDefaultSubobject<UDifferentialDriveComponent>(TEXT("MoveComponent"));
     UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(MoveComponent);
@@ -62,7 +60,7 @@ void ATurtlebotBurger::Init()
         WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
         CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
 
-        Base->SetupAttachment(RootComponent);
+        RootComponent = Base;
 
         LidarSensor->SetupAttachment(Base);
         WheelLeft->SetupAttachment(Base);
