@@ -65,7 +65,7 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
     FROSGetEntityState_Request Request;
     GetEntityStateService->GetRequest(Request);
 
-    UE_LOG(LogTemp, Warning, TEXT("GetEntityStateSrv called - Currently ignoring Twist"));
+    // UE_LOG(LogTemp, Warning, TEXT("GetEntityStateSrv called - Currently ignoring Twist"));
 
     FROSGetEntityState_Response Response;
     Response.success = false;
@@ -161,7 +161,7 @@ void ASimulationState::SetEntityStateSrv(UROS2GenericSrv* Service)
     FROSSetEntityState_Request Request;
     SetEntityStateService->GetRequest(Request);
 
-    UE_LOG(LogTemp, Warning, TEXT("SetEntityStateService called - Currently ignoring Twist"));
+    // UE_LOG(LogTemp, Warning, TEXT("SetEntityStateService called - Currently ignoring Twist"));
 
     FROSSetEntityState_Response Response;
     Response.success = ReferenceFrameToInertiaFrame(Request.state_reference_frame,
@@ -180,7 +180,9 @@ void ASimulationState::SetEntityStateSrv(UROS2GenericSrv* Service)
         else
         {
             Response.success = false;
-            UE_LOG(LogTemp, Warning, TEXT("entity %s not found"), *Request.state_name);
+            UE_LOG(LogTemp, Warning, 
+                    TEXT("Entity %s not exit or not under SimulationState control. Please call AddEntity to make Actors under SimulationState contorl."), 
+                    *Request.state_name);                                
         }
     }
     SetEntityStateService->SetResponse(Response);
@@ -211,6 +213,12 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* Service)
         {
             Entity2->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
         }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, 
+                TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors under SimulationState contorl."),
+                *Request.name1, *Request.name2);
     }
 
     AttachService->SetResponse(Response);
@@ -250,7 +258,9 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
         }
         else
         {
-            UE_LOG(LogTemp, Warning, TEXT("Entity %s not found"), *Request.xml);
+            UE_LOG(LogTemp, Warning,
+                TEXT("Entity %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors under SimulationState contorl."), 
+                *Request.xml);
         }
     }
 
