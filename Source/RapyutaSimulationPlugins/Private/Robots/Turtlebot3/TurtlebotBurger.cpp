@@ -14,64 +14,23 @@ ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) 
     PrimaryActorTick.bCanEverTick = true;
 
     Init();
-    MoveComponent = CreateDefaultSubobject<UDifferentialDriveComponent>(TEXT("MoveComponent"));
-    UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(MoveComponent);
-    DifferentialDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);
-    DifferentialDriveComponent->SetPerimeter();
+ 
 }
 
 void ATurtlebotBurger::Init()
 {
     if (!IsInitialized)
     {
-
-        FString PluginPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("RapyutaSimulationPlugins/Content")));
-
-        // Meshes
-        if (VehicleMaterial == nullptr)
-        {   
-            FString RobotMatPath = FPaths::Combine(PluginPath, TEXT("Materials/M_RobotMat.M_RobotMat"));
-            static ConstructorHelpers::FObjectFinder<UMaterial> RobotMaterial(*RobotMatPath);
-            VehicleMaterial = RobotMaterial.Object;
-
-            FString  CasterMatPath = FPaths::Combine(PluginPath, TEXT("Materials/M_CasterBallMat.M_CasterBallMat"));
-            static ConstructorHelpers::FObjectFinder<UMaterial> CasterBallMaterial(*CasterMatPath);
-            BallMaterial = CasterBallMaterial.Object;
-        }
-
-        FString BaseMeshPath = FPaths::Combine(PluginPath, TEXT("Robots/Turtlebot3/Models/Burger/BurgerBase.BurgerBase"));
-        static ConstructorHelpers::FObjectFinder<UStaticMesh> BaseMesh(*BaseMeshPath);
-
-        FString LdsMeshPath = FPaths::Combine(PluginPath, TEXT("Robots/Turtlebot3/Models/Common/Lds.Lds"));
-        static ConstructorHelpers::FObjectFinder<UStaticMesh> LidarMesh(*LdsMeshPath);
-
-        FString WheelLMeshPath = FPaths::Combine(PluginPath, TEXT("Robots/Turtlebot3/Models/Common/LeftWheel.LeftWheel"));
-        static ConstructorHelpers::FObjectFinder<UStaticMesh> WheelLMesh(*WheelLMeshPath);
-
-        FString WheelRMeshPath = FPaths::Combine(PluginPath, TEXT("Robots/Turtlebot3/Models/Common/RightWheel.RightWheel"));
-        static ConstructorHelpers::FObjectFinder<UStaticMesh> WheelRMesh(*WheelRMeshPath);
-
-        FString BallCasterMeshPath = FPaths::Combine(PluginPath, TEXT("Robots/Turtlebot3/Models/Common/BallCaster.BallCaster"));
-        static ConstructorHelpers::FObjectFinder<UStaticMesh> CasterMesh(*BallCasterMeshPath);
-
         Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
         LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
         WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));
         WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
         CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
 
-        RootComponent = Base;
-
         LidarSensor->SetupAttachment(Base);
         WheelLeft->SetupAttachment(Base);
         WheelRight->SetupAttachment(Base);
         CasterBack->SetupAttachment(Base);
-
-        Base->SetStaticMesh(BaseMesh.Object);
-        LidarSensor->SetStaticMesh(LidarMesh.Object);
-        WheelLeft->SetStaticMesh(WheelLMesh.Object);
-        WheelRight->SetStaticMesh(WheelRMesh.Object);
-        CasterBack->SetStaticMesh(CasterMesh.Object);
 
         // Constraints
         Base_LidarSensor = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_LidarSensor"));
@@ -89,6 +48,18 @@ void ATurtlebotBurger::Init()
         IsInitialized = true;
 
         SetupConstraintsAndPhysics();
+        SetupWheels();
+    }
+}
+
+void ATurtlebotBurger::SetupWheels()
+{
+    if (IsInitialized)
+    {
+        MoveComponent = CreateDefaultSubobject<UDifferentialDriveComponent>(TEXT("MoveComponent"));
+        UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(MoveComponent);
+        DifferentialDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);
+        DifferentialDriveComponent->SetPerimeter();
     }
 }
 
@@ -127,7 +98,7 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
         Base_WheelLeft->ComponentName1.ComponentName = TEXT("WheelLeft");
         Base_WheelLeft->SetDisableCollision(true);
         // Base_WheelLeft->SetRelativeLocation(FVector(0, -8, 2.3));
-        Base_WheelLeft->SetRelativeRotation(FRotator(0, 0, 90));
+        Base_WheelLeft->SetRelativeRotation(FRotator(0, 90, 0));
         Base_WheelLeft->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
         Base_WheelLeft->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
         Base_WheelLeft->SetAngularVelocityDriveTwistAndSwing(true, false);
@@ -141,7 +112,7 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
         Base_WheelRight->ComponentName1.ComponentName = TEXT("WheelRight");
         Base_WheelRight->SetDisableCollision(true);
         // Base_WheelRight->SetRelativeLocation(FVector(0, 8, 2.3));
-        Base_WheelRight->SetRelativeRotation(FRotator(0, 0, 90));
+        Base_WheelRight->SetRelativeRotation(FRotator(0, 90, 0));
         Base_WheelRight->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
         Base_WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
         Base_WheelRight->SetAngularVelocityDriveTwistAndSwing(true, false);
