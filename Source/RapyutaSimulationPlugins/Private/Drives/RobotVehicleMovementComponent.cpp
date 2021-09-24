@@ -12,8 +12,22 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
     FVector position = UpdatedComponent->ComponentVelocity * DeltaTime;
     FQuat DeltaRotation(FVector::ZAxisVector, AngularVelocity.Z * DeltaTime);
 
-    DesiredRotation = OldRotation * DeltaRotation;
+    DesiredRotation = OldRotation * DeltaRotation;    // DeltaRotation * OldRotation; ??
     DesiredMovement = (OldRotation * position);
+
+    // Should check for floor contacts
+    // Consider the robot contact points are always on the floor (no flying, jumping..)
+    // !! In some cases, the robot body may collide with environment, not at the defined contact points. Ignore for now
+    if (FloorContactPoints.Num() < 3)
+    {
+        // robot will be oriented as the normal vector in contact plane
+    }
+    else
+    {
+        // compute the orientation plane based on 3 contact points
+        // if more than 3 contact points, need to compute all permutations of 3 contact points and use the one with biggest angle
+        // from horizontal plane
+    }
 
     FHitResult Hit;
     SafeMoveUpdatedComponent(DesiredMovement, DesiredRotation, true, Hit);
@@ -21,6 +35,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
     // If we bumped into something, try to slide along it
     if (Hit.IsValidBlockingHit())
     {
+        // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement : BlockingHit") );
         SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
     }
 }
@@ -81,6 +96,7 @@ void URobotVehicleMovementComponent::TickComponent(float DeltaTime,
                                                    enum ELevelTick TickType,
                                                    FActorComponentTickFunction* ThisTickFunction)
 {
+    // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::TickComponent...") );
     if (!ShouldSkipUpdate(DeltaTime))
     {
         Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -102,10 +118,17 @@ FTransform URobotVehicleMovementComponent::GetOdomTF()
     FVector Pos(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
     TF.SetTranslation(Pos);
     TF.SetRotation(OdomData.pose_pose_orientation);
+
     return TF;
 }
 
 void URobotVehicleMovementComponent::InitMovementComponent()
 {
     InitOdom();
+
+    if (FloorContactPoints.Num() < 1)
+    {
+        FloorContactPoints.Add(
+            FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z));
+    }
 }
