@@ -15,6 +15,30 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
     DesiredRotation = OldRotation * DeltaRotation;    // DeltaRotation * OldRotation; ??
     DesiredMovement = (OldRotation * position);
 
+    // if Robot is above a moving platform
+    if (MovingPlatform != nullptr)
+    {
+        // add movement of the platform
+        FVector CurrentPlatformLocation = FVector( MovingPlatform->GetActorLocation() );
+        FVector PlatformTranslation = CurrentPlatformLocation - LastPlatformLocation;
+        DesiredMovement += PlatformTranslation;
+        // TODO : rotation
+        UE_LOG(LogTemp,
+               Warning,
+               TEXT("URobotVehicleMovementComponent::UpdateMovement : ON MOVING PLATFORM -> %f %f %f (%f %f %f) - T: %f %f %f"),
+               PlatformTranslation.X,
+               PlatformTranslation.Y,
+               PlatformTranslation.Z,
+               CurrentPlatformLocation.X,
+               CurrentPlatformLocation.Y,
+               CurrentPlatformLocation.Z,
+               DesiredMovement.X,
+               DesiredMovement.Y,
+               DesiredMovement.Z
+               );
+        LastPlatformLocation = FVector( CurrentPlatformLocation );
+    }
+
     // Should check for floor contacts
     // Consider the robot contact points are always on the floor (no flying, jumping..)
     // !! In some cases, the robot body may collide with environment, not at the defined contact points. Ignore for now
@@ -35,7 +59,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
     // If we bumped into something, try to slide along it
     if (Hit.IsValidBlockingHit())
     {
-        // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement : BlockingHit") );
+        UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement : BlockingHit") );
         SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
     }
 }
@@ -131,4 +155,23 @@ void URobotVehicleMovementComponent::InitMovementComponent()
         FloorContactPoints.Add(
             FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z));
     }
+}
+
+void URobotVehicleMovementComponent::SetMovingPlatform(AActor* platform)
+{
+    UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::SetMovingPlatform..."));
+    MovingPlatform = platform;
+    LastPlatformLocation = FVector( platform->GetActorLocation() );
+    LastPlatformRotation = FQuat( platform->GetActorQuat() );
+}
+
+bool URobotVehicleMovementComponent::IsOnMovingPlatform()
+{
+    return MovingPlatform != nullptr;
+}
+
+void URobotVehicleMovementComponent::RemoveMovingPlatform()
+{
+    UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::RemoveMovingPlatform..."));
+    MovingPlatform = nullptr;
 }
