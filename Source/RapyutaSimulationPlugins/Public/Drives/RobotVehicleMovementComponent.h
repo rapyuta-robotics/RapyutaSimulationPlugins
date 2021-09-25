@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -21,6 +22,10 @@ private:
 
     UPROPERTY(Transient)
     FQuat DesiredRotation;
+
+    AActor* MovingPlatform = nullptr;
+    FVector LastPlatformLocation;
+    FQuat LastPlatformRotation;
 
 public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
@@ -46,6 +51,15 @@ public:
 
     UFUNCTION(BlueprintCallable)
     virtual void InitMovementComponent();
+
+    UFUNCTION(BlueprintCallable)
+    void SetMovingPlatform(AActor* platform);
+
+    UFUNCTION(BlueprintCallable)
+    bool IsOnMovingPlatform();
+
+    UFUNCTION(BlueprintCallable)
+    void RemoveMovingPlatform();
 
 protected:
     virtual void InitOdom();

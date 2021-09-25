@@ -45,7 +45,7 @@ public:
 	float MaxForce = 1000; //todo get data from physics constraints
 
 private:
-	float WheelPerimeter = 6.28f;;
+	float WheelPerimeter = 6.28f;
 
 
 	
