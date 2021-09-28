@@ -23,9 +23,16 @@ private:
     UPROPERTY(Transient)
     FQuat DesiredRotation;
 
-    AActor* MovingPlatform = nullptr;
+    // For Elevator management
+    AActor* MovingPlatform = nullptr;    // The platform below the robot
     FVector LastPlatformLocation;
     FQuat LastPlatformRotation;
+
+    // For slopes, complex floors, free fall
+    float MinDistanceToFloor =
+        0.f;    // Z distance between the robot root location and the floor, used when less than 3 contact points are defined
+    const float FallingSpeed = 100.;           // How much the robot falls if no floor beneath ( FallingSpeed * DeltaTime )
+    TArray<USceneComponent*> ContactPoints;    // List all scene components on the pawn. that have the tag "ContactPoint"
 
 public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
@@ -40,11 +47,16 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString ChildFrameId = TEXT("");
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TArray<FVector> FloorContactPoints;
-
     UPROPERTY(EditAnywhere)
     FTransform InitialTransform;
+
+    // For slopes, complex floors, free fall
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float RayOffsetUp = 10.;    // Ray start Z offset. Value must be > possible penetration of objects in contact point, in one tick
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float RayOffsetDown = 20.;    // Ray end Z offset
+    // Rays go from ContactPoint+RayOffsetUp to ContactPoint-RayOffsetDown
 
     UFUNCTION(BlueprintCallable)
     FTransform GetOdomTF();
