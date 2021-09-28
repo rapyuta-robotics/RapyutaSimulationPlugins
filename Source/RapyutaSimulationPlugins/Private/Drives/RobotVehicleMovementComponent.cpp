@@ -2,8 +2,10 @@
 
 #include "Drives/RobotVehicleMovementComponent.h"
 
+#include "CollisionQueryParams.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
 {
@@ -12,45 +14,29 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
     FVector position = UpdatedComponent->ComponentVelocity * DeltaTime;
     FQuat DeltaRotation(FVector::ZAxisVector, AngularVelocity.Z * DeltaTime);
 
-    DesiredRotation = OldRotation * DeltaRotation;    // DeltaRotation * OldRotation; ??
+    DesiredRotation = OldRotation * DeltaRotation;
     DesiredMovement = (OldRotation * position);
 
-    // if Robot is above a moving platform
+    // if Robot is on a moving platform, add the platform motion
     if (MovingPlatform != nullptr)
     {
-        // add movement of the platform
-        FVector CurrentPlatformLocation = FVector( MovingPlatform->GetActorLocation() );
+        FVector CurrentPlatformLocation = FVector(MovingPlatform->GetActorLocation());
         FVector PlatformTranslation = CurrentPlatformLocation - LastPlatformLocation;
         DesiredMovement += PlatformTranslation;
-        // TODO : rotation
-        UE_LOG(LogTemp,
-               Warning,
-               TEXT("URobotVehicleMovementComponent::UpdateMovement : ON MOVING PLATFORM -> %f %f %f (%f %f %f) - T: %f %f %f"),
-               PlatformTranslation.X,
-               PlatformTranslation.Y,
-               PlatformTranslation.Z,
-               CurrentPlatformLocation.X,
-               CurrentPlatformLocation.Y,
-               CurrentPlatformLocation.Z,
-               DesiredMovement.X,
-               DesiredMovement.Y,
-               DesiredMovement.Z
-               );
-        LastPlatformLocation = FVector( CurrentPlatformLocation );
-    }
 
-    // Should check for floor contacts
-    // Consider the robot contact points are always on the floor (no flying, jumping..)
-    // !! In some cases, the robot body may collide with environment, not at the defined contact points. Ignore for now
-    if (FloorContactPoints.Num() < 3)
-    {
-        // robot will be oriented as the normal vector in contact plane
-    }
-    else
-    {
-        // compute the orientation plane based on 3 contact points
-        // if more than 3 contact points, need to compute all permutations of 3 contact points and use the one with biggest angle
-        // from horizontal plane
+        // TODO : add platform rotation in DesiredRotation
+
+        /*         UE_LOG(LogTemp,
+                       Warning,
+                       TEXT("URobotVehicleMovementComponent::UpdateMovement : ON MOVING PLATFORM -> %f %f %f (%f %f %f) - T: %f %f
+           %f"), PlatformTranslation.X, PlatformTranslation.Y, PlatformTranslation.Z, CurrentPlatformLocation.X,
+                       CurrentPlatformLocation.Y,
+                       CurrentPlatformLocation.Z,
+                       DesiredMovement.X,
+                       DesiredMovement.Y,
+                       DesiredMovement.Z
+                       ); */
+        LastPlatformLocation = FVector(CurrentPlatformLocation);
     }
 
     FHitResult Hit;
@@ -59,8 +45,125 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
     // If we bumped into something, try to slide along it
     if (Hit.IsValidBlockingHit())
     {
-        UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement : BlockingHit") );
+        // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement : BlockingHit") );
         SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
+    }
+
+    // check for floor configuration beneath the robot : slopes, etc
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
+    TraceParams.bReturnPhysicalMaterial = true;
+    TraceParams.bTraceComplex = true;
+    TraceParams.bReturnFaceIndex = true;
+    TraceParams.AddIgnoredActor(PawnOwner);
+
+    // If few contact points defined, cast a single ray beneath the robot to get the floor orientation
+    if (ContactPoints.Num() < 3)
+    {
+        // robot will be oriented as the normal vector in floor plane
+        FVector startPos = PawnOwner->GetActorLocation() + FVector(0., 0., RayOffsetUp);
+        FVector endPos = PawnOwner->GetActorLocation() - FVector(0., 0., RayOffsetDown);
+        bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(
+            Hit, startPos, endPos, ECollisionChannel::ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
+        if (IsFloorHit)
+        {
+            FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), Hit.ImpactNormal);
+            PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, Hit.ImpactNormal));
+            if (MovingPlatform == nullptr)
+            {
+                FVector HeightVariation = {0., 0., MinDistanceToFloor - Hit.Distance};
+                PawnOwner->AddActorWorldOffset(HeightVariation, true, &Hit, ETeleportType::TeleportPhysics);
+                // UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Distance Modification = %f"),
+                // HeightVariation.Z );
+            }
+        }
+        else
+        {
+            // very basic robot falling
+            PawnOwner->AddActorWorldOffset(FVector(0., 0., -FallingSpeed * DeltaTime), true, &Hit, ETeleportType::TeleportPhysics);
+        }
+    }
+    else
+    {
+        // compute all impact points and keep the 3 closest
+        // get the normal vector of the plane formed by these 3 points
+        FVector Contacts[3];
+        float ContactsDistance[3];
+        uint8 NbContact = 0;
+
+        for (USceneComponent* Contact : ContactPoints)
+        {
+            // get the contact points
+            // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Contact Point = %f %f %f"),
+            // Contact->GetComponentLocation().X, Contact->GetComponentLocation().Y, Contact->GetComponentLocation().Z );
+            FVector startPos = Contact->GetComponentLocation() + FVector(0., 0., RayOffsetUp);
+            FVector endPos = Contact->GetComponentLocation() - FVector(0., 0., RayOffsetDown);
+            bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(Hit,
+                                                                   startPos,
+                                                                   endPos,
+                                                                   ECollisionChannel::ECC_Visibility,
+                                                                   TraceParams,
+                                                                   FCollisionResponseParams::DefaultResponseParam);
+            if (!IsFloorHit)
+            {
+                // if no impact below, just consider this contact point is falling
+                Hit.ImpactPoint = Contact->GetComponentLocation() - FVector(0., 0., FallingSpeed * DeltaTime);
+                Hit.Distance = RayOffsetUp + FallingSpeed * DeltaTime;
+            }
+            // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Impact Point = %f %f %f"),
+            // Hit.ImpactPoint.X, Hit.ImpactPoint.Y, Hit.ImpactPoint.Z );
+
+            // keep only the 3 contacts with shortest distances
+            if (NbContact < 3)
+            {
+                Contacts[NbContact] = Hit.ImpactPoint;
+                ContactsDistance[NbContact] = Hit.Distance;
+                NbContact++;
+            }
+            else
+            {
+                uint8 MaxContactDistanceIndex = 0;
+                if (ContactsDistance[1] > ContactsDistance[0])
+                    MaxContactDistanceIndex = 1;
+                if (ContactsDistance[2] > ContactsDistance[MaxContactDistanceIndex])
+                    MaxContactDistanceIndex = 2;
+                if (Hit.Distance < ContactsDistance[MaxContactDistanceIndex])
+                {
+                    ContactsDistance[MaxContactDistanceIndex] = Hit.Distance;
+                    Contacts[MaxContactDistanceIndex] = Hit.ImpactPoint;
+                }
+            }
+        }
+
+        // get the normal vector of the plane going through these 3 points
+        FVector PlaneNormal = FVector::CrossProduct(Contacts[1] - Contacts[0], Contacts[2] - Contacts[0]);
+        PlaneNormal.Normalize(0.01);
+        if (PlaneNormal.Z < 0.)
+            PlaneNormal = -PlaneNormal;
+        // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - PlaneNormal = %f %f %f"), PlaneNormal.X,
+        // PlaneNormal.Y, PlaneNormal.Z );
+
+        FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), PlaneNormal);
+        PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, PlaneNormal));
+
+        if (MovingPlatform == nullptr)
+        {
+            // Moves the robot up or down, depending on impact position
+            float MinDistance = ContactsDistance[0];
+            if (ContactsDistance[1] < MinDistance)
+                MinDistance = ContactsDistance[1];
+            if (ContactsDistance[2] < MinDistance)
+                MinDistance = ContactsDistance[2];
+
+            MinDistance -= RayOffsetUp;
+            
+            if( MinDistance > FallingSpeed * DeltaTime )
+                MinDistance = FallingSpeed * DeltaTime;
+            
+            FVector HeightVariation = {0., 0., -MinDistance};
+            PawnOwner->AddActorWorldOffset(HeightVariation, true, &Hit, ETeleportType::TeleportPhysics);
+            // UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Distance Modification = %f"),
+            // MinDistance );
+        }
     }
 }
 
@@ -150,19 +253,51 @@ void URobotVehicleMovementComponent::InitMovementComponent()
 {
     InitOdom();
 
-    if (FloorContactPoints.Num() < 1)
+    TArray<UActorComponent*> ActorContactPoints = PawnOwner->GetComponentsByTag(USceneComponent::StaticClass(), "ContactPoint");
+    for (auto ACP : ActorContactPoints)
     {
-        FloorContactPoints.Add(
-            FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z));
+        USceneComponent* SCP = Cast<USceneComponent>(ACP);
+        if (SCP)
+            ContactPoints.Add(SCP);
+    }
+    UE_LOG(LogTemp,
+           Warning,
+           TEXT("URobotVehicleMovementComponent::InitMovementComponent - Nb Contact Points : %d"),
+           ContactPoints.Num());
+
+    // Compute the starting distance between the robot root and the floor
+    // We consider that the robot is on a horizontal floor at the beginning
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
+    TraceParams.bReturnPhysicalMaterial = true;
+    TraceParams.bTraceComplex = true;
+    TraceParams.bReturnFaceIndex = true;
+    TraceParams.AddIgnoredActor(PawnOwner);
+
+    FVector startPos = PawnOwner->GetActorLocation() + FVector(0., 0., 10.);
+    FVector endPos = PawnOwner->GetActorLocation() - FVector(0., 0., 50.);
+    FHitResult HitResult;
+    bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(HitResult,
+                                                           startPos,
+                                                           endPos,
+                                                           ECollisionChannel::ECC_Visibility,
+                                                           TraceParams,
+                                                           FCollisionResponseParams::DefaultResponseParam);
+    if (IsFloorHit)
+    {
+        MinDistanceToFloor = HitResult.Distance;
+        UE_LOG(LogTemp,
+               Warning,
+               TEXT("URobotVehicleMovementComponent::InitMovementComponent - Min Distance To Floor = %f"),
+               MinDistanceToFloor);
     }
 }
 
 void URobotVehicleMovementComponent::SetMovingPlatform(AActor* platform)
 {
-    UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::SetMovingPlatform..."));
+    // UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::SetMovingPlatform..."));
     MovingPlatform = platform;
-    LastPlatformLocation = FVector( platform->GetActorLocation() );
-    LastPlatformRotation = FQuat( platform->GetActorQuat() );
+    LastPlatformLocation = FVector(platform->GetActorLocation());
+    LastPlatformRotation = FQuat(platform->GetActorQuat());
 }
 
 bool URobotVehicleMovementComponent::IsOnMovingPlatform()
@@ -172,6 +307,6 @@ bool URobotVehicleMovementComponent::IsOnMovingPlatform()
 
 void URobotVehicleMovementComponent::RemoveMovingPlatform()
 {
-    UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::RemoveMovingPlatform..."));
+    // UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::RemoveMovingPlatform..."));
     MovingPlatform = nullptr;
 }
