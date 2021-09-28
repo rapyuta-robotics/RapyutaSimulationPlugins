@@ -7,7 +7,6 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 // RapyutaSim
-#include "RRGameSingleton.h"
 #include "RRObjectCommon.h"
 #include "RapyutaSimulationPlugins.h"
 
