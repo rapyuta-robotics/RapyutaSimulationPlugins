@@ -9,9 +9,9 @@
 // RapyutaSim
 #include "Tools/RRTypeUtils.h"
 
-TMap<ERRResourceDataType, const TCHAR*> URRGameSingleton::SASSET_OWNING_MODULE_NAMES = {
-    {ERRResourceDataType::UE_STATIC_MESH, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME},
-    {ERRResourceDataType::UE_MATERIAL, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}};
+TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_MODULE_NAMES = {
+    {ERRResourceDataType::UE_STATIC_MESH, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
+    {ERRResourceDataType::UE_MATERIAL, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}}};
 
 URRGameSingleton::URRGameSingleton(){
     UE_LOG(LogRapyutaCore, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"))}
