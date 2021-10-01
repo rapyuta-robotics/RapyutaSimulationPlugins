@@ -230,7 +230,7 @@ void ASensorLidar3D::Scan()
 bool ASensorLidar3D::Visible(AActor* TargetActor)
 {
     TArray<FHitResult> RecordedVizHits;
-    RecordedVizHits.Init(FHitResult(ForceInit), NSamplesPerScan*NChannelsPerScan);
+    RecordedVizHits.Init(FHitResult(ForceInit), NSamplesPerScan * NChannelsPerScan);
 
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
     DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
@@ -246,7 +246,7 @@ bool ASensorLidar3D::Visible(AActor* TargetActor)
     FRotator lidarRot = GetActorRotation();
 
     ParallelFor(
-        NSamplesPerScan*NChannelsPerScan,
+        NSamplesPerScan * NChannelsPerScan,
         [this, &TraceParams, &lidarPos, &lidarRot, &RecordedVizHits](int32 Index)
         {
             const int IdxX = Index % NSamplesPerScan;
@@ -260,11 +260,11 @@ bool ASensorLidar3D::Visible(AActor* TargetActor)
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
 
-            GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index], 
-                                                 startPos, 
-                                                 endPos, 
-                                                 ECC_Visibility, 
-                                                 TraceParams, 
+            GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index],
+                                                 startPos,
+                                                 endPos,
+                                                 ECC_Visibility,
+                                                 TraceParams,
                                                  FCollisionResponseParams::DefaultResponseParam);
         },
         false);
@@ -281,7 +281,7 @@ bool ASensorLidar3D::Visible(AActor* TargetActor)
 
 void ASensorLidar3D::InitLidar(AROS2Node* Node, const FString& TopicName)
 {
-    Super::InitLidar(Node,TopicName);
+    Super::InitLidar(Node, TopicName);
 
     Run();
 }
@@ -336,7 +336,7 @@ FROSPointCloud2 ASensorLidar3D::GetROS2Data()
     retValue.fields_count.Add(1);
     retValue.fields_count.Add(1);
 
-    retValue.is_bigendian = true;
+    retValue.is_bigendian = false;
 
     retValue.point_step = sizeof(float) * 5;
     retValue.row_step = sizeof(float) * 5 * NSamplesPerScan;
@@ -344,21 +344,51 @@ FROSPointCloud2 ASensorLidar3D::GetROS2Data()
     retValue.data.Init(0, RecordedHits.Num() * sizeof(float) * 5);
     for (auto i = 0; i < RecordedHits.Num(); i++)
     {
-        unsigned char const* x = reinterpret_cast<unsigned char const*>(&RecordedHits.Last(i).TraceEnd.X);
-        unsigned char const* y = reinterpret_cast<unsigned char const*>(&RecordedHits.Last(i).TraceEnd.Y);
-        unsigned char const* z = reinterpret_cast<unsigned char const*>(&RecordedHits.Last(i).TraceEnd.Z);
-        unsigned char const* distance = reinterpret_cast<unsigned char const*>(&RecordedHits.Last(i).Distance);
-        unsigned char const* intensity =
-            reinterpret_cast<unsigned char const*>(&RecordedHits.Last(i).Distance);    // this is a placeholder
-
-        for (auto b = 0; b < sizeof(float); b++)
+        float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
+        const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
+        float Intensity = 0;
+        if (RecordedHits.Last(i).PhysMaterial != nullptr)
         {
-            retValue.data[i * 5 + b] = x[b];
-            retValue.data[i * 5 + b + 4] = y[b];
-            retValue.data[i * 5 + b + 8] = z[b];
-            retValue.data[i * 5 + b + 12] = distance[b];
-            retValue.data[i * 5 + b + 16] = intensity[b];
+            // retroreflective material
+            if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
+            {
+                Intensity = IntensityScale * IntensityReflective;
+            }
+            // non-reflective material
+            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
+            {
+                Intensity = IntensityScale * IntensityNonReflective;
+            }
+            // reflective material
+            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
+            {
+                FVector HitSurfaceNormal = RecordedHits.Last(i).Normal;
+                FVector RayDirection = RecordedHits.Last(i).TraceEnd - RecordedHits.Last(i).TraceStart;
+                RayDirection.Normalize();
+
+                // the dot product for this should always be between 0 and 1
+                const float UnnormalizedIntensity =
+                    FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
+                                                              FVector::DotProduct(HitSurfaceNormal, -RayDirection),
+                                 IntensityNonReflective,
+                                 IntensityReflective);
+                check(UnnormalizedIntensity >= IntensityNonReflective);
+                check(UnnormalizedIntensity <= IntensityReflective);
+                Intensity = IntensityScale * UnnormalizedIntensity;
+            }
         }
+        else
+        {
+            Intensity = 0;//std::numeric_limits<float>::quiet_NaN();
+        }
+
+        //FVector Pos = RecordedHits.Last(i).TraceEnd * .01f;
+        FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
+        memcpy(&retValue.data[i * 4 * 5], &Pos.X, 4);
+        memcpy(&retValue.data[i * 4 * 5 + 4], &Pos.Y, 4);
+        memcpy(&retValue.data[i * 4 * 5 + 8], &Pos.Z, 4);
+        memcpy(&retValue.data[i * 4 * 5 + 12], &Distance, 4);
+        memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);    // this needs to change to intensities
     }
 
     retValue.is_dense = true;
