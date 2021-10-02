@@ -175,6 +175,9 @@ void URobotVehicleMovementComponent::InitOdom()
     InitialTransform.SetTranslation(PawnOwner->GetActorLocation());
     InitialTransform.SetRotation(FQuat(PawnOwner->GetActorRotation()));
 
+    LastLocation = InitialTransform.GetTranslation();
+	LastOrientation = InitialTransform.GetRotation();
+
     // todo temporary hardcoded
     OdomData.pose_covariance.Init(0, 36);
     OdomData.pose_covariance[0] = 1e-05f;
@@ -214,9 +217,19 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     OdomData.pose_pose_position_z = Pos.Z;
     OdomData.pose_pose_orientation = FQuat(PawnOwner->GetActorRotation() - InitialTransform.GetRotation().Rotator());
 
+    // compute velocities values with real position and orientation of robot
+    FQuat CurrentOrientation = FQuat(PawnOwner->GetActorRotation() - InitialTransform.GetRotation().Rotator());
+	FQuat DeltaQ = CurrentOrientation * LastOrientation.Inverse();
+    FVector NewAngularVelocity = FMath::DegreesToRadians( DeltaQ.Euler() ) / DeltaTime;
+
+    FVector NewVelocity = OdomData.pose_pose_orientation.UnrotateVector( Pos-LastLocation ) / DeltaTime;
+
+	LastOrientation = CurrentOrientation;
+    LastLocation = Pos;
+
     // velocity
-    OdomData.twist_twist_linear = Velocity;
-    OdomData.twist_twist_angular = FMath::DegreesToRadians(AngularVelocity);
+    OdomData.twist_twist_linear = NewVelocity;
+    OdomData.twist_twist_angular = NewAngularVelocity;
 }
 
 void URobotVehicleMovementComponent::TickComponent(float DeltaTime,

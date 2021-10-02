@@ -23,6 +23,10 @@ private:
     UPROPERTY(Transient)
     FQuat DesiredRotation;
 
+    // for manual computation of linear and angular velocities for odometry 
+    FQuat LastOrientation;
+    FVector LastLocation;
+
     // For Elevator management
     AActor* MovingPlatform = nullptr;    // The platform below the robot
     FVector LastPlatformLocation;
