@@ -39,13 +39,50 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
         LastPlatformLocation = FVector(CurrentPlatformLocation);
     }
 
+
+
+    // if testing collisions :
+    // should test once with the desired motion, to check for blocking collisions, and once again after motion by contact points modification (if some modifications!)
+    // if collision detected, need to check actions possible : stop motion (if static object or object mass >> vehicle mass), reduce motion (if movable object and object mass ~ vehicle mass), ignore ?
+    /*
+    bool GetWorld()->ComponentOverlapMultiByChannel(
+                                                    TArray< struct FOverlapResult >& O...,
+                                                    const UPrimitiveComponent* Pri...,
+                                                    const FVector& Pos,
+                                                    const FQuat& Rot,
+                                                    ECollisionChannel TraceChannel,
+                                                    const FComponentQueryParams& Param...,
+                                                    const FCollisionObjectQueryParams&...
+                                                    );
+
+    bool GetWorld()->ComponentSweepMulti(
+                                        TArray< struct FHitResult >& OutHi...,
+                                        UPrimitiveComponent* PrimComp,
+                                        const FVector& Start,
+                                        const FVector& End,
+                                        const FQuat& Rot,
+                                        const FComponentQueryParams& Param...
+                                    );
+
+    bool GetWorld()->SweepSingleByChannel(
+                                        FHitResult& OutHit,
+                                        const FVector& Start,
+                                        const FVector& End,
+                                        const FQuat& Rot,
+                                        ECollisionChannel TraceChannel,
+                                        const FCollisionShape& CollisionSh...,
+                                        const FCollisionQueryParams& Param...,
+                                        const FCollisionResponseParams& Re...
+                                    );
+    */
+
     FHitResult Hit;
     SafeMoveUpdatedComponent(DesiredMovement, DesiredRotation, true, Hit);
 
     // If we bumped into something, try to slide along it
     if (Hit.IsValidBlockingHit())
     {
-        // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement : BlockingHit") );
+        UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement -> BlockingHit - Hit.normal : %s"), *Hit.Normal.ToString() );
         SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
     }
 
@@ -109,8 +146,6 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
                 Hit.ImpactPoint = Contact->GetComponentLocation() - FVector(0., 0., FallingSpeed * DeltaTime);
                 Hit.Distance = RayOffsetUp + FallingSpeed * DeltaTime;
             }
-            // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Impact Point = %f %f %f"),
-            // Hit.ImpactPoint.X, Hit.ImpactPoint.Y, Hit.ImpactPoint.Z );
 
             // keep only the 3 contacts with shortest distances
             if (NbContact < 3)
@@ -222,6 +257,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
 	FQuat DeltaQ = CurrentOrientation * LastOrientation.Inverse();
     FVector NewAngularVelocity = FMath::DegreesToRadians( DeltaQ.Euler() ) / DeltaTime;
 
+    // linear velocity is expressed in robot local coordinates, taking into account the robot rotation
     FVector NewVelocity = OdomData.pose_pose_orientation.UnrotateVector( Pos-LastLocation ) / DeltaTime;
 
 	LastOrientation = CurrentOrientation;
