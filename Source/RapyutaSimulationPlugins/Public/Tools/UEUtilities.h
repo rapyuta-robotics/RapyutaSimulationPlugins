@@ -72,7 +72,7 @@ namespace ConversionUtils
         Output.pose_pose_orientation = QuatUEToROS(Output.pose_pose_orientation);
 
         Output.twist_twist_linear = VectorUEToROS(Output.twist_twist_linear);
-        Output.twist_twist_angular = VectorUEToROS(Output.twist_twist_angular);
+        Output.twist_twist_angular = RotationUEToROS(Output.twist_twist_angular);
 
         return Output;
     }
@@ -142,7 +142,7 @@ namespace ConversionUtils
         Output.pose_pose_orientation = QuatROSToUE(Output.pose_pose_orientation);
 
         Output.twist_twist_linear = VectorROSToUE(Output.twist_twist_linear);
-        Output.twist_twist_angular = VectorROSToUE(Output.twist_twist_angular);
+        Output.twist_twist_angular = RotationROSToUE(Output.twist_twist_angular);
 
         return Output;
     }
