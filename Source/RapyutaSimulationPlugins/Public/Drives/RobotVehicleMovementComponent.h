@@ -59,8 +59,11 @@ public:
     float RayOffsetUp = 10.;    // Ray start Z offset. Value must be > possible penetration of objects in contact point, in one tick
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float RayOffsetDown = 20.;    // Ray end Z offset
+    float RayOffsetDown = 20.;  // Ray end Z offset
     // Rays go from ContactPoint+RayOffsetUp to ContactPoint-RayOffsetDown
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool FollowFloor = true;    // to activate/deactivate floor checks to stick the robot on its surface below
 
     UFUNCTION(BlueprintCallable)
     FTransform GetOdomTF();
