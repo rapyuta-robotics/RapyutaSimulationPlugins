@@ -382,13 +382,12 @@ FROSPointCloud2 ASensorLidar3D::GetROS2Data()
             Intensity = 0;//std::numeric_limits<float>::quiet_NaN();
         }
 
-        //FVector Pos = RecordedHits.Last(i).TraceEnd * .01f;
         FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
         memcpy(&retValue.data[i * 4 * 5], &Pos.X, 4);
         memcpy(&retValue.data[i * 4 * 5 + 4], &Pos.Y, 4);
         memcpy(&retValue.data[i * 4 * 5 + 8], &Pos.Z, 4);
         memcpy(&retValue.data[i * 4 * 5 + 12], &Distance, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);    // this needs to change to intensities
+        memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);
     }
 
     retValue.is_dense = true;
