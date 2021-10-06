@@ -140,10 +140,14 @@ bool ASimulationState::ReferenceFrameToInertiaFrame(const FString& InReferenceFr
         AActor* ref = Entities[InReferenceFrame];
         FVector refPos = ref->GetActorLocation();
         FQuat refQuat = ref->GetActorQuat();
-        OutPositionX = refPos.X + OutPositionX * 100.;
-        OutPositionY = refPos.Y + OutPositionY * 100.;
-        OutPositionZ = refPos.Z + OutPositionZ * 100.;
+        FVector OutputVec = FVector(OutPositionX, OutPositionY, OutPositionZ);
+        
+        OutputVec = refQuat.RotateVector(OutputVec);
+        OutPositionX = refPos.X + OutputVec.X * 100.;
+        OutPositionY = refPos.Y + OutputVec.Y * 100.;
+        OutPositionZ = refPos.Z + OutputVec.Z * 100.;
         OutOrientation *= refQuat;
+        
     }
     else
     {
