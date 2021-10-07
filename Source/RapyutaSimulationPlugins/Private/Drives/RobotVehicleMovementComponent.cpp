@@ -70,12 +70,6 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
         InitOdom();
     }
 
-    // noise is cumulative and gaussian
-    // need to track previous real and estimated position
-    // currPos - previousRealPos + previousEstimatedPos
-    // same for rot
-    // 2 location: DifferentialDriveComponent, RobotVehicleMovementComponent
-
     // time
     float TimeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
     OdomData.header_stamp_sec = static_cast<int32>(TimeNow);
@@ -87,14 +81,13 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     FQuat PreviousEstimatedRot = OdomData.pose_pose_orientation;
 
     // position
-    FVector Pos = PawnOwner->GetActorLocation() + FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), GaussianRNGPosition(Gen));
+    FVector Pos = PawnOwner->GetActorLocation() + WithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), GaussianRNGPosition(Gen));
     PreviousTransform.SetTranslation(Pos);
     Pos += PreviousEstimatedPos - PreviousTransform.GetTranslation() - InitialTransform.GetTranslation();
 
-    FQuat Rot = FQuat(UKismetMathLibrary::ComposeRotators(PawnOwner->GetActorRotation(), FRotator(GaussianRNGRotation(Gen), GaussianRNGRotation(Gen), GaussianRNGRotation(Gen))));
+    FQuat Rot = WithNoise ? FQuat(UKismetMathLibrary::ComposeRotators(PawnOwner->GetActorRotation(), FRotator(GaussianRNGRotation(Gen), GaussianRNGRotation(Gen), GaussianRNGRotation(Gen)))) : PawnOwner->GetActorRotation();
     PreviousTransform.SetRotation(Rot);
     Rot = InitialTransform.GetRotation().Inverse() * PreviousEstimatedRot * PreviousTransform.GetRotation().Inverse() * Rot;
-
 
     OdomData.pose_pose_position_x = Pos.X;
     OdomData.pose_pose_position_y = Pos.Y;
