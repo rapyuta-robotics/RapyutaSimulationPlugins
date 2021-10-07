@@ -22,6 +22,7 @@ private:
 	FQuat DesiredRotation;
 
 public:
+	URobotVehicleMovementComponent();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
 	FVector AngularVelocity;
@@ -49,6 +50,30 @@ protected:
 	virtual void UpdateMovement(float DeltaTime);
 	virtual void UpdateOdom(float DeltaTime);
 	bool IsOdomInitialized = false;
+
+	UPROPERTY(EditAnywhere)
+	FTransform PreviousTransform;
+
+
+	std::random_device Rng;
+	std::mt19937 Gen;
+	std::normal_distribution<> GaussianRNGPosition;
+	std::normal_distribution<> GaussianRNGRotation;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float NoiseMeanPos = 0.f;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float NoiseVariancePos = 1.f;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float NoiseMeanRot = 0.f;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float NoiseVarianceRot = 5.f;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    bool WithNoise = true;
 	
 public:
 

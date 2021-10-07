@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <random>
+
 #include "CoreMinimal.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 
@@ -19,7 +21,7 @@ class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponent : public URobotVe
 public:
 	UDifferentialDriveComponent();
 	virtual void UpdateMovement(float DeltaTime) override;
-	virtual void UpdateOdom(float DeltaTime) override;
+	//virtual void UpdateOdom(float DeltaTime) override;
 	
 	UFUNCTION(BlueprintCallable)
 	void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);
@@ -45,8 +47,5 @@ public:
 	float MaxForce = 1000; //todo get data from physics constraints
 
 private:
-	float WheelPerimeter = 6.28f;;
-
-
-	
+	float WheelPerimeter = 6.28f;
 };

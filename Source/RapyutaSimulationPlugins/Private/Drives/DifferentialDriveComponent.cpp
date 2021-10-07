@@ -53,35 +53,41 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
     }
 }
 
-void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
-{
-    if (!IsOdomInitialized)
-    {
-        InitOdom();
-    }
+// void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
+// {
+//     if (!IsOdomInitialized)
+//     {
+//         InitOdom();
+//     }
 
-    //prev data
-    FVector PosPrev = FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
-    FQuat RotPrev = OdomData.pose_pose_orientation;
+//     // noise is cumulative and gaussian
+//     // need to track previous real and estimated position
+//     // currPos - previousRealPos + previousEstimatedPos
+//     // same for rot
+//     // 2 location: DifferentialDriveComponent, RobotVehicleMovementComponent
 
-    // time
-    float TimeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
-    OdomData.header_stamp_sec = static_cast<int32>(TimeNow);
-    uint64 ns = (uint64)(TimeNow * 1e+09f);
-    OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
+//     //prev data
+//     FVector PosPrev = FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
+//     FQuat RotPrev = OdomData.pose_pose_orientation;
 
-    // position
-    FVector Pos = PawnOwner->GetActorLocation() - InitialTransform.GetTranslation();
+//     // time
+//     float TimeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
+//     OdomData.header_stamp_sec = static_cast<int32>(TimeNow);
+//     uint64 ns = (uint64)(TimeNow * 1e+09f);
+//     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
-    OdomData.pose_pose_position_x = Pos.X;
-    OdomData.pose_pose_position_y = Pos.Y;
-    OdomData.pose_pose_position_z = Pos.Z;
-    OdomData.pose_pose_orientation = FQuat(PawnOwner->GetActorRotation() - InitialTransform.GetRotation().Rotator());
+//     // position
+//     FVector Pos = PawnOwner->GetActorLocation() - InitialTransform.GetTranslation();
 
-    // velocity
-    OdomData.twist_twist_linear = (Pos - PosPrev)/DeltaTime;
-    OdomData.twist_twist_angular = FMath::DegreesToRadians(OdomData.pose_pose_orientation.Euler() - RotPrev.Euler())/DeltaTime;
-}
+//     OdomData.pose_pose_position_x = Pos.X;
+//     OdomData.pose_pose_position_y = Pos.Y;
+//     OdomData.pose_pose_position_z = Pos.Z;
+//     OdomData.pose_pose_orientation = FQuat(PawnOwner->GetActorRotation() - InitialTransform.GetRotation().Rotator());
+
+//     // velocity
+//     OdomData.twist_twist_linear = (Pos - PosPrev)/DeltaTime;
+//     OdomData.twist_twist_angular = FMath::DegreesToRadians(OdomData.pose_pose_orientation.Euler() - RotPrev.Euler())/DeltaTime;
+// }
 
 
 void UDifferentialDriveComponent::InitMovementComponent()

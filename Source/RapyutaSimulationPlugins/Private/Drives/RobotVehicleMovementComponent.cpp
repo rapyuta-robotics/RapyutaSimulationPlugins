@@ -2,8 +2,16 @@
 
 #include "Drives/RobotVehicleMovementComponent.h"
 
+#include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+
+URobotVehicleMovementComponent::URobotVehicleMovementComponent()
+{
+    Gen = std::mt19937{Rng()};
+    GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
+    GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
+}
 
 void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
 {
@@ -33,6 +41,8 @@ void URobotVehicleMovementComponent::InitOdom()
     InitialTransform.SetTranslation(PawnOwner->GetActorLocation());
     InitialTransform.SetRotation(FQuat(PawnOwner->GetActorRotation()));
 
+    PreviousTransform = InitialTransform;
+
     // todo temporary hardcoded
     OdomData.pose_covariance.Init(0, 36);
     OdomData.pose_covariance[0] = 1e-05f;
@@ -59,22 +69,41 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     {
         InitOdom();
     }
+
+    // noise is cumulative and gaussian
+    // need to track previous real and estimated position
+    // currPos - previousRealPos + previousEstimatedPos
+    // same for rot
+    // 2 location: DifferentialDriveComponent, RobotVehicleMovementComponent
+
     // time
     float TimeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
     OdomData.header_stamp_sec = static_cast<int32>(TimeNow);
     uint64 ns = (uint64)(TimeNow * 1e+09f);
     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
+    // previous estimated data
+    FVector PreviousEstimatedPos = FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
+    FQuat PreviousEstimatedRot = OdomData.pose_pose_orientation;
+
     // position
-    FVector Pos = PawnOwner->GetActorLocation() - InitialTransform.GetTranslation();
+    FVector Pos = PawnOwner->GetActorLocation() + FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), GaussianRNGPosition(Gen));
+    PreviousTransform.SetTranslation(Pos);
+    Pos += PreviousEstimatedPos - PreviousTransform.GetTranslation() - InitialTransform.GetTranslation();
+
+    FQuat Rot = FQuat(UKismetMathLibrary::ComposeRotators(PawnOwner->GetActorRotation(), FRotator(GaussianRNGRotation(Gen), GaussianRNGRotation(Gen), GaussianRNGRotation(Gen))));
+    PreviousTransform.SetRotation(Rot);
+    Rot = InitialTransform.GetRotation().Inverse() * PreviousEstimatedRot * PreviousTransform.GetRotation().Inverse() * Rot;
+
+
     OdomData.pose_pose_position_x = Pos.X;
     OdomData.pose_pose_position_y = Pos.Y;
     OdomData.pose_pose_position_z = Pos.Z;
-    OdomData.pose_pose_orientation = FQuat(PawnOwner->GetActorRotation() - InitialTransform.GetRotation().Rotator());
+    OdomData.pose_pose_orientation = Rot;
 
     // velocity
-    OdomData.twist_twist_linear = Velocity;
-    OdomData.twist_twist_angular = FMath::DegreesToRadians(AngularVelocity);
+    OdomData.twist_twist_linear = (Pos - PreviousEstimatedPos)/DeltaTime;
+    OdomData.twist_twist_angular = FMath::DegreesToRadians((OdomData.pose_pose_orientation * PreviousEstimatedRot.Inverse()).Euler())/DeltaTime;
 }
 
 void URobotVehicleMovementComponent::TickComponent(float DeltaTime,
