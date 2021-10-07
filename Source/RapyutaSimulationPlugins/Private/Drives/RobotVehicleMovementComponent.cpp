@@ -88,6 +88,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     FQuat Rot = WithNoise ? FQuat(UKismetMathLibrary::ComposeRotators(PawnOwner->GetActorRotation(), FRotator(GaussianRNGRotation(Gen), GaussianRNGRotation(Gen), GaussianRNGRotation(Gen)))) : PawnOwner->GetActorRotation();
     PreviousTransform.SetRotation(Rot);
     Rot = InitialTransform.GetRotation().Inverse() * PreviousEstimatedRot * PreviousTransform.GetRotation().Inverse() * Rot;
+    Rot.Normalize();
 
     OdomData.pose_pose_position_x = Pos.X;
     OdomData.pose_pose_position_y = Pos.Y;
@@ -96,7 +97,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
 
     // velocity
     OdomData.twist_twist_linear = (Pos - PreviousEstimatedPos)/DeltaTime;
-    OdomData.twist_twist_angular = FMath::DegreesToRadians((OdomData.pose_pose_orientation * PreviousEstimatedRot.Inverse()).Euler())/DeltaTime;
+    OdomData.twist_twist_angular = FMath::DegreesToRadians((OdomData.pose_pose_orientation * PreviousEstimatedRot.Inverse()).GetNormalized().Euler())/DeltaTime;
 }
 
 void URobotVehicleMovementComponent::TickComponent(float DeltaTime,
