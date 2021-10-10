@@ -103,8 +103,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     OdomData.pose_pose_position_z = Pos.Z;
     OdomData.pose_pose_orientation = Rot;
 
-    // velocity - are signs correct?
-    OdomData.twist_twist_linear = (Pos - PreviousEstimatedPos)/DeltaTime;
+    OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector( Pos-PreviousEstimatedPos ) / DeltaTime;
     OdomData.twist_twist_angular = FMath::DegreesToRadians((PreviousEstimatedRot * Rot.Inverse()).GetNormalized().Euler())/DeltaTime;
 
     // UE_LOG(LogTemp, Warning, TEXT("Odometry:"));
