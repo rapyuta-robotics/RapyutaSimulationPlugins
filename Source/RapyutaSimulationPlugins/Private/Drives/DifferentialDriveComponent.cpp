@@ -71,8 +71,8 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // this part is based on gazebo's diff drive:
     // https://github.com/ros-simulation/gazebo_ros_pkgs/blob/231a7219b36b8a6cdd100b59f66a3df2955df787/gazebo_plugins/src/gazebo_ros_diff_drive.cpp
     // Book: Sigwart 2011 Autonomous Mobile Robots page:337
-    float sl = (Velocity.X + AngularVelocity.Z * WheelSeparationHalf) * DeltaTime;
-    float sr = (Velocity.X - AngularVelocity.Z * WheelSeparationHalf) * DeltaTime;
+    float sl = (Velocity.X + AngularVelocity.Z * WheelSeparationHalf + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
+    float sr = (Velocity.X - AngularVelocity.Z * WheelSeparationHalf + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
     float ssum = sl + sr;
 
     float sdiff = sr - sl;
