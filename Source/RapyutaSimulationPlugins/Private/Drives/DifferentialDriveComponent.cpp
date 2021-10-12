@@ -52,6 +52,8 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 
 void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 {
+    // need to add noise!
+    
     if (!IsOdomInitialized)
     {
         InitOdom();
@@ -69,15 +71,15 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // this part is based on gazebo's diff drive:
     // https://github.com/ros-simulation/gazebo_ros_pkgs/blob/231a7219b36b8a6cdd100b59f66a3df2955df787/gazebo_plugins/src/gazebo_ros_diff_drive.cpp
     // Book: Sigwart 2011 Autonomous Mobile Robots page:337
-    float sl = (Velocity.X + AngularVelocity.Z * WheelSeparationHalf) * WheelRadius * DeltaTime;
-    float sr = (Velocity.X - AngularVelocity.Z * WheelSeparationHalf) * WheelRadius * DeltaTime;
+    float sl = (Velocity.X + AngularVelocity.Z * WheelSeparationHalf) * DeltaTime;
+    float sr = (Velocity.X - AngularVelocity.Z * WheelSeparationHalf) * DeltaTime;
     float ssum = sl + sr;
 
     float sdiff = sr - sl;
 
-    float dx = ssum / 2.f * cos(PoseEncoderTheta + sdiff / (4.f * WheelSeparationHalf));
-    float dy = ssum / 2.f * sin(PoseEncoderTheta + sdiff / (4.f * WheelSeparationHalf));
-    float dtheta = sdiff / (2.f * WheelSeparationHalf);
+    float dx = ssum * .5f * cos(PoseEncoderTheta + sdiff / (4.f * WheelSeparationHalf));
+    float dy = ssum * .5f * sin(PoseEncoderTheta + sdiff / (4.f * WheelSeparationHalf));
+    float dtheta = -sdiff / (2.f * WheelSeparationHalf);
 
     PoseEncoderX += dx;
     PoseEncoderY += dy;
@@ -86,7 +88,8 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     float w = dtheta / DeltaTime;
     float v = sqrt(dx * dx + dy * dy) / DeltaTime;
 
-    FQuat qt(FRotator(0, PoseEncoderTheta, 0));
+    // FRotator is in degrees, while PoseEncoderTheta is in Radians
+    FQuat qt(FRotator(0, PoseEncoderTheta / 3.14159265f * 180.f, 0));
 
     OdomData.pose_pose_position_x = PoseEncoderX;
     OdomData.pose_pose_position_y = PoseEncoderY;
@@ -102,9 +105,11 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     OdomData.twist_twist_linear.Y = 0;
     OdomData.twist_twist_linear.Z = 0;
 
+    // UE_LOG(LogTemp, Warning, TEXT("Input:"));
+    // UE_LOG(LogTemp, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
     // UE_LOG(LogTemp, Warning, TEXT("Odometry:"));
-    // UE_LOG(LogTemp, Warning, TEXT("\tOdom Positon:\t\t\t\t%f %f"), PoseEncoderX, PoseEncoderY);
-    // UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s"), *OdomData.pose_pose_orientation.ToString());
+    // UE_LOG(LogTemp, Warning, TEXT("\tOdom Positon:\t\t\t\t%f %f from %f %f (%f)"), PoseEncoderX, PoseEncoderY, dx, dy, Velocity.X);
+    // UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s (%f)"), *OdomData.pose_pose_orientation.ToString(), PoseEncoderTheta);
     // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.twist_twist_linear.ToString(), OdomData.twist_twist_linear.Size());
     // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"), *OdomData.twist_twist_angular.ToString());
 }

@@ -117,6 +117,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     // UE_LOG(LogTemp, Warning, TEXT("\tPrevious Orientation:\t\t%s"), *PreviousTransform.GetRotation().Rotator().ToString());
     // UE_LOG(LogTemp, Warning, TEXT("\tPrevious Estimated Orientation:\t%s"), *PreviousEstimatedRot.Rotator().ToString());
     // UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s"), *Rot.Rotator().ToString());
+    // UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s"), *Rot.ToString());
     // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.twist_twist_linear.ToString(), OdomData.twist_twist_linear.Size());
     // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"), *OdomData.twist_twist_angular.ToString());
 }
