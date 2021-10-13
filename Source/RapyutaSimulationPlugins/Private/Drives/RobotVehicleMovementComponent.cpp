@@ -9,6 +9,11 @@
 URobotVehicleMovementComponent::URobotVehicleMovementComponent()
 {
     Gen = std::mt19937{Rng()};
+}
+
+void URobotVehicleMovementComponent::BeginPlay()
+{
+    Super::BeginPlay();
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 }

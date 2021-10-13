@@ -46,6 +46,7 @@ public:
 	virtual void InitMovementComponent();
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void InitOdom();
 	virtual void UpdateMovement(float DeltaTime);
 	virtual void UpdateOdom(float DeltaTime);
