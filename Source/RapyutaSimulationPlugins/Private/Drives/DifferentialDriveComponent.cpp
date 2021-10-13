@@ -68,6 +68,9 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     uint64 ns = (uint64)(TimeNow * 1e+09f);
     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
+	OdomData.header_frame_id = FString("odom");
+	OdomData.child_frame_id = FString("base_footprint");
+
     // this part is based on gazebo's diff drive:
     // https://github.com/ros-simulation/gazebo_ros_pkgs/blob/231a7219b36b8a6cdd100b59f66a3df2955df787/gazebo_plugins/src/gazebo_ros_diff_drive.cpp
     // Book: Sigwart 2011 Autonomous Mobile Robots page:337
@@ -89,7 +92,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     float v = sqrt(dx * dx + dy * dy) / DeltaTime;
 
     // FRotator is in degrees, while PoseEncoderTheta is in Radians
-    FQuat qt(FRotator(0, PoseEncoderTheta / 3.14159265f * 180.f, 0));
+    FQuat qt(FRotator(0, FMath::RadiansToDegrees(PoseEncoderTheta), 0));
 
     OdomData.pose_pose_position_x = PoseEncoderX;
     OdomData.pose_pose_position_y = PoseEncoderY;
@@ -104,6 +107,22 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     OdomData.twist_twist_linear.X = v;
     OdomData.twist_twist_linear.Y = 0;
     OdomData.twist_twist_linear.Z = 0;
+
+
+	OdomData.pose_covariance.Init(0,36);
+	OdomData.pose_covariance[0] = 0.01;
+	OdomData.pose_covariance[7] = 0.01;
+	OdomData.pose_covariance[14] = 1000000000000.0;
+	OdomData.pose_covariance[21] = 1000000000000.0;
+	OdomData.pose_covariance[28] = 1000000000000.0;
+	OdomData.pose_covariance[35] = 0.01;
+	OdomData.twist_covariance.Init(0,36);
+	OdomData.twist_covariance[0] = 0.01;
+	OdomData.twist_covariance[7] = 0.01;
+	OdomData.twist_covariance[14] = 1000000000000.0;
+	OdomData.twist_covariance[21] = 1000000000000.0;
+	OdomData.twist_covariance[28] = 1000000000000.0;
+	OdomData.twist_covariance[35] = 0.01;
 
     // UE_LOG(LogTemp, Warning, TEXT("Input:"));
     // UE_LOG(LogTemp, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
