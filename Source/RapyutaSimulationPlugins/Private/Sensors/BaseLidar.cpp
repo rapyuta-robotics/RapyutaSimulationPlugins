@@ -8,8 +8,6 @@
 ABaseLidar::ABaseLidar()
 {
     Gen = std::mt19937{Rng()};
-    GaussianRNGPosition = std::normal_distribution<>{PositionalNoiseMean, PositionalNoiseVariance};
-    GaussianRNGIntensity = std::normal_distribution<>{IntensityNoiseMean, IntensityNoiseVariance};
 
     PrimaryActorTick.bCanEverTick = true;
 
@@ -22,6 +20,8 @@ void ABaseLidar::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    GaussianRNGPosition = std::normal_distribution<>{PositionalNoiseMean, PositionalNoiseVariance};
+    GaussianRNGIntensity = std::normal_distribution<>{IntensityNoiseMean, IntensityNoiseVariance};
 }
 
 // Called every frame
