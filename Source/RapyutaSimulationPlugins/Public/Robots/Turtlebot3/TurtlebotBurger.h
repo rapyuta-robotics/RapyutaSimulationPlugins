@@ -77,6 +77,9 @@ protected:
 
 	UFUNCTION()
 	void SetupConstraintsAndPhysics();
+
+	UFUNCTION()
+	void SetupWheels();
 	
 	
 };

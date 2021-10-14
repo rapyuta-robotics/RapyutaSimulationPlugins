@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <random>
+
 #include "CoreMinimal.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 
@@ -45,8 +47,9 @@ public:
 	float MaxForce = 1000; //todo get data from physics constraints
 
 private:
-	float WheelPerimeter = 6.28f;;
+	float WheelPerimeter = 6.28f;
 
-
-	
+	float PoseEncoderX = 0;
+	float PoseEncoderY = 0;
+	float PoseEncoderTheta = 0;
 };
