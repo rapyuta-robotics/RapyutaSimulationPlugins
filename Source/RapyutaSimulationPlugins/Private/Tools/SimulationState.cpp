@@ -1,9 +1,11 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/SimulationState.h"
-
+#include "Tools/ROS2SpawnableActor.h"
+#include "Tools/ROS2Spawnable.h"
 // UE
 #include "EngineUtils.h"
+#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
 // rclUE
@@ -218,12 +220,55 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* Service)
 
 void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
 {
+//    UROS2SpawnEntitySrv* SpawnEntityService = Cast<UROS2SpawnEntitySrv>(Service);
+//
+//    FROSSpawnEntity_Request Request;
+//    SpawnEntityService->GetRequest(Request);
+//
+//    UE_LOG(LogTemp, Warning, TEXT("SpawnEntityService called"));
+//
+//    FROSSpawnEntity_Response Response;
+//    Response.success = ReferenceFrameToInertiaFrame(Request.state_reference_frame,
+//                                                    Request.state_pose_position_x,
+//                                                    Request.state_pose_position_y,
+//                                                    Request.state_pose_position_z,
+//                                                    Request.state_pose_orientation);
+//    if (Response.success)
+//    {
+//        if (SpawnableEntities.Contains(Request.xml))
+//        {
+//            // todo: check data.name is valid
+//            // todo: check same name object is exists or not.
+//
+//            UE_LOG(LogTemp, Warning, TEXT("Spawning %s"), *Request.xml);
+//            Response.success = true;
+//
+//            FActorSpawnParameters SpawnParameters;
+//            SpawnParameters.Name = FName(Request.state_name);
+//            FRotator Rotator = Request.state_pose_orientation.Rotator();
+//            FVector Position(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
+//            AActor* NewEntity = GetWorld()->SpawnActor(SpawnableEntities[Request.xml], &Position, &Rotator, SpawnParameters);
+//            AddEntity(NewEntity);
+//        }
+//        else
+//        {
+//            UE_LOG(LogTemp, Warning, TEXT("Entity %s not found"), *Request.xml);
+//        }
+//    }
+//
+//    SpawnEntityService->SetResponse(Response);
+    SpawnEntitySrvDeferred(Service);
+//    InitializeSpawnedEntitySrv(Service);
+}
+
+void ASimulationState::SpawnEntitySrvDeferred(UROS2GenericSrv* Service)
+{
     UROS2SpawnEntitySrv* SpawnEntityService = Cast<UROS2SpawnEntitySrv>(Service);
 
     FROSSpawnEntity_Request Request;
     SpawnEntityService->GetRequest(Request);
 
-    UE_LOG(LogTemp, Warning, TEXT("SpawnEntityService called"));
+    UE_LOG(LogTemp, Warning, TEXT("SpawnEntityServiceDeferred called"));
 
     FROSSpawnEntity_Response Response;
     Response.success = ReferenceFrameToInertiaFrame(Request.state_reference_frame,
@@ -238,15 +283,26 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
             // todo: check data.name is valid
             // todo: check same name object is exists or not.
 
-            UE_LOG(LogTemp, Warning, TEXT("Spawning %s"), *Request.xml);
+            UE_LOG(LogTemp, Warning, TEXT("Spawning %s Deferred"), *Request.xml);
             Response.success = true;
 
             FActorSpawnParameters SpawnParameters;
             SpawnParameters.Name = FName(Request.state_name);
+
             FRotator Rotator = Request.state_pose_orientation.Rotator();
             FVector Position(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
-            AActor* NewEntity = GetWorld()->SpawnActor(SpawnableEntities[Request.xml], &Position, &Rotator, SpawnParameters);
+            FVector Scale(1, 1, 1);
+            FTransform Transform(Rotator, Position, Scale);
+
+            AActor* NewEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[Request.xml], Transform);
+            UROS2Spawnable* SpawnableComponent = NewObject<UROS2Spawnable>(NewEntity, FName("ROS2 Spawn Parameters"));
+            SpawnableComponent->RegisterComponent();
+            SpawnableComponent->InitializeParameters(Request);
+            NewEntity->AddInstanceComponent(SpawnableComponent);
+
+            UGameplayStatics::FinishSpawningActor(NewEntity, Transform);
             AddEntity(NewEntity);
+
         }
         else
         {
@@ -256,6 +312,7 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
 
     SpawnEntityService->SetResponse(Response);
 }
+
 
 void ASimulationState::DeleteEntitySrv(UROS2GenericSrv* Service)
 {
