@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ROS2Node.h"
-#include "Tools/ROS2SpawnableActor.h"
 
 #include "SimulationState.generated.h"
 
@@ -35,9 +34,6 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void SpawnEntitySrv(UROS2GenericSrv* Service);
-
-    UFUNCTION(BlueprintCallable)
-    void SpawnEntitySrvDeferred(UROS2GenericSrv* Service);
 
     UFUNCTION(BlueprintCallable)
     void DeleteEntitySrv(UROS2GenericSrv* Service);
