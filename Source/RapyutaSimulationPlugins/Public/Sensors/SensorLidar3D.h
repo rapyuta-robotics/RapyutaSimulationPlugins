@@ -27,6 +27,10 @@ public:
 
     void Scan() override;
 
+    void ScanMultiframe() override;
+
+    void DrawLidar() override;
+
     void LidarMessageUpdate(UROS2GenericMsg* TopicMessage) override;
     
     bool Visible(AActor* TargetActor) override;

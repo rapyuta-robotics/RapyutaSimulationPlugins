@@ -44,6 +44,16 @@ void ABaseLidar::Scan()
     checkNoEntry();
 }
 
+void ABaseLidar::ScanMultiframe()
+{
+    checkNoEntry();
+}
+
+void ABaseLidar::DrawLidar()
+{
+    checkNoEntry();
+}
+
 void ABaseLidar::LidarMessageUpdate(UROS2GenericMsg* TopicMessage)
 {
     checkNoEntry();
@@ -76,10 +86,12 @@ void ABaseLidar::GetData(TArray<FHitResult>& OutHits, float& OutTime)
     OutTime = TimeOfLastScan;
 }
 
-FLinearColor ABaseLidar::GetColorFromIntensity(const float Intensity)
+FLinearColor ABaseLidar::GetColorFromIntensity(const float Intensity, const float alpha)
 {
     float NormalizedIntensity = (Intensity - IntensityMin) / (IntensityMax - IntensityMin);
-    return InterpolateColor(NormalizedIntensity);
+    FLinearColor RetColor = InterpolateColor(NormalizedIntensity);
+    RetColor.A = alpha;
+    return RetColor;
 }
 
 FLinearColor ABaseLidar::InterpolateColor(float x)
