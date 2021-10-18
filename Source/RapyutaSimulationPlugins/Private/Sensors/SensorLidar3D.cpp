@@ -239,9 +239,12 @@ void ASensorLidar3D::DrawLidar()
             if (h.Actor != nullptr)
             {
                 float Distance = (MinRange * (h.Distance > 0) + h.Distance) * .01f;
+                
+                // coloring this way does not seem to work - looks as if CurrentBatch is constant over time
+                float alpha = 1;//(NSteps > 1) ? static_cast<float>((i/NSamplesPerStep + NSteps-1 - CurrentBatch) % NSteps) / static_cast<float>(NSteps) : 1;
+
                 if (h.PhysMaterial != nullptr)
                 {
-                    float alpha = 1;//(NSteps > 1) ? static_cast<float>((i/NSamplesPerStep + NSteps-1 - CurrentBatch) % NSteps) / static_cast<float>(NSteps) : 1;
 
                     // retroreflective material
                     if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
@@ -291,7 +294,7 @@ void ASensorLidar3D::DrawLidar()
                     // UE_LOG(LogTemp, Warning, TEXT("no physics material"));
                     // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
                     LineBatcher->DrawPoint(
-                        h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance)), 5, 10, dt);
+                        h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance), alpha), 5, 10, dt);
                 }
             }
             else if (ShowLidarRayMisses)
