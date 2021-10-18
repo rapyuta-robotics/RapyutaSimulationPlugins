@@ -88,9 +88,13 @@ void ABaseLidar::GetData(TArray<FHitResult>& OutHits, float& OutTime)
 
 FLinearColor ABaseLidar::GetColorFromIntensity(const float Intensity, const float alpha)
 {
+    // alpha doesn't seem to work with DrawPoints, so using alpha to change value (as in HSV)
     float NormalizedIntensity = (Intensity - IntensityMin) / (IntensityMax - IntensityMin);
     FLinearColor RetColor = InterpolateColor(NormalizedIntensity);
-    RetColor.A = alpha;
+    RetColor.R *= alpha;
+    RetColor.G *= alpha;
+    RetColor.B *= alpha;
+    //RetColor.A = alpha;
     return RetColor;
 }
 

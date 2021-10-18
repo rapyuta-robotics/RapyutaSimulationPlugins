@@ -232,8 +232,8 @@ void ASensorLidar3D::DrawLidar()
     ULineBatchComponent* const LineBatcher = GetWorld()->PersistentLineBatcher;
     if (LineBatcher != nullptr)
     {
+        // this can be maybe parallelized? a first trial with ParallelFor crashes - need to verify that LineBatchComponent is thread-safe
         for (int i=0; i<RecordedHits.Num(); i++)
-        //for (auto& h : RecordedHits)
         {
             auto& h = RecordedHits[i];
             if (h.Actor != nullptr)
@@ -241,7 +241,7 @@ void ASensorLidar3D::DrawLidar()
                 float Distance = (MinRange * (h.Distance > 0) + h.Distance) * .01f;
                 if (h.PhysMaterial != nullptr)
                 {
-                    float alpha = (NSteps > 1) ? static_cast<float>((static_cast<int32>(i/NSamplesPerStep) + NSteps - CurrentBatch) % NSteps) / static_cast<float>(NSteps) : 1;
+                    float alpha = 1;//(NSteps > 1) ? static_cast<float>((i/NSamplesPerStep + NSteps-1 - CurrentBatch) % NSteps) / static_cast<float>(NSteps) : 1;
 
                     // retroreflective material
                     if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
