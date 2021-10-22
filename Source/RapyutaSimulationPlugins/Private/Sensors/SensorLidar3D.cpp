@@ -421,53 +421,104 @@ FROSPointCloud2 ASensorLidar3D::GetROS2Data()
     retValue.row_step = sizeof(float) * 5 * NSamplesPerScan;
 
     retValue.data.Init(0, RecordedHits.Num() * sizeof(float) * 5);
-    for (auto i = 0; i < RecordedHits.Num(); i++)
-    {
-        float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
-        const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
-        float Intensity = 0;
-        if (RecordedHits.Last(i).PhysMaterial != nullptr)
+    ParallelFor(
+        RecordedHits.Num(),
+        [this,&retValue](int i)
         {
-            // retroreflective material
-            if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
+            float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
+            const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
+            float Intensity = 0;
+            if (RecordedHits.Last(i).PhysMaterial != nullptr)
             {
-                Intensity = IntensityScale * IntensityReflective;
-            }
-            // non-reflective material
-            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
-            {
-                Intensity = IntensityScale * IntensityNonReflective;
-            }
-            // reflective material
-            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
-            {
-                FVector HitSurfaceNormal = RecordedHits.Last(i).Normal;
-                FVector RayDirection = RecordedHits.Last(i).TraceEnd - RecordedHits.Last(i).TraceStart;
-                RayDirection.Normalize();
+                // retroreflective material
+                if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
+                {
+                    Intensity = IntensityScale * IntensityReflective;
+                }
+                // non-reflective material
+                else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
+                {
+                    Intensity = IntensityScale * IntensityNonReflective;
+                }
+                // reflective material
+                else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
+                {
+                    FVector HitSurfaceNormal = RecordedHits.Last(i).Normal;
+                    FVector RayDirection = RecordedHits.Last(i).TraceEnd - RecordedHits.Last(i).TraceStart;
+                    RayDirection.Normalize();
 
-                // the dot product for this should always be between 0 and 1
-                const float UnnormalizedIntensity =
-                    FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
-                                                              FVector::DotProduct(HitSurfaceNormal, -RayDirection),
-                                 IntensityNonReflective,
-                                 IntensityReflective);
-                check(UnnormalizedIntensity >= IntensityNonReflective);
-                check(UnnormalizedIntensity <= IntensityReflective);
-                Intensity = IntensityScale * UnnormalizedIntensity;
+                    // the dot product for this should always be between 0 and 1
+                    const float UnnormalizedIntensity =
+                        FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
+                                                                FVector::DotProduct(HitSurfaceNormal, -RayDirection),
+                                    IntensityNonReflective,
+                                    IntensityReflective);
+                    check(UnnormalizedIntensity >= IntensityNonReflective);
+                    check(UnnormalizedIntensity <= IntensityReflective);
+                    Intensity = IntensityScale * UnnormalizedIntensity;
+                }
             }
-        }
-        else
-        {
-            Intensity = 0;//std::numeric_limits<float>::quiet_NaN();
-        }
+            else
+            {
+                Intensity = 0;//std::numeric_limits<float>::quiet_NaN();
+            }
 
-        FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
-        memcpy(&retValue.data[i * 4 * 5], &Pos.X, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 4], &Pos.Y, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 8], &Pos.Z, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 12], &Distance, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);
-    }
+            FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
+            memcpy(&retValue.data[i * 4 * 5], &Pos.X, 4);
+            memcpy(&retValue.data[i * 4 * 5 + 4], &Pos.Y, 4);
+            memcpy(&retValue.data[i * 4 * 5 + 8], &Pos.Z, 4);
+            memcpy(&retValue.data[i * 4 * 5 + 12], &Distance, 4);
+            memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);
+        },
+        false
+    );
+    // for (auto i = 0; i < RecordedHits.Num(); i++)
+    // {
+    //     float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
+    //     const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
+    //     float Intensity = 0;
+    //     if (RecordedHits.Last(i).PhysMaterial != nullptr)
+    //     {
+    //         // retroreflective material
+    //         if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
+    //         {
+    //             Intensity = IntensityScale * IntensityReflective;
+    //         }
+    //         // non-reflective material
+    //         else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
+    //         {
+    //             Intensity = IntensityScale * IntensityNonReflective;
+    //         }
+    //         // reflective material
+    //         else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
+    //         {
+    //             FVector HitSurfaceNormal = RecordedHits.Last(i).Normal;
+    //             FVector RayDirection = RecordedHits.Last(i).TraceEnd - RecordedHits.Last(i).TraceStart;
+    //             RayDirection.Normalize();
+
+    //             // the dot product for this should always be between 0 and 1
+    //             const float UnnormalizedIntensity =
+    //                 FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
+    //                                                           FVector::DotProduct(HitSurfaceNormal, -RayDirection),
+    //                              IntensityNonReflective,
+    //                              IntensityReflective);
+    //             check(UnnormalizedIntensity >= IntensityNonReflective);
+    //             check(UnnormalizedIntensity <= IntensityReflective);
+    //             Intensity = IntensityScale * UnnormalizedIntensity;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         Intensity = 0;//std::numeric_limits<float>::quiet_NaN();
+    //     }
+
+    //     FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
+    //     memcpy(&retValue.data[i * 4 * 5], &Pos.X, 4);
+    //     memcpy(&retValue.data[i * 4 * 5 + 4], &Pos.Y, 4);
+    //     memcpy(&retValue.data[i * 4 * 5 + 8], &Pos.Z, 4);
+    //     memcpy(&retValue.data[i * 4 * 5 + 12], &Distance, 4);
+    //     memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);
+    // }
 
     retValue.is_dense = true;
 
