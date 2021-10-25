@@ -14,13 +14,18 @@ ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) 
     PrimaryActorTick.bCanEverTick = true;
 
     Init();
- 
+}
+
+void ATurtlebotBurger::InitializeMoveComponent() 
+{
+    DifferentialDriveComponent = NewObject<UDifferentialDriveComponent>(this, TEXT("DifferentialDriveComponent"));
 }
 
 void ATurtlebotBurger::Init()
 {
     if (!IsInitialized)
     {
+        InitializeMoveComponent();
         Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
         LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
         WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));
@@ -56,8 +61,6 @@ void ATurtlebotBurger::SetupWheels()
 {
     if (IsInitialized)
     {
-        MoveComponent = CreateDefaultSubobject<UDifferentialDriveComponent>(TEXT("MoveComponent"));
-        UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(MoveComponent);
         DifferentialDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);
         DifferentialDriveComponent->SetPerimeter();
     }

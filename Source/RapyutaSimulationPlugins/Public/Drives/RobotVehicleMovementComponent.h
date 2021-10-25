@@ -1,7 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #pragma once
-
+#include <random>
 #include <Msgs/ROS2OdometryMsg.h>
 #include "CoreMinimal.h"
 #include "GameFramework/FloatingPawnMovement.h"
@@ -43,7 +43,7 @@ public:
 	FTransform GetOdomTF();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void InitMovementComponent();
+	virtual void Initialize(); 
 
 protected:
 	virtual void BeginPlay() override;

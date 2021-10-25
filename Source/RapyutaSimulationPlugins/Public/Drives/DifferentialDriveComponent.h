@@ -26,7 +26,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);
 
-	virtual void InitMovementComponent() override;
+	virtual void Initialize() override;
 
 	UFUNCTION(BlueprintCallable)
 	void SetPerimeter();

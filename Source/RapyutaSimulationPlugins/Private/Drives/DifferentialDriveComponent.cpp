@@ -144,9 +144,9 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"), *OdomData.twist_twist_angular.ToString());
 }
 
-void UDifferentialDriveComponent::InitMovementComponent()
+void UDifferentialDriveComponent::Initialize()
 {
-    Super::InitMovementComponent();
+    Super::Initialize();
 
     if (!IsValid(WheelLeft) || !IsValid(WheelRight))
     {

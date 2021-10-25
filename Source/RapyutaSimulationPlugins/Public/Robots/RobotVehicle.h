@@ -8,6 +8,7 @@
 
 #include "RobotVehicle.generated.h"
 
+class URobotVehicleMovementComponent;
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public APawn
 {
@@ -16,18 +17,19 @@ class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public APawn
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	URobotVehicleMovementComponent *MoveComponent;
+	URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
+	
+	virtual void InitializeMoveComponent();
 
 public:
-	ARobotVehicle(const FObjectInitializer& ObjectInitializer);
 
 	virtual void Tick(float DeltaSeconds) override;
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetLinearVel(FVector velocity);
+	virtual void SetLinearVel(const FVector& InLinearVelocity);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetAngularVel(FVector velocity);
+	virtual void SetAngularVel(const FVector& InAngularVelocity);
 
 protected:
 

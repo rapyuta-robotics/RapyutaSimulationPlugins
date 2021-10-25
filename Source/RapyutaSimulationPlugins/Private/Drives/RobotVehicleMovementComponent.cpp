@@ -155,7 +155,7 @@ FTransform URobotVehicleMovementComponent::GetOdomTF()
     return TF;
 }
 
-void URobotVehicleMovementComponent::InitMovementComponent()
-{
+void URobotVehicleMovementComponent::Initialize()
+{   
     InitOdom();
 }
