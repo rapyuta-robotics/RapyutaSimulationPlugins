@@ -1,65 +1,66 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #pragma once
-#include <random>
-#include <Msgs/ROS2OdometryMsg.h>
 #include "CoreMinimal.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
+
+#include <Msgs/ROS2OdometryMsg.h>
+
+#include <random>
+
 #include "RobotVehicleMovementComponent.generated.h"
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RCLUE_API URobotVehicleMovementComponent : public UPawnMovementComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 private:
+    UPROPERTY(Transient)
+    FVector DesiredMovement;
 
-	UPROPERTY(Transient)
-	FVector DesiredMovement;
-
-	UPROPERTY(Transient)
-	FQuat DesiredRotation;
+    UPROPERTY(Transient)
+    FQuat DesiredRotation;
 
 public:
-	URobotVehicleMovementComponent();
+    URobotVehicleMovementComponent();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
-	FVector AngularVelocity;
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
+    FVector AngularVelocity;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	FROSOdometry OdomData;
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    FROSOdometry OdomData;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString FrameId = TEXT("");
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString FrameId = TEXT("");
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString ChildFrameId = TEXT("");
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString ChildFrameId = TEXT("");
 
-	UPROPERTY(EditAnywhere)
-	FTransform InitialTransform;
+    UPROPERTY(EditAnywhere)
+    FTransform InitialTransform;
 
-	UFUNCTION(BlueprintCallable)
-	FTransform GetOdomTF();
+    UFUNCTION(BlueprintCallable)
+    FTransform GetOdomTF();
 
-	UFUNCTION(BlueprintCallable)
-	virtual void Initialize(); 
+    UFUNCTION(BlueprintCallable)
+    virtual void Initialize();
 
 protected:
-	virtual void BeginPlay() override;
-	virtual void InitOdom();
-	virtual void UpdateMovement(float DeltaTime);
-	virtual void UpdateOdom(float DeltaTime);
-	bool IsOdomInitialized = false;
+    virtual void BeginPlay() override;
+    virtual void InitOdom();
+    virtual void UpdateMovement(float DeltaTime);
+    virtual void UpdateOdom(float DeltaTime);
+    bool IsOdomInitialized = false;
 
-	UPROPERTY(EditAnywhere)
-	FTransform PreviousTransform;
+    UPROPERTY(EditAnywhere)
+    FTransform PreviousTransform;
 
-
-	std::random_device Rng;
-	std::mt19937 Gen;
-	std::normal_distribution<> GaussianRNGPosition;
-	std::normal_distribution<> GaussianRNGRotation;
+    std::random_device Rng;
+    std::mt19937 Gen;
+    std::normal_distribution<> GaussianRNGPosition;
+    std::normal_distribution<> GaussianRNGRotation;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     float NoiseMeanPos = 0.f;
@@ -75,8 +76,7 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     bool WithNoise = true;
-	
-public:
 
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+public:
+    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

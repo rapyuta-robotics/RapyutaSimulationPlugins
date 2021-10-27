@@ -1,6 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Robots/RobotVehicle.h"
+
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
@@ -19,12 +20,12 @@ void ARobotVehicle::Tick(float DeltaSeconds)
 void ARobotVehicle::SetLinearVel(const FVector& InLinearVelocity)
 {
     // We're assuming input is in meters, so convert to centimeters.
-    RobotVehicleMoveComponent->Velocity = InLinearVelocity; //0 
+    RobotVehicleMoveComponent->Velocity = InLinearVelocity;    // 0
 }
 
 void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
 {
-    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity; 
+    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
 }
 
 void ARobotVehicle::BeginPlay()
