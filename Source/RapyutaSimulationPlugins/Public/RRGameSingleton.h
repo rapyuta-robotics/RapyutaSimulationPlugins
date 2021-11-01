@@ -161,17 +161,53 @@ public:
     }
 
     template<typename TResource>
-    TResource* GetSimResource(const ERRResourceDataType InDataType, const FString& InResourceUniqueName)
+    FORCEINLINE void AddDynamicResource(const ERRResourceDataType InDataType,
+                                        TResource* InResourceObject,
+                                        const FString& InResourceUniqueName)
+    {
+        // Update [ResourceMap] with dynamically runtime-generated [InResourceObject]
+        // of which soft object path is also created on the fly.
+        FRRResourceInfo& resourceInfo = GetSimResourceInfo(InDataType);
+        resourceInfo.AddResource(InResourceUniqueName, FSoftObjectPath(InResourceUniqueName), InResourceObject);
+        resourceInfo.HasBeenAllLoaded = true;
+
+        UE_LOG(LogTemp,
+               VeryVerbose,
+               TEXT("[%s] [%s] DYNAMIC RUNTIME RESOURCE ADDED %s"),
+               *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+               *InResourceUniqueName,
+               *InResourceObject->GetName());
+
+        // Resource Data
+        // Still need to store resource handle in a direct UPROPERTY() child TArray of this GameSingleton to bypass
+        // early GC
+        ResourceStore.AddUnique(Cast<UObject>(InResourceObject));
+    }
+
+    template<typename TResource>
+    TResource* GetSimResource(const ERRResourceDataType InDataType,
+                              const FString& InResourceUniqueName,
+                              bool bIsStaticResource = true)
     {
         TResource* resourceAsset = Cast<TResource>(GetSimResourceInfo(InDataType).Data.FindRef(InResourceUniqueName).AssetData);
 
-        if (!resourceAsset || !resourceAsset->IsValidLowLevelFast())
+        if (bIsStaticResource && (!resourceAsset))
         {
             // For some reason, [LogRapyutaCore] could not be used here due to a linking error as being invoked from project
             // sources.
             UE_LOG(LogTemp,
                    Fatal,
-                   TEXT("[%s] [Unique Name: %s] INVALID RESOURCE %d!"),
+                   TEXT("[%s] [Unique Name: %s] INVALID STATIC RESOURCE %d!"),
+                   *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                   *InResourceUniqueName,
+                   resourceAsset)
+            return nullptr;
+        }
+        else if (resourceAsset && !resourceAsset->IsValidLowLevelFast())
+        {
+            UE_LOG(LogTemp,
+                   Error,
+                   TEXT("[%s] [Unique Name: %s] INVALID-AT-LOW-LEVEL RESOURCE %d!"),
                    *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
                    *InResourceUniqueName,
                    resourceAsset)

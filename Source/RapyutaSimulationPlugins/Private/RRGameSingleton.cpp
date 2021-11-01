@@ -69,6 +69,10 @@ bool URRGameSingleton::InitializeResources()
     GetSimResourceInfo(dataType).HasBeenAllLoaded = false;
     verify(RequestResourcesLoading(dataType));
 
+    // [RUNTIME MESH] --
+    // (NOTE) These resources are dynamically loaded at run-time
+    GetSimResourceInfo(ERRResourceDataType::UE_RUNTIME_MESH).HasBeenAllLoaded = true;
+
     // [MATERIAL] --
     dataType = ERRResourceDataType::UE_MATERIAL;
     CollateAssetsInfo<UMaterialInterface>(dataType, FOLDER_PATH_ASSET_MATERIALS);
