@@ -47,6 +47,9 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void Initialize();
 
+    UPROPERTY()
+    int InversionFactor = 1;
+
 protected:
     virtual void BeginPlay() override;
     virtual void InitOdom();

@@ -2,9 +2,9 @@
 
 #include "Drives/RobotVehicleMovementComponent.h"
 
-#include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/KismetMathLibrary.h"
 
 URobotVehicleMovementComponent::URobotVehicleMovementComponent()
 {
@@ -23,7 +23,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
     const FQuat OldRotation = UpdatedComponent->GetComponentQuat();
 
     FVector position = UpdatedComponent->ComponentVelocity * DeltaTime;
-    FQuat DeltaRotation(FVector::ZAxisVector, AngularVelocity.Z * DeltaTime);
+    FQuat DeltaRotation(FVector::ZAxisVector, InversionFactor * AngularVelocity.Z * DeltaTime);
 
     DesiredRotation = OldRotation * DeltaRotation;
     DesiredMovement = (OldRotation * position);
@@ -46,12 +46,12 @@ void URobotVehicleMovementComponent::InitOdom()
     InitialTransform.SetTranslation(PawnOwner->GetActorLocation());
     InitialTransform.SetRotation(FQuat(PawnOwner->GetActorRotation()));
 
-    PreviousTransform = FTransform(FQuat(0,0,0,1), FVector(0,0,0), FVector(1,1,1));
+    PreviousTransform = FTransform(FQuat(0, 0, 0, 1), FVector(0, 0, 0), FVector(1, 1, 1));
 
     OdomData.pose_pose_position_x = 0;
     OdomData.pose_pose_position_y = 0;
     OdomData.pose_pose_position_z = 0;
-    OdomData.pose_pose_orientation = FQuat(0,0,0,1);
+    OdomData.pose_pose_orientation = FQuat(0, 0, 0, 1);
 
     // todo temporary hardcoded
     OdomData.pose_covariance.Init(0, 36);
@@ -87,7 +87,8 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
     // previous estimated data
-    FVector PreviousEstimatedPos = FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
+    FVector PreviousEstimatedPos =
+        FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
     FQuat PreviousEstimatedRot = OdomData.pose_pose_orientation;
 
     // position
@@ -100,7 +101,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     FQuat Rot = InitialTransform.GetRotation().Inverse() * PawnOwner->GetActorRotation().Quaternion();
     FQuat PreviousRot = PreviousTransform.GetRotation();
     PreviousTransform.SetRotation(Rot);
-    Rot =  NoiseRot.Quaternion() * PreviousEstimatedRot * PreviousRot.Inverse() * Rot;
+    Rot = NoiseRot.Quaternion() * PreviousEstimatedRot * PreviousRot.Inverse() * Rot;
     Rot.Normalize();
 
     OdomData.pose_pose_position_x = Pos.X;
@@ -108,8 +109,9 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     OdomData.pose_pose_position_z = Pos.Z;
     OdomData.pose_pose_orientation = Rot;
 
-    OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector( Pos-PreviousEstimatedPos ) / DeltaTime;
-    OdomData.twist_twist_angular = FMath::DegreesToRadians((PreviousEstimatedRot * Rot.Inverse()).GetNormalized().Euler())/DeltaTime;
+    OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector(Pos - PreviousEstimatedPos) / DeltaTime;
+    OdomData.twist_twist_angular =
+        FMath::DegreesToRadians((PreviousEstimatedRot * Rot.Inverse()).GetNormalized().Euler()) / DeltaTime;
 
     // UE_LOG(LogTemp, Warning, TEXT("Odometry:"));
     // UE_LOG(LogTemp, Warning, TEXT("\tCurrent Positon:\t\t\t%s"), *PawnOwner->GetActorLocation().ToString());
@@ -123,8 +125,9 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     // UE_LOG(LogTemp, Warning, TEXT("\tPrevious Estimated Orientation:\t%s"), *PreviousEstimatedRot.Rotator().ToString());
     // UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s"), *Rot.Rotator().ToString());
     // UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s"), *Rot.ToString());
-    // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.twist_twist_linear.ToString(), OdomData.twist_twist_linear.Size());
-    // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"), *OdomData.twist_twist_angular.ToString());
+    // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.twist_twist_linear.ToString(),
+    // OdomData.twist_twist_linear.Size()); UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"),
+    // *OdomData.twist_twist_angular.ToString());
 }
 
 void URobotVehicleMovementComponent::TickComponent(float DeltaTime,
@@ -156,6 +159,6 @@ FTransform URobotVehicleMovementComponent::GetOdomTF()
 }
 
 void URobotVehicleMovementComponent::Initialize()
-{   
+{
     InitOdom();
 }
