@@ -168,7 +168,8 @@ public:
         // Update [ResourceMap] with dynamically runtime-generated [InResourceObject]
         // of which soft object path is also created on the fly.
         FRRResourceInfo& resourceInfo = GetSimResourceInfo(InDataType);
-        resourceInfo.AddResource(InResourceUniqueName, FSoftObjectPath(InResourceUniqueName), InResourceObject);
+        // (Note) FSoftObjectPath only accepts legit package names, not [InResourceUniqueName] like an arbitrary one
+        resourceInfo.AddResource(InResourceUniqueName, FSoftObjectPath(InResourceObject), InResourceObject);
         resourceInfo.HasBeenAllLoaded = true;
 
         UE_LOG(LogTemp,
