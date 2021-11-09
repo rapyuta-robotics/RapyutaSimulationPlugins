@@ -89,11 +89,12 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
         }
         AActor* Entity = Entities[Request.name];
         Response.state_name = Request.name;
-        FVector Pos = Entity->GetActorLocation() / 100.f - RefPos;
+        FVector Pos =  RefQuat.Inverse().RotateVector(Entity->GetActorLocation() / 100.f - RefPos);
         Response.state_pose_position_x = Pos.X;
         Response.state_pose_position_y = Pos.Y;
         Response.state_pose_position_z = Pos.Z;
         Response.state_pose_orientation = Entity->GetActorQuat() * RefQuat.Inverse();
+        Response.state_pose_orientation.Normalize();
         LeftToRight(Response.state_pose_position_x,
                     Response.state_pose_position_y,
                     Response.state_pose_position_z,

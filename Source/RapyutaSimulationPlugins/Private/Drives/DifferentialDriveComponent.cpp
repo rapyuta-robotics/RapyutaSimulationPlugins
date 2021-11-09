@@ -71,11 +71,22 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 	OdomData.header_frame_id = FString("odom");
 	OdomData.child_frame_id = FString("base_footprint");
 
-    // this part is based on gazebo's diff drive:
-    // https://github.com/ros-simulation/gazebo_ros_pkgs/blob/231a7219b36b8a6cdd100b59f66a3df2955df787/gazebo_plugins/src/gazebo_ros_diff_drive.cpp
-    // Book: Sigwart 2011 Autonomous Mobile Robots page:337
-    float sl = (Velocity.X + AngularVelocity.Z * WheelSeparationHalf + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
-    float sr = (Velocity.X - AngularVelocity.Z * WheelSeparationHalf + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
+    // vl and vr as computed here is ok for kinematics
+    // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is wheel rotations per unit time [rad/s])
+    // together with the wheel radius or perimeter, the displacement can be computed:
+    //  vl = (left_wheel_orientation_rad_now - left_wheel_orientation_rad_previous) * perimeter / (2pi)
+    //  vr = (right_wheel_orientation_rad_now - right_wheel_orientation_rad_previous) * perimeter / (2pi)
+    // in the kinematics case, (dx,dy,dtheta) can be simplified considerably
+    // but as this is not a performance bottleneck, for the moment we leave the full general formulation,
+    // at least until the odom for the physics version of the agent is implemented, so that we have a reference
+    float vl = Velocity.X + AngularVelocity.Z * WheelSeparationHalf;
+    float vr = Velocity.X - AngularVelocity.Z * WheelSeparationHalf;
+    
+    // noise added as a component of vl, vr
+    // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
+    //  seems to be Introduction to Autonomous Mobile Robots (Sigwart, Nourbakhsh, Scaramuzza)
+    float sl = (vl + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
+    float sr = (vr + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
     float ssum = sl + sr;
 
     float sdiff = sr - sl;
