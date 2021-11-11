@@ -1,6 +1,5 @@
-//
-// Created by lng on 2021/10/13.
-//
+// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
