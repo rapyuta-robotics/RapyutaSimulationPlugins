@@ -254,9 +254,6 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
             UE_LOG(LogTemp, Warning, TEXT("Spawning %s"), *Request.xml);
             Response.success = true;
 
-            FActorSpawnParameters SpawnParameters;
-            SpawnParameters.Name = FName(Request.state_name);
-
             FRotator Rotator = Request.state_pose_orientation.Rotator();
             FVector Position(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
             FVector Scale(1, 1, 1);
@@ -264,10 +261,15 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
 
             AActor* NewEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[Request.xml], Transform);
             UROS2Spawnable* SpawnableComponent = NewObject<UROS2Spawnable>(NewEntity, FName("ROS2 Spawn Parameters"));
+
             SpawnableComponent->RegisterComponent();
             SpawnableComponent->InitializeParameters(Request);
             NewEntity->AddInstanceComponent(SpawnableComponent);
-            NewEntity->SetActorLabel(Request.state_name);
+#if WITH_EDITOR
+            NewEntity->SetActorLabel(*Request.state_name);
+#endif
+            NewEntity->Rename(*Request.state_name);
+
             UGameplayStatics::FinishSpawningActor(NewEntity, Transform);
             AddEntity(NewEntity);
 
