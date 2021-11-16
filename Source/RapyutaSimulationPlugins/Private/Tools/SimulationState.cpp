@@ -1,9 +1,10 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/SimulationState.h"
-
+#include "Tools/ROS2Spawnable.h"
 // UE
 #include "EngineUtils.h"
+#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
 // rclUE
@@ -126,7 +127,6 @@ bool ASimulationState::ReferenceFrameToInertiaFrame(const FString& InReferenceFr
                                                     FQuat& OutOrientation)
 {
     bool bSuccess = false;
-
     LeftToRight(OutPositionX, OutPositionY, OutPositionZ, OutOrientation);
     if (InReferenceFrame.IsEmpty())
     {
@@ -186,7 +186,7 @@ void ASimulationState::SetEntityStateSrv(UROS2GenericSrv* Service)
         {
             Response.success = false;
             UE_LOG(LogTemp, Warning, 
-                    TEXT("Entity %s not exit or not under SimulationState control. Please call AddEntity to make Actors under SimulationState contorl."), 
+                    TEXT("Entity %s not exit or not under SimulationState control. Please call AddEntity to make Actors under SimulationState control."),
                     *Request.state_name);                                
         }
     }
@@ -222,7 +222,7 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* Service)
     else
     {
         UE_LOG(LogTemp, Warning, 
-                TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors under SimulationState contorl."),
+                TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors under SimulationState control."),
                 *Request.name1, *Request.name2);
     }
 
@@ -236,14 +236,14 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
     FROSSpawnEntity_Request Request;
     SpawnEntityService->GetRequest(Request);
 
-    UE_LOG(LogTemp, Warning, TEXT("SpawnEntityService called"));
-
     FROSSpawnEntity_Response Response;
+
     Response.success = ReferenceFrameToInertiaFrame(Request.state_reference_frame,
                                                     Request.state_pose_position_x,
                                                     Request.state_pose_position_y,
                                                     Request.state_pose_position_z,
                                                     Request.state_pose_orientation);
+
     if (Response.success)
     {
         if (SpawnableEntities.Contains(Request.xml))
@@ -254,23 +254,38 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
             UE_LOG(LogTemp, Warning, TEXT("Spawning %s"), *Request.xml);
             Response.success = true;
 
-            FActorSpawnParameters SpawnParameters;
-            SpawnParameters.Name = FName(Request.state_name);
             FRotator Rotator = Request.state_pose_orientation.Rotator();
             FVector Position(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
-            AActor* NewEntity = GetWorld()->SpawnActor(SpawnableEntities[Request.xml], &Position, &Rotator, SpawnParameters);
+            FVector Scale(1, 1, 1);
+            FTransform Transform(Rotator, Position, Scale);
+
+            AActor* NewEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[Request.xml], Transform);
+            UROS2Spawnable* SpawnableComponent = NewObject<UROS2Spawnable>(NewEntity, FName("ROS2 Spawn Parameters"));
+
+            SpawnableComponent->RegisterComponent();
+            SpawnableComponent->InitializeParameters(Request);
+            NewEntity->AddInstanceComponent(SpawnableComponent);
+#if WITH_EDITOR
+            NewEntity->SetActorLabel(*Request.state_name);
+#endif
+            NewEntity->Rename(*Request.state_name);
+
+            UGameplayStatics::FinishSpawningActor(NewEntity, Transform);
             AddEntity(NewEntity);
+
+            UE_LOG(LogTemp, Warning, TEXT("New Spawned Entity Name: %s"), *NewEntity->GetName());
         }
         else
         {
             UE_LOG(LogTemp, Warning,
-                TEXT("Entity %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors under SimulationState contorl."), 
+                TEXT("Entity %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors under SimulationState control."),
                 *Request.xml);
         }
     }
 
     SpawnEntityService->SetResponse(Response);
 }
+
 
 void ASimulationState::DeleteEntitySrv(UROS2GenericSrv* Service)
 {
