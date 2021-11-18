@@ -40,6 +40,12 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void Scan();
 
+    UFUNCTION(BlueprintCallable)
+    virtual void ScanMultiframe();
+
+    UFUNCTION()
+    virtual void DrawLidar();
+
     UFUNCTION()
     virtual void LidarMessageUpdate(UROS2GenericMsg* TopicMessage);
 
@@ -131,7 +137,22 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
     float IntensityMax = 10000.f;
 
-    FLinearColor GetColorFromIntensity(const float Intensity);
+    FLinearColor GetColorFromIntensity(const float Intensity, const float alpha=1);
+
+    
+
+    // this variable indicates the number of frames used to perform a full scan
+    UPROPERTY(VisibleAnywhere)
+    int32 NSteps = 1;
+
+    UPROPERTY(VisibleAnywhere)
+    int32 NSamplesPerStep = 0;
+
+    UPROPERTY(VisibleAnywhere)
+    int32 CurrentBatch = 0;
+
+    UPROPERTY(EditAnywhere)
+    bool SingleFrameScan = true;
 
 protected:
     float dt = 0.f;

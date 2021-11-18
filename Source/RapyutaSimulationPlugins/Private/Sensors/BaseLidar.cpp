@@ -44,6 +44,16 @@ void ABaseLidar::Scan()
     checkNoEntry();
 }
 
+void ABaseLidar::ScanMultiframe()
+{
+    checkNoEntry();
+}
+
+void ABaseLidar::DrawLidar()
+{
+    checkNoEntry();
+}
+
 void ABaseLidar::LidarMessageUpdate(UROS2GenericMsg* TopicMessage)
 {
     checkNoEntry();
@@ -76,10 +86,16 @@ void ABaseLidar::GetData(TArray<FHitResult>& OutHits, float& OutTime)
     OutTime = TimeOfLastScan;
 }
 
-FLinearColor ABaseLidar::GetColorFromIntensity(const float Intensity)
+FLinearColor ABaseLidar::GetColorFromIntensity(const float Intensity, const float alpha)
 {
+    // alpha doesn't seem to work with DrawPoints, so using alpha to change value (as in HSV)
     float NormalizedIntensity = (Intensity - IntensityMin) / (IntensityMax - IntensityMin);
-    return InterpolateColor(NormalizedIntensity);
+    FLinearColor RetColor = InterpolateColor(NormalizedIntensity);
+    RetColor.R *= alpha;
+    RetColor.G *= alpha;
+    RetColor.B *= alpha;
+    //RetColor.A = alpha;
+    return RetColor;
 }
 
 FLinearColor ABaseLidar::InterpolateColor(float x)

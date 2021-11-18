@@ -61,9 +61,73 @@ void ASensorLidar3D::Run()
     TraceHandles.Init(FTraceHandle{}, NSamplesPerScan * NChannelsPerScan);
 #endif
 
-    GetWorld()->GetGameInstance()->GetTimerManager().SetTimer(
-        TimerHandle, this, &ASensorLidar3D::Scan, 1.f / static_cast<float>(ScanFrequency), true);
+    if (SingleFrameScan)
+    {
+        GetWorld()->GetGameInstance()->GetTimerManager().SetTimer(
+            TimerHandle, this, &ASensorLidar3D::Scan, 1.f / static_cast<float>(ScanFrequency), true);
+    }
+    else
+    {
+        // assume fixed framerate of 100FPS - need to find a way to get this information not using DeltaTime
+        NSteps = 1.f / (.01f * ScanFrequency);
+        NSamplesPerStep = NSamplesPerScan * NChannelsPerScan / NSteps;
+        GetWorld()->GetGameInstance()->GetTimerManager().SetTimer(
+            TimerHandle, this, &ASensorLidar3D::ScanMultiframe, .01f, true);
+    }
+
     IsInitialized = true;
+}
+
+void ASensorLidar3D::ScanMultiframe()
+{
+    DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
+    DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
+
+    // complex collisions: true
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, this);
+    TraceParams.bReturnPhysicalMaterial = true;
+
+    // TraceParams.bIgnoreTouches = true;
+    TraceParams.bTraceComplex = true;
+    TraceParams.bReturnFaceIndex = true;
+
+    FVector lidarPos = GetActorLocation();
+    FRotator lidarRot = GetActorRotation();
+
+    ParallelFor(
+        NSamplesPerStep,
+        [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
+        {
+            const int32 GlobalIndex = Index + CurrentBatch * NSamplesPerStep;
+            const int IdxX = GlobalIndex % NSamplesPerScan;
+            const int IdxY = GlobalIndex / NSamplesPerScan;
+            const float HAngle = StartAngle + DHAngle * IdxX;
+            const float VAngle = StartVerticalAngle + DVAngle * IdxY;
+
+            FRotator laserRot(VAngle, HAngle, 0);
+            FRotator rot = UKismetMathLibrary::ComposeRotators(laserRot, lidarRot);
+
+            FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
+            FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
+            // + WithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+
+            GetWorld()->LineTraceSingleByChannel(
+                RecordedHits[Index], startPos, endPos, ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
+        },
+        false);
+
+    if (CurrentBatch == 0)
+    {
+        TimeOfLastScan = UGameplayStatics::GetTimeSeconds(GetWorld());
+        dt = 1.f / static_cast<float>(ScanFrequency);
+    }
+
+    if (ShowLidarRays)
+    {
+        DrawLidar();
+    }
+
+    CurrentBatch = (CurrentBatch + 1) % NSteps;
 }
 
 void ASensorLidar3D::Scan()
@@ -157,23 +221,38 @@ void ASensorLidar3D::Scan()
     // need to store on a structure associating hits with time?
     // GetROS2Data needs to get all data since the last Get? or the last within the last time interval?
 
-    ULineBatchComponent* const LineBatcher = GetWorld()->PersistentLineBatcher;
-    if (LineBatcher != nullptr && ShowLidarRays)
+    if (ShowLidarRays)
     {
-        for (auto& h : RecordedHits)
+        DrawLidar();
+    }
+}
+
+void ASensorLidar3D::DrawLidar()
+{
+    ULineBatchComponent* const LineBatcher = GetWorld()->PersistentLineBatcher;
+    if (LineBatcher != nullptr)
+    {
+        // this can be maybe parallelized? a first trial with ParallelFor crashes - need to verify that LineBatchComponent is thread-safe
+        for (int i=0; i<RecordedHits.Num(); i++)
         {
+            auto& h = RecordedHits[i];
             if (h.Actor != nullptr)
             {
                 float Distance = (MinRange * (h.Distance > 0) + h.Distance) * .01f;
+                
+                // coloring this way does not seem to work - looks as if CurrentBatch is constant over time
+                float alpha = 1;//(NSteps > 1) ? static_cast<float>((i/NSamplesPerStep + NSteps-1 - CurrentBatch) % NSteps) / static_cast<float>(NSteps) : 1;
+
                 if (h.PhysMaterial != nullptr)
                 {
+
                     // retroreflective material
                     if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
                     {
                         // UE_LOG(LogTemp, Warning, TEXT("retroreflective surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorReflected, 10, .5, dt);
                         LineBatcher->DrawPoint(
-                            h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityReflective, Distance)), 5, 10, dt);
+                            h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityReflective, Distance), alpha), 5, 10, dt);
                     }
                     // non reflective material
                     else if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
@@ -181,7 +260,7 @@ void ASensorLidar3D::Scan()
                         // UE_LOG(LogTemp, Warning, TEXT("default surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
                         LineBatcher->DrawPoint(
-                            h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance)), 5, 10, dt);
+                            h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance), alpha), 5, 10, dt);
                     }
                     // reflective material
                     else if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
@@ -204,7 +283,7 @@ void ASensorLidar3D::Scan()
                             h.ImpactPoint,
                             GetColorFromIntensity(IntensityFromDist(
                                 NormalAlignment * (IntensityReflective - IntensityNonReflective) + IntensityNonReflective,
-                                Distance)),
+                                Distance), alpha),
                             5,
                             10,
                             dt);
@@ -215,7 +294,7 @@ void ASensorLidar3D::Scan()
                     // UE_LOG(LogTemp, Warning, TEXT("no physics material"));
                     // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
                     LineBatcher->DrawPoint(
-                        h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance)), 5, 10, dt);
+                        h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance), alpha), 5, 10, dt);
                 }
             }
             else if (ShowLidarRayMisses)
@@ -342,53 +421,104 @@ FROSPointCloud2 ASensorLidar3D::GetROS2Data()
     retValue.row_step = sizeof(float) * 5 * NSamplesPerScan;
 
     retValue.data.Init(0, RecordedHits.Num() * sizeof(float) * 5);
-    for (auto i = 0; i < RecordedHits.Num(); i++)
-    {
-        float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
-        const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
-        float Intensity = 0;
-        if (RecordedHits.Last(i).PhysMaterial != nullptr)
+    ParallelFor(
+        RecordedHits.Num(),
+        [this,&retValue](int i)
         {
-            // retroreflective material
-            if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
+            float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
+            const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
+            float Intensity = 0;
+            if (RecordedHits.Last(i).PhysMaterial != nullptr)
             {
-                Intensity = IntensityScale * IntensityReflective;
-            }
-            // non-reflective material
-            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
-            {
-                Intensity = IntensityScale * IntensityNonReflective;
-            }
-            // reflective material
-            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
-            {
-                FVector HitSurfaceNormal = RecordedHits.Last(i).Normal;
-                FVector RayDirection = RecordedHits.Last(i).TraceEnd - RecordedHits.Last(i).TraceStart;
-                RayDirection.Normalize();
+                // retroreflective material
+                if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
+                {
+                    Intensity = IntensityScale * IntensityReflective;
+                }
+                // non-reflective material
+                else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
+                {
+                    Intensity = IntensityScale * IntensityNonReflective;
+                }
+                // reflective material
+                else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
+                {
+                    FVector HitSurfaceNormal = RecordedHits.Last(i).Normal;
+                    FVector RayDirection = RecordedHits.Last(i).TraceEnd - RecordedHits.Last(i).TraceStart;
+                    RayDirection.Normalize();
 
-                // the dot product for this should always be between 0 and 1
-                const float UnnormalizedIntensity =
-                    FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
-                                                              FVector::DotProduct(HitSurfaceNormal, -RayDirection),
-                                 IntensityNonReflective,
-                                 IntensityReflective);
-                check(UnnormalizedIntensity >= IntensityNonReflective);
-                check(UnnormalizedIntensity <= IntensityReflective);
-                Intensity = IntensityScale * UnnormalizedIntensity;
+                    // the dot product for this should always be between 0 and 1
+                    const float UnnormalizedIntensity =
+                        FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
+                                                                FVector::DotProduct(HitSurfaceNormal, -RayDirection),
+                                    IntensityNonReflective,
+                                    IntensityReflective);
+                    check(UnnormalizedIntensity >= IntensityNonReflective);
+                    check(UnnormalizedIntensity <= IntensityReflective);
+                    Intensity = IntensityScale * UnnormalizedIntensity;
+                }
             }
-        }
-        else
-        {
-            Intensity = 0;//std::numeric_limits<float>::quiet_NaN();
-        }
+            else
+            {
+                Intensity = 0;//std::numeric_limits<float>::quiet_NaN();
+            }
 
-        FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
-        memcpy(&retValue.data[i * 4 * 5], &Pos.X, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 4], &Pos.Y, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 8], &Pos.Z, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 12], &Distance, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);
-    }
+            FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
+            memcpy(&retValue.data[i * 4 * 5], &Pos.X, 4);
+            memcpy(&retValue.data[i * 4 * 5 + 4], &Pos.Y, 4);
+            memcpy(&retValue.data[i * 4 * 5 + 8], &Pos.Z, 4);
+            memcpy(&retValue.data[i * 4 * 5 + 12], &Distance, 4);
+            memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);
+        },
+        false
+    );
+    // for (auto i = 0; i < RecordedHits.Num(); i++)
+    // {
+    //     float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
+    //     const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
+    //     float Intensity = 0;
+    //     if (RecordedHits.Last(i).PhysMaterial != nullptr)
+    //     {
+    //         // retroreflective material
+    //         if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
+    //         {
+    //             Intensity = IntensityScale * IntensityReflective;
+    //         }
+    //         // non-reflective material
+    //         else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
+    //         {
+    //             Intensity = IntensityScale * IntensityNonReflective;
+    //         }
+    //         // reflective material
+    //         else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
+    //         {
+    //             FVector HitSurfaceNormal = RecordedHits.Last(i).Normal;
+    //             FVector RayDirection = RecordedHits.Last(i).TraceEnd - RecordedHits.Last(i).TraceStart;
+    //             RayDirection.Normalize();
+
+    //             // the dot product for this should always be between 0 and 1
+    //             const float UnnormalizedIntensity =
+    //                 FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
+    //                                                           FVector::DotProduct(HitSurfaceNormal, -RayDirection),
+    //                              IntensityNonReflective,
+    //                              IntensityReflective);
+    //             check(UnnormalizedIntensity >= IntensityNonReflective);
+    //             check(UnnormalizedIntensity <= IntensityReflective);
+    //             Intensity = IntensityScale * UnnormalizedIntensity;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         Intensity = 0;//std::numeric_limits<float>::quiet_NaN();
+    //     }
+
+    //     FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
+    //     memcpy(&retValue.data[i * 4 * 5], &Pos.X, 4);
+    //     memcpy(&retValue.data[i * 4 * 5 + 4], &Pos.Y, 4);
+    //     memcpy(&retValue.data[i * 4 * 5 + 8], &Pos.Z, 4);
+    //     memcpy(&retValue.data[i * 4 * 5 + 12], &Distance, 4);
+    //     memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);
+    // }
 
     retValue.is_dense = true;
 
