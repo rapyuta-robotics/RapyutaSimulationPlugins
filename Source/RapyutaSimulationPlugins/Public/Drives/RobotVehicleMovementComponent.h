@@ -7,6 +7,7 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Msgs/ROS2EntityStateMsg.h"
 #include <Msgs/ROS2OdometryMsg.h>
 
 #include "RobotVehicleMovementComponent.generated.h"
@@ -45,6 +46,9 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     FROSOdometry OdomData;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    FROSEntityState EntityState;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString FrameId = TEXT("");
 
@@ -67,6 +71,9 @@ public:
 
     UFUNCTION(BlueprintCallable)
     FTransform GetOdomTF();
+
+    UFUNCTION(BlueprintCallable)
+    void UpdateEntityState( FString AgentName );
 
     UFUNCTION(BlueprintCallable)
     virtual void InitMovementComponent();

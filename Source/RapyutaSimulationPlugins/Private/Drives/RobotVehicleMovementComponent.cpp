@@ -261,6 +261,21 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     OdomData.twist_twist_angular = NewAngularVelocity;
 }
 
+void URobotVehicleMovementComponent::UpdateEntityState( FString AgentName )
+{
+    EntityState.name = AgentName + TEXT("/base_footprint");
+    EntityState.pose_position_x = OdomData.pose_pose_position_x / 100.f;
+    EntityState.pose_position_y = OdomData.pose_pose_position_y / 100.f;
+    EntityState.pose_position_z = OdomData.pose_pose_position_z / 100.f;
+    EntityState.pose_orientation = OdomData.pose_pose_orientation;
+    EntityState.pose_position_y = -EntityState.pose_position_y;
+    EntityState.pose_orientation.X = -EntityState.pose_orientation.X;
+    EntityState.pose_orientation.Z = -EntityState.pose_orientation.Z;
+    EntityState.twist_linear = FVector::ZeroVector;
+    EntityState.twist_angular = FVector::ZeroVector;
+    EntityState.reference_frame = AgentName + TEXT("/map");
+}
+
 void URobotVehicleMovementComponent::TickComponent(float DeltaTime,
                                                    enum ELevelTick TickType,
                                                    FActorComponentTickFunction* ThisTickFunction)
