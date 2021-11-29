@@ -44,8 +44,8 @@ void AOccupancyMapGenerator::BeginPlay()
     {
         for (auto i = 0; i < NCellsX; i++)
         {
-            FVector OccupancyRayStart(Origin.X + GridRes_cm * (.5 + i), Origin.Y + GridRes_cm * (.5 + j), GridRes_cm);
-            FVector OccupancyRayEnd(Origin.X + GridRes_cm * (.5 + i), Origin.Y + GridRes_cm * (.5 + j), MaxVerticalHeight * 100);
+            FVector OccupancyRayStart(Origin.X + GridRes_cm * (.5 + i), Origin.Y + GridRes_cm * (.5 + j), Center.Z + Extent.Z + GridRes_cm);
+            FVector OccupancyRayEnd(Origin.X + GridRes_cm * (.5 + i), Origin.Y + GridRes_cm * (.5 + j), Center.Z + Extent.Z + MaxVerticalHeight * 100);
 
             FHitResult hit;
             world->LineTraceSingleByChannel(hit,
