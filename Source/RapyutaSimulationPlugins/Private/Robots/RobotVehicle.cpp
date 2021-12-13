@@ -2,11 +2,13 @@
 
 #include "Robots/RobotVehicle.h"
 
+#include "Drives/RobotVehicleMovementComponent.h"
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
 
-ARobotVehicle::ARobotVehicle(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+void ARobotVehicle::InitializeMoveComponent()
 {
+    RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(this, TEXT("RobotVehicleMoveComponent"));
 }
 
 void ARobotVehicle::Tick(float DeltaSeconds)
@@ -14,21 +16,21 @@ void ARobotVehicle::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
 }
 
-void ARobotVehicle::SetLinearVel(FVector Velocity)
+void ARobotVehicle::SetLinearVel(const FVector& InLinearVelocity)
 {
     // We're assuming input is in meters, so convert to centimeters.
-    MoveComponent->Velocity = Velocity;
+    RobotVehicleMoveComponent->Velocity = InLinearVelocity;    // 0
 }
 
-void ARobotVehicle::SetAngularVel(FVector Velocity)
+void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
 {
-    MoveComponent->AngularVelocity = Velocity;
+    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
 }
 
 void ARobotVehicle::BeginPlay()
 {
     Super::BeginPlay();
-    MoveComponent->InitMovementComponent();
+    RobotVehicleMoveComponent->Initialize();
 }
 
 void ARobotVehicle::EndPlay(const EEndPlayReason::Type EndPlayReason)

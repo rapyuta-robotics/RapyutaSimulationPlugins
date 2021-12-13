@@ -53,7 +53,7 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 {
     // need to add noise!
-    
+
     if (!IsOdomInitialized)
     {
         InitOdom();
@@ -68,12 +68,12 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     uint64 ns = (uint64)(TimeNow * 1e+09f);
     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
-	OdomData.header_frame_id = FString("odom");
-	OdomData.child_frame_id = FString("base_footprint");
+    OdomData.header_frame_id = FString("odom");
+    OdomData.child_frame_id = FString("base_footprint");
 
     // vl and vr as computed here is ok for kinematics
-    // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is wheel rotations per unit time [rad/s])
-    // together with the wheel radius or perimeter, the displacement can be computed:
+    // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is
+    // wheel rotations per unit time [rad/s]) together with the wheel radius or perimeter, the displacement can be computed:
     //  vl = (left_wheel_orientation_rad_now - left_wheel_orientation_rad_previous) * perimeter / (2pi)
     //  vr = (right_wheel_orientation_rad_now - right_wheel_orientation_rad_previous) * perimeter / (2pi)
     // in the kinematics case, (dx,dy,dtheta) can be simplified considerably
@@ -81,7 +81,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // at least until the odom for the physics version of the agent is implemented, so that we have a reference
     float vl = Velocity.X + AngularVelocity.Z * WheelSeparationHalf;
     float vr = Velocity.X - AngularVelocity.Z * WheelSeparationHalf;
-    
+
     // noise added as a component of vl, vr
     // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
     //  seems to be Introduction to Autonomous Mobile Robots (Sigwart, Nourbakhsh, Scaramuzza)
@@ -119,34 +119,34 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     OdomData.twist_twist_linear.Y = 0;
     OdomData.twist_twist_linear.Z = 0;
 
-
-	OdomData.pose_covariance.Init(0,36);
-	OdomData.pose_covariance[0] = 0.01;
-	OdomData.pose_covariance[7] = 0.01;
-	OdomData.pose_covariance[14] = 1000000000000.0;
-	OdomData.pose_covariance[21] = 1000000000000.0;
-	OdomData.pose_covariance[28] = 1000000000000.0;
-	OdomData.pose_covariance[35] = 0.01;
-	OdomData.twist_covariance.Init(0,36);
-	OdomData.twist_covariance[0] = 0.01;
-	OdomData.twist_covariance[7] = 0.01;
-	OdomData.twist_covariance[14] = 1000000000000.0;
-	OdomData.twist_covariance[21] = 1000000000000.0;
-	OdomData.twist_covariance[28] = 1000000000000.0;
-	OdomData.twist_covariance[35] = 0.01;
+    OdomData.pose_covariance.Init(0, 36);
+    OdomData.pose_covariance[0] = 0.01;
+    OdomData.pose_covariance[7] = 0.01;
+    OdomData.pose_covariance[14] = 1000000000000.0;
+    OdomData.pose_covariance[21] = 1000000000000.0;
+    OdomData.pose_covariance[28] = 1000000000000.0;
+    OdomData.pose_covariance[35] = 0.01;
+    OdomData.twist_covariance.Init(0, 36);
+    OdomData.twist_covariance[0] = 0.01;
+    OdomData.twist_covariance[7] = 0.01;
+    OdomData.twist_covariance[14] = 1000000000000.0;
+    OdomData.twist_covariance[21] = 1000000000000.0;
+    OdomData.twist_covariance[28] = 1000000000000.0;
+    OdomData.twist_covariance[35] = 0.01;
 
     // UE_LOG(LogTemp, Warning, TEXT("Input:"));
     // UE_LOG(LogTemp, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
     // UE_LOG(LogTemp, Warning, TEXT("Odometry:"));
-    // UE_LOG(LogTemp, Warning, TEXT("\tOdom Positon:\t\t\t\t%f %f from %f %f (%f)"), PoseEncoderX, PoseEncoderY, dx, dy, Velocity.X);
-    // UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s (%f)"), *OdomData.pose_pose_orientation.ToString(), PoseEncoderTheta);
-    // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.twist_twist_linear.ToString(), OdomData.twist_twist_linear.Size());
-    // UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"), *OdomData.twist_twist_angular.ToString());
+    // UE_LOG(LogTemp, Warning, TEXT("\tOdom Positon:\t\t\t\t%f %f from %f %f (%f)"), PoseEncoderX, PoseEncoderY, dx, dy,
+    // Velocity.X); UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s (%f)"), *OdomData.pose_pose_orientation.ToString(),
+    // PoseEncoderTheta); UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.twist_twist_linear.ToString(),
+    // OdomData.twist_twist_linear.Size()); UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"),
+    // *OdomData.twist_twist_angular.ToString());
 }
 
-void UDifferentialDriveComponent::InitMovementComponent()
+void UDifferentialDriveComponent::Initialize()
 {
-    Super::InitMovementComponent();
+    Super::Initialize();
 
     if (!IsValid(WheelLeft) || !IsValid(WheelRight))
     {

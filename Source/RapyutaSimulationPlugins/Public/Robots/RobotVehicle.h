@@ -3,35 +3,31 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
 #include "Drives/RobotVehicleMovementComponent.h"
+#include "GameFramework/Pawn.h"
 
 #include "RobotVehicle.generated.h"
 
+class URobotVehicleMovementComponent;
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public APawn
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	URobotVehicleMovementComponent *MoveComponent;
+    virtual void InitializeMoveComponent();
 
-public:
-	ARobotVehicle(const FObjectInitializer& ObjectInitializer);
+    UFUNCTION(BlueprintCallable)
+    virtual void SetLinearVel(const FVector& InLinearVelocity);
 
-	virtual void Tick(float DeltaSeconds) override;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void SetLinearVel(FVector velocity);
-
-	UFUNCTION(BlueprintCallable)
-	virtual void SetAngularVel(FVector velocity);
+    UFUNCTION(BlueprintCallable)
+    virtual void SetAngularVel(const FVector& InAngularVelocity);
 
 protected:
-
-	virtual void BeginPlay() override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    virtual void Tick(float DeltaSeconds) override;
 };
