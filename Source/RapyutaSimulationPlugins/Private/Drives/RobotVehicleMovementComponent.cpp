@@ -46,7 +46,7 @@ void URobotVehicleMovementComponent::InitOdom()
     InitialTransform.SetTranslation(PawnOwner->GetActorLocation());
     InitialTransform.SetRotation(FQuat(PawnOwner->GetActorRotation()));
 
-    PreviousTransform = FTransform(FQuat::Identity, FVector::ZeroVector, FVector::OneVector);
+    PreviousTransform = FTransform::Identity;
 
     OdomData.pose_pose_position_x = 0;
     OdomData.pose_pose_position_y = 0;

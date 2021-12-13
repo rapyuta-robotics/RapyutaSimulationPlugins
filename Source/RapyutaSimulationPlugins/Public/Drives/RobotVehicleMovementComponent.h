@@ -18,16 +18,16 @@ class RCLUE_API URobotVehicleMovementComponent : public UPawnMovementComponent
 
 private:
     UPROPERTY(Transient)
-    FVector DesiredMovement;
+    FVector DesiredMovement = FVector::ZeroVector;
 
     UPROPERTY(Transient)
-    FQuat DesiredRotation;
+    FQuat DesiredRotation = FQuat::Identity;
 
 public:
     URobotVehicleMovementComponent();
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
-    FVector AngularVelocity;
+    FVector AngularVelocity = FVector::ZeroVector;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     FROSOdometry OdomData;
@@ -39,7 +39,7 @@ public:
     FString ChildFrameId = TEXT("");
 
     UPROPERTY(EditAnywhere)
-    FTransform InitialTransform;
+    FTransform InitialTransform = FTransform::Identity;
 
     UFUNCTION(BlueprintCallable)
     FTransform GetOdomTF();
@@ -57,8 +57,8 @@ protected:
     virtual void UpdateOdom(float DeltaTime);
     bool IsOdomInitialized = false;
 
-    UPROPERTY(EditAnywhere)
-    FTransform PreviousTransform;
+    UPROPERTY()
+    FTransform PreviousTransform = FTransform::Identity;
 
     std::random_device Rng;
     std::mt19937 Gen;

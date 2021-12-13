@@ -20,9 +20,6 @@ public:
 
     virtual void InitializeMoveComponent();
 
-public:
-    virtual void Tick(float DeltaSeconds) override;
-
     UFUNCTION(BlueprintCallable)
     virtual void SetLinearVel(const FVector& InLinearVelocity);
 
@@ -31,6 +28,6 @@ public:
 
 protected:
     virtual void BeginPlay() override;
-
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    virtual void Tick(float DeltaSeconds) override;
 };

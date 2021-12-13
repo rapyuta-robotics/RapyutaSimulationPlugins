@@ -9,7 +9,6 @@
 void ARobotVehicle::InitializeMoveComponent()
 {
     RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(this, TEXT("RobotVehicleMoveComponent"));
-    verify(RobotVehicleMoveComponent);
 }
 
 void ARobotVehicle::Tick(float DeltaSeconds)
