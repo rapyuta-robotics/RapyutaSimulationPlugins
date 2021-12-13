@@ -30,7 +30,6 @@ protected:
 
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
@@ -38,45 +37,44 @@ public:
     virtual void Init();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UStaticMeshComponent* Base;
+    UStaticMeshComponent* Base = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UStaticMeshComponent* LidarSensor;
+    UStaticMeshComponent* LidarSensor = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UStaticMeshComponent* WheelLeft;
+    UStaticMeshComponent* WheelLeft = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UStaticMeshComponent* WheelRight;
+    UStaticMeshComponent* WheelRight = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UStaticMeshComponent* CasterBack;
+    UStaticMeshComponent* CasterBack = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* Base_LidarSensor;
+    UPhysicsConstraintComponent* Base_LidarSensor = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* Base_WheelLeft;
+    UPhysicsConstraintComponent* Base_WheelLeft = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* Base_WheelRight;
+    UPhysicsConstraintComponent* Base_WheelRight = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* Base_CasterBack;
+    UPhysicsConstraintComponent* Base_CasterBack = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MaxForce = 1000;
+    float MaxForce = 1000.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UMaterial* VehicleMaterial;
+    UMaterial* VehicleMaterial = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UMaterial* BallMaterial;
+    UMaterial* BallMaterial = nullptr;
 
     UPROPERTY(VisibleAnywhere)
     bool IsInitialized = false;
 
-protected:
     UFUNCTION()
     void SetupConstraintsAndPhysics();
 

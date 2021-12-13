@@ -18,6 +18,7 @@ ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) 
 
 void ATurtlebotBurger::InitializeMoveComponent() 
 {
+    Super::InitializeMoveComponent();
     DifferentialDriveComponent = NewObject<UDifferentialDriveComponent>(this, TEXT("DifferentialDriveComponent"));
 }
 
