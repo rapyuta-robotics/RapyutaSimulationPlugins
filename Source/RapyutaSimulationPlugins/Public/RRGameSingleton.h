@@ -41,9 +41,15 @@ public:
     {
         FRRResourceInfo& outResourceInfo = GetSimResourceInfo(InDataType);
 
-        TArray<FAssetData> assetDataList;
-        URRAssetUtils::LoadAssetDataList<T>(GetDynamicAssetsPath(InDataType) / InAssetRelativeFolderPath, assetDataList);
-        for (const auto& asset : assetDataList)
+        TArray<FAssetData> totalAssetDataList;
+        for (const auto& assetsPath : GetDynamicAssetsPathList(InDataType))
+        {
+            TArray<FAssetData> assetDataList;
+            URRAssetUtils::LoadAssetDataList<T>(assetsPath / InAssetRelativeFolderPath, assetDataList);
+            totalAssetDataList.Append(assetDataList);
+        }
+
+        for (const auto& asset : totalAssetDataList)
         {
             UE_LOG(LogTemp,
                    VeryVerbose,
@@ -54,16 +60,17 @@ public:
                    *asset.ToSoftObjectPath().ToString());
             outResourceInfo.AddResource(asset.AssetName.ToString(), asset.ToSoftObjectPath().ToString(), nullptr);
         }
-        return (assetDataList.Num() > 0);
+        return (totalAssetDataList.Num() > 0);
     }
 
     // ASSETS --
     // This list specifically hosts names of which module houses the UE assets based on their data type
-    static TMap<ERRResourceDataType, const TCHAR*> SASSET_OWNING_MODULE_NAMES;
+    static TMap<ERRResourceDataType, TArray<const TCHAR*>> SASSET_OWNING_MODULE_NAMES;
 
     // This only returns base path of assets residing in Plugin, not from Project level, which should starts with [/Game/]
     // And please note that the Sim does not store assets in Project, just to make them accessible among plugins.
     static constexpr const TCHAR* ASSETS_ROOT_PATH = TEXT("/");
+    static constexpr const TCHAR* ASSETS_PROJECT_MODULE_NAME = TEXT("Game/RapyutaContents");
     static FString GetAssetsBasePath(const TCHAR* InModuleName)
     {
         // For particular handling, please set the asset path ending with '/'
@@ -72,10 +79,14 @@ public:
     }
 
     static constexpr const TCHAR* DYNAMIC_CONTENTS_FOLDER_NAME = TEXT("DynamicContents");
-    static FString GetDynamicAssetsPath(const ERRResourceDataType InDataType)
+    static TArray<FString> GetDynamicAssetsPathList(const ERRResourceDataType InDataType)
     {
-        static FString runtimeAssetsPath = GetAssetsBasePath(SASSET_OWNING_MODULE_NAMES[InDataType]) / DYNAMIC_CONTENTS_FOLDER_NAME;
-        return runtimeAssetsPath;
+        static TArray<FString> runtimeAssetsPathList;
+        for (const auto& moduleName : SASSET_OWNING_MODULE_NAMES[InDataType])
+        {
+            runtimeAssetsPathList.Emplace(GetAssetsBasePath(moduleName) / DYNAMIC_CONTENTS_FOLDER_NAME);
+        }
+        return runtimeAssetsPathList;
     }
 
     //  RESOURCE STORE --
@@ -150,17 +161,54 @@ public:
     }
 
     template<typename TResource>
-    TResource* GetSimResource(const ERRResourceDataType InDataType, const FString& InResourceUniqueName)
+    FORCEINLINE void AddDynamicResource(const ERRResourceDataType InDataType,
+                                        TResource* InResourceObject,
+                                        const FString& InResourceUniqueName)
+    {
+        // Update [ResourceMap] with dynamically runtime-generated [InResourceObject]
+        // of which soft object path is also created on the fly.
+        FRRResourceInfo& resourceInfo = GetSimResourceInfo(InDataType);
+        // (Note) FSoftObjectPath only accepts legit package names, not [InResourceUniqueName] like an arbitrary one
+        resourceInfo.AddResource(InResourceUniqueName, FSoftObjectPath(InResourceObject), InResourceObject);
+        resourceInfo.HasBeenAllLoaded = true;
+
+        UE_LOG(LogTemp,
+               VeryVerbose,
+               TEXT("[%s] [%s] DYNAMIC RUNTIME RESOURCE ADDED %s"),
+               *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+               *InResourceUniqueName,
+               *InResourceObject->GetName());
+
+        // Resource Data
+        // Still need to store resource handle in a direct UPROPERTY() child TArray of this GameSingleton to bypass
+        // early GC
+        ResourceStore.AddUnique(Cast<UObject>(InResourceObject));
+    }
+
+    template<typename TResource>
+    TResource* GetSimResource(const ERRResourceDataType InDataType,
+                              const FString& InResourceUniqueName,
+                              bool bIsStaticResource = true)
     {
         TResource* resourceAsset = Cast<TResource>(GetSimResourceInfo(InDataType).Data.FindRef(InResourceUniqueName).AssetData);
 
-        if (!resourceAsset || !resourceAsset->IsValidLowLevelFast())
+        if (bIsStaticResource && (!resourceAsset))
         {
             // For some reason, [LogRapyutaCore] could not be used here due to a linking error as being invoked from project
             // sources.
             UE_LOG(LogTemp,
                    Fatal,
-                   TEXT("[%s] [Unique Name: %s] INVALID RESOURCE %d!"),
+                   TEXT("[%s] [Unique Name: %s] INVALID STATIC RESOURCE %d!"),
+                   *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                   *InResourceUniqueName,
+                   resourceAsset)
+            return nullptr;
+        }
+        else if (resourceAsset && !resourceAsset->IsValidLowLevelFast())
+        {
+            UE_LOG(LogTemp,
+                   Error,
+                   TEXT("[%s] [Unique Name: %s] INVALID-AT-LOW-LEVEL RESOURCE %d!"),
                    *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
                    *InResourceUniqueName,
                    resourceAsset)
@@ -209,6 +257,7 @@ public:
 
     // Here we only define specially used materials for some specific purpose!
     static constexpr const TCHAR* MATERIAL_NAME_FLOOR = TEXT("M_FloorMat");
+    static constexpr const TCHAR* MATERIAL_NAME_BASE = TEXT("M_Base");
 
     UFUNCTION()
     FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName)
