@@ -3,12 +3,12 @@
 #pragma once
 
 #include "Engine/EngineTypes.h"
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 
 #include "RRGameMode.generated.h"
 
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARRGameMode : public AGameModeBase
+class RAPYUTASIMULATIONPLUGINS_API ARRGameMode : public AGameMode
 {
     GENERATED_BODY()
 
