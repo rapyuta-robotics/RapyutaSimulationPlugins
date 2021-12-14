@@ -12,21 +12,16 @@ ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) 
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-
+    
+    RobotVehicleMoveComponent = CreateDefaultSubobject<UDifferentialDriveComponent>(TEXT("RobotVehicleMoveComponent"));
     Init();
-}
-
-void ATurtlebotBurger::InitializeMoveComponent() 
-{
-    Super::InitializeMoveComponent();
-    DifferentialDriveComponent = NewObject<UDifferentialDriveComponent>(this, TEXT("DifferentialDriveComponent"));
+   
 }
 
 void ATurtlebotBurger::Init()
 {
     if (!IsInitialized)
     {
-        InitializeMoveComponent();
         Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
         LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
         WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));
@@ -62,6 +57,7 @@ void ATurtlebotBurger::SetupWheels()
 {
     if (IsInitialized)
     {
+        UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(RobotVehicleMoveComponent);
         DifferentialDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);
         DifferentialDriveComponent->SetPerimeter();
     }
@@ -144,9 +140,6 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
 void ATurtlebotBurger::BeginPlay()
 {
     Super::BeginPlay();
-
-    // UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(MoveComponent);
-    // DifferentialDriveComponent->SetPerimeter();
 }
 
 void ATurtlebotBurger::EndPlay(const EEndPlayReason::Type EndPlayReason)

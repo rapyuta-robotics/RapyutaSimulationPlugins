@@ -18,7 +18,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
-    virtual void InitializeMoveComponent();
+    void InitializeMoveComponent();
 
     UFUNCTION(BlueprintCallable)
     virtual void SetLinearVel(const FVector& InLinearVelocity);
