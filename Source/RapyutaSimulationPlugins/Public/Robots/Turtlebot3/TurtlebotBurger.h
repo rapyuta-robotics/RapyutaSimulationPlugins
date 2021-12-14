@@ -19,11 +19,6 @@ class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARobotVehicle
 public:
     ATurtlebotBurger(const FObjectInitializer& ObjectInitializer);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UDifferentialDriveComponent* DifferentialDriveComponent = nullptr;
-
-    void InitializeMoveComponent() override;
-
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;

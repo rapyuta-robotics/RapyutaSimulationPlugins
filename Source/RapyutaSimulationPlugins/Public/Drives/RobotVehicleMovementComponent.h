@@ -69,13 +69,13 @@ protected:
     float NoiseMeanPos = 0.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVariancePos = 1.f;
+    float NoiseVariancePos = 0.01f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     float NoiseMeanRot = 0.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVarianceRot = 5.f;
+    float NoiseVarianceRot = 0.05f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     bool WithNoise = true;
