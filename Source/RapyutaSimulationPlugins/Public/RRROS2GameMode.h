@@ -18,13 +18,13 @@ UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
     GENERATED_BODY()
 
 public:
-    UPROPERTY()
+    UPROPERTY(BlueprintReadWrite)
     AROS2Node* ROS2Node = nullptr;
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadWrite)
     UROS2Publisher* ClockPublisher = nullptr;
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadWrite)
     ASimulationState* SimulationState = nullptr;
 
 protected:
