@@ -4,7 +4,6 @@
 
 #include "Misc/Paths.h"
 
-
 DEFINE_LOG_CATEGORY(LogTurtlebotBurger);
 
 // Sets default values
@@ -12,10 +11,9 @@ ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) 
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-    
+
     RobotVehicleMoveComponent = CreateDefaultSubobject<UDifferentialDriveComponent>(TEXT("RobotVehicleMoveComponent"));
     Init();
-   
 }
 
 void ATurtlebotBurger::Init()
@@ -23,6 +21,7 @@ void ATurtlebotBurger::Init()
     if (!IsInitialized)
     {
         Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
+        SetRootComponent(Base);
         LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
         WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));
         WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
