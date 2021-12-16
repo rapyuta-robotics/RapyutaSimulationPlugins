@@ -105,8 +105,13 @@ void ATurtlebotROSController::SetupCommandTopicSubscription(ARobotVehicle* InPaw
 
 void ATurtlebotROSController::OdomMessageUpdate(UROS2GenericMsg* TopicMessage)
 {
-    UROS2OdometryMsg* OdomMessage = Cast<UROS2OdometryMsg>(TopicMessage);
-    OdomMessage->SetMsg(GetOdomData());
+    FROSOdometry odomData;
+    bool bIsOdomDataValid = GetOdomData(odomData);
+    if (bIsOdomDataValid)
+    {
+        UROS2OdometryMsg* odomMessage = CastChecked<UROS2OdometryMsg>(TopicMessage);
+        odomMessage->SetMsg(odomData);
+    }
 }
 
 void ATurtlebotROSController::MovementCallback(const UROS2GenericMsg* Msg)
@@ -117,29 +122,33 @@ void ATurtlebotROSController::MovementCallback(const UROS2GenericMsg* Msg)
     {
         FROSTwist Output;
         Concrete->GetMsg(Output);
-        FVector linear(ConversionUtils::VectorROSToUE(Output.linear));
-        FVector angular(ConversionUtils::RotationROSToUE(Output.angular));
-        ARobotVehicle* Vehicle = Turtlebot;
+        const FVector linear(ConversionUtils::VectorROSToUE(Output.linear));
+        const FVector angular(ConversionUtils::RotationROSToUE(Output.angular));
 
         AsyncTask(ENamedThreads::GameThread,
-                  [linear, angular, Vehicle]
+                  [this, linear, angular]
                   {
-                      if (IsValid(Vehicle))
+                      if (IsValid(Turtlebot))
                       {
-                          Vehicle->SetLinearVel(linear);
-                          Vehicle->SetAngularVel(angular);
+                          Turtlebot->SetLinearVel(linear);
+                          Turtlebot->SetAngularVel(angular);
                       }
                   });
     }
 }
 
-struct FROSOdometry ATurtlebotROSController::GetOdomData() const
+bool ATurtlebotROSController::GetOdomData(FROSOdometry& OutOdomData) const
 {
     ARobotVehicle* Vehicle = Turtlebot;
-    URobotVehicleMovementComponent* RobotVehicleMovementComponent =
-        Cast<URobotVehicleMovementComponent>(Vehicle->GetMovementComponent());
-    TFPublisher->TF = RobotVehicleMovementComponent->GetOdomTF();
-
-    FROSOdometry res = RobotVehicleMovementComponent->OdomData;
-    return ConversionUtils::OdomUEToROS(res);
+    const URobotVehicleMovementComponent* moveComponent = Vehicle->RobotVehicleMoveComponent;
+    if (moveComponent)
+    {
+        TFPublisher->TF = moveComponent->GetOdomTF();
+        OutOdomData = ConversionUtils::OdomUEToROS(moveComponent->OdomData);
+        return OutOdomData.IsValid();
+    }
+    else
+    {
+        return false;
+    }
 }

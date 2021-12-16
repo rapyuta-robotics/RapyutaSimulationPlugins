@@ -15,7 +15,6 @@ class RAPYUTASIMULATIONPLUGINS_API UROS2Spawnable : public UActorComponent
     GENERATED_BODY()
 
 public:
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString ActorName;
 
@@ -23,20 +22,18 @@ public:
     FString ActorNamespace;
 
 public:
+    UFUNCTION(BlueprintCallable)
+    virtual void InitializeParameters(const FROSSpawnEntity_Request& InRequest);
 
     UFUNCTION(BlueprintCallable)
-    virtual void InitializeParameters(FROSSpawnEntity_Request Request);
+    virtual void SetName(const FString& InName);
 
     UFUNCTION(BlueprintCallable)
-    virtual void SetName(FString Name);
-
-    UFUNCTION(BlueprintCallable)
-    virtual void SetNamespace(FString Namespace);
+    virtual void SetNamespace(const FString& InNamespace);
 
     UFUNCTION(BlueprintCallable)
     virtual FString GetName();
 
     UFUNCTION(BlueprintCallable)
     virtual FString GetNamespace();
-
 };
