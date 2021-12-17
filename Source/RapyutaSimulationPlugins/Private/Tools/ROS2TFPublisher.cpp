@@ -4,6 +4,7 @@
 
 void UROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
+    UpdateDelegate.BindDynamic(this, &UROS2TFPublisher::UpdateTFMsg);
     Super::InitializeWithROS2(InROS2Node);
 
     TEnumAsByte<UROS2QoS> QoS;
@@ -18,7 +19,6 @@ void UROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
         QoS = UROS2QoS::DynamicBroadcaster;
     }
     MsgClass = UROS2TFMsg::StaticClass();
-    UpdateDelegate.BindDynamic(this, &UROS2TFPublisher::UpdateTFMsg);
     Init(QoS);
 }
 

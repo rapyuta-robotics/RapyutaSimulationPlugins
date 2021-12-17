@@ -35,6 +35,11 @@ public:
     FTransform TF;
 
     void InitializeWithROS2(AROS2Node* InROS2Node) override;
+    UFUNCTION(BlueprintCallable)
+    void InitTFPublisher(AROS2Node* InROS2Node)
+    {
+        InitializeWithROS2(InROS2Node);
+    }
 
     UFUNCTION(BlueprintCallable)
     void SetTransform(const FVector& Translation, const FQuat& Rotation);

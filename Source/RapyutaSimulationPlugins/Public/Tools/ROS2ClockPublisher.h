@@ -18,4 +18,7 @@ class RAPYUTASIMULATIONPLUGINS_API UROS2ClockPublisher : public UROS2Publisher
 
 public:
     void InitializeWithROS2(AROS2Node* InROS2Node) override;
+
+    UFUNCTION()
+    void UpdateMessage(UROS2GenericMsg* InMessage);
 };
