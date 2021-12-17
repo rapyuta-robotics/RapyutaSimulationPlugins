@@ -5,9 +5,9 @@
 // rclUE
 #include "Msgs/ROS2ClockMsg.h"
 #include "ROS2Node.h"
-#include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins
+#include "Tools/ROS2ClockPublisher.h"
 #include "Tools/SimulationState.h"
 
 void ARRROS2GameMode::BeginPlay()
@@ -20,16 +20,11 @@ void ARRROS2GameMode::BeginPlay()
     ROS2Node->Init();
 
     // Create Clock publisher
-    ClockPublisher = NewObject<UROS2Publisher>(this);
-    ClockPublisher->RegisterComponent();
-    ClockPublisher->TopicName = TEXT("clock");
-    ClockPublisher->PublicationFrequencyHz = 100;
-    ClockPublisher->MsgClass = UROS2ClockMsg::StaticClass();
+    ClockPublisher = NewObject<UROS2ClockPublisher>(this);
+    // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
+    ClockPublisher->InitializeWithROS2(ROS2Node);
 
-    // [ClockPublisher] must be registered to [ROS2Node] before being initialized
-    ROS2Node->AddPublisher(ClockPublisher);
-    ClockPublisher->Init(UROS2QoS::ClockPub);
-
+    // Simulation state
     SimulationState = currentWorld->SpawnActor<ASimulationState>();
     SimulationState->ROSServiceNode = ROS2Node;
 }

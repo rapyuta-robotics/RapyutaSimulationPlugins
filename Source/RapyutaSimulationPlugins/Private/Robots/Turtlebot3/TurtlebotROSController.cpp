@@ -49,7 +49,7 @@ void ATurtlebotROSController::OnPossess(APawn* InPawn)
     TFPublisher->FrameId = RobotVehicleMovementComponent->FrameId = TEXT("odom");
     TFPublisher->ChildFrameId = RobotVehicleMovementComponent->ChildFrameId = TEXT("base_footprint");
     TFPublisher->PublicationFrequencyHz = 50;
-    TFPublisher->InitTFPublisher(TurtleNode);
+    TFPublisher->InitializeWithROS2(TurtleNode);
 
     // OdomPublisher
     OdomPublisher = NewObject<UROS2Publisher>(this, UROS2Publisher::StaticClass());

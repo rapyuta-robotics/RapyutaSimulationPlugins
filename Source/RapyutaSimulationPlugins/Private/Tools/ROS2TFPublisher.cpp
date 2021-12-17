@@ -2,8 +2,10 @@
 
 #include "Tools/ROS2TFPublisher.h"
 
-void UROS2TFPublisher::InitTFPublisher(AROS2Node* Node)
+void UROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
+    Super::InitializeWithROS2(InROS2Node);
+
     TEnumAsByte<UROS2QoS> QoS;
     if (IsStatic)
     {
@@ -17,7 +19,6 @@ void UROS2TFPublisher::InitTFPublisher(AROS2Node* Node)
     }
     MsgClass = UROS2TFMsg::StaticClass();
     UpdateDelegate.BindDynamic(this, &UROS2TFPublisher::UpdateTFMsg);
-    Node->AddPublisher(this);
     Init(QoS);
 }
 
