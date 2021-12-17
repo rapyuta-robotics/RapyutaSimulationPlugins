@@ -3,7 +3,7 @@
 #include "RRROS2GameMode.h"
 
 // rclUE
-#include "Msgs/ROS2StringMsg.h"
+#include "Msgs/ROS2ClockMsg.h"
 #include "ROS2Node.h"
 #include "ROS2Publisher.h"
 
@@ -23,8 +23,8 @@ void ARRROS2GameMode::BeginPlay()
     ClockPublisher = NewObject<UROS2Publisher>(this);
     ClockPublisher->RegisterComponent();
     ClockPublisher->TopicName = TEXT("clock");
-    ClockPublisher->PublicationFrequencyHz = 1;
-    ClockPublisher->MsgClass = UROS2StringMsg::StaticClass();
+    ClockPublisher->PublicationFrequencyHz = 100;
+    ClockPublisher->MsgClass = UROS2ClockMsg::StaticClass();
 
     // [ClockPublisher] must be registered to [ROS2Node] before being initialized
     ROS2Node->AddPublisher(ClockPublisher);
