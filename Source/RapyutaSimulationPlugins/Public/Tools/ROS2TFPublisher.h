@@ -26,13 +26,13 @@ public:
     bool IsStatic = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString FrameId = TEXT("");
+    FString FrameId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString ChildFrameId = TEXT("");
+    FString ChildFrameId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FTransform TF;
+    FTransform TF = FTransform::Identity;
 
     void InitializeWithROS2(AROS2Node* InROS2Node) override;
     UFUNCTION(BlueprintCallable)

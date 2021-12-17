@@ -141,11 +141,11 @@ bool ATurtlebotROSController::GetOdomData(FROSOdometry& OutOdomData) const
 {
     ARobotVehicle* Vehicle = Turtlebot;
     const URobotVehicleMovementComponent* moveComponent = Vehicle->RobotVehicleMoveComponent;
-    if (moveComponent)
+    if (moveComponent && moveComponent->OdomData.IsValid())
     {
         TFPublisher->TF = moveComponent->GetOdomTF();
         OutOdomData = ConversionUtils::OdomUEToROS(moveComponent->OdomData);
-        return OutOdomData.IsValid();
+        return true;
     }
     else
     {
