@@ -59,19 +59,85 @@ void AROS2Camera::MessageUpdate(UROS2GenericMsg *TopicMessage)
 FROSImage AROS2Camera::GetData()
 {
     SceneCaptureComponent->CaptureScene();
+    CaptureNonBlocking();
+    if(!RenderRequestQueue.IsEmpty()){
+        // Peek the next RenderRequest from queue
+        FRenderRequest* nextRenderRequest = nullptr;
+        RenderRequestQueue.Peek(nextRenderRequest);
 
-    FTextureRenderTarget2DResource* RenderTargetResource;
-    RenderTargetResource = (FTextureRenderTarget2DResource*)RenderTarget->GameThread_GetRenderTargetResource();
-    if (RenderTargetResource) {
-        TArray<FColor> buffer;
-        RenderTargetResource->ReadPixels(buffer);
-        for (int I = 0; I < buffer.Num(); I++)
-        {
-            Data.data[I * 3 + 0] = buffer[I].R;
-            Data.data[I * 3 + 1] = buffer[I].G;
-            Data.data[I * 3 + 2] = buffer[I].B;
+        if(nextRenderRequest){ //nullptr check
+            if(nextRenderRequest->RenderFence.IsFenceComplete()){ // Check if rendering is done, indicated by RenderFence
+                for (int I = 0; I < nextRenderRequest->Image.Num(); I++)
+                {
+                    Data.data[I * 3 + 0] = nextRenderRequest->Image[I].R;
+                    Data.data[I * 3 + 1] = nextRenderRequest->Image[I].G;
+                    Data.data[I * 3 + 2] = nextRenderRequest->Image[I].B;
+                    // UE_LOG(LogTemp, Warning, TEXT("AsyncTaskDone"));
+                }
+
+                // Delete the first element from RenderQueue
+                RenderRequestQueue.Pop();
+                delete nextRenderRequest;
+            }
         }
-    }
+    }    
+
+    // SceneCaptureComponent->CaptureScene();
+    // FTextureRenderTarget2DResource* RenderTargetResource;
+    // RenderTargetResource = (FTextureRenderTarget2DResource*)RenderTarget->GameThread_GetRenderTargetResource();
+    // if (RenderTargetResource) {
+    //     TArray<FColor> buffer;
+    //     RenderTargetResource->ReadPixels(buffer);
+    //     for (int I = 0; I < buffer.Num(); I++)
+    //     {
+    //         Data.data[I * 3 + 0] = buffer[I].R;
+    //         Data.data[I * 3 + 1] = buffer[I].G;
+    //         Data.data[I * 3 + 2] = buffer[I].B;
+    //     }
+    // }
     
     return Data;
+}
+
+// reference https://github.com/TimmHess/UnrealImageCapture
+void AROS2Camera::CaptureNonBlocking(){
+
+   SceneCaptureComponent->TextureTarget->TargetGamma = GEngine->GetDisplayGamma();
+    // Get RenderContext
+    FTextureRenderTargetResource* renderTargetResource = SceneCaptureComponent->TextureTarget->GameThread_GetRenderTargetResource();
+
+    struct FReadSurfaceContext{
+        FRenderTarget* SrcRenderTarget;
+        TArray<FColor>* OutData;
+        FIntRect Rect;
+        FReadSurfaceDataFlags Flags;
+    };
+
+    // Init new RenderRequest
+    FRenderRequest* renderRequest = new FRenderRequest();
+
+    // Setup GPU command
+    FReadSurfaceContext readSurfaceContext = {
+        renderTargetResource,
+        &(renderRequest->Image),
+        FIntRect(0, 0, renderTargetResource->GetSizeXY().X, renderTargetResource->GetSizeXY().Y),
+        FReadSurfaceDataFlags(RCM_UNorm, CubeFace_MAX)
+    };
+
+    // Above 4.22 use this
+    ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)(
+    [readSurfaceContext, this](FRHICommandListImmediate& RHICmdList){
+        RHICmdList.ReadSurfaceData(
+            readSurfaceContext.SrcRenderTarget->GetRenderTargetTexture(),
+            readSurfaceContext.Rect,
+            *readSurfaceContext.OutData,
+            readSurfaceContext.Flags
+        );
+    });
+
+    // Notify new task in RenderQueue
+    RenderRequestQueue.Enqueue(renderRequest);
+
+    // Set RenderCommandFence
+    renderRequest->RenderFence.BeginFence();
 }

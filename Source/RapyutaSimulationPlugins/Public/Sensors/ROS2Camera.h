@@ -15,6 +15,13 @@
 /**
  * 
  */
+USTRUCT()
+struct FRenderRequest{
+	GENERATED_BODY()
+	TArray<FColor> Image;
+	FRenderCommandFence RenderFence;
+};
+
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API AROS2Camera : public AROS2Node
 {
@@ -32,6 +39,10 @@ protected:
 	
 	UFUNCTION()
 	void MessageUpdate(UROS2GenericMsg *TopicMessage);
+
+	void CaptureNonBlocking();
+
+	TQueue<FRenderRequest*> RenderRequestQueue;
 
 	FROSImage Data;
 
