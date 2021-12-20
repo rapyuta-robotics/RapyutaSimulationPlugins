@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ROS2Node.h"
-#include <Msgs/ROS2ImageMsg.h>
-#include "ROS2Publisher.h"
+#include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 
+#include "ROS2Node.h"
+#include <Msgs/ROS2ImageMsg.h>
+#include "ROS2Publisher.h"
 
 #include "ROS2Camera.generated.h"
 
@@ -23,7 +25,7 @@ struct FRenderRequest{
 };
 
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API AROS2Camera : public AROS2Node
+class RAPYUTASIMULATIONPLUGINS_API AROS2Camera : public ACameraActor
 {
 	GENERATED_BODY()
 	
@@ -54,12 +56,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UTextureRenderTarget2D *RenderTarget = nullptr;
 
+    UPROPERTY(Transient)
+    AROS2Node* Node;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UROS2Publisher* Publisher;
 
 	UFUNCTION(BlueprintCallable)
 	virtual FROSImage GetData();
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString NodeName = TEXT("");
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Namespace = TEXT("");
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString TopicName = TEXT("img_raw");
 
@@ -71,12 +82,6 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Height = 480;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int FOV = 90;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int OrthWidth = 320;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Encoding = TEXT("rgb8");;

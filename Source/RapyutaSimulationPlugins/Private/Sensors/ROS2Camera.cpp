@@ -1,6 +1,5 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-
 #include "Sensors/ROS2Camera.h"
 
 AROS2Camera::AROS2Camera()
@@ -15,8 +14,6 @@ void AROS2Camera::BeginPlay()
 
 void AROS2Camera::Init()
 {
-    Super::Init();
-
     // component initialization
     SceneCaptureComponent = NewObject<USceneCaptureComponent2D>(this, USceneCaptureComponent2D::StaticClass());
     // SceneCaptureComponent->RegisterComponent(); // not required?
@@ -24,8 +21,8 @@ void AROS2Camera::Init()
 
     // Initialize capture and texture component
     SceneCaptureComponent->SetWorldTransform(this->GetTransform());
-    SceneCaptureComponent->FOVAngle = FOV;
-    SceneCaptureComponent->OrthoWidth = OrthWidth;
+    SceneCaptureComponent->FOVAngle = GetCameraComponent()->FieldOfView;
+    SceneCaptureComponent->OrthoWidth = GetCameraComponent()->OrthoWidth;
     
     RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_B8G8R8A8, true);
     SceneCaptureComponent->TextureTarget = RenderTarget;
@@ -37,7 +34,13 @@ void AROS2Camera::Init()
     Data.step = Width * 3; // todo should be variable based on encoding
     Data.data.AddUninitialized(Width * Height * 3);
 
-    // ROS Image topic publisher
+    // Node and publisher initialize
+    FActorSpawnParameters SpawnParamsNode;
+    Node = GetWorld()->SpawnActor<AROS2Node>(AROS2Node::StaticClass(), SpawnParamsNode);
+    Node->Name = NodeName.IsEmpty() ? TEXT("UE4CameraNode_" + FGuid::NewGuid().ToString()) : NodeName;
+    Node->Namespace = FString();
+    Node->Init();
+
     Publisher =  NewObject<UROS2Publisher>(this, UROS2Publisher::StaticClass());
     Publisher->RegisterComponent();
     Publisher->TopicName = TopicName;
@@ -45,7 +48,7 @@ void AROS2Camera::Init()
     Publisher->MsgClass = UROS2ImageMsg::StaticClass();
     
     Publisher->UpdateDelegate.BindDynamic(this, &AROS2Camera::MessageUpdate);
-    AddPublisher(Publisher);
+    Node->AddPublisher(Publisher);
     Publisher->Init(UROS2QoS::KeepLast);
 
 }
