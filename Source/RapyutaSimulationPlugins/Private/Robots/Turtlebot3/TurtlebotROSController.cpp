@@ -125,13 +125,15 @@ void ATurtlebotROSController::MovementCallback(const UROS2GenericMsg* Msg)
         const FVector linear(ConversionUtils::VectorROSToUE(Output.linear));
         const FVector angular(ConversionUtils::RotationROSToUE(Output.angular));
 
+        // (Note) In this callback, which is invoked from ROS, the ROSController itself (this) could have been garbage collected,
+        // thus any direct referencing to its member in the lambda needs to be verified.
         AsyncTask(ENamedThreads::GameThread,
-                  [this, linear, angular]
+                  [linear, angular, vehicle = Turtlebot]
                   {
-                      if (IsValid(Turtlebot))
+                      if (IsValid(vehicle))
                       {
-                          Turtlebot->SetLinearVel(linear);
-                          Turtlebot->SetAngularVel(angular);
+                          vehicle->SetLinearVel(linear);
+                          vehicle->SetAngularVel(angular);
                       }
                   });
     }

@@ -27,4 +27,5 @@ void ARRROS2GameMode::BeginPlay()
     // Simulation state
     SimulationState = currentWorld->SpawnActor<ASimulationState>();
     SimulationState->ROSServiceNode = ROS2Node;
+    SimulationState->Init();
 }
