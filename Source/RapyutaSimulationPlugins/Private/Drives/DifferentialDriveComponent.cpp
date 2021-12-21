@@ -68,8 +68,8 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     uint64 ns = (uint64)(TimeNow * 1e+09f);
     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
-    OdomData.header_frame_id = FString("odom");
-    OdomData.child_frame_id = FString("base_footprint");
+    OdomData.header_frame_id = TEXT("odom");
+    OdomData.child_frame_id = TEXT("base_footprint");
 
     // vl and vr as computed here is ok for kinematics
     // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is
@@ -122,16 +122,16 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     OdomData.pose_covariance.Init(0, 36);
     OdomData.pose_covariance[0] = 0.01;
     OdomData.pose_covariance[7] = 0.01;
-    OdomData.pose_covariance[14] = 1000000000000.0;
-    OdomData.pose_covariance[21] = 1000000000000.0;
-    OdomData.pose_covariance[28] = 1000000000000.0;
+    OdomData.pose_covariance[14] = 1e+12;
+    OdomData.pose_covariance[21] = 1e+12;
+    OdomData.pose_covariance[28] = 1e+12;
     OdomData.pose_covariance[35] = 0.01;
     OdomData.twist_covariance.Init(0, 36);
     OdomData.twist_covariance[0] = 0.01;
     OdomData.twist_covariance[7] = 0.01;
-    OdomData.twist_covariance[14] = 1000000000000.0;
-    OdomData.twist_covariance[21] = 1000000000000.0;
-    OdomData.twist_covariance[28] = 1000000000000.0;
+    OdomData.twist_covariance[14] = 1e+12;
+    OdomData.twist_covariance[21] = 1e+12;
+    OdomData.twist_covariance[28] = 1e+12;
     OdomData.twist_covariance[35] = 0.01;
 
     // UE_LOG(LogTemp, Warning, TEXT("Input:"));

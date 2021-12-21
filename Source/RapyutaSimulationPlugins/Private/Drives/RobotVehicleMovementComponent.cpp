@@ -149,13 +149,10 @@ void URobotVehicleMovementComponent::TickComponent(float DeltaTime,
     }
 }
 
-FTransform URobotVehicleMovementComponent::GetOdomTF()
+FTransform URobotVehicleMovementComponent::GetOdomTF() const
 {
-    FTransform TF;
-    FVector Pos(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
-    TF.SetTranslation(Pos);
-    TF.SetRotation(OdomData.pose_pose_orientation);
-    return TF;
+    return FTransform(OdomData.pose_pose_orientation,
+                      FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z));
 }
 
 void URobotVehicleMovementComponent::Initialize()

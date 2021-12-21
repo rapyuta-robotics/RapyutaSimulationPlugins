@@ -5,21 +5,20 @@
 // rclUE
 #include "Srvs/ROS2SpawnEntitySrv.h"
 
-void UROS2Spawnable::InitializeParameters(FROSSpawnEntity_Request Request)
+void UROS2Spawnable::InitializeParameters(const FROSSpawnEntity_Request& InRequest)
 {
-    SetName(Request.state_name);
-    SetNamespace(Request.robot_namespace);
-
+    SetName(InRequest.state_name);
+    SetNamespace(InRequest.robot_namespace);
 }
 
-void UROS2Spawnable::SetName(FString Name)
+void UROS2Spawnable::SetName(const FString& InName)
 {
-    ActorName = Name;
+    ActorName = InName;
 }
 
-void UROS2Spawnable::SetNamespace(FString Namespace)
+void UROS2Spawnable::SetNamespace(const FString& InNamespace)
 {
-    ActorNamespace = Namespace;
+    ActorNamespace = InNamespace;
 }
 
 FString UROS2Spawnable::GetName()

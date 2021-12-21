@@ -31,24 +31,30 @@ public:
     void SetPerimeter();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* WheelLeft;
+    UPhysicsConstraintComponent* WheelLeft = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* WheelRight;
+    UPhysicsConstraintComponent* WheelRight = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float WheelRadius = 1.0f;
+    float WheelRadius = 1.f;
 
+    // todo get data from links
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float WheelSeparationHalf = 1.0f;    // todo get data from links
+    float WheelSeparationHalf = 1.f;
 
+    // todo get data from physics constraints
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MaxForce = 1000;    // todo get data from physics constraints
+    float MaxForce = 1000.f;
 
 private:
+    UPROPERTY()
     float WheelPerimeter = 6.28f;
 
-    float PoseEncoderX = 0;
-    float PoseEncoderY = 0;
-    float PoseEncoderTheta = 0;
+    UPROPERTY()
+    float PoseEncoderX = 0.f;
+    UPROPERTY()
+    float PoseEncoderY = 0.f;
+    UPROPERTY()
+    float PoseEncoderTheta = 0.f;
 };

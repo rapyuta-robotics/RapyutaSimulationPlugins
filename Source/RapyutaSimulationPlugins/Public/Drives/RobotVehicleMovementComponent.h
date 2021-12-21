@@ -33,22 +33,22 @@ public:
     FROSOdometry OdomData;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString FrameId = TEXT("");
+    FString FrameId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString ChildFrameId = TEXT("");
+    FString ChildFrameId;
 
     UPROPERTY(EditAnywhere)
     FTransform InitialTransform = FTransform::Identity;
 
     UFUNCTION(BlueprintCallable)
-    FTransform GetOdomTF();
+    FTransform GetOdomTF() const;
 
     UFUNCTION(BlueprintCallable)
     virtual void Initialize();
 
     UPROPERTY()
-    int InversionFactor = 1;
+    int8 InversionFactor = 1;
 
 protected:
     virtual void BeginPlay() override;
