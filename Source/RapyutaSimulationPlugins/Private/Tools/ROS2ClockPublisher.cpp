@@ -17,5 +17,6 @@ void UROS2ClockPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
 void UROS2ClockPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-    CastChecked<UROS2ClockMsg>(InMessage)->Update(FApp::GetDeltaTime());
+    // Noted: Elapsed time: time in seconds since world was brought up for play
+    CastChecked<UROS2ClockMsg>(InMessage)->Update(UGameplayStatics::GetTimeSeconds(GetWorld()));
 }
