@@ -28,13 +28,7 @@ public:
 
     void Scan() override;
 
-    void LidarMessageUpdate(UROS2GenericMsg* TopicMessage) override;
-
     bool Visible(AActor* TargetActor) override;
-
-    void InitLidar(AROS2Node* Node, const FString& TopicName) override;
-
-    void InitToNode(AROS2Node* Node) override;
 
     // this should probably be removed so that the sensor can be decoupled from the message types
     UFUNCTION(BlueprintCallable)

@@ -37,10 +37,9 @@ void ATurtlebotROSController::OnPossess(APawn* InPawn)
     for (auto& lidarComp : lidarComponents)
     {
         auto* lidar = Cast<URRBaseLidarComponent>(lidarComp);
-        if (lidar)
+        if (lidar != nullptr)
         {
-            lidar->InitToNode(TurtleNode);
-            lidar->Run();
+            lidar->InitLidar(TurtleNode);
         }
     }
 

@@ -13,12 +13,6 @@ URR2DLidarComponent::URR2DLidarComponent()
     LidarMsgClass = UROS2LaserScanMsg::StaticClass();
 }
 
-void URR2DLidarComponent::LidarMessageUpdate(UROS2GenericMsg* TopicMessage)
-{
-    UROS2LaserScanMsg* ScanMessage = Cast<UROS2LaserScanMsg>(TopicMessage);
-    ScanMessage->SetMsg(GetROS2Data());
-}
-
 void URR2DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -64,9 +58,8 @@ void URR2DLidarComponent::Run()
     TraceHandles.Init(FTraceHandle{}, NSamplesPerScan);
 #endif
 
-    GetWorld()->GetGameInstance()->GetTimerManager().SetTimer(
+    GetWorld()->GetTimerManager().SetTimer(
         TimerHandle, this, &URR2DLidarComponent::Scan, 1.f / static_cast<float>(ScanFrequency), true);
-    IsInitialized = true;
 }
 
 void URR2DLidarComponent::Scan()
@@ -74,7 +67,7 @@ void URR2DLidarComponent::Scan()
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
     // complex collisions: true
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, GetOwner());
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true, GetOwner());
     TraceParams.bReturnPhysicalMaterial = true;
 
     // TraceParams.bIgnoreTouches = true;
@@ -130,7 +123,7 @@ void URR2DLidarComponent::Scan()
         false);
 #endif
 
-    if (WithNoise)
+    if (BWithNoise)
     {
         // this approach to noise is different from the above:
         // noise on the linetrace input means that the further the hit, the larger the error, while here the error is independent
@@ -148,7 +141,7 @@ void URR2DLidarComponent::Scan()
     }
 
     TimeOfLastScan = UGameplayStatics::GetTimeSeconds(GetWorld());
-    dt = 1.f / static_cast<float>(ScanFrequency);
+    Dt = 1.f / static_cast<float>(ScanFrequency);
 
     // need to store on a structure associating hits with time?
     // GetROS2Data needs to get all data since the last Get? or the last within the last time interval?
@@ -168,16 +161,22 @@ void URR2DLidarComponent::Scan()
                     {
                         // UE_LOG(LogTemp, Warning, TEXT("retroreflective surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorReflected, 10, .5, dt);
-                        LineBatcher->DrawPoint(
-                            h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityReflective, Distance)), 5, 10, dt);
+                        LineBatcher->DrawPoint(h.ImpactPoint,
+                                               InterpColorFromIntensity(GetIntensityFromDist(IntensityReflective, Distance)),
+                                               5,
+                                               10,
+                                               Dt);
                     }
                     // non reflective material
                     else if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
                     {
                         // UE_LOG(LogTemp, Warning, TEXT("default surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
-                        LineBatcher->DrawPoint(
-                            h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance)), 5, 10, dt);
+                        LineBatcher->DrawPoint(h.ImpactPoint,
+                                               InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)),
+                                               5,
+                                               10,
+                                               Dt);
                     }
                     // reflective material
                     else if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
@@ -198,12 +197,12 @@ void URR2DLidarComponent::Scan()
                         // LineBatcher->DrawPoint(h.ImpactPoint, InterpolateColor(NormalAlignment), 5, 10, dt);
                         LineBatcher->DrawPoint(
                             h.ImpactPoint,
-                            GetColorFromIntensity(IntensityFromDist(
+                            InterpColorFromIntensity(GetIntensityFromDist(
                                 NormalAlignment * (IntensityReflective - IntensityNonReflective) + IntensityNonReflective,
                                 Distance)),
                             5,
                             10,
-                            dt);
+                            Dt);
                     }
                 }
                 else
@@ -211,13 +210,13 @@ void URR2DLidarComponent::Scan()
                     // UE_LOG(LogTemp, Warning, TEXT("no physics material"));
                     // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
                     LineBatcher->DrawPoint(
-                        h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance)), 5, 10, dt);
+                        h.ImpactPoint, InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)), 5, 10, Dt);
                 }
             }
             else if (ShowLidarRayMisses)
             {
                 // LineBatcher->DrawLine(h.TraceStart, h.TraceEnd, ColorMiss, 10, .25, dt);
-                LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, 10, dt);
+                LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, 10, Dt);
             }
         }
     }
@@ -231,7 +230,7 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
     // complex collisions: true
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, GetOwner());
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true, GetOwner());
     TraceParams.bReturnPhysicalMaterial = true;
     // TraceParams.bIgnoreTouches = true;
     TraceParams.bTraceComplex = true;
@@ -272,25 +271,6 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
     return false;
 }
 
-void URR2DLidarComponent::InitLidar(AROS2Node* Node, const FString& TopicName)
-{
-    Super::InitLidar(Node, TopicName);
-
-    Run();
-}
-
-void URR2DLidarComponent::InitToNode(AROS2Node* Node)
-{
-    if (IsValid(Node))
-    {
-        check(IsValid(LidarPublisher));
-
-        LidarPublisher->UpdateDelegate.BindDynamic(this, &URR2DLidarComponent::LidarMessageUpdate);
-        Node->AddPublisher(LidarPublisher);
-        LidarPublisher->Init(UROS2QoS::SensorData);
-    }
-}
-
 float URR2DLidarComponent::GetMinAngleRadians() const
 {
     return FMath::DegreesToRadians(-StartAngle - FOVHorizontal);
@@ -313,8 +293,8 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
     retValue.angle_min = GetMinAngleRadians();
     retValue.angle_max = GetMaxAngleRadians();
     retValue.angle_increment = FMath::DegreesToRadians(DHAngle);
-    retValue.time_increment = dt / NSamplesPerScan;
-    retValue.scan_time = dt;
+    retValue.time_increment = Dt / NSamplesPerScan;
+    retValue.scan_time = Dt;
     retValue.range_min = MinRange * .01f;
     retValue.range_max = MaxRange * .01f;
 
@@ -328,7 +308,7 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
         // convert to [m]
         retValue.ranges.Add((MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f);
 
-        const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
+        const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
 
         UStaticMeshComponent* ComponentHit = Cast<UStaticMeshComponent>(RecordedHits.Last(i).GetComponent());
         if (RecordedHits.Last(i).PhysMaterial != nullptr)

@@ -2,12 +2,9 @@
 
 #pragma once
 
-// std
-#include <random>
-
 // UE
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Engine/StaticMeshActor.h"
 
 // RapyutaSimulationPlugins
 #include "Sensors/RRBaseLidarComponent.h"
@@ -19,14 +16,14 @@
 #include "RRLidar.generated.h"
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API ARRLidar : public AActor
+class RAPYUTASIMULATIONPLUGINS_API ARRLidar : public AStaticMeshActor
 {
     GENERATED_BODY()
 
 public:
     ARRLidar();
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URRBaseLidarComponent* LidarComponent = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

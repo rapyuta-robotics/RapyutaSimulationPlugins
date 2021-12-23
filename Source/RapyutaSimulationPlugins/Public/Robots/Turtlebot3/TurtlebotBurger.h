@@ -11,6 +11,7 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
 
+class URR2DLidarComponent;
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARobotVehicle
 {
@@ -36,6 +37,9 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UStaticMeshComponent* LidarSensor = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URR2DLidarComponent* LidarComponent = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UStaticMeshComponent* WheelLeft = nullptr;
