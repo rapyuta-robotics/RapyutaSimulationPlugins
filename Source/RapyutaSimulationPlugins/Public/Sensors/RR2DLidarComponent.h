@@ -8,28 +8,28 @@
 
 // rclUE
 #include "Msgs/ROS2LaserScanMsg.h"
-#include "BaseLidar.h"
 
-#include "SensorLidar.generated.h"
+// RapyutaSimulationPlugins
+#include "Sensors/RRBaseLidarComponent.h"
+
+#include "RR2DLidarComponent.generated.h"
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API ASensorLidar : public ABaseLidar
+class RAPYUTASIMULATIONPLUGINS_API URR2DLidarComponent : public URRBaseLidarComponent
 {
     GENERATED_BODY()
 
 public:
-    // Sets default values for this actor's properties
-    ASensorLidar();
+    URR2DLidarComponent();
 
-    // Called every frame
-    virtual void Tick(float DeltaTime) override;
-    
+    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
     void Run() override;
-    
+
     void Scan() override;
 
     void LidarMessageUpdate(UROS2GenericMsg* TopicMessage) override;
-    
+
     bool Visible(AActor* TargetActor) override;
 
     void InitLidar(AROS2Node* Node, const FString& TopicName) override;

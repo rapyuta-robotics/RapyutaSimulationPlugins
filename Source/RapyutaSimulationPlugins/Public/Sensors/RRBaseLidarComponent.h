@@ -5,52 +5,68 @@
 // std
 #include <random>
 
+// UE
+#include "Components/StaticMeshComponent.h"
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 
+// rclUE
 #include "ROS2Node.h"
 #include "ROS2Publisher.h"
 
-#include "BaseLidar.generated.h"
+#include "RRBaseLidarComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
 #define TRACE_ASYNC 1
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API ABaseLidar : public AActor
+class RAPYUTASIMULATIONPLUGINS_API URRBaseLidarComponent : public UStaticMeshComponent
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	ABaseLidar();
+    GENERATED_BODY()
+
+public:
+    URRBaseLidarComponent();
+
+    UPROPERTY()
+    TSubclassOf<UROS2GenericMsg> LidarMsgClass;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
+    UFUNCTION(BlueprintCallable)
+    virtual void InitLidar(AROS2Node* InROS2Node, const FString& InTopicName);
 
     UFUNCTION(BlueprintCallable)
-    virtual void Run();
+    virtual void InitToNode(AROS2Node* InROS2Node)
+    {
+        checkNoEntry();
+    }
 
     UFUNCTION(BlueprintCallable)
-    virtual void Scan();
+    virtual void Run()
+    {
+        checkNoEntry();
+    }
+
+    UFUNCTION(BlueprintCallable)
+    virtual void Scan()
+    {
+        checkNoEntry();
+    }
 
     UFUNCTION()
-    virtual void LidarMessageUpdate(UROS2GenericMsg* TopicMessage);
+    virtual void LidarMessageUpdate(UROS2GenericMsg* TopicMessage)
+    {
+        checkNoEntry();
+    }
 
     UFUNCTION(BlueprintCallable)
-    virtual bool Visible(AActor* TargetActor);
-
-    UFUNCTION(BlueprintCallable)
-    virtual void InitLidar(AROS2Node* Node, const FString& TopicName);
-
-    UFUNCTION(BlueprintCallable)
-    virtual void InitToNode(AROS2Node* Node);
+    virtual bool Visible(AActor* TargetActor)
+    {
+        checkNoEntry();
+        return false;
+    }
 
     // adding the rest of the necessary information might be tedious
     // eventually split into multiple getters
@@ -58,7 +74,7 @@ public:
     void GetData(TArray<FHitResult>& OutHits, float& OutTime);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UROS2Publisher* LidarPublisher;
+    UROS2Publisher* LidarPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString FrameId = TEXT("base_scan");
@@ -134,12 +150,15 @@ public:
     FLinearColor GetColorFromIntensity(const float Intensity);
 
 protected:
-    float dt = 0.f;
+    UPROPERTY()
+    bool dt = 0.f;
+
+    UPROPERTY()
     bool IsInitialized = false;
 
     // C++11 RNG for noise
     std::random_device Rng;
-    std::mt19937 Gen;
+    std::mt19937 Gen = std::mt19937{Rng()};
     std::normal_distribution<> GaussianRNGPosition;
     std::normal_distribution<> GaussianRNGIntensity;
 

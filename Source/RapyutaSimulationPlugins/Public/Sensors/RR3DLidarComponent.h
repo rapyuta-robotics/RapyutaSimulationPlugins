@@ -6,29 +6,29 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
+// rclUE
 #include "Msgs/ROS2PointCloud2Msg.h"
-#include "Sensors/BaseLidar.h"
 
-#include "SensorLidar3D.generated.h"
+// RapyutaSimulationPlugins
+#include "Sensors/RRBaseLidarComponent.h"
+
+#include "RR3DLidarComponent.generated.h"
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API ASensorLidar3D : public ABaseLidar
+class RAPYUTASIMULATIONPLUGINS_API URR3DLidarComponent : public URRBaseLidarComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-    // Sets default values for this actor's properties
-    ASensorLidar3D();
+    URR3DLidarComponent();
+    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-    // Called every frame
-    virtual void Tick(float DeltaTime) override;
-    
     void Run() override;
 
     void Scan() override;
 
     void LidarMessageUpdate(UROS2GenericMsg* TopicMessage) override;
-    
+
     bool Visible(AActor* TargetActor) override;
 
     void InitLidar(AROS2Node* Node, const FString& TopicName) override;
@@ -39,12 +39,12 @@ public:
     FROSPointCloud2 GetROS2Data();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 NChannelsPerScan = 0; // vertical samples
-	
+    int32 NChannelsPerScan = 0;    // vertical samples
+
     // [degrees]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float StartVerticalAngle = 0.f;
-	
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float FOVVertical = 0.f;
 
