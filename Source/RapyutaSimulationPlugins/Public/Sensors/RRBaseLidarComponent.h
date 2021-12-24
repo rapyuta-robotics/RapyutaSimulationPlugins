@@ -39,12 +39,6 @@ public:
     void InitLidar(AROS2Node* InROS2Node, const FString& InTopicName = TEXT(""));
 
     UFUNCTION(BlueprintCallable)
-    virtual void InitToNode(AROS2Node* InROS2Node)
-    {
-        checkNoEntry();
-    }
-
-    UFUNCTION(BlueprintCallable)
     virtual void Run()
     {
         checkNoEntry();
@@ -52,12 +46,6 @@ public:
 
     UFUNCTION(BlueprintCallable)
     virtual void Scan()
-    {
-        checkNoEntry();
-    }
-
-    UFUNCTION()
-    virtual void LidarMessageUpdate(UROS2GenericMsg* TopicMessage)
     {
         checkNoEntry();
     }
