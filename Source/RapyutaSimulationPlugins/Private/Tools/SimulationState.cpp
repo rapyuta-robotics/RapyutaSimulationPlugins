@@ -251,6 +251,11 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
         else
         {
             UE_LOG(LogTemp, Warning, TEXT("Entity %s not found"), *Request.xml);
+            UE_LOG(LogTemp, Warning, TEXT("SpawnableEntities available : ") );
+            for (auto& Elem : SpawnableEntities)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("%s"), *Elem.Key );
+            }            
         }
     }
 
