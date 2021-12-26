@@ -3,7 +3,7 @@
 #include "Sensors/RRBaseLidarComponent.h"
 
 // RapyutaSimulationPlugins
-#include "Tools/ROS2LidarPublisher.h"
+#include "Tools/RRROS2LidarPublisher.h"
 
 DEFINE_LOG_CATEGORY(LogROS2Sensor);
 
@@ -26,7 +26,7 @@ void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTo
     if (nullptr == LidarPublisher)
     {
         // Instantiate Lidar publisher
-        LidarPublisher = NewObject<UROS2LidarPublisher>(this, *FString::Printf(TEXT("%sLidarPublisher"), *GetName()));
+        LidarPublisher = NewObject<URRROS2LidarPublisher>(this, *FString::Printf(TEXT("%sLidarPublisher"), *GetName()));
         LidarPublisher->LidarComponent = this;
 
         // Init [LidarPublisher] info

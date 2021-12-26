@@ -19,7 +19,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
 #define TRACE_ASYNC 1
 
-class UROS2LidarPublisher;
+class URRROS2LidarPublisher;
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRBaseLidarComponent : public USceneComponent
 {
@@ -63,7 +63,7 @@ public:
     void GetData(TArray<FHitResult>& OutHits, float& OutTime) const;
 
     UPROPERTY(Transient)
-    UROS2LidarPublisher* LidarPublisher = nullptr;
+    URRROS2LidarPublisher* LidarPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString FrameId = TEXT("base_scan");

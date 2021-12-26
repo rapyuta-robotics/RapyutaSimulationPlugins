@@ -5,10 +5,15 @@
 // UE
 #include "Kismet/GameplayStatics.h"
 
+// rclUE
+#include "Msgs/ROS2TwistMsg.h"
+#include "ROS2Node.h"
+
 // RapyutaSimulationPlugins
-#include "Drives/RobotVehicleMovementComponent.h"
 #include "Robots/RobotVehicle.h"
 #include "Sensors/RR2DLidarComponent.h"
+#include "Tools/RRROS2OdomPublisher.h"
+#include "Tools/RRROS2TFPublisher.h"
 #include "Tools/UEUtilities.h"
 
 ARRRobotVehicleROSController::ARRRobotVehicleROSController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -22,55 +27,58 @@ void ARRRobotVehicleROSController::InitVehicleROS2Node(APawn* InPawn)
     {
         VehicleROS2Node = GetWorld()->SpawnActor<AROS2Node>();
     }
-    VehicleROS2Node->SetActorLocation(InPawn->GetActorLocation());
-    VehicleROS2Node->AttachToActor(InPawn, FAttachmentTransformRules::KeepWorldTransform);
+    VehicleROS2Node->AttachToActor(InPawn, FAttachmentTransformRules::KeepRelativeTransform);
     VehicleROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *InPawn->GetName());
     VehicleROS2Node->Namespace = FString();
     VehicleROS2Node->Init();
 }
 
-void ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
+bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
 {
-    check(VehicleROS2Node);
+    if (false == IsValid(VehicleROS2Node))
+    {
+        return false;
+    }
 
     // TFPublisher
     if (nullptr == TFPublisher)
     {
-        TFPublisher = NewObject<UROS2TFPublisher>(this);
-        TFPublisher->RegisterComponent();
-
-        URobotVehicleMovementComponent* vehicleMovementComponent =
-            CastChecked<URobotVehicleMovementComponent>(InPawn->GetMovementComponent());
-        TFPublisher->FrameId = vehicleMovementComponent->FrameId = TEXT("odom");
-        TFPublisher->ChildFrameId = vehicleMovementComponent->ChildFrameId = TEXT("base_footprint");
-        TFPublisher->PublicationFrequencyHz = 50;
+        TFPublisher = NewObject<URRROS2TFPublisher>(this);
+        TFPublisher->SetupUpdateCallback();
     }
     TFPublisher->InitializeWithROS2(VehicleROS2Node);
 
     // OdomPublisher
     if (nullptr == OdomPublisher)
     {
-        OdomPublisher = NewObject<UROS2Publisher>(this);
-        OdomPublisher->RegisterComponent();
-        OdomPublisher->TopicName = TEXT("odom");
-        OdomPublisher->PublicationFrequencyHz = 30;
-        OdomPublisher->MsgClass = UROS2OdometryMsg::StaticClass();
-
-        OdomPublisher->UpdateDelegate.BindDynamic(this, &ARRRobotVehicleROSController::OdomMessageUpdate);
-        VehicleROS2Node->AddPublisher(OdomPublisher);
-        OdomPublisher->Init(UROS2QoS::KeepLast);
+        OdomPublisher = NewObject<URRROS2OdomPublisher>(this);
+        OdomPublisher->SetupUpdateCallback();
     }
+    OdomPublisher->InitializeWithROS2(VehicleROS2Node);
+    OdomPublisher->RobotVehicle = Cast<ARobotVehicle>(InPawn);
+    OdomPublisher->TFPublisher = TFPublisher;
+    return true;
 }
 
-void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString& InTopicName)
+bool ARRRobotVehicleROSController::InitSensors(APawn* InPawn)
 {
-    // Subscription with callback to enqueue vehicle spawn info.
-    if (ensure(IsValid(VehicleROS2Node)))
+    if (false == IsValid(VehicleROS2Node))
     {
-        FSubscriptionCallback cb;
-        cb.BindDynamic(this, &ARRRobotVehicleROSController::MovementCallback);
-        VehicleROS2Node->AddSubscription(InTopicName, UROS2TwistMsg::StaticClass(), cb);
+        return false;
     }
+
+    TInlineComponentArray<UActorComponent*> lidarComponents;
+    InPawn->GetComponents(LidarComponentClass, lidarComponents);
+    for (auto& lidarComp : lidarComponents)
+    {
+        URRBaseLidarComponent* lidar = Cast<URRBaseLidarComponent>(lidarComp);
+        if (lidar->IsValidLowLevel())
+        {
+            lidar->InitLidar(VehicleROS2Node);
+        }
+    }
+
+    return true;
 }
 
 void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
@@ -85,41 +93,28 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
     // Refresh ROS2Node
     InitVehicleROS2Node(InPawn);
 
-    // Initialize Pawn's Lidar components
-    TInlineComponentArray<UActorComponent*> lidarComponents;
-    InPawn->GetComponents(LidarComponentClass, lidarComponents);
-    for (auto& lidarComp : lidarComponents)
-    {
-        auto* lidar = Cast<URRBaseLidarComponent>(lidarComp);
-        if (lidar)
-        {
-            lidar->InitLidar(VehicleROS2Node);
-        }
-    }
+    // Initialize Pawn's sensors (lidar, etc.)
+    verify(InitSensors(InPawn));
 
-    // Initialize TF, Odom publishers
-    InitPublishers(InPawn);
-
-    // Subscribe to [cmd_vel]
-    SubscribeToMovementCommandTopic(TEXT("cmd_vel"));
+    // Refresh TF, Odom publishers
+    verify(InitPublishers(InPawn));
 }
 
 void ARRRobotVehicleROSController::OnUnPossess()
 {
-    TFPublisher->UpdateDelegate.RemoveDynamic(TFPublisher, &UROS2TFPublisher::UpdateTFMsg);
-    OdomPublisher->UpdateDelegate.RemoveDynamic(this, &ARRRobotVehicleROSController::OdomMessageUpdate);
-
+    TFPublisher->RevokeUpdateCallback();
+    OdomPublisher->RevokeUpdateCallback();
     Super::OnUnPossess();
 }
 
-void ARRRobotVehicleROSController::OdomMessageUpdate(UROS2GenericMsg* TopicMessage)
+void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString& InTopicName)
 {
-    FROSOdometry odomData;
-    bool bIsOdomDataValid = GetOdomData(odomData);
-    if (bIsOdomDataValid)
+    // Subscription with callback to enqueue vehicle spawn info.
+    if (ensure(IsValid(VehicleROS2Node)))
     {
-        UROS2OdometryMsg* odomMessage = CastChecked<UROS2OdometryMsg>(TopicMessage);
-        odomMessage->SetMsg(odomData);
+        FSubscriptionCallback cb;
+        cb.BindUObject(this, &ARRRobotVehicleROSController::MovementCallback);
+        VehicleROS2Node->AddSubscription(InTopicName, UROS2TwistMsg::StaticClass(), cb);
     }
 }
 
@@ -145,21 +140,5 @@ void ARRRobotVehicleROSController::MovementCallback(const UROS2GenericMsg* Msg)
                           vehicle->SetAngularVel(angular);
                       }
                   });
-    }
-}
-
-bool ARRRobotVehicleROSController::GetOdomData(FROSOdometry& OutOdomData) const
-{
-    ARobotVehicle* vehicle = Cast<ARobotVehicle>(GetPawn());
-    const URobotVehicleMovementComponent* moveComponent = vehicle ? vehicle->RobotVehicleMoveComponent : nullptr;
-    if (moveComponent && moveComponent->OdomData.IsValid())
-    {
-        TFPublisher->TF = moveComponent->GetOdomTF();
-        OutOdomData = ConversionUtils::OdomUEToROS(moveComponent->OdomData);
-        return true;
-    }
-    else
-    {
-        return false;
     }
 }

@@ -9,7 +9,7 @@
 #include "Msgs/ROS2EntityStateMsg.h"
 #include "ROS2Publisher.h"
 
-#include "StatePublisher.generated.h"
+#include "RRROS2StatePublisher.generated.h"
 
 class AROS2Node;
 
@@ -21,19 +21,13 @@ class AROS2Node;
  * should be this class that fetches all the necessary data to be published
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UStatePublisher : public UROS2Publisher
+class RAPYUTASIMULATIONPLUGINS_API URRROS2StatePublisher : public UROS2Publisher
 {
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintCallable)
-    virtual void RegisterPublisher(AROS2Node* Node);
-
-    UFUNCTION()
-    virtual void PublishState(UROS2GenericMsg* Msg);
-
-    UFUNCTION(BlueprintCallable)
-    virtual void Bind();
+    void InitializeWithROS2(AROS2Node* InROS2Node) override;
+    void UpdateMessage(UROS2GenericMsg* InMessage) override;
 
     UFUNCTION(BlueprintCallable)
     void AddEntityToPublish(const FString& InName,

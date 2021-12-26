@@ -14,4 +14,8 @@ class RAPYUTASIMULATIONPLUGINS_API ATurtlebotROSController : public ARRRobotVehi
 
 public:
     ATurtlebotROSController(const FObjectInitializer& ObjectInitializer);
+
+protected:
+    bool InitPublishers(APawn* InPawn) override;
+    void OnPossess(APawn* InPawn) override;
 };

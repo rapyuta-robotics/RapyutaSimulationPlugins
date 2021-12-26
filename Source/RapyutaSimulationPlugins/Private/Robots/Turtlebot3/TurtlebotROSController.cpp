@@ -2,10 +2,35 @@
 
 #include "Robots/Turtlebot3/TurtlebotROSController.h"
 
+// RapyutaSimulationPlugins
+#include "Drives/RobotVehicleMovementComponent.h"
+#include "Tools/RRROS2TFPublisher.h"
+
 ATurtlebotROSController::ATurtlebotROSController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-    TFFrameId = TEXT("odom");
-    TFChildFrameId = TEXT("base_footprint");
-    OdomTopicName = TEXT("odom");
-    CommandTopicName = TEXT("cmd_vel");
+}
+
+bool ATurtlebotROSController::InitPublishers(APawn* InPawn)
+{
+    if (false == Super::InitPublishers(InPawn))
+    {
+        return false;
+    }
+
+    // TFPublisher
+    check(TFPublisher);
+    URobotVehicleMovementComponent* vehicleMovementComponent =
+        CastChecked<URobotVehicleMovementComponent>(InPawn->GetMovementComponent());
+    TFPublisher->FrameId = vehicleMovementComponent->FrameId = TEXT("odom");
+    TFPublisher->ChildFrameId = vehicleMovementComponent->ChildFrameId = TEXT("base_footprint");
+
+    return true;
+}
+
+void ATurtlebotROSController::OnPossess(APawn* InPawn)
+{
+    Super::OnPossess(InPawn);
+
+    // Subscribe to [cmd_vel]
+    SubscribeToMovementCommandTopic(TEXT("/cmd_vel"));
 }

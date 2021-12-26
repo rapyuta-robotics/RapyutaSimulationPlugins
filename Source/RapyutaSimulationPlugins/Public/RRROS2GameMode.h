@@ -11,7 +11,7 @@
 #include "RRROS2GameMode.generated.h"
 
 class AROS2Node;
-class UROS2ClockPublisher;
+class URRROS2ClockPublisher;
 class ASimulationState;
 UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 {
@@ -22,7 +22,7 @@ public:
     AROS2Node* ROS2Node = nullptr;
 
     UPROPERTY(BlueprintReadWrite)
-    UROS2ClockPublisher* ClockPublisher = nullptr;
+    URRROS2ClockPublisher* ClockPublisher = nullptr;
 
     UPROPERTY(BlueprintReadWrite)
     ASimulationState* SimulationState = nullptr;
