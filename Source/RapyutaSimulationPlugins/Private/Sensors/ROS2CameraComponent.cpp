@@ -1,28 +1,27 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Sensors/ROS2Camera.h"
+#include "Sensors/ROS2CameraComponent.h"
 
-AROS2Camera::AROS2Camera()
+UROS2CameraComponent::UROS2CameraComponent()
 {
+    // component initialization
+    SceneCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCaptureComponent"));
+    RenderTarget = CreateDefaultSubobject<UTextureRenderTarget2D>(TEXT("RenderTarget"));
+
+    // Initialize capture and texture component
+    SceneCaptureComponent->SetupAttachment(this);
 }
 
-void AROS2Camera::BeginPlay()
+void UROS2CameraComponent::BeginPlay()
 {
 	Super::BeginPlay();	
     Init();
 }
 
-void AROS2Camera::Init()
+void UROS2CameraComponent::Init()
 {
-    // component initialization
-    SceneCaptureComponent = NewObject<USceneCaptureComponent2D>(this, USceneCaptureComponent2D::StaticClass());
-    // SceneCaptureComponent->RegisterComponent(); // not required?
-    RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
-
-    // Initialize capture and texture component
-    SceneCaptureComponent->SetWorldTransform(this->GetTransform());
-    SceneCaptureComponent->FOVAngle = GetCameraComponent()->FieldOfView;
-    SceneCaptureComponent->OrthoWidth = GetCameraComponent()->OrthoWidth;
+    SceneCaptureComponent->FOVAngle = FieldOfView;
+    SceneCaptureComponent->OrthoWidth = OrthoWidth;
     
     RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_B8G8R8A8, true);
     SceneCaptureComponent->TextureTarget = RenderTarget;
@@ -47,19 +46,18 @@ void AROS2Camera::Init()
     Publisher->PublicationFrequencyHz = PublishFreq;
     Publisher->MsgClass = UROS2ImageMsg::StaticClass();
     
-    Publisher->UpdateDelegate.BindDynamic(this, &AROS2Camera::MessageUpdate);
+    Publisher->UpdateDelegate.BindDynamic(this, &UROS2CameraComponent::MessageUpdate);
     Node->AddPublisher(Publisher);
     Publisher->Init(UROS2QoS::KeepLast);
-
 }
 
-void AROS2Camera::MessageUpdate(UROS2GenericMsg *TopicMessage)
+void UROS2CameraComponent::MessageUpdate(UROS2GenericMsg *TopicMessage)
 {
     UROS2ImageMsg *Message = Cast<UROS2ImageMsg>(TopicMessage);
     Message->SetMsg(GetData());
 }
 
-FROSImage AROS2Camera::GetData()
+FROSImage UROS2CameraComponent::GetData()
 {
     SceneCaptureComponent->CaptureScene();
     CaptureNonBlocking();
@@ -103,7 +101,7 @@ FROSImage AROS2Camera::GetData()
 }
 
 // reference https://github.com/TimmHess/UnrealImageCapture
-void AROS2Camera::CaptureNonBlocking(){
+void UROS2CameraComponent::CaptureNonBlocking(){
 
    SceneCaptureComponent->TextureTarget->TargetGamma = GEngine->GetDisplayGamma();
     // Get RenderContext

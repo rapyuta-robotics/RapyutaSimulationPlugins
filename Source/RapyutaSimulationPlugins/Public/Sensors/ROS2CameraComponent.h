@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
@@ -12,7 +11,7 @@
 #include <Msgs/ROS2ImageMsg.h>
 #include "ROS2Publisher.h"
 
-#include "ROS2Camera.generated.h"
+#include "ROS2CameraComponent.generated.h"
 
 /**
  * 
@@ -25,13 +24,13 @@ struct FRenderRequest{
 };
 
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API AROS2Camera : public ACameraActor
+class RAPYUTASIMULATIONPLUGINS_API UROS2CameraComponent : public UCameraComponent
 {
 	GENERATED_BODY()
 	
 public:
 
-	AROS2Camera();
+	UROS2CameraComponent();
 
 	virtual void Init();
 	
