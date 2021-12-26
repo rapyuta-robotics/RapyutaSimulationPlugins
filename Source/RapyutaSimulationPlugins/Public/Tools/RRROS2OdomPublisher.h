@@ -21,13 +21,18 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2OdomPublisher : public UROS2Publisher
     GENERATED_BODY()
 
 public:
-    UPROPERTY()
+    UPROPERTY(BlueprintReadWrite)
     TWeakObjectPtr<ARobotVehicle> RobotVehicle = nullptr;
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadWrite)
     TWeakObjectPtr<URRROS2TFPublisher> TFPublisher = nullptr;
 
     void InitializeWithROS2(AROS2Node* InROS2Node) override;
+    UFUNCTION(BlueprintCallable)
+    void InitOdomPublisher(AROS2Node* InROS2Node)
+    {
+        InitializeWithROS2(InROS2Node);
+    }
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
     bool GetOdomData(FROSOdometry& OutOdomData) const;
 };

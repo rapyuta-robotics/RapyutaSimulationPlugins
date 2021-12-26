@@ -61,6 +61,6 @@ protected:
 
     virtual void OnUnPossess() override;
 
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void SubscribeToMovementCommandTopic(const FString& InTopicName);
 };

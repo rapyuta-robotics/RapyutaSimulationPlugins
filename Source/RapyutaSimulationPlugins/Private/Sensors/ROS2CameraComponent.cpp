@@ -47,7 +47,7 @@ void UROS2CameraComponent::Init()
     Publisher->PublicationFrequencyHz = PublishFreq;
     Publisher->MsgClass = UROS2ImageMsg::StaticClass();
     
-    Publisher->UpdateDelegate.BindDynamic(this, &UROS2CameraComponent::MessageUpdate);
+    Publisher->UpdateDelegate.BindUObject(this, &UROS2CameraComponent::MessageUpdate);
     Node->AddPublisher(Publisher);
     Publisher->Init(UROS2QoS::KeepLast);
 
