@@ -10,4 +10,8 @@ ARRLidar::ARRLidar()
     USceneComponent* rootComponent =
         staticMeshComponent ? static_cast<USceneComponent*>(staticMeshComponent) : static_cast<USceneComponent*>(LidarComponent);
     SetRootComponent(rootComponent);
+    if (LidarComponent != rootComponent)
+    {
+        LidarComponent->SetupAttachment(rootComponent);
+    }
 }
