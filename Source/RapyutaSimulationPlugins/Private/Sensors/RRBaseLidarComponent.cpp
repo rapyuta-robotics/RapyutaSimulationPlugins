@@ -32,14 +32,16 @@ void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTo
         // Init [LidarPublisher] info
         LidarPublisher->PublicationFrequencyHz = ScanFrequency;
         LidarPublisher->MsgClass = LidarMsgClass;
-        if (false == InTopicName.IsEmpty())
-        {
-            LidarPublisher->TopicName = InTopicName;
-        }
-
-        // Register [LidarPublisher] to ROS2
-        LidarPublisher->InitializeWithROS2(InROS2Node);
     }
+
+    // Update [LidarPublisher]'s topic name
+    if (false == InTopicName.IsEmpty())
+    {
+        LidarPublisher->TopicName = InTopicName;
+    }
+
+    // Register [LidarPublisher] to the new ROS2 node
+    LidarPublisher->InitializeWithROS2(InROS2Node);
 
     // Start scanning the surroundings
     Run();
