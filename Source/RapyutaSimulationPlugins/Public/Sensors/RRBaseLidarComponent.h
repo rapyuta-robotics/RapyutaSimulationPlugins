@@ -62,7 +62,7 @@ public:
     UFUNCTION(BlueprintCallable)
     void GetData(TArray<FHitResult>& OutHits, float& OutTime) const;
 
-    UPROPERTY()
+    UPROPERTY(Transient)
     UROS2LidarPublisher* LidarPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

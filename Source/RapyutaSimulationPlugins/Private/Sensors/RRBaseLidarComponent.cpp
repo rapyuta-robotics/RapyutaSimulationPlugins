@@ -34,7 +34,7 @@ void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTo
         LidarPublisher->MsgClass = LidarMsgClass;
     }
 
-    // Register [LidarPublisher] to the new ROS2 node
+    // The publisher could have been garbaged for some reason
     if (IsValid(LidarPublisher))
     {
         // Update [LidarPublisher]'s topic name
@@ -42,6 +42,8 @@ void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTo
         {
             LidarPublisher->TopicName = InTopicName;
         }
+
+        // Register [LidarPublisher] to the new ROS2 node
         LidarPublisher->InitializeWithROS2(InROS2Node);
     }
 
