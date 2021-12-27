@@ -41,7 +41,10 @@ void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTo
     }
 
     // Register [LidarPublisher] to the new ROS2 node
-    LidarPublisher->InitializeWithROS2(InROS2Node);
+    if (IsValid(LidarPublisher))
+    {
+        LidarPublisher->InitializeWithROS2(InROS2Node);
+    }
 
     // Start scanning the surroundings
     Run();
