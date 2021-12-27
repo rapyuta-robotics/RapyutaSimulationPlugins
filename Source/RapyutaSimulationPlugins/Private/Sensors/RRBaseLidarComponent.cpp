@@ -11,10 +11,6 @@ URRBaseLidarComponent::URRBaseLidarComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
     BWithNoise = true;
-
-    // Instantiate Lidar publisher
-    LidarPublisher = CreateDefaultSubobject<UROS2LidarPublisher>(*FString::Printf(TEXT("%sLidarPublisher"), *GetName()));
-    LidarPublisher->LidarComponent = this;
 }
 
 void URRBaseLidarComponent::BeginPlay()
@@ -26,17 +22,26 @@ void URRBaseLidarComponent::BeginPlay()
 
 void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTopicName)
 {
-    // Init [LidarPublisher] info
-    LidarPublisher->PublicationFrequencyHz = ScanFrequency;
-    LidarPublisher->MsgClass = LidarMsgClass;
-    if (false == InTopicName.IsEmpty())
+    // Only need to initialize once
+    if (nullptr == LidarPublisher)
     {
-        LidarPublisher->TopicName = InTopicName;
+        // Instantiate Lidar publisher
+        LidarPublisher = NewObject<UROS2LidarPublisher>(this, *FString::Printf(TEXT("%sLidarPublisher"), *GetName()));
+        LidarPublisher->LidarComponent = this;
+
+        // Init [LidarPublisher] info
+        LidarPublisher->PublicationFrequencyHz = ScanFrequency;
+        LidarPublisher->MsgClass = LidarMsgClass;
+        if (false == InTopicName.IsEmpty())
+        {
+            LidarPublisher->TopicName = InTopicName;
+        }
+
+        // Register [LidarPublisher] to ROS2
+        LidarPublisher->InitializeWithROS2(InROS2Node);
     }
 
-    // Register [LidarPublisher] to ROS2
-    LidarPublisher->InitializeWithROS2(InROS2Node);
-
+    // Start scanning the surroundings
     Run();
 }
 
@@ -56,8 +61,8 @@ FLinearColor URRBaseLidarComponent::InterpolateColor(float InX)
 {
     // this means that viz and data sent won't correspond, which should be ok
     InX = InX + BWithNoise * GaussianRNGIntensity(Gen);
-    return InX > .5f ? FLinearColor::LerpUsingHSV(ColorMid, ColorMax, 2 * InX - 1)
-                     : FLinearColor::LerpUsingHSV(ColorMin, ColorMid, 2 * InX);
+    return (InX > .5f) ? FLinearColor::LerpUsingHSV(ColorMid, ColorMax, 2 * InX - 1)
+                       : FLinearColor::LerpUsingHSV(ColorMin, ColorMid, 2 * InX);
 }
 
 float URRBaseLidarComponent::GetIntensityFromDist(float InBaseIntensity, float InDistance)

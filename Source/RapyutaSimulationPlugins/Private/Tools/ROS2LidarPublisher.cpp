@@ -29,7 +29,7 @@ void UROS2LidarPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 void UROS2LidarPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
     // Noted: Elapsed time: time in seconds since world was brought up for play
-    auto* lidar2D = Cast<URR2DLidarComponent>(LidarComponent.Get());
+    auto* lidar2D = Cast<URR2DLidarComponent>(LidarComponent);
     if (nullptr != lidar2D)
     {
         CastChecked<UROS2LaserScanMsg>(InMessage)->SetMsg(lidar2D->GetROS2Data());

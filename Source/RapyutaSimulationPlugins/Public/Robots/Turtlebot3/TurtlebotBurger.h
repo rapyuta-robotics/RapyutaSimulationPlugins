@@ -2,16 +2,19 @@
 
 #pragma once
 
+// UE
 #include "CoreMinimal.h"
+
+// RapyutaSimulationPlugins
 #include "Drives/DifferentialDriveComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Robots/RobotVehicle.h"
+#include "Sensors/RR2DLidarComponent.h"
 
 #include "TurtlebotBurger.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
 
-class URR2DLidarComponent;
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARobotVehicle
 {

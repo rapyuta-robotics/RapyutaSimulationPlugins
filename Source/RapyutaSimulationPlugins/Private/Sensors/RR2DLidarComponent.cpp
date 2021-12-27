@@ -17,30 +17,30 @@ void URR2DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickTyp
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 #if TRACE_ASYNC
+    verify(TraceHandles.Num() == RecordedHits.Num());
     UWorld* world = GetWorld();
-    for (auto i = 0; i < NSamplesPerScan; ++i)
+    for (auto i = 0; i < TraceHandles.Num(); ++i)
     {
-        if (TraceHandles[i]._Data.FrameNumber != 0)
+        FTraceHandle& traceHandle = TraceHandles[i];
+        FHitResult& recordedHit = RecordedHits[i];
+        if (traceHandle._Data.FrameNumber != 0)
         {
             FTraceDatum Output;
 
-            if (world->QueryTraceData(TraceHandles[i], Output))
+            if (world->QueryTraceData(traceHandle, Output))
             {
                 if (Output.OutHits.Num() > 0)
                 {
-                    check(Output.OutHits.Num() > 0);
-                    check(i < RecordedHits.Num());
-                    check(i < TraceHandles.Num());
-                    TraceHandles[i]._Data.FrameNumber = 0;
+                    traceHandle._Data.FrameNumber = 0;
                     // We should only be tracing the first hit anyhow
-                    RecordedHits[i] = Output.OutHits[0];
+                    recordedHit = Output.OutHits[0];
                 }
                 else
                 {
-                    TraceHandles[i]._Data.FrameNumber = 0;
-                    RecordedHits[i] = FHitResult();
-                    RecordedHits[i].TraceStart = Output.Start;
-                    RecordedHits[i].TraceEnd = Output.End;
+                    traceHandle._Data.FrameNumber = 0;
+                    recordedHit = FHitResult();
+                    recordedHit.TraceStart = Output.Start;
+                    recordedHit.TraceEnd = Output.End;
                 }
             }
         }
@@ -50,12 +50,10 @@ void URR2DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickTyp
 
 void URR2DLidarComponent::Run()
 {
-    RecordedHits.Empty();
     RecordedHits.Init(FHitResult(ForceInit), NSamplesPerScan);
 
 #if TRACE_ASYNC
-    TraceHandles.Empty();
-    TraceHandles.Init(FTraceHandle{}, NSamplesPerScan);
+    TraceHandles.Init(FTraceHandle(), NSamplesPerScan);
 #endif
 
     GetWorld()->GetTimerManager().SetTimer(
@@ -80,10 +78,10 @@ void URR2DLidarComponent::Scan()
 #if TRACE_ASYNC
     // This is cheesy, but basically if the first trace is in flight we assume they're all waiting and don't do another trace.
     // This is not good if done on other threads and only works because both timers and actor ticks happen on the game thread.
-    if (TraceHandles[0]._Data.FrameNumber == 0)
+    if ((TraceHandles.Num() > 0) && (TraceHandles[0]._Data.FrameNumber == 0))
     {
         UWorld* world = GetWorld();
-        for (auto i = 0; i < NSamplesPerScan; ++i)
+        for (auto i = 0; i < TraceHandles.Num(); ++i)
         {
             const float HAngle = StartAngle + DHAngle * i;
 
@@ -105,7 +103,7 @@ void URR2DLidarComponent::Scan()
     }
 #else
     ParallelFor(
-        NSamplesPerScan,
+        RecordedHits.Num(),
         [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
         {
             const float HAngle = StartAngle + DHAngle * Index;
@@ -129,7 +127,7 @@ void URR2DLidarComponent::Scan()
         // noise on the linetrace input means that the further the hit, the larger the error, while here the error is independent
         // from distance
         ParallelFor(
-            NSamplesPerScan,
+            RecordedHits.Num(),
             [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
             {
                 RecordedHits[Index].ImpactPoint +=
@@ -240,7 +238,7 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
     FRotator lidarRot = GetComponentRotation();
 
     ParallelFor(
-        NSamplesPerScan,
+        RecordedVizHits.Num(),
         [this, &TraceParams, &lidarPos, &lidarRot, &RecordedVizHits](int32 Index)
         {
             const float HAngle = StartAngle + DHAngle * Index;

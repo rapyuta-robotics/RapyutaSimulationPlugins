@@ -11,31 +11,29 @@ void URR3DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickTyp
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 #if TRACE_ASYNC
+    verify(TraceHandles.Num() == RecordedHits.Num());
     UWorld* world = GetWorld();
-    const uint64 nTotalScan = GetTotalScan();
-    for (auto i = 0; i < nTotalScan; ++i)
+    for (auto i = 0; i < TraceHandles.Num(); ++i)
     {
-        if (TraceHandles[i]._Data.FrameNumber != 0)
+        FTraceHandle& traceHandle = TraceHandles[i];
+        FHitResult& recordedHit = RecordedHits[i];
+        if (traceHandle._Data.FrameNumber != 0)
         {
             FTraceDatum Output;
-
-            if (world->QueryTraceData(TraceHandles[i], Output))
+            if (world->QueryTraceData(traceHandle, Output))
             {
                 if (Output.OutHits.Num() > 0)
                 {
-                    check(Output.OutHits.Num() > 0);
-                    check(i < RecordedHits.Num());
-                    check(i < TraceHandles.Num());
-                    TraceHandles[i]._Data.FrameNumber = 0;
+                    traceHandle._Data.FrameNumber = 0;
                     // We should only be tracing the first hit anyhow
-                    RecordedHits[i] = Output.OutHits[0];
+                    recordedHit = Output.OutHits[0];
                 }
                 else
                 {
-                    TraceHandles[i]._Data.FrameNumber = 0;
-                    RecordedHits[i] = FHitResult();
-                    RecordedHits[i].TraceStart = Output.Start;
-                    RecordedHits[i].TraceEnd = Output.End;
+                    traceHandle._Data.FrameNumber = 0;
+                    recordedHit = FHitResult();
+                    recordedHit.TraceStart = Output.Start;
+                    recordedHit.TraceEnd = Output.End;
                 }
             }
         }
@@ -47,12 +45,10 @@ void URR3DLidarComponent::Run()
 {
     const uint64 nTotalScan = GetTotalScan();
 
-    RecordedHits.Empty();
     RecordedHits.Init(FHitResult(ForceInit), nTotalScan);
 
 #if TRACE_ASYNC
-    TraceHandles.Empty();
-    TraceHandles.Init(FTraceHandle{}, nTotalScan);
+    TraceHandles.Init(FTraceHandle(), nTotalScan);
 #endif
 
     GetWorld()->GetTimerManager().SetTimer(
@@ -78,11 +74,10 @@ void URR3DLidarComponent::Scan()
 #if TRACE_ASYNC
     // This is cheesy, but basically if the first trace is in flight we assume they're all waiting and don't do another trace.
     // This is not good if done on other threads and only works because both timers and actor ticks happen on the game thread.
-    if (TraceHandles[0]._Data.FrameNumber == 0)
+    if ((TraceHandles.Num() > 0) && (TraceHandles[0]._Data.FrameNumber == 0))
     {
         UWorld* world = GetWorld();
-        const uint64 nTotalScan = GetTotalScan();
-        for (auto i = 0; i < nTotalScan; ++i)
+        for (auto i = 0; i < TraceHandles.Num(); ++i)
         {
             const int IdxX = i % NSamplesPerScan;
             const int IdxY = i / NSamplesPerScan;
@@ -107,7 +102,7 @@ void URR3DLidarComponent::Scan()
     }
 #else
     ParallelFor(
-        NSamplesPerScan * NChannelsPerScan,
+        RecordedHits.Num(),
         [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
         {
             const int IdxX = Index % NSamplesPerScan;
@@ -134,7 +129,7 @@ void URR3DLidarComponent::Scan()
         // noise on the linetrace input means that the further the hit, the larger the error, while here the error is independent
         // from distance
         ParallelFor(
-            NSamplesPerScan * NChannelsPerScan,
+            RecordedHits.Num(),
             [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
             {
                 RecordedHits[Index].ImpactPoint +=
@@ -230,7 +225,7 @@ void URR3DLidarComponent::Scan()
 bool URR3DLidarComponent::Visible(AActor* TargetActor)
 {
     TArray<FHitResult> RecordedVizHits;
-    RecordedVizHits.Init(FHitResult(ForceInit), NSamplesPerScan * NChannelsPerScan);
+    RecordedVizHits.Init(FHitResult(ForceInit), GetTotalScan());
 
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
     DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
@@ -246,7 +241,7 @@ bool URR3DLidarComponent::Visible(AActor* TargetActor)
     FRotator lidarRot = GetComponentRotation();
 
     ParallelFor(
-        NSamplesPerScan * NChannelsPerScan,
+        RecordedVizHits.Num(),
         [this, &TraceParams, &lidarPos, &lidarRot, &RecordedVizHits](int32 Index)
         {
             const int IdxX = Index % NSamplesPerScan;
