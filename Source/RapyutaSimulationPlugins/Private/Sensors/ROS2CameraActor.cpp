@@ -2,12 +2,8 @@
 
 #include "Sensors/ROS2CameraActor.h"
 
-AROS2CameraActor::AROS2CameraActor() : Super()
+AROS2CameraActor::AROS2CameraActor()
 {
-	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
-
-	// Make the scene component the root component
-	RootComponent = SceneComponent;
 	
 	// Setup camera defaults
 	CameraComponent = CreateDefaultSubobject<UROS2CameraComponent>(TEXT("CameraComponent"));
@@ -16,5 +12,5 @@ AROS2CameraActor::AROS2CameraActor() : Super()
 	CameraComponent->AspectRatio = 1.777778f;
 	CameraComponent->PostProcessBlendWeight = 1.0f;
 	
-	CameraComponent->SetupAttachment(SceneComponent);
+	RootComponent = CameraComponent;
 }
