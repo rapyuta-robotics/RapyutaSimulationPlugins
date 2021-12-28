@@ -6,7 +6,6 @@ UROS2CameraComponent::UROS2CameraComponent()
 {
     // component initialization
     SceneCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCaptureComponent"));
-    RenderTarget = CreateDefaultSubobject<UTextureRenderTarget2D>(TEXT("RenderTarget"));
 
     // Initialize capture and texture component
     SceneCaptureComponent->SetupAttachment(this);
@@ -23,6 +22,7 @@ void UROS2CameraComponent::Init()
     SceneCaptureComponent->FOVAngle = FieldOfView;
     SceneCaptureComponent->OrthoWidth = OrthoWidth;
     
+    RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
     RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_B8G8R8A8, true);
     SceneCaptureComponent->TextureTarget = RenderTarget;
 
@@ -34,9 +34,8 @@ void UROS2CameraComponent::Init()
     Data.data.AddUninitialized(Width * Height * 3);
 
     // Node and publisher initialize
-    FActorSpawnParameters SpawnParamsNode;
-    Node = GetWorld()->SpawnActor<AROS2Node>(AROS2Node::StaticClass(), SpawnParamsNode);
-    Node->Name = NodeName.IsEmpty() ? TEXT("UE4CameraNode_" + FGuid::NewGuid().ToString()) : NodeName;
+    Node = GetWorld()->SpawnActor<AROS2Node>();
+    Node->Name = NodeName.IsEmpty() ? FString::Printf(TEXT("%s_%s_ROS2CameraNode"), *(GetOwner()->GetName()), *(GetName())) : NodeName;
     Node->Namespace = FString();
     Node->Init();
 

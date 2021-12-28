@@ -65,10 +65,10 @@ public:
 	virtual FROSImage GetData();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString NodeName = TEXT("");
+	FString NodeName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Namespace = TEXT("");
+	FString Namespace;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString TopicName = TEXT("img_raw");
@@ -77,10 +77,10 @@ public:
 	int32 PublishFreq = 1;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int Width = 640;
+	int32 Width = 640;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int Height = 480;
+	int32 Height = 480;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Encoding = TEXT("rgb8");;
