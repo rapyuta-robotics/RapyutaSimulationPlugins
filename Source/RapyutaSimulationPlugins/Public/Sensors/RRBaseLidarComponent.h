@@ -66,6 +66,9 @@ public:
     URRROS2LidarPublisher* LidarPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString TopicName = TEXT("scan");
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString FrameId = TEXT("base_scan");
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

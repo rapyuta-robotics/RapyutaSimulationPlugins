@@ -39,10 +39,8 @@ void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTo
         LidarPublisher->MsgClass = LidarMsgClass;
 
         // Update [LidarPublisher]'s topic name
-        if (false == InTopicName.IsEmpty())
-        {
-            LidarPublisher->TopicName = InTopicName;
-        }
+        LidarPublisher->TopicName = InTopicName.IsEmpty() ? TopicName : InTopicName;
+        verify(false == LidarPublisher->TopicName.IsEmpty());
 
         // Register [LidarPublisher] to the new ROS2 node
         LidarPublisher->InitializeWithROS2(InROS2Node);
