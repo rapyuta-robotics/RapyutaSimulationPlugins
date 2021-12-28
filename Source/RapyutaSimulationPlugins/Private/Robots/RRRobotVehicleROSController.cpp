@@ -12,30 +12,38 @@
 // RapyutaSimulationPlugins
 #include "Robots/RobotVehicle.h"
 #include "Sensors/RR2DLidarComponent.h"
+#include "Tools/RRGeneralUtils.h"
 #include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
 #include "Tools/UEUtilities.h"
 
-ARRRobotVehicleROSController::ARRRobotVehicleROSController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+void ARRRobotVehicleROSController::InitRobotROS2Node(APawn* InPawn)
 {
-    LidarComponentClass = URR2DLidarComponent::StaticClass();
-}
-
-void ARRRobotVehicleROSController::InitVehicleROS2Node(APawn* InPawn)
-{
-    if (nullptr == VehicleROS2Node)
+    if (nullptr == RobotROS2Node)
     {
-        VehicleROS2Node = GetWorld()->SpawnActor<AROS2Node>();
+        RobotROS2Node = GetWorld()->SpawnActor<AROS2Node>();
     }
-    VehicleROS2Node->AttachToActor(InPawn, FAttachmentTransformRules::KeepRelativeTransform);
-    VehicleROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *InPawn->GetName());
-    VehicleROS2Node->Namespace = FString();
-    VehicleROS2Node->Init();
+    RobotROS2Node->AttachToActor(InPawn, FAttachmentTransformRules::KeepRelativeTransform);
+    // GUID is to make sure the node name is unique, even for multiple Sims?
+    RobotROS2Node->Name = URRGeneralUtils::GetNewROS2NodeName();
+
+    // Set robot's [ROS2Node] namespace from spawn parameters if existing
+    UROS2Spawnable* rosSpawnParameters = FindComponentByClass<UROS2Spawnable>();
+    if (rosSpawnParameters)
+    {
+        RobotROS2Node->Namespace = rosSpawnParameters->GetNamespace();
+    }
+    else
+    {
+        RobotROS2Node->Namespace = CastChecked<ARobotVehicle>(InPawn)->RobotUniqueName;
+    }
+
+    RobotROS2Node->Init();
 }
 
 bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
 {
-    if (false == IsValid(VehicleROS2Node))
+    if (false == IsValid(RobotROS2Node))
     {
         return false;
     }
@@ -46,7 +54,7 @@ bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
         TFPublisher = NewObject<URRROS2TFPublisher>(this);
         TFPublisher->SetupUpdateCallback();
     }
-    TFPublisher->InitializeWithROS2(VehicleROS2Node);
+    TFPublisher->InitializeWithROS2(RobotROS2Node);
 
     // OdomPublisher
     if (nullptr == OdomPublisher)
@@ -54,30 +62,9 @@ bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
         OdomPublisher = NewObject<URRROS2OdomPublisher>(this);
         OdomPublisher->SetupUpdateCallback();
     }
-    OdomPublisher->InitializeWithROS2(VehicleROS2Node);
-    OdomPublisher->RobotVehicle = Cast<ARobotVehicle>(InPawn);
+    OdomPublisher->InitializeWithROS2(RobotROS2Node);
+    OdomPublisher->RobotVehicle = CastChecked<ARobotVehicle>(InPawn);
     OdomPublisher->TFPublisher = TFPublisher;
-    return true;
-}
-
-bool ARRRobotVehicleROSController::InitSensors(APawn* InPawn)
-{
-    if (false == IsValid(VehicleROS2Node))
-    {
-        return false;
-    }
-
-    TInlineComponentArray<UActorComponent*> lidarComponents;
-    InPawn->GetComponents(LidarComponentClass, lidarComponents);
-    for (auto& lidarComp : lidarComponents)
-    {
-        URRBaseLidarComponent* lidar = Cast<URRBaseLidarComponent>(lidarComp);
-        if (lidar->IsValidLowLevel())
-        {
-            lidar->InitLidar(VehicleROS2Node);
-        }
-    }
-
     return true;
 }
 
@@ -90,11 +77,11 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
     InitialOrientation = InPawn->GetActorRotation();
     InitialOrientation.Yaw += 180.f;
 
-    // Refresh ROS2Node
-    InitVehicleROS2Node(InPawn);
+    // Instantiate a ROS2 node for each possessed [InPawn]
+    InitRobotROS2Node(InPawn);
 
     // Initialize Pawn's sensors (lidar, etc.)
-    verify(InitSensors(InPawn));
+    verify(CastChecked<ARobotVehicle>(InPawn)->InitSensors(RobotROS2Node));
 
     // Refresh TF, Odom publishers
     verify(InitPublishers(InPawn));
@@ -110,24 +97,25 @@ void ARRRobotVehicleROSController::OnUnPossess()
 void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString& InTopicName)
 {
     // Subscription with callback to enqueue vehicle spawn info.
-    if (ensure(IsValid(VehicleROS2Node)))
+    if (ensure(IsValid(RobotROS2Node)))
     {
         FSubscriptionCallback cb;
         cb.BindUObject(this, &ARRRobotVehicleROSController::MovementCallback);
-        VehicleROS2Node->AddSubscription(InTopicName, UROS2TwistMsg::StaticClass(), cb);
+        RobotROS2Node->AddSubscription(InTopicName, UROS2TwistMsg::StaticClass(), cb);
     }
 }
 
 void ARRRobotVehicleROSController::MovementCallback(const UROS2GenericMsg* Msg)
 {
-    const UROS2TwistMsg* Concrete = Cast<UROS2TwistMsg>(Msg);
-
-    if (IsValid(Concrete))
+    const UROS2TwistMsg* twistMsg = Cast<UROS2TwistMsg>(Msg);
+    if (IsValid(twistMsg))
     {
-        FROSTwist Output;
-        Concrete->GetMsg(Output);
-        const FVector linear(ConversionUtils::VectorROSToUE(Output.linear));
-        const FVector angular(ConversionUtils::RotationROSToUE(Output.angular));
+        // TODO refactoring will be needed to put units and system of reference conversions in a consistent location
+        // probably should not stay in msg though
+        FROSTwist twist;
+        twistMsg->GetMsg(twist);
+        const FVector linear(ConversionUtils::VectorROSToUE(twist.linear));
+        const FVector angular(ConversionUtils::RotationROSToUE(twist.angular));
 
         // (Note) In this callback, which could be invoked from a ROS working thread,
         // the ROSController itself (this) could have been garbage collected,

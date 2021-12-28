@@ -7,11 +7,10 @@
 
 // rclUE
 #include "Msgs/ROS2EntityStateMsg.h"
+#include "ROS2Node.h"
 #include "ROS2Publisher.h"
 
 #include "RRROS2StatePublisher.generated.h"
-
-class AROS2Node;
 
 /**
  * This class should be attached to a robot and publish its states
@@ -41,4 +40,10 @@ public:
 
     UPROPERTY()
     int32 Idx = 0;
+
+    UPROPERTY()
+    FString RobotUniqueName;
+
+    UPROPERTY(EditAnywhere)
+    AActor* Robot = nullptr;
 };

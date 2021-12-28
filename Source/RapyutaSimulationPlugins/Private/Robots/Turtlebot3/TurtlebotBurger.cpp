@@ -24,7 +24,7 @@ void ATurtlebotBurger::Init()
     if (!IsInitialized)
     {
         Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
-        SetRootComponent(Base);
+        RootComponent = Base;
         LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
         LidarComponent = CreateDefaultSubobject<URR2DLidarComponent>(TEXT("LidarComp"));
         WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));

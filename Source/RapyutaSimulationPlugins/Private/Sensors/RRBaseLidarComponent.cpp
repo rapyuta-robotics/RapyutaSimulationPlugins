@@ -22,21 +22,22 @@ void URRBaseLidarComponent::BeginPlay()
 
 void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTopicName)
 {
-    // Only need to initialize once
+    // Init [LidarPublisher] info
     if (nullptr == LidarPublisher)
     {
         // Instantiate Lidar publisher
         LidarPublisher = NewObject<URRROS2LidarPublisher>(this, *FString::Printf(TEXT("%sLidarPublisher"), *GetName()));
         LidarPublisher->LidarComponent = this;
-
-        // Init [LidarPublisher] info
-        LidarPublisher->PublicationFrequencyHz = ScanFrequency;
-        LidarPublisher->MsgClass = LidarMsgClass;
     }
 
-    // The publisher could have been garbaged for some reason
+    // Update with new dynamic data (for example possibly reconfigured by BP child actor)
+    // (NOTE) The publisher could have been garbaged for some reason
     if (IsValid(LidarPublisher))
     {
+        LidarPublisher->PublicationFrequencyHz = ScanFrequency;
+        verify(LidarMsgClass);
+        LidarPublisher->MsgClass = LidarMsgClass;
+
         // Update [LidarPublisher]'s topic name
         if (false == InTopicName.IsEmpty())
         {

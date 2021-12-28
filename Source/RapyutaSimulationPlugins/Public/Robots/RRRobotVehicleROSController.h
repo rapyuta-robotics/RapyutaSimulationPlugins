@@ -9,19 +9,22 @@
 // RapyutaSimulationPlugins
 #include "Sensors/RRBaseLidarComponent.h"
 
+// rclUE
+#include "ROS2Node.h"
+#include "Tools/RRROS2OdomPublisher.h"
+#include "Tools/RRROS2TFPublisher.h"
+
 #include "RRRobotVehicleROSController.generated.h"
 
-class AROS2Node;
-class URRROS2TFPublisher;
-class URRROS2OdomPublisher;
+// (NOTE) Each robot would have a ROS-AI Controller thus also a ROS2Node for its own
+// https://answers.unrealengine.com/questions/871116/view.html
+// https://answers.unrealengine.com/questions/239159/how-many-ai-controllers-should-i-have.html
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public AAIController
 {
     GENERATED_BODY()
 
 public:
-    ARRRobotVehicleROSController(const FObjectInitializer& ObjectInitializer);
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 RobotID = 0;
 
@@ -31,9 +34,8 @@ public:
 
 protected:
     UPROPERTY(Transient)
-    AROS2Node* VehicleROS2Node = nullptr;
-    UFUNCTION()
-    void InitVehicleROS2Node(APawn* InPawn);
+    AROS2Node* RobotROS2Node = nullptr;
+    void InitRobotROS2Node(APawn* InPawn);
 
     UPROPERTY()
     FVector InitialPosition = FVector::ZeroVector;
@@ -41,18 +43,12 @@ protected:
     UPROPERTY()
     FRotator InitialOrientation = FRotator::ZeroRotator;
 
-    UPROPERTY(Transient)
+    UPROPERTY(Transient, BlueprintReadWrite)
     URRROS2TFPublisher* TFPublisher = nullptr;
-    UPROPERTY(Transient)
+    UPROPERTY(Transient, BlueprintReadWrite)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
     UFUNCTION()
     virtual bool InitPublishers(APawn* InPawn);
-
-    UFUNCTION()
-    virtual bool InitSensors(APawn* InPawn);
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<URRBaseLidarComponent> LidarComponentClass;
 
     UFUNCTION()
     virtual void MovementCallback(const UROS2GenericMsg* Msg);

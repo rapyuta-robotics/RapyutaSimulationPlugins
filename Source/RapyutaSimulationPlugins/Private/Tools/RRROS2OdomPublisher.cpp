@@ -15,7 +15,7 @@ void URRROS2OdomPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
     TopicName = TEXT("odom");
     PublicationFrequencyHz = 30;
 
-    // [URRROS2OdomPublisher] must be already registered to [InROS2Node] (in Super::) before being initialized
+    // [URRROS2OdomPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
     Init(UROS2QoS::KeepLast);
 }
 

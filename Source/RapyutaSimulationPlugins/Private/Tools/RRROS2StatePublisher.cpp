@@ -16,13 +16,16 @@ void URRROS2StatePublisher::InitializeWithROS2(AROS2Node* InROS2Node)
     TopicName = TEXT("state");
     PublicationFrequencyHz = 100;
 
-    // [URRROS2StatePublisher] must be already registered to [InROS2Node] (in Super::) before being initialized
-    Init(UROS2QoS::Default);
+    // [URRROS2StatePublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
+    Init(UROS2QoS::DynamicBroadcaster);
 }
 
 void URRROS2StatePublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-    Idx = Idx % StatesToPublish.Num();
+    if ((++Idx) >= StatesToPublish.Num())
+    {
+        Idx = 0;
+    }
     CastChecked<UROS2EntityStateMsg>(InMessage)->SetMsg(StatesToPublish[Idx]);
 }
 

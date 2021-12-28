@@ -1,4 +1,5 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+#pragma once
 
 // UE
 #include "Engine/World.h"
@@ -20,5 +21,10 @@ public:
     {
         // Also invalidate the timer here-in!
         World->GetTimerManager().ClearTimer(TimerHandle);
+    }
+
+    static FString GetNewROS2NodeName()
+    {
+        return FString::Printf(TEXT("UE4ROS2Node_%s"), *FGuid::NewGuid().ToString());
     }
 };

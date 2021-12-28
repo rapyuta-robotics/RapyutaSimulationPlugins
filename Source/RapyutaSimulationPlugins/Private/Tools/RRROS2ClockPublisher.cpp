@@ -10,7 +10,7 @@ void URRROS2ClockPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
     TopicName = TEXT("clock");
     PublicationFrequencyHz = 100;
 
-    // [ROS2ClockPublisher] must be already registered to [InROS2Node] (in Super::) before being initialized
+    // [ROS2ClockPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
     Init(UROS2QoS::ClockPub);
 }
 

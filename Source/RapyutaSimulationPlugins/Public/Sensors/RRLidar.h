@@ -21,11 +21,11 @@ class RAPYUTASIMULATIONPLUGINS_API ARRLidar : public AStaticMeshActor
     GENERATED_BODY()
 
 public:
-    ARRLidar();
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URRBaseLidarComponent* LidarComponent = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<URRBaseLidarComponent> LidarComponentClass = URRBaseLidarComponent::StaticClass();
+    TSubclassOf<URRBaseLidarComponent> LidarComponentClass;
+
+    virtual void OnConstruction(const FTransform& InTransform) override;
 };
