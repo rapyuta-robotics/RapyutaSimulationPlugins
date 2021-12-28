@@ -2,17 +2,21 @@
 
 #pragma once
 
+// UE
 #include "AIController.h"
 #include "CoreMinimal.h"
 
-#include <Msgs/ROS2LaserScanMsg.h>
-#include <Msgs/ROS2OdometryMsg.h>
-#include <Msgs/ROS2TFMsg.h>
-#include <Msgs/ROS2TwistMsg.h>
-#include <ROS2Node.h>
-#include <ROS2Publisher.h>
-#include <Sensors/SensorLidar.h>
-#include <Tools/ROS2TFPublisher.h>
+// rclUE
+#include "Msgs/ROS2LaserScanMsg.h"
+#include "Msgs/ROS2OdometryMsg.h"
+#include "Msgs/ROS2TFMsg.h"
+#include "Msgs/ROS2TwistMsg.h"
+#include "ROS2Node.h"
+#include "ROS2Publisher.h"
+#include "Tools/ROS2TFPublisher.h"
+
+// RapyutaSimulationPlugins
+#include "Sensors/RRBaseLidarComponent.h"
 
 #include "TurtlebotROSController.generated.h"
 
@@ -23,7 +27,7 @@ class RAPYUTASIMULATIONPLUGINS_API ATurtlebotROSController : public AAIControlle
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<ASensorLidar> LidarClass;
+    TSubclassOf<URRBaseLidarComponent> LidarComponentClass;
 
     UPROPERTY(Transient)
     AROS2Node* TurtleNode = nullptr;

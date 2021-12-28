@@ -2,10 +2,14 @@
 
 #pragma once
 
+// UE
 #include "CoreMinimal.h"
+
+// RapyutaSimulationPlugins
 #include "Drives/DifferentialDriveComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Robots/RobotVehicle.h"
+#include "Sensors/RR2DLidarComponent.h"
 
 #include "TurtlebotBurger.generated.h"
 
@@ -36,6 +40,9 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UStaticMeshComponent* LidarSensor = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URR2DLidarComponent* LidarComponent = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UStaticMeshComponent* WheelLeft = nullptr;

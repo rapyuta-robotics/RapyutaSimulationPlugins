@@ -2,11 +2,14 @@
 
 #include "Robots/Turtlebot3/TurtlebotBurger.h"
 
+// UE
 #include "Misc/Paths.h"
+
+// RapyutaSimulationPlugins
+#include "Sensors/RR2DLidarComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTurtlebotBurger);
 
-// Sets default values
 ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -23,11 +26,13 @@ void ATurtlebotBurger::Init()
         Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
         SetRootComponent(Base);
         LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
+        LidarComponent = CreateDefaultSubobject<URR2DLidarComponent>(TEXT("LidarComp"));
         WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));
         WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
         CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
 
         LidarSensor->SetupAttachment(Base);
+        LidarComponent->SetupAttachment(LidarSensor);
         WheelLeft->SetupAttachment(Base);
         WheelRight->SetupAttachment(Base);
         CasterBack->SetupAttachment(Base);

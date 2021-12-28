@@ -2,14 +2,17 @@
 
 #include "Robots/Turtlebot3/TurtlebotROSController.h"
 
+// UE
 #include "Kismet/GameplayStatics.h"
 
-#include <Drives/RobotVehicleMovementComponent.h>
-#include <Tools/UEUtilities.h>
+// RapyutaSimulationPlugins
+#include "Drives/RobotVehicleMovementComponent.h"
+#include "Sensors/RR2DLidarComponent.h"
+#include "Tools/UEUtilities.h"
 
 ATurtlebotROSController::ATurtlebotROSController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-    LidarClass = ASensorLidar::StaticClass();
+    LidarComponentClass = URR2DLidarComponent::StaticClass();
 }
 
 void ATurtlebotROSController::OnPossess(APawn* InPawn)
@@ -28,16 +31,15 @@ void ATurtlebotROSController::OnPossess(APawn* InPawn)
         TurtleNode->Init();
     }
 
-    // Initialize Lidars attached to Pawn
-    TArray<AActor*> ChildrenActors;
-    InPawn->GetAttachedActors(ChildrenActors);
-    for (int32 Idx = 0; Idx < ChildrenActors.Num(); Idx++)
+    // Initialize Pawn's Lidar components
+    TInlineComponentArray<UActorComponent*> lidarComponents;
+    InPawn->GetComponents(LidarComponentClass, lidarComponents);
+    for (auto& lidarComp : lidarComponents)
     {
-        if (ChildrenActors[Idx]->GetClass() == ASensorLidar::StaticClass())
+        auto* lidar = Cast<URRBaseLidarComponent>(lidarComp);
+        if (lidar != nullptr)
         {
-            ASensorLidar* TurtleLidar = Cast<ASensorLidar>(ChildrenActors[Idx]);
-            TurtleLidar->InitToNode(TurtleNode);
-            TurtleLidar->Run();
+            lidar->InitLidar(TurtleNode);
         }
     }
 
