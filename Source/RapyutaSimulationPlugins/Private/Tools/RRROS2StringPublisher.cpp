@@ -10,7 +10,6 @@ void URRROS2StringPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
     RegisterToROS2Node(InROS2Node);
 
     MsgClass = UROS2StringMsg::StaticClass();
-    TopicName = TEXT("text");
     PublicationFrequencyHz = 1;
     Init(UROS2QoS::DynamicBroadcaster);
 }
