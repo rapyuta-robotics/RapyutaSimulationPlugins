@@ -25,7 +25,7 @@ void ARRRobotVehicleROSController::InitRobotROS2Node(APawn* InPawn)
     }
     RobotROS2Node->AttachToActor(InPawn, FAttachmentTransformRules::KeepRelativeTransform);
     // GUID is to make sure the node name is unique, even for multiple Sims?
-    RobotROS2Node->Name = URRGeneralUtils::GetNewROS2NodeName();
+    RobotROS2Node->Name = URRGeneralUtils::GetNewROS2NodeName(InPawn->GetName());
 
     // Set robot's [ROS2Node] namespace from spawn parameters if existing
     UROS2Spawnable* rosSpawnParameters = FindComponentByClass<UROS2Spawnable>();
