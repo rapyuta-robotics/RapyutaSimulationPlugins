@@ -43,26 +43,46 @@ protected:
 
 	void CaptureNonBlocking();
 
+	void TakeImage();
+
 	TQueue<FRenderRequest*> RenderRequestQueue;
 
 	FROSImage Data;
 
-public:
+	UPROPERTY()
+    FTimerHandle TimerHandle;
 
+	int32 QueueCount = 0;
+
+public:
+	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	USceneCaptureComponent2D *SceneCaptureComponent = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UTextureRenderTarget2D *RenderTarget = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 FPS = 30;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Width = 640;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Height = 480;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 QueueSize = 2;
+
+	// ROS 
+	UFUNCTION(BlueprintCallable)
+	virtual FROSImage GetData();
+
     UPROPERTY(Transient)
     AROS2Node* Node;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UROS2Publisher* Publisher;
-
-	UFUNCTION(BlueprintCallable)
-	virtual FROSImage GetData();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString NodeName;
@@ -75,12 +95,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 PublishFreq = 1;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Width = 640;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Height = 480;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Encoding = TEXT("rgb8");;

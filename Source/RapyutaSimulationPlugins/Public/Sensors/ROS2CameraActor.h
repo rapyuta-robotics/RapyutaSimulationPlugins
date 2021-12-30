@@ -23,5 +23,5 @@ protected:
 
 	/** The camera component for this camera */
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UROS2CameraComponent* CameraComponent;
+	UROS2CameraComponent* CameraComponent;
 };

@@ -33,6 +33,8 @@ void UROS2CameraComponent::Init()
     Data.step = Width * 3; // todo should be variable based on encoding
     Data.data.AddUninitialized(Width * Height * 3);
 
+    QueueSize = QueueSize < 1 ? 1 : QueueSize; // QueueSize should be more than 1
+
     // Node and publisher initialize
     Node = GetWorld()->SpawnActor<AROS2Node>();
     Node->Name = NodeName.IsEmpty() ? FString::Printf(TEXT("%s_%s_ROS2CameraNode"), *(GetOwner()->GetName()), *(GetName())) : NodeName;
@@ -48,6 +50,14 @@ void UROS2CameraComponent::Init()
     Publisher->UpdateDelegate.BindDynamic(this, &UROS2CameraComponent::MessageUpdate);
     Node->AddPublisher(Publisher);
     Publisher->Init(UROS2QoS::KeepLast);
+
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UROS2CameraComponent::TakeImage, 1.f / static_cast<float>(FPS), true);
+}
+
+void UROS2CameraComponent::TakeImage()
+{
+    SceneCaptureComponent->CaptureScene();
+    CaptureNonBlocking();
 }
 
 void UROS2CameraComponent::MessageUpdate(UROS2GenericMsg *TopicMessage)
@@ -58,13 +68,10 @@ void UROS2CameraComponent::MessageUpdate(UROS2GenericMsg *TopicMessage)
 
 FROSImage UROS2CameraComponent::GetData()
 {
-    SceneCaptureComponent->CaptureScene();
-    CaptureNonBlocking();
     if(!RenderRequestQueue.IsEmpty()){
         // Peek the next RenderRequest from queue
         FRenderRequest* nextRenderRequest = nullptr;
         RenderRequestQueue.Peek(nextRenderRequest);
-
         if(nextRenderRequest){ //nullptr check
             if(nextRenderRequest->RenderFence.IsFenceComplete()){ // Check if rendering is done, indicated by RenderFence
                 for (int I = 0; I < nextRenderRequest->Image.Num(); I++)
@@ -72,11 +79,11 @@ FROSImage UROS2CameraComponent::GetData()
                     Data.data[I * 3 + 0] = nextRenderRequest->Image[I].R;
                     Data.data[I * 3 + 1] = nextRenderRequest->Image[I].G;
                     Data.data[I * 3 + 2] = nextRenderRequest->Image[I].B;
-                    // UE_LOG(LogTemp, Warning, TEXT("AsyncTaskDone"));
                 }
 
                 // Delete the first element from RenderQueue
                 RenderRequestQueue.Pop();
+                QueueCount--;
                 delete nextRenderRequest;
             }
         }
@@ -100,9 +107,9 @@ FROSImage UROS2CameraComponent::GetData()
 }
 
 // reference https://github.com/TimmHess/UnrealImageCapture
-void UROS2CameraComponent::CaptureNonBlocking(){
-
-   SceneCaptureComponent->TextureTarget->TargetGamma = GEngine->GetDisplayGamma();
+void UROS2CameraComponent::CaptureNonBlocking()
+{
+    SceneCaptureComponent->TextureTarget->TargetGamma = GEngine->GetDisplayGamma();
     // Get RenderContext
     FTextureRenderTargetResource* renderTargetResource = SceneCaptureComponent->TextureTarget->GameThread_GetRenderTargetResource();
 
@@ -137,6 +144,13 @@ void UROS2CameraComponent::CaptureNonBlocking(){
 
     // Notify new task in RenderQueue
     RenderRequestQueue.Enqueue(renderRequest);
+    if(QueueCount > QueueSize){
+        RenderRequestQueue.Pop();
+    }
+    else
+    {
+        QueueCount++;
+    }
 
     // Set RenderCommandFence
     renderRequest->RenderFence.BeginFence();
