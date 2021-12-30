@@ -32,5 +32,5 @@ void ATurtlebotROSController::OnPossess(APawn* InPawn)
     Super::OnPossess(InPawn);
 
     // Subscribe to [cmd_vel]
-    SubscribeToMovementCommandTopic(TEXT("/cmd_vel"));
+    SubscribeToMovementCommandTopic(TEXT("cmd_vel"));
 }
