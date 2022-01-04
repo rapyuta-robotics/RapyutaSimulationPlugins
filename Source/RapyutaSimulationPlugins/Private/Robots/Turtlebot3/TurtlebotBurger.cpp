@@ -6,70 +6,77 @@
 #include "Misc/Paths.h"
 
 // RapyutaSimulationPlugins
+#include "Drives/DifferentialDriveComponent.h"
 #include "Sensors/RR2DLidarComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTurtlebotBurger);
 
 ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-
-    RobotVehicleMoveComponent = CreateDefaultSubobject<UDifferentialDriveComponent>(TEXT("RobotVehicleMoveComponent"));
-    Init();
+    VehicleMoveComponentClass = UDifferentialDriveComponent::StaticClass();
+    bBodyComponentsCreated = false;
+    SetupBody();
 }
 
-void ATurtlebotBurger::Init()
+void ATurtlebotBurger::SetupBody()
 {
-    if (!IsInitialized)
+    if (bBodyComponentsCreated)
     {
-        Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
-        RootComponent = Base;
-        LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
-        LidarComponent = CreateDefaultSubobject<URR2DLidarComponent>(TEXT("LidarComp"));
-        WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));
-        WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
-        CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
-
-        LidarSensor->SetupAttachment(Base);
-        LidarComponent->SetupAttachment(LidarSensor);
-        WheelLeft->SetupAttachment(Base);
-        WheelRight->SetupAttachment(Base);
-        CasterBack->SetupAttachment(Base);
-
-        // Constraints
-        Base_LidarSensor = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_LidarSensor"));
-        Base_LidarSensor->SetupAttachment(LidarSensor);
-
-        Base_WheelLeft = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelLeft"));
-        Base_WheelLeft->SetupAttachment(WheelLeft);
-
-        Base_WheelRight = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelRight"));
-        Base_WheelRight->SetupAttachment(WheelRight);
-
-        Base_CasterBack = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_CasterBack"));
-        Base_CasterBack->SetupAttachment(CasterBack);
-
-        IsInitialized = true;
-
-        SetupConstraintsAndPhysics();
-        SetupWheels();
+        return;
     }
+
+    Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
+    LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
+    LidarComponent = CreateDefaultSubobject<URR2DLidarComponent>(TEXT("LidarComp"));
+    WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));
+    WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
+    CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
+
+    check(RootComponent);
+    Base->SetupAttachment(RootComponent);
+    LidarSensor->SetupAttachment(Base);
+    LidarComponent->SetupAttachment(LidarSensor);
+    WheelLeft->SetupAttachment(Base);
+    WheelRight->SetupAttachment(Base);
+    CasterBack->SetupAttachment(Base);
+    bBodyComponentsCreated = true;
+
+    // Constraints
+    Base_LidarSensor = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_LidarSensor"));
+    Base_LidarSensor->SetupAttachment(LidarSensor);
+
+    Base_WheelLeft = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelLeft"));
+    Base_WheelLeft->SetupAttachment(WheelLeft);
+
+    Base_WheelRight = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelRight"));
+    Base_WheelRight->SetupAttachment(WheelRight);
+
+    Base_CasterBack = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_CasterBack"));
+    Base_CasterBack->SetupAttachment(CasterBack);
+
+    SetupConstraintsAndPhysics();
 }
 
-void ATurtlebotBurger::SetupWheels()
+void ATurtlebotBurger::OnConstruction(const FTransform& InTransform)
 {
-    if (IsInitialized)
+    Super::OnConstruction(InTransform);
+    SetupWheelDrives();
+}
+
+void ATurtlebotBurger::SetupWheelDrives()
+{
+    if (bBodyComponentsCreated)
     {
-        UDifferentialDriveComponent* DifferentialDriveComponent = Cast<UDifferentialDriveComponent>(RobotVehicleMoveComponent);
-        DifferentialDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);
-        DifferentialDriveComponent->SetPerimeter();
+        UDifferentialDriveComponent* diffDriveComponent = CastChecked<UDifferentialDriveComponent>(RobotVehicleMoveComponent);
+        diffDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);
+        diffDriveComponent->SetPerimeter();
     }
 }
 
 void ATurtlebotBurger::SetupConstraintsAndPhysics()
 {
-    if (IsInitialized)
+    if (bBodyComponentsCreated)
     {
         Base->SetMaterial(0, VehicleMaterial);
         LidarSensor->SetMaterial(0, VehicleMaterial);

@@ -6,7 +6,6 @@
 #include "CoreMinimal.h"
 
 // RapyutaSimulationPlugins
-#include "Drives/DifferentialDriveComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Robots/RobotVehicle.h"
 #include "Sensors/RR2DLidarComponent.h"
@@ -24,7 +23,7 @@ public:
     ATurtlebotBurger(const FObjectInitializer& ObjectInitializer);
 
 protected:
-    // Called when the game starts or when spawned
+    virtual void OnConstruction(const FTransform& InTransform) override;
     virtual void BeginPlay() override;
 
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -32,8 +31,8 @@ protected:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
-    UFUNCTION(BlueprintCallable)
-    virtual void Init();
+    UFUNCTION()
+    void SetupBody();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UStaticMeshComponent* Base = nullptr;
@@ -75,11 +74,11 @@ protected:
     UMaterial* BallMaterial = nullptr;
 
     UPROPERTY(VisibleAnywhere)
-    bool IsInitialized = false;
+    uint8 bBodyComponentsCreated : 1;
 
     UFUNCTION()
     void SetupConstraintsAndPhysics();
 
     UFUNCTION()
-    void SetupWheels();
+    void SetupWheelDrives();
 };

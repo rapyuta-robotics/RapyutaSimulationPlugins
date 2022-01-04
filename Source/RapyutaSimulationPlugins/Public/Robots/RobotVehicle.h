@@ -39,8 +39,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
+
     bool InitSensors(AROS2Node* InROS2Node);
     void Initialize();
+    virtual void OnConstruction(const FTransform& InTransform) override;
 
     UFUNCTION(BlueprintCallable)
     virtual void SetLinearVel(const FVector& InLinearVelocity);

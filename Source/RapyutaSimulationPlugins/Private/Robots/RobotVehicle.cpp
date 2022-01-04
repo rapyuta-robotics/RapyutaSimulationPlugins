@@ -28,9 +28,17 @@ void ARobotVehicle::Initialize()
     SkeletalMeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
     SkeletalMeshComp->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
     RootComponent = SkeletalMeshComp;
+}
 
-    RobotVehicleMoveComponent =
-        CreateDefaultSubobject<URobotVehicleMovementComponent>(*FString::Printf(TEXT("%s_MoveComp"), *GetName()));
+void ARobotVehicle::OnConstruction(const FTransform& InTransform)
+{
+    Super::OnConstruction(InTransform);
+
+    if (VehicleMoveComponentClass)
+    {
+        RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
+            this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
+    }
 }
 
 bool ARobotVehicle::InitSensors(AROS2Node* InROS2Node)
