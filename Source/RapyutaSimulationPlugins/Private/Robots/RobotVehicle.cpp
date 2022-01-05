@@ -44,7 +44,8 @@ void ARobotVehicle::OnConstruction(const FTransform& InTransform)
     }
     else
     {
-        UE_LOG(LogRapyutaCore, Fatal, TEXT("[%s] [VehicleMoveComponentClass] has not been configured!"), *GetName());
+        // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [VehicleMoveComponentClass] has not been configured!"), *GetName());
     }
 }
 
@@ -81,10 +82,13 @@ void ARobotVehicle::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
 
-    // Init [RobotVehicleMoveComponent], which requires its PawnOwner having been set
-    // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
-    // to the owner actor's root
-    RobotVehicleMoveComponent->Initialize();
+    if (RobotVehicleMoveComponent)
+    {
+        // Init [RobotVehicleMoveComponent], which requires its PawnOwner having been set
+        // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
+        // to the owner actor's root
+        RobotVehicleMoveComponent->Initialize();
+    }
 
     // Spawn map from ROS params
     UROS2Spawnable* rosSpawnParameters = FindComponentByClass<UROS2Spawnable>();

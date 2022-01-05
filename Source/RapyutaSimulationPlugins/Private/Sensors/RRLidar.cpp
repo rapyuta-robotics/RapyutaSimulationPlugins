@@ -25,6 +25,7 @@ void ARRLidar::OnConstruction(const FTransform& InTransform)
     }
     else
     {
-        UE_LOG(LogRapyutaCore, Fatal, TEXT("[%s] [LidarComponentClass] has not been configured!"), *GetName());
+        // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [LidarComponentClass] has not been configured!"), *GetName());
     }
 }
