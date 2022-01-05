@@ -36,6 +36,10 @@ void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(AActor* InRobot)
                *SkeletalMeshComp->GetName(),
                SkeletalMeshComp->GetBoneSpaceTransforms().Num());
     }
+    else
+    {
+        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] No child SkeletalMeshComp found!"), *SkeletalMeshComp->GetName());
+    }
 }
 
 void URRROS2SkeletalMeshStatePublisher::UpdateMessage(UROS2GenericMsg* InMessage)

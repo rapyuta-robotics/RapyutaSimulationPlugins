@@ -1,13 +1,17 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #pragma once
+
+// System
+#include <random>
+
+// UE
 #include "CoreMinimal.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
 
-#include <Msgs/ROS2OdometryMsg.h>
-
-#include <random>
+// rclUE
+#include "Msgs/ROS2OdometryMsg.h"
 
 #include "RobotVehicleMovementComponent.generated.h"
 
@@ -24,8 +28,6 @@ private:
     FQuat DesiredRotation = FQuat::Identity;
 
 public:
-    URobotVehicleMovementComponent();
-
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
     FVector AngularVelocity = FVector::ZeroVector;
 
@@ -38,6 +40,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString ChildFrameId;
 
+    void SetFrameIds(const FString& InFrameId, const FString& InChildFrameId);
+
     UPROPERTY(EditAnywhere)
     FTransform InitialTransform = FTransform::Identity;
 
@@ -47,21 +51,22 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void Initialize();
 
+    UFUNCTION(BlueprintCallable)
+    virtual void InitOdom();
+
     UPROPERTY()
     int8 InversionFactor = 1;
 
 protected:
-    virtual void BeginPlay() override;
-    virtual void InitOdom();
-    virtual void UpdateMovement(float DeltaTime);
-    virtual void UpdateOdom(float DeltaTime);
+    virtual void UpdateMovement(float InDeltaTime);
+    virtual void UpdateOdom(float InDeltaTime);
     bool IsOdomInitialized = false;
 
     UPROPERTY()
     FTransform PreviousTransform = FTransform::Identity;
 
     std::random_device Rng;
-    std::mt19937 Gen;
+    std::mt19937 Gen = std::mt19937{Rng()};
     std::normal_distribution<> GaussianRNGPosition;
     std::normal_distribution<> GaussianRNGRotation;
 

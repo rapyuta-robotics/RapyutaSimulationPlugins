@@ -5,10 +5,8 @@
 void ATurtlebot::OnConstruction(const FTransform& InTransform)
 {
     Super::OnConstruction(InTransform);
-
     if (RobotVehicleMoveComponent)
     {
-        RobotVehicleMoveComponent->FrameId = TEXT("odom");
-        RobotVehicleMoveComponent->ChildFrameId = TEXT("base_footprint");
+        RobotVehicleMoveComponent->SetFrameIds(TEXT("odom"), TEXT("base_footprint"));
     }
 }

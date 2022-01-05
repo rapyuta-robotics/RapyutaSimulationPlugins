@@ -27,6 +27,7 @@ void ARobotVehicle::Initialize()
     SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(*FString::Printf(TEXT("%s_SkeletalComp"), *GetName()));
     SkeletalMeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
     SkeletalMeshComp->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+    AddOwnedComponent(SkeletalMeshComp);
     RootComponent = SkeletalMeshComp;
 }
 
@@ -36,15 +37,10 @@ void ARobotVehicle::OnConstruction(const FTransform& InTransform)
 
     if (VehicleMoveComponentClass)
     {
-        if (nullptr == RobotVehicleMoveComponent)
-        {
-            RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
-                this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
-            RobotVehicleMoveComponent->RegisterComponent();
-            // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
-            // to the owner actor's root
-            RobotVehicleMoveComponent->Initialize();
-        }
+        // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
+        RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
+            this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
+        RobotVehicleMoveComponent->RegisterComponent();
     }
     else
     {
@@ -85,6 +81,12 @@ void ARobotVehicle::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
 
+    // Init [RobotVehicleMoveComponent], which requires its PawnOwner having been set
+    // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
+    // to the owner actor's root
+    RobotVehicleMoveComponent->Initialize();
+
+    // Spawn map from ROS params
     UROS2Spawnable* rosSpawnParameters = FindComponentByClass<UROS2Spawnable>();
     if (rosSpawnParameters)
     {

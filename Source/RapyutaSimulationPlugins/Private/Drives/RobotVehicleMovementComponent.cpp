@@ -2,28 +2,25 @@
 
 #include "Drives/RobotVehicleMovementComponent.h"
 
+// UE
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 
-URobotVehicleMovementComponent::URobotVehicleMovementComponent()
+void URobotVehicleMovementComponent::Initialize()
 {
-    Gen = std::mt19937{Rng()};
-}
-
-void URobotVehicleMovementComponent::BeginPlay()
-{
-    Super::BeginPlay();
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
+
+    InitOdom();
 }
 
-void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
+void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 {
     const FQuat OldRotation = UpdatedComponent->GetComponentQuat();
 
-    FVector position = UpdatedComponent->ComponentVelocity * DeltaTime;
-    FQuat DeltaRotation(FVector::ZAxisVector, InversionFactor * AngularVelocity.Z * DeltaTime);
+    FVector position = UpdatedComponent->ComponentVelocity * InDeltaTime;
+    FQuat DeltaRotation(FVector::ZAxisVector, InversionFactor * AngularVelocity.Z * InDeltaTime);
 
     DesiredRotation = OldRotation * DeltaRotation;
     DesiredMovement = (OldRotation * position);
@@ -38,8 +35,15 @@ void URobotVehicleMovementComponent::UpdateMovement(float DeltaTime)
     }
 }
 
+void URobotVehicleMovementComponent::SetFrameIds(const FString& InFrameId, const FString& InChildFrameId)
+{
+    OdomData.header_frame_id = FrameId = InFrameId;
+    OdomData.child_frame_id = ChildFrameId = InChildFrameId;
+}
+
 void URobotVehicleMovementComponent::InitOdom()
 {
+    verify(PawnOwner);
     OdomData.header_frame_id = FrameId;
     OdomData.child_frame_id = ChildFrameId;
 
@@ -73,7 +77,7 @@ void URobotVehicleMovementComponent::InitOdom()
     IsOdomInitialized = true;
 }
 
-void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
+void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
 {
     if (!IsOdomInitialized)
     {
@@ -109,9 +113,9 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     OdomData.pose_pose_position_z = Pos.Z;
     OdomData.pose_pose_orientation = Rot;
 
-    OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector(Pos - PreviousEstimatedPos) / DeltaTime;
+    OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector(Pos - PreviousEstimatedPos) / InDeltaTime;
     OdomData.twist_twist_angular =
-        FMath::DegreesToRadians((PreviousEstimatedRot * Rot.Inverse()).GetNormalized().Euler()) / DeltaTime;
+        FMath::DegreesToRadians((PreviousEstimatedRot * Rot.Inverse()).GetNormalized().Euler()) / InDeltaTime;
 
     // UE_LOG(LogTemp, Warning, TEXT("Odometry:"));
     // UE_LOG(LogTemp, Warning, TEXT("\tCurrent Positon:\t\t\t%s"), *PawnOwner->GetActorLocation().ToString());
@@ -130,19 +134,19 @@ void URobotVehicleMovementComponent::UpdateOdom(float DeltaTime)
     // *OdomData.twist_twist_angular.ToString());
 }
 
-void URobotVehicleMovementComponent::TickComponent(float DeltaTime,
+void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
                                                    enum ELevelTick TickType,
                                                    FActorComponentTickFunction* ThisTickFunction)
 {
-    if (!ShouldSkipUpdate(DeltaTime))
+    if (!ShouldSkipUpdate(InDeltaTime))
     {
-        Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+        Super::TickComponent(InDeltaTime, TickType, ThisTickFunction);
 
         // Make sure that everything is still valid, and that we are allowed to move.
         if (IsValid(UpdatedComponent))
         {
-            UpdateMovement(DeltaTime);
-            UpdateOdom(DeltaTime);
+            UpdateMovement(InDeltaTime);
+            UpdateOdom(InDeltaTime);
         }
 
         UpdateComponentVelocity();
@@ -153,9 +157,4 @@ FTransform URobotVehicleMovementComponent::GetOdomTF() const
 {
     return FTransform(OdomData.pose_pose_orientation,
                       FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z));
-}
-
-void URobotVehicleMovementComponent::Initialize()
-{
-    InitOdom();
 }

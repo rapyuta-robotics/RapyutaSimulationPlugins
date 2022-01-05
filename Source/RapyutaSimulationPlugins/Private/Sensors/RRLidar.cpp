@@ -7,12 +7,10 @@ void ARRLidar::OnConstruction(const FTransform& InTransform)
     Super::OnConstruction(InTransform);
     if (LidarComponentClass)
     {
-        if (nullptr == LidarComponent)
-        {
-            LidarComponent =
-                NewObject<URRBaseLidarComponent>(this, LidarComponentClass, *FString::Printf(TEXT("%s_LidarComp"), *GetName()));
-            LidarComponent->RegisterComponent();
-        }
+        // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
+        LidarComponent =
+            NewObject<URRBaseLidarComponent>(this, LidarComponentClass, *FString::Printf(TEXT("%s_LidarComp"), *GetName()));
+        LidarComponent->RegisterComponent();
 
         // Set Root Component
         UStaticMeshComponent* staticMeshComponent = GetStaticMeshComponent();
