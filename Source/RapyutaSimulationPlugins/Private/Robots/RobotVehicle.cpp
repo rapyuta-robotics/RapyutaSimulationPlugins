@@ -36,9 +36,19 @@ void ARobotVehicle::OnConstruction(const FTransform& InTransform)
 
     if (VehicleMoveComponentClass)
     {
-        RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
-            this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
-        RobotVehicleMoveComponent->SetUpdatedComponent(RootComponent);
+        if (nullptr == RobotVehicleMoveComponent)
+        {
+            RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
+                this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
+            RobotVehicleMoveComponent->RegisterComponent();
+            // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
+            // to the owner actor's root
+            RobotVehicleMoveComponent->Initialize();
+        }
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore, Fatal, TEXT("[%s] [VehicleMoveComponentClass] has not been configured!"), *GetName());
     }
 }
 
@@ -69,12 +79,6 @@ void ARobotVehicle::SetLinearVel(const FVector& InLinearVelocity)
 void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
 {
     RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
-}
-
-void ARobotVehicle::BeginPlay()
-{
-    Super::BeginPlay();
-    RobotVehicleMoveComponent->Initialize();
 }
 
 void ARobotVehicle::PostInitializeComponents()

@@ -7,7 +7,7 @@
 
 // RapyutaSimulationPlugins
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
-#include "Robots/RobotVehicle.h"
+#include "Robots/Turtlebot3/Turtlebot.h"
 #include "Sensors/RR2DLidarComponent.h"
 
 #include "TurtlebotBurger.generated.h"
@@ -15,7 +15,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
 
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARobotVehicle
+class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ATurtlebot
 {
     GENERATED_BODY()
 

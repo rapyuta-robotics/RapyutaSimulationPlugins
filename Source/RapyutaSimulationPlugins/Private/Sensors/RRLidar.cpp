@@ -7,8 +7,12 @@ void ARRLidar::OnConstruction(const FTransform& InTransform)
     Super::OnConstruction(InTransform);
     if (LidarComponentClass)
     {
-        LidarComponent =
-            NewObject<URRBaseLidarComponent>(this, LidarComponentClass, *FString::Printf(TEXT("%s_LidarComp"), *GetName()));
+        if (nullptr == LidarComponent)
+        {
+            LidarComponent =
+                NewObject<URRBaseLidarComponent>(this, LidarComponentClass, *FString::Printf(TEXT("%s_LidarComp"), *GetName()));
+            LidarComponent->RegisterComponent();
+        }
 
         // Set Root Component
         UStaticMeshComponent* staticMeshComponent = GetStaticMeshComponent();
@@ -19,10 +23,9 @@ void ARRLidar::OnConstruction(const FTransform& InTransform)
         {
             LidarComponent->SetupAttachment(newRootComponent);
         }
-        LidarComponent->RegisterComponent();
     }
     else
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[LidarComponentClass] has not been configured!"));
+        UE_LOG(LogRapyutaCore, Fatal, TEXT("[%s] [LidarComponentClass] has not been configured!"), *GetName());
     }
 }

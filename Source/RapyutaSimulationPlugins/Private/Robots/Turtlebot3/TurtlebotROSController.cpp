@@ -19,10 +19,8 @@ bool ATurtlebotROSController::InitPublishers(APawn* InPawn)
 
     // TFPublisher
     check(TFPublisher);
-    URobotVehicleMovementComponent* vehicleMovementComponent =
-        CastChecked<URobotVehicleMovementComponent>(InPawn->GetMovementComponent());
-    TFPublisher->FrameId = vehicleMovementComponent->FrameId = TEXT("odom");
-    TFPublisher->ChildFrameId = vehicleMovementComponent->ChildFrameId = TEXT("base_footprint");
+    TFPublisher->FrameId = TEXT("odom");
+    TFPublisher->ChildFrameId = TEXT("base_footprint");
 
     return true;
 }
