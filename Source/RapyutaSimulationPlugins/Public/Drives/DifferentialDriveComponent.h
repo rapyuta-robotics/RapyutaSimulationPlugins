@@ -18,7 +18,6 @@ class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponent : public URobotVe
     GENERATED_BODY()
 
 public:
-    UDifferentialDriveComponent();
     virtual void UpdateMovement(float DeltaTime) override;
     virtual void UpdateOdom(float DeltaTime) override;
 

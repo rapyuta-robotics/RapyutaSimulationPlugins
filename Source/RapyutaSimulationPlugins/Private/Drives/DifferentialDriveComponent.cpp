@@ -4,30 +4,32 @@
 
 DEFINE_LOG_CATEGORY(LogDifferentialDriveComponent);
 
-UDifferentialDriveComponent::UDifferentialDriveComponent()
-{
-}
-
 void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight)
 {
-    WheelLeft = InWheelLeft;
-    WheelRight = InWheelRight;
+    auto fSetWheel = [this](UPhysicsConstraintComponent*& CurWheel, UPhysicsConstraintComponent* NewWheel)
+    {
+        if (false == IsValid(CurWheel))
+        {
+            CurWheel = NewWheel;
+            CurWheel->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
+            CurWheel->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
+            CurWheel->SetAngularVelocityDriveTwistAndSwing(true, false);
+        }
+    };
 
-    WheelLeft->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
-    WheelLeft->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
-    WheelLeft->SetAngularVelocityDriveTwistAndSwing(true, false);
-
-    WheelRight->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
-    WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
-    WheelRight->SetAngularVelocityDriveTwistAndSwing(true, false);
+    fSetWheel(WheelLeft, InWheelLeft);
+    fSetWheel(WheelRight, InWheelRight);
 }
 
 void UDifferentialDriveComponent::SetPerimeter()
 {
     if (WheelRadius <= 1e-6)
     {
-        UE_LOG(LogDifferentialDriveComponent, Warning, TEXT("Wheel radius is too small. Wheel radius is reset to 1.0"));
         WheelRadius = 1.0f;
+        UE_LOG(LogDifferentialDriveComponent,
+               Warning,
+               TEXT("[%s] Wheel radius is too small. Wheel radius is reset to 1.0"),
+               *GetName());
     }
     WheelPerimeter = WheelRadius * 2.f * M_PI;
 }
@@ -43,10 +45,7 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
         WheelRight->SetAngularVelocityTarget(FVector(-velR / WheelPerimeter, 0, 0));
         WheelLeft->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
         WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
-    }
-    else
-    {
-        UE_LOG(LogDifferentialDriveComponent, Error, TEXT("Wheel Joints are not set"));
+        UE_LOG(LogDifferentialDriveComponent, VeryVerbose, TEXT("[%s] Wheel Joints are set"), *GetName());
     }
 }
 
@@ -144,11 +143,5 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 void UDifferentialDriveComponent::Initialize()
 {
     Super::Initialize();
-
-    if (!IsValid(WheelLeft) || !IsValid(WheelRight))
-    {
-        UE_LOG(LogDifferentialDriveComponent, Error, TEXT("Wheel Joints are not set"));
-    }
-
     SetPerimeter();
 }
