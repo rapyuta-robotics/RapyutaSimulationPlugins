@@ -16,6 +16,8 @@ ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) 
     PrimaryActorTick.bCanEverTick = true;
     VehicleMoveComponentClass = UDifferentialDriveComponent::StaticClass();
     bBodyComponentsCreated = false;
+    WheelRadius = 3.3f;
+    WheelSeparationHalf = 7.9f;
     SetupBody();
 }
 
@@ -70,6 +72,8 @@ void ATurtlebotBurger::SetupWheelDrives()
     {
         UDifferentialDriveComponent* diffDriveComponent = CastChecked<UDifferentialDriveComponent>(RobotVehicleMoveComponent);
         diffDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);
+        diffDriveComponent->WheelRadius = WheelRadius;
+        diffDriveComponent->WheelSeparationHalf = WheelSeparationHalf;
         diffDriveComponent->SetPerimeter();
     }
 }
