@@ -19,7 +19,8 @@ void ARRLidar::OnConstruction(const FTransform& InTransform)
         SetRootComponent(newRootComponent);
         if (LidarComponent != newRootComponent)
         {
-            LidarComponent->SetupAttachment(newRootComponent);
+            // (NOTE) SetupAttachment() should mostly be called as in ctor, when the comp is created with CreateDefaultSubobject()
+            LidarComponent->AttachToComponent(newRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
         }
     }
     else
