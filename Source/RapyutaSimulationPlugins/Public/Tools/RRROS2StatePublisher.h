@@ -46,4 +46,5 @@ public:
 
     UPROPERTY(EditAnywhere)
     AActor* Robot = nullptr;
+    virtual void SetTargetRobot(AActor* InRobot);
 };

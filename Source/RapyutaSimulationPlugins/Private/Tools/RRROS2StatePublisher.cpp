@@ -20,6 +20,12 @@ void URRROS2StatePublisher::InitializeWithROS2(AROS2Node* InROS2Node)
     Init(UROS2QoS::DynamicBroadcaster);
 }
 
+void URRROS2StatePublisher::SetTargetRobot(AActor* InRobot)
+{
+    verify(IsValid(InRobot));
+    Robot = InRobot;
+}
+
 void URRROS2StatePublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
     if ((++Idx) >= StatesToPublish.Num())

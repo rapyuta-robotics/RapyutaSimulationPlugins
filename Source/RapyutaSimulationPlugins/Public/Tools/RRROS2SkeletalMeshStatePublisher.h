@@ -20,4 +20,6 @@ public:
 
     UPROPERTY(VisibleAnywhere)
     USkeletalMeshComponent* SkeletalMeshComp = nullptr;
+
+    void SetTargetRobot(AActor* InRobot) override;
 };

@@ -14,25 +14,27 @@
 
 void URRROS2SkeletalMeshStatePublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
-    Super::InitializeWithROS2(InROS2Node);
-
-    MsgClass = UROS2EntityStateMsg::StaticClass();
     TopicName = TEXT("ue_ros/model_state");
     PublicationFrequencyHz = 10;
+    Super::InitializeWithROS2(InROS2Node);
+}
 
-    // The publisher itself must have been already registered to [InROS2Node] (in Super::) before being initialized
-    Init(UROS2QoS::DynamicBroadcaster);
-
+void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(AActor* InRobot)
+{
+    Super::SetTargetRobot(InRobot);
     // Local transforms: GetBoneSpaceTransforms()
     // seems empty: GetCachedComponentSpaceTransforms()
 
-    verify(IsValid(Robot));
     TInlineComponentArray<USkeletalMeshComponent*> skeletalMeshComponents;
-    Robot->GetComponents(skeletalMeshComponents, false);
+    InRobot->GetComponents(skeletalMeshComponents, false);
     if (skeletalMeshComponents.Num() > 0)
     {
         SkeletalMeshComp = skeletalMeshComponents[0];
-        UE_LOG(LogTemp, Warning, TEXT("Skeletal mesh has %d bones"), SkeletalMeshComp->GetBoneSpaceTransforms().Num());
+        UE_LOG(LogRapyutaCore,
+               Log,
+               TEXT("[%s] has %d bones"),
+               *SkeletalMeshComp->GetName(),
+               SkeletalMeshComp->GetBoneSpaceTransforms().Num());
     }
 }
 
