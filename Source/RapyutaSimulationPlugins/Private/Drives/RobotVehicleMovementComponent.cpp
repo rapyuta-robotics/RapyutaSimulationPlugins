@@ -44,7 +44,7 @@ void URobotVehicleMovementComponent::InitOdom()
     OdomData.child_frame_id = ChildFrameId;
 
     InitialTransform.SetTranslation(PawnOwner->GetActorLocation());
-    InitialTransform.SetRotation(FQuat(PawnOwner->GetActorRotation()));
+    InitialTransform.SetRotation(PawnOwner->GetActorQuat());
 
     PreviousTransform = FTransform::Identity;
 
