@@ -2,11 +2,11 @@
 
 #include "Robots/Turtlebot3/Turtlebot.h"
 
-void ATurtlebot::OnConstruction(const FTransform& InTransform)
+void ATurtlebot::PostInitializeComponents()
 {
-    Super::OnConstruction(InTransform);
-    if (RobotVehicleMoveComponent)
-    {
-        RobotVehicleMoveComponent->SetFrameIds(TEXT("odom"), TEXT("base_footprint"));
-    }
+    // [FrameIds] will then be used for odom init in Super::PostInitializeComponents(), where [RobotVehicleMoveComponent's
+    // PawnOwner] has been available thus they must be inited beforehands.
+    RobotVehicleMoveComponent->SetFrameIds(TEXT("odom"), TEXT("base_footprint"));
+
+    Super::PostInitializeComponents();
 }

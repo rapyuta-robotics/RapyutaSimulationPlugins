@@ -68,9 +68,6 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     uint64 ns = (uint64)(TimeNow * 1e+09f);
     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
-    OdomData.header_frame_id = TEXT("odom");
-    OdomData.child_frame_id = TEXT("base_footprint");
-
     // vl and vr as computed here is ok for kinematics
     // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is
     // wheel rotations per unit time [rad/s]) together with the wheel radius or perimeter, the displacement can be computed:
