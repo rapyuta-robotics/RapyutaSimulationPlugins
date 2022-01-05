@@ -38,6 +38,7 @@ void ARobotVehicle::OnConstruction(const FTransform& InTransform)
     {
         RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
             this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
+        RobotVehicleMoveComponent->SetUpdatedComponent(RootComponent);
     }
 }
 
