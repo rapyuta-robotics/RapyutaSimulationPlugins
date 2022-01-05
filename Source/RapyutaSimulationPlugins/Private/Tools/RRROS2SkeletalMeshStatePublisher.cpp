@@ -29,15 +29,20 @@ void URRROS2SkeletalMeshStatePublisher::InitializeWithROS2(AROS2Node* InROS2Node
     verify(IsValid(Robot));
     TInlineComponentArray<USkeletalMeshComponent*> skeletalMeshComponents;
     Robot->GetComponents(skeletalMeshComponents, false);
-    check(skeletalMeshComponents.Num() == 1);
-    SkeletalMeshComp = skeletalMeshComponents[0];
-
-    UE_LOG(LogTemp, Warning, TEXT("Skeletal mesh has %d bones"), SkeletalMeshComp->GetBoneSpaceTransforms().Num());
-    check(SkeletalMeshComp->GetBoneSpaceTransforms().Num() > 0);
+    if (skeletalMeshComponents.Num() > 0)
+    {
+        SkeletalMeshComp = skeletalMeshComponents[0];
+        UE_LOG(LogTemp, Warning, TEXT("Skeletal mesh has %d bones"), SkeletalMeshComp->GetBoneSpaceTransforms().Num());
+    }
 }
 
 void URRROS2SkeletalMeshStatePublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
+    if (nullptr == SkeletalMeshComp)
+    {
+        return;
+    }
+
     UROS2EntityStateMsg* stateMsg = CastChecked<UROS2EntityStateMsg>(InMessage);
     ARobotVehicle* vehicle = Cast<ARobotVehicle>(Robot);
     const TArray<FTransform> boneTransforms = SkeletalMeshComp->GetBoneSpaceTransforms();
