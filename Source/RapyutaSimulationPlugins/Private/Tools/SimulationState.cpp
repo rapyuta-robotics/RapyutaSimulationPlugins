@@ -61,6 +61,14 @@ void ASimulationState::AddEntity(AActor* Entity)
     Entities.Emplace(Entity->GetName(), Entity);
 }
 
+void ASimulationState::AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities)
+{
+    for (auto& Elem :InSpawnableEntities)
+    {
+        SpawnableEntities.Emplace(Elem.Key, Elem.Value);
+    }
+}
+
 void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
 {
     UROS2GetEntityStateSrv* GetEntityStateService = Cast<UROS2GetEntityStateSrv>(Service);
