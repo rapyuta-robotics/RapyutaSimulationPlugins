@@ -24,14 +24,6 @@ class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public AAICont
 {
     GENERATED_BODY()
 
-public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 RobotID = 0;
-
-    // total number of agents (== maxID)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 NAgents = 1;
-
 protected:
     UPROPERTY(Transient)
     AROS2Node* RobotROS2Node = nullptr;
