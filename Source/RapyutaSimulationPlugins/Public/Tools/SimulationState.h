@@ -41,6 +41,9 @@ public:
     UFUNCTION(BlueprintCallable)
     void AddEntity(AActor* Entity);
 
+    UFUNCTION(BlueprintCallable)
+    void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
+
     void LeftToRight(double& pos_x, double& pos_y, double& pos_z, FQuat& orientation);
 
     void LeftToRight(FVector& position, FQuat& orientation);
