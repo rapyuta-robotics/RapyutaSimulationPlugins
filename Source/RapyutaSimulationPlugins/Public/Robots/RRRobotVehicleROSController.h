@@ -36,8 +36,6 @@ protected:
     FRotator InitialOrientation = FRotator::ZeroRotator;
 
     UPROPERTY(Transient, BlueprintReadWrite)
-    URRROS2TFPublisher* TFPublisher = nullptr;
-    UPROPERTY(Transient, BlueprintReadWrite)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
     UFUNCTION()
     virtual bool InitPublishers(APawn* InPawn);

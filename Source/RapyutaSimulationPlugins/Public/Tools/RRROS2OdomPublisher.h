@@ -9,11 +9,13 @@
 #include "Msgs/ROS2OdometryMsg.h"
 #include "ROS2Publisher.h"
 
+// RapyutaSimulationPlugins
+#include "Tools/RRROS2TFPublisher.h"
+
 #include "RRROS2OdomPublisher.generated.h"
 
 class UROS2GenericMsg;
 class ARobotVehicle;
-class URRROS2TFPublisher;
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2OdomPublisher : public UROS2Publisher
@@ -25,7 +27,8 @@ public:
     TWeakObjectPtr<ARobotVehicle> RobotVehicle = nullptr;
 
     UPROPERTY(BlueprintReadWrite)
-    TWeakObjectPtr<URRROS2TFPublisher> TFPublisher = nullptr;
+    URRROS2TFPublisher* TFPublisher = nullptr;
+    void InitializeTFWithROS2(AROS2Node* InROS2Node);
 
     void InitializeWithROS2(AROS2Node* InROS2Node) override;
     UFUNCTION(BlueprintCallable)
@@ -33,6 +36,8 @@ public:
     {
         InitializeWithROS2(InROS2Node);
     }
+
+    void RevokeUpdateCallback() override;
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
     bool GetOdomData(FROSOdometry& OutOdomData) const;
 };

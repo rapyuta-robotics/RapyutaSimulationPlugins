@@ -48,15 +48,7 @@ bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
         return false;
     }
 
-    // TFPublisher
-    if (nullptr == TFPublisher)
-    {
-        TFPublisher = NewObject<URRROS2TFPublisher>(this);
-        TFPublisher->SetupUpdateCallback();
-    }
-    TFPublisher->InitializeWithROS2(RobotROS2Node);
-
-    // OdomPublisher
+    // OdomPublisher (with TF)
     if (nullptr == OdomPublisher)
     {
         OdomPublisher = NewObject<URRROS2OdomPublisher>(this);
@@ -64,7 +56,7 @@ bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
     }
     OdomPublisher->InitializeWithROS2(RobotROS2Node);
     OdomPublisher->RobotVehicle = CastChecked<ARobotVehicle>(InPawn);
-    OdomPublisher->TFPublisher = TFPublisher;
+
     return true;
 }
 
@@ -89,7 +81,6 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 
 void ARRRobotVehicleROSController::OnUnPossess()
 {
-    TFPublisher->RevokeUpdateCallback();
     OdomPublisher->RevokeUpdateCallback();
     Super::OnUnPossess();
 }

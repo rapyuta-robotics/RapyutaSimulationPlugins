@@ -18,9 +18,9 @@ bool ATurtlebotROSController::InitPublishers(APawn* InPawn)
     }
 
     // TFPublisher
-    check(TFPublisher);
-    TFPublisher->FrameId = TEXT("odom");
-    TFPublisher->ChildFrameId = TEXT("base_footprint");
+    check(OdomPublisher->TFPublisher);
+    OdomPublisher->TFPublisher->FrameId = TEXT("odom");
+    OdomPublisher->TFPublisher->ChildFrameId = TEXT("base_footprint");
 
     return true;
 }
