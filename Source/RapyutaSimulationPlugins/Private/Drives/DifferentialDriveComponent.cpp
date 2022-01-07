@@ -8,12 +8,16 @@ void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheel
 {
     auto fSetWheel = [this](UPhysicsConstraintComponent*& CurWheel, UPhysicsConstraintComponent* NewWheel)
     {
-        if (false == IsValid(CurWheel))
+        if (IsValid(NewWheel))
         {
             CurWheel = NewWheel;
             CurWheel->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
             CurWheel->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
             CurWheel->SetAngularVelocityDriveTwistAndSwing(true, false);
+        }
+        else
+        {
+            UE_LOG(LogDifferentialDriveComponent, Error, TEXT("[%s] SetWheels() NewWheel is invalid!"), *GetName());
         }
     };
 
