@@ -4,6 +4,8 @@
 
 // RapyutaSimulationPlugins
 #include "Drives/RobotVehicleMovementComponent.h"
+#include "Robots/Turtlebot3/Turtlebot.h"
+#include "Tools/RRGeneralUtils.h"
 #include "Tools/RRROS2TFPublisher.h"
 
 ATurtlebotROSController::ATurtlebotROSController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -17,10 +19,13 @@ bool ATurtlebotROSController::InitPublishers(APawn* InPawn)
         return false;
     }
 
+    ATurtlebot* turtlebot = CastChecked<ATurtlebot>(InPawn);
+
     // TFPublisher
     check(OdomPublisher->TFPublisher);
-    OdomPublisher->TFPublisher->FrameId = TEXT("odom");
-    OdomPublisher->TFPublisher->ChildFrameId = TEXT("base_footprint");
+    OdomPublisher->TFPublisher->FrameId = URRGeneralUtils::ComposeROSFullFrameId(turtlebot->RobotUniqueName, TEXT("odom"));
+    OdomPublisher->TFPublisher->ChildFrameId =
+        URRGeneralUtils::ComposeROSFullFrameId(turtlebot->RobotUniqueName, TEXT("base_footprint"));
 
     return true;
 }

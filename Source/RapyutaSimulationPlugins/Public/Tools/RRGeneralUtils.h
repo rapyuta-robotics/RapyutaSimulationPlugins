@@ -23,8 +23,13 @@ public:
         World->GetTimerManager().ClearTimer(TimerHandle);
     }
 
-    static FString GetNewROS2NodeName(const FString& InAffix = FString())
+    FORCEINLINE static FString GetNewROS2NodeName(const FString& InAffix = FString())
     {
         return FString::Printf(TEXT("UE%s_%s"), *InAffix, *FGuid::NewGuid().ToString());
+    }
+
+    FORCEINLINE static FString ComposeROSFullFrameId(const FString& InPrefix, const TCHAR* InFrameId)
+    {
+        return InPrefix.IsEmpty() ? InFrameId : FString::Printf(TEXT("%s/%s"), *InPrefix, InFrameId);
     }
 };
