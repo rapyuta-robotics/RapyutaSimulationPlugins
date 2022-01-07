@@ -20,7 +20,7 @@ void URRROS2StatePublisher::InitializeWithROS2(AROS2Node* InROS2Node)
     Init(UROS2QoS::DynamicBroadcaster);
 }
 
-void URRROS2StatePublisher::SetTargetRobot(AActor* InRobot)
+void URRROS2StatePublisher::SetTargetRobot(ARobotVehicle* InRobot)
 {
     verify(IsValid(InRobot));
     Robot = InRobot;

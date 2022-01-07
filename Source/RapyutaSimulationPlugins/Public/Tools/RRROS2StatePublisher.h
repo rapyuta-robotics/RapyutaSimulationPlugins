@@ -10,6 +10,9 @@
 #include "ROS2Node.h"
 #include "ROS2Publisher.h"
 
+// RapyutaSimulationPlugins
+#include "Robots/RobotVehicle.h"
+
 #include "RRROS2StatePublisher.generated.h"
 
 /**
@@ -41,10 +44,13 @@ public:
     UPROPERTY()
     int32 Idx = 0;
 
-    UPROPERTY()
-    FString RobotUniqueName;
-
     UPROPERTY(EditAnywhere)
-    AActor* Robot = nullptr;
-    virtual void SetTargetRobot(AActor* InRobot);
+    ARobotVehicle* Robot = nullptr;
+    virtual void SetTargetRobot(ARobotVehicle* InRobot);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString FrameId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString ReferenceFrameId;
 };

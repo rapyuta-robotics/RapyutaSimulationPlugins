@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 // RapyutaSimulationPlugins
+#include "Robots/RobotVehicle.h"
 #include "Tools/RRROS2StatePublisher.h"
 
 #include "RRROS2SkeletalMeshStatePublisher.generated.h"
@@ -21,5 +22,5 @@ public:
     UPROPERTY(VisibleAnywhere)
     USkeletalMeshComponent* SkeletalMeshComp = nullptr;
 
-    void SetTargetRobot(AActor* InRobot) override;
+    void SetTargetRobot(ARobotVehicle* InRobot) override;
 };
