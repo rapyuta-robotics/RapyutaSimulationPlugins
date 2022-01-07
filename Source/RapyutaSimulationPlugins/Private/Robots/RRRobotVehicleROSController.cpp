@@ -91,7 +91,7 @@ void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString
     if (ensure(IsValid(RobotROS2Node)))
     {
         FSubscriptionCallback cb;
-        cb.BindUObject(this, &ARRRobotVehicleROSController::MovementCallback);
+        cb.BindDynamic(this, &ARRRobotVehicleROSController::MovementCallback);
         RobotROS2Node->AddSubscription(InTopicName, UROS2TwistMsg::StaticClass(), cb);
     }
 }

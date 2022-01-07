@@ -38,13 +38,15 @@ void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(ARobotVehicle* InRobot)
     }
     else
     {
+        SkeletalMeshComp = nullptr;
         UE_LOG(LogRapyutaCore, Error, TEXT("[%s] No child SkeletalMeshComp found!"), *SkeletalMeshComp->GetName());
     }
 }
 
 void URRROS2SkeletalMeshStatePublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-    if (nullptr == SkeletalMeshComp)
+    // (NOTE) Robot could be reset upon ROS AI Controller, which owns this publisher, unposses it.
+    if ((nullptr == Robot) || (nullptr == SkeletalMeshComp))
     {
         return;
     }
