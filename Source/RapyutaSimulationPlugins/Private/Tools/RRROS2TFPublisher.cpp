@@ -7,7 +7,7 @@
 
 void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
-    RegisterToROS2Node(InROS2Node);
+    Super::InitializeWithROS2(InROS2Node);
 
     MsgClass = UROS2TFMsg::StaticClass();
     TEnumAsByte<UROS2QoS> QoS;

@@ -19,7 +19,7 @@ URRROS2LidarPublisher::URRROS2LidarPublisher()
 
 void URRROS2LidarPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
-    RegisterToROS2Node(InROS2Node);
+    Super::InitializeWithROS2(InROS2Node);
 
     // [ROS2LidarPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
     Init(UROS2QoS::SensorData);
