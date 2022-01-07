@@ -30,16 +30,14 @@ void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(ARobotVehicle* InRobot)
     if (skeletalMeshComponents.Num() > 0)
     {
         SkeletalMeshComp = skeletalMeshComponents[0];
-        UE_LOG(LogRapyutaCore,
-               Log,
-               TEXT("[%s] has %d bones"),
-               *SkeletalMeshComp->GetName(),
-               SkeletalMeshComp->GetBoneSpaceTransforms().Num());
+        const auto bonesNum = SkeletalMeshComp->GetBoneSpaceTransforms().Num();
+        UE_LOG(LogRapyutaCore, Log, TEXT("[%s] has %d bones"), *SkeletalMeshComp->GetName(), bonesNum);
+        check(bonesNum > 0);
     }
     else
     {
         SkeletalMeshComp = nullptr;
-        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] No child SkeletalMeshComp found!"), *SkeletalMeshComp->GetName());
+        UE_LOG(LogRapyutaCore, Fatal, TEXT("[%s] No child SkeletalMeshComp found!"), *SkeletalMeshComp->GetName());
     }
 }
 
@@ -52,40 +50,47 @@ void URRROS2SkeletalMeshStatePublisher::UpdateMessage(UROS2GenericMsg* InMessage
     }
 
     UROS2EntityStateMsg* stateMsg = CastChecked<UROS2EntityStateMsg>(InMessage);
+
+#if 0    // To be enabled when bone transform is used in the message content
     const TArray<FTransform> boneTransforms = SkeletalMeshComp->GetBoneSpaceTransforms();
     if (boneTransforms.IsValidIndex(Idx))
     {
-        FTransform elementTransform = boneTransforms[Idx];
-        FTransform robotTransform = Robot->GetTransform();
-        FROSEntityState data;
+#endif
+    const FTransform& robotTransform = Robot->GetTransform();
 
-        data.name = FrameId;
-        data.pose_position_x = 0.01f * robotTransform.GetLocation().X;
-        data.pose_position_y = 0.01f * robotTransform.GetLocation().Y;
-        data.pose_position_z = 0.01f * robotTransform.GetLocation().Z;
-        data.pose_orientation = robotTransform.GetRotation();
-        if (Robot->Map != nullptr)
-        {
-            const FQuat mapInverseQuat = Robot->Map->GetActorQuat().Inverse();
-            const FVector mapPos =
-                0.01f * mapInverseQuat.RotateVector(robotTransform.GetLocation() - Robot->Map->GetActorLocation());
-            data.pose_position_x = mapPos.X;
-            data.pose_position_y = mapPos.Y;
-            data.pose_position_z = mapPos.Z;
-            data.pose_orientation = robotTransform.GetRotation() * mapInverseQuat;
-        }
-        data.pose_position_y = -data.pose_position_y;
-        data.pose_orientation.X = -data.pose_orientation.X;
-        data.pose_orientation.Z = -data.pose_orientation.Z;
-        data.twist_linear = FVector::ZeroVector;
-        data.twist_angular = FVector::ZeroVector;
-        data.reference_frame = ReferenceFrameId;
-        stateMsg->SetMsg(data);
-        if ((++Idx) >= StatesToPublish.Num())
-        {
-            Idx = 0;
-        }
-        // DrawDebugDirectionalArrow(GetWorld(), data.position, data.position + data.orientation.GetForwardVector()*100, 100,
-        // FColor(255, 0, 0, 255), false, 10, 1, 10);
+    FROSEntityState data;
+    data.name = FrameId;
+
+    const FVector& robotLocation = robotTransform.GetLocation();
+    const FQuat& robotRotation = robotTransform.GetRotation();
+    data.pose_position_x = 0.01f * robotLocation.X;
+    data.pose_position_y = 0.01f * robotLocation.Y;
+    data.pose_position_z = 0.01f * robotLocation.Z;
+    data.pose_orientation = robotRotation;
+    if (Robot->Map != nullptr)
+    {
+        const FQuat mapInverseQuat = Robot->Map->GetActorQuat().Inverse();
+        const FVector mapPos = 0.01f * mapInverseQuat.RotateVector(robotLocation - Robot->Map->GetActorLocation());
+        data.pose_position_x = mapPos.X;
+        data.pose_position_y = mapPos.Y;
+        data.pose_position_z = mapPos.Z;
+        data.pose_orientation = robotRotation * mapInverseQuat;
     }
+    data.pose_position_y = -data.pose_position_y;
+    data.pose_orientation.X = -data.pose_orientation.X;
+    data.pose_orientation.Z = -data.pose_orientation.Z;
+    data.twist_linear = FVector::ZeroVector;
+    data.twist_angular = FVector::ZeroVector;
+    data.reference_frame = ReferenceFrameId;
+    stateMsg->SetMsg(data);
+
+#if 0
+    if ((++Idx) >= boneTransforms.Num())
+    {
+        Idx = 0;
+    }
+}
+#endif
+    // DrawDebugDirectionalArrow(GetWorld(), data.position, data.position + data.orientation.GetForwardVector()*100, 100,
+    // FColor(255, 0, 0, 255), false, 10, 1, 10);
 }

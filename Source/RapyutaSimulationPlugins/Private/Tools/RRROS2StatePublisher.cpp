@@ -28,11 +28,15 @@ void URRROS2StatePublisher::SetTargetRobot(ARobotVehicle* InRobot)
 
 void URRROS2StatePublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
+    if (StatesToPublish.IsValidIndex(Idx))
+    {
+        CastChecked<UROS2EntityStateMsg>(InMessage)->SetMsg(StatesToPublish[Idx]);
+    }
+
     if ((++Idx) >= StatesToPublish.Num())
     {
         Idx = 0;
     }
-    CastChecked<UROS2EntityStateMsg>(InMessage)->SetMsg(StatesToPublish[Idx]);
 }
 
 void URRROS2StatePublisher::AddEntityToPublish(const FString& InName,

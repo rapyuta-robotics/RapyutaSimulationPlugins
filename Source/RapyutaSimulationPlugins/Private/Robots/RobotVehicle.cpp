@@ -24,7 +24,7 @@ ARobotVehicle::ARobotVehicle(const FObjectInitializer& ObjectInitializer) : Supe
 
 void ARobotVehicle::Initialize()
 {
-    SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(*FString::Printf(TEXT("%s_SkeletalComp"), *GetName()));
+    SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComp"));
     SkeletalMeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
     SkeletalMeshComp->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
     AddOwnedComponent(SkeletalMeshComp);
