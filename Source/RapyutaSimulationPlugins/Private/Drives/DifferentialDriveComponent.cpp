@@ -45,7 +45,6 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
         WheelRight->SetAngularVelocityTarget(FVector(-velR / WheelPerimeter, 0, 0));
         WheelLeft->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
         WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
-        UE_LOG(LogDifferentialDriveComponent, VeryVerbose, TEXT("[%s] Wheel Joints are set"), *GetName());
     }
     else
     {
