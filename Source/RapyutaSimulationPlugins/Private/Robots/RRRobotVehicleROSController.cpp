@@ -82,6 +82,7 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 void ARRRobotVehicleROSController::OnUnPossess()
 {
     OdomPublisher->RevokeUpdateCallback();
+    OdomPublisher->RobotVehicle = nullptr;
     Super::OnUnPossess();
 }
 

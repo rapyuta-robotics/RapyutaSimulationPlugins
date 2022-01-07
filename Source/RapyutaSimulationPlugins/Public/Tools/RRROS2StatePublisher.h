@@ -44,8 +44,8 @@ public:
     UPROPERTY()
     int32 Idx = 0;
 
-    UPROPERTY(EditAnywhere)
-    ARobotVehicle* Robot = nullptr;
+    UPROPERTY()
+    TWeakObjectPtr<ARobotVehicle> Robot = nullptr;
     virtual void SetTargetRobot(ARobotVehicle* InRobot);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

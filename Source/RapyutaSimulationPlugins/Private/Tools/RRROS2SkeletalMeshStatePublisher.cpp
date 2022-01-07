@@ -45,8 +45,8 @@ void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(ARobotVehicle* InRobot)
 
 void URRROS2SkeletalMeshStatePublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-    // (NOTE) Robot could be reset upon ROS AI Controller, which owns this publisher, unposses it.
-    if ((nullptr == Robot) || (nullptr == SkeletalMeshComp))
+    // (NOTE) Robot could be reset when ROS AI Controller, which owns this publisher, unposses it.
+    if ((false == Robot.IsValid()) || (nullptr == SkeletalMeshComp))
     {
         return;
     }
