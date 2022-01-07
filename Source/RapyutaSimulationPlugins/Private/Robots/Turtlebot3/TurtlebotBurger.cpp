@@ -60,15 +60,15 @@ void ATurtlebotBurger::SetupBody()
     SetupConstraintsAndPhysics();
 }
 
-void ATurtlebotBurger::OnConstruction(const FTransform& InTransform)
+void ATurtlebotBurger::PostInitializeComponents()
 {
-    Super::OnConstruction(InTransform);
+    Super::PostInitializeComponents();
     SetupWheelDrives();
 }
 
 void ATurtlebotBurger::SetupWheelDrives()
 {
-    if (bBodyComponentsCreated)
+    if (bBodyComponentsCreated && IsValid(RobotVehicleMoveComponent))
     {
         UDifferentialDriveComponent* diffDriveComponent = CastChecked<UDifferentialDriveComponent>(RobotVehicleMoveComponent);
         diffDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);

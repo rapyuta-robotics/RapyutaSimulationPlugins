@@ -2,9 +2,9 @@
 
 #include "Sensors/RRLidar.h"
 
-void ARRLidar::OnConstruction(const FTransform& InTransform)
+void ARRLidar::PostInitializeComponents()
 {
-    Super::OnConstruction(InTransform);
+    Super::PostInitializeComponents();
     if (LidarComponentClass)
     {
         // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation

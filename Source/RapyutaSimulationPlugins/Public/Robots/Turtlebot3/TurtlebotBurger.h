@@ -23,9 +23,8 @@ public:
     ATurtlebotBurger(const FObjectInitializer& ObjectInitializer);
 
 protected:
-    virtual void OnConstruction(const FTransform& InTransform) override;
+    virtual void PostInitializeComponents() override;
     virtual void BeginPlay() override;
-
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     // Called every frame

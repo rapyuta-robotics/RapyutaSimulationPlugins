@@ -16,5 +16,5 @@ class RAPYUTASIMULATIONPLUGINS_API ATurtlebot : public ARobotVehicle
     GENERATED_BODY()
 
 protected:
-    virtual void PostInitializeComponents() override;
+    virtual void ConfigureVehicleMoveComponent() override;
 };

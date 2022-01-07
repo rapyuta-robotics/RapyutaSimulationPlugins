@@ -44,7 +44,6 @@ public:
 
     bool InitSensors(AROS2Node* InROS2Node);
     void Initialize();
-    virtual void OnConstruction(const FTransform& InTransform) override;
 
     UFUNCTION(BlueprintCallable)
     virtual void SetLinearVel(const FVector& InLinearVelocity);
@@ -61,4 +60,7 @@ public:
 
 protected:
     virtual void PostInitializeComponents() override;
+    virtual void ConfigureVehicleMoveComponent()
+    {
+    }
 };

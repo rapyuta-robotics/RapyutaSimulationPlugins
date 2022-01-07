@@ -47,6 +47,10 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
         WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
         UE_LOG(LogDifferentialDriveComponent, VeryVerbose, TEXT("[%s] Wheel Joints are set"), *GetName());
     }
+    else
+    {
+        UE_LOG(LogDifferentialDriveComponent, Error, TEXT("[%s] Wheel Joints are not set"), *GetName());
+    }
 }
 
 void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)

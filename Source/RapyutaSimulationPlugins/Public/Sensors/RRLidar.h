@@ -27,5 +27,5 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<URRBaseLidarComponent> LidarComponentClass;
 
-    virtual void OnConstruction(const FTransform& InTransform) override;
+    virtual void PostInitializeComponents() override;
 };

@@ -31,24 +31,6 @@ void ARobotVehicle::Initialize()
     RootComponent = SkeletalMeshComp;
 }
 
-void ARobotVehicle::OnConstruction(const FTransform& InTransform)
-{
-    Super::OnConstruction(InTransform);
-
-    if (VehicleMoveComponentClass)
-    {
-        // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
-        RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
-            this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
-        RobotVehicleMoveComponent->RegisterComponent();
-    }
-    else
-    {
-        // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [VehicleMoveComponentClass] has not been configured!"), *GetName());
-    }
-}
-
 bool ARobotVehicle::InitSensors(AROS2Node* InROS2Node)
 {
     if (false == IsValid(InROS2Node))
@@ -81,13 +63,26 @@ void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
 void ARobotVehicle::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-
-    if (RobotVehicleMoveComponent)
+    if (VehicleMoveComponentClass)
     {
-        // Init [RobotVehicleMoveComponent], which requires its PawnOwner having been set
+        // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
+        RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
+            this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
+        RobotVehicleMoveComponent->RegisterComponent();
+
+        // Configure custom properties (frameids, etc.)
+        ConfigureVehicleMoveComponent();
+
+        // Init
+        RobotVehicleMoveComponent->Initialize();
+
         // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
         // to the owner actor's root
-        RobotVehicleMoveComponent->Initialize();
+    }
+    else
+    {
+        // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [VehicleMoveComponentClass] has not been configured!"), *GetName());
     }
 
     // Spawn map from ROS params
