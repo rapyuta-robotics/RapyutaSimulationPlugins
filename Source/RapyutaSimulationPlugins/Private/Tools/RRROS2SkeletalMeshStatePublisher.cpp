@@ -10,13 +10,19 @@
 
 // rclUE
 #include "ROS2Node.h"
+#include "ROS2Publisher.h"
 //#include "DrawDebugHelpers.h"
 
 void URRROS2SkeletalMeshStatePublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
+    // (NOTE) Do not invoke [URRROS2StatePublisher::], which configures its own TopicName, PublicationFrequencyHz
+    UROS2Publisher::InitializeWithROS2(InROS2Node);
+
+    MsgClass = UROS2EntityStateMsg::StaticClass();
     TopicName = TEXT("ue_ros/model_state");
     PublicationFrequencyHz = 10;
-    Super::InitializeWithROS2(InROS2Node);
+
+    Init(UROS2QoS::DynamicBroadcaster);
 }
 
 void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(ARobotVehicle* InRobot)
