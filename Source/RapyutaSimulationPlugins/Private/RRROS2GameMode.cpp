@@ -17,6 +17,7 @@ void ARRROS2GameMode::BeginPlay()
     UWorld* currentWorld = GetWorld();
     ROS2Node = currentWorld->SpawnActor<AROS2Node>();
     ROS2Node->Namespace.Reset();
+    ROS2Node->Name = UENodeName;
     ROS2Node->Init();
 
     // Create Clock publisher

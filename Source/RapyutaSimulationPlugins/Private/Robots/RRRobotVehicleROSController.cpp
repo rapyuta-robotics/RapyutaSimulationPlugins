@@ -28,7 +28,7 @@ void ARRRobotVehicleROSController::InitRobotROS2Node(APawn* InPawn)
     RobotROS2Node->Name = URRGeneralUtils::GetNewROS2NodeName(InPawn->GetName());
 
     // Set robot's [ROS2Node] namespace from spawn parameters if existing
-    UROS2Spawnable* rosSpawnParameters = FindComponentByClass<UROS2Spawnable>();
+    UROS2Spawnable* rosSpawnParameters = InPawn->FindComponentByClass<UROS2Spawnable>();
     if (rosSpawnParameters)
     {
         RobotROS2Node->Namespace = rosSpawnParameters->GetNamespace();
@@ -37,7 +37,6 @@ void ARRRobotVehicleROSController::InitRobotROS2Node(APawn* InPawn)
     {
         RobotROS2Node->Namespace = CastChecked<ARobotVehicle>(InPawn)->RobotUniqueName;
     }
-
     RobotROS2Node->Init();
 }
 

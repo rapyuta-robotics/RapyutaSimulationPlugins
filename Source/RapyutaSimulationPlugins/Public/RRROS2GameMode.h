@@ -27,6 +27,10 @@ public:
     UPROPERTY(BlueprintReadWrite)
     ASimulationState* SimulationState = nullptr;
 
+    UPROPERTY(BlueprintReadWrite)
+    FString UENodeName = TEXT("UENode");
+
+
 protected:
     virtual void BeginPlay() override;
 };
