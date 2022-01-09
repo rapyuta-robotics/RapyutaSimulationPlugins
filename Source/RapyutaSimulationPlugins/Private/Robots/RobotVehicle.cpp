@@ -8,7 +8,6 @@
 
 // RapyutaSimulationPlugins
 #include "Drives/RobotVehicleMovementComponent.h"
-#include "RRROS2GameMode.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/SimulationState.h"
 
@@ -83,37 +82,5 @@ void ARobotVehicle::PostInitializeComponents()
     {
         // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
         UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [VehicleMoveComponentClass] has not been configured!"), *GetName());
-    }
-
-    // Spawn map from ROS params
-    UROS2Spawnable* rosSpawnParameters = FindComponentByClass<UROS2Spawnable>();
-    if (rosSpawnParameters)
-    {
-        RobotUniqueName = rosSpawnParameters->GetName();
-        FString mapName = RobotUniqueName + TEXT("map");
-
-        ARRROS2GameMode* ros2GameMode = Cast<ARRROS2GameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-        ASimulationState* simulationStateActor = ros2GameMode->SimulationState;
-        if (simulationStateActor->Entities.Contains(mapName))
-        {
-            Map = simulationStateActor->Entities[mapName];
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("%s does not exist. Spawning at world origin"), *mapName);
-
-            FTransform mapTransform(FTransform::Identity);
-
-            AActor* mapActor = GetWorld()->SpawnActorDeferred<AActor>(ATargetPoint::StaticClass(), mapTransform);
-            mapActor->Rename(*mapName);
-#if WITH_EDITOR
-            mapActor->SetActorLabel(mapName);
-#endif
-
-            UGameplayStatics::FinishSpawningActor(mapActor, mapTransform);
-            Map = mapActor;
-
-            simulationStateActor->AddEntity(mapActor);
-        }
     }
 }
