@@ -42,7 +42,7 @@ public:
     bool GetOdomData(FROSOdometry& OutOdomData) const;
 
     UPROPERTY(BlueprintReadWrite)
-    bool PublishOdomTf = false;
+    bool bPublishOdomTf = false;
 
     UPROPERTY(BlueprintReadWrite)
     bool AppendNodeNamespace = true;

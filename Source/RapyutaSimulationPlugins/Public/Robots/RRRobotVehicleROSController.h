@@ -51,8 +51,8 @@ protected:
     void SubscribeToMovementCommandTopic(const FString& InTopicName);
 
     UPROPERTY(BlueprintReadWrite)
-    bool PublishOdom = true;
+    bool bPublishOdom = true;
 
     UPROPERTY(BlueprintReadWrite)
-    bool PublishOdomTf = false;
+    bool bPublishOdomTf = false;
 };

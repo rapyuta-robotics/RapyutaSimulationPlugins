@@ -7,7 +7,7 @@
 
 // RapyutaSimulationPlugins
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
-#include "Robots/Turtlebot3/Turtlebot.h"
+#include "Robots/RobotVehicle.h"
 #include "Sensors/RR2DLidarComponent.h"
 
 #include "TurtlebotBurger.generated.h"
@@ -15,7 +15,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
 
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ATurtlebot
+class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARobotVehicle
 {
     GENERATED_BODY()
 
@@ -80,4 +80,11 @@ protected:
 
     UFUNCTION()
     void SetupWheelDrives();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float WheelRadius = 3.3f;
+
+    // todo get data from links
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float WheelSeparationHalf = 7.9f;
 };

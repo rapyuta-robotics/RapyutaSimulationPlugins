@@ -23,7 +23,7 @@ void URRROS2OdomPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
 void URRROS2OdomPublisher::InitializeTFWithROS2(AROS2Node* InROS2Node)
 {
-    if (PublishOdomTf)
+    if (bPublishOdomTf)
     {
         if (nullptr == TFPublisher)
         {
@@ -59,7 +59,7 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdometry& OutOdomData) const
             OutOdomData.child_frame_id = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.child_frame_id);
         }
         
-        if (PublishOdomTf && TFPublisher)
+        if (bPublishOdomTf && TFPublisher)
         {
             TFPublisher->TF = moveComponent->GetOdomTF();
             TFPublisher->FrameId = OutOdomData.header_frame_id;
@@ -77,7 +77,7 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdometry& OutOdomData) const
 void URRROS2OdomPublisher::RevokeUpdateCallback()
 {
     Super::RevokeUpdateCallback();
-    if (PublishOdomTf && TFPublisher)
+    if (bPublishOdomTf && TFPublisher)
     {
         TFPublisher->RevokeUpdateCallback();
     }

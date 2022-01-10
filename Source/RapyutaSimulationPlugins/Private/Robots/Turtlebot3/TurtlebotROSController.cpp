@@ -4,7 +4,6 @@
 
 // RapyutaSimulationPlugins
 #include "Drives/RobotVehicleMovementComponent.h"
-#include "Robots/Turtlebot3/Turtlebot.h"
 #include "Tools/RRGeneralUtils.h"
 #include "Tools/RRROS2TFPublisher.h"
 
@@ -14,8 +13,8 @@ ATurtlebotROSController::ATurtlebotROSController(const FObjectInitializer& Objec
 
 bool ATurtlebotROSController::InitPublishers(APawn* InPawn)
 {
-    PublishOdom = true;
-    PublishOdomTf = true;
+    bPublishOdom = true;
+    bPublishOdomTf = true;
 
     if (false == Super::InitPublishers(InPawn))
     {
