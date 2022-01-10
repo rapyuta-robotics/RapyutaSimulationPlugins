@@ -35,10 +35,10 @@ public:
     FROSOdometry OdomData;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString FrameId;
+    FString FrameId = TEXT("odom");
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString ChildFrameId;
+    FString ChildFrameId =  TEXT("base_footprint");
 
     void SetFrameIds(const FString& InFrameId, const FString& InChildFrameId);
 

@@ -8,7 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 void URobotVehicleMovementComponent::Initialize()
-{
+{    
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 
@@ -41,6 +41,7 @@ void URobotVehicleMovementComponent::SetFrameIds(const FString& InFrameId, const
     OdomData.child_frame_id = ChildFrameId = InChildFrameId;
 }
 
+//todo separate ROS
 void URobotVehicleMovementComponent::InitOdom()
 {
     AActor* owner = GetOwner();
@@ -118,7 +119,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector(Pos - PreviousEstimatedPos) / InDeltaTime;
     OdomData.twist_twist_angular =
         FMath::DegreesToRadians((PreviousEstimatedRot * Rot.Inverse()).GetNormalized().Euler()) / InDeltaTime;
-
+    
     // UE_LOG(LogTemp, Warning, TEXT("Odometry:"));
     // UE_LOG(LogTemp, Warning, TEXT("\tCurrent Positon:\t\t\t%s"), *owner->GetActorLocation().ToString());
     // UE_LOG(LogTemp, Warning, TEXT("\tInitial Positon:\t\t\t%s"), *InitialTransform.GetTranslation().ToString());
