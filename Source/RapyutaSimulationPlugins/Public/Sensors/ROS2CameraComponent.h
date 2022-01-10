@@ -23,7 +23,7 @@ struct FRenderRequest{
 	FRenderCommandFence RenderFence;
 };
 
-UCLASS()
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API UROS2CameraComponent : public UCameraComponent
 {
 	GENERATED_BODY()
@@ -32,6 +32,7 @@ public:
 
 	UROS2CameraComponent();
 
+	UFUNCTION(BlueprintCallable)
 	virtual void Init();
 	
 protected:

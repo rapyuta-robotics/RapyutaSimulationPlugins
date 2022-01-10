@@ -14,11 +14,11 @@ UROS2CameraComponent::UROS2CameraComponent()
 void UROS2CameraComponent::BeginPlay()
 {
     Super::BeginPlay();
-    Init();
 }
 
 void UROS2CameraComponent::Init()
 {
+
     SceneCaptureComponent->FOVAngle = FieldOfView;
     SceneCaptureComponent->OrthoWidth = OrthoWidth;
 
@@ -39,7 +39,7 @@ void UROS2CameraComponent::Init()
     Node = GetWorld()->SpawnActor<AROS2Node>();
     Node->Name =
         NodeName.IsEmpty() ? FString::Printf(TEXT("%s_%s_ROS2CameraNode"), *(GetOwner()->GetName()), *(GetName())) : NodeName;
-    Node->Namespace = FString();
+    Node->Namespace = Namespace;
     Node->Init();
 
     Publisher = NewObject<UROS2Publisher>(this, UROS2Publisher::StaticClass());
