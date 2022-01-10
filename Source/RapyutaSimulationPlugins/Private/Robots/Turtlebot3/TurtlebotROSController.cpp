@@ -14,18 +14,13 @@ ATurtlebotROSController::ATurtlebotROSController(const FObjectInitializer& Objec
 
 bool ATurtlebotROSController::InitPublishers(APawn* InPawn)
 {
+    PublishOdom = true;
+    PublishOdomTf = true;
+
     if (false == Super::InitPublishers(InPawn))
     {
         return false;
     }
-
-    ATurtlebot* turtlebot = CastChecked<ATurtlebot>(InPawn);
-
-    // TFPublisher
-    check(OdomPublisher->TFPublisher);
-    OdomPublisher->TFPublisher->FrameId = URRGeneralUtils::ComposeROSFullFrameId(turtlebot->RobotUniqueName, TEXT("odom"));
-    OdomPublisher->TFPublisher->ChildFrameId =
-        URRGeneralUtils::ComposeROSFullFrameId(turtlebot->RobotUniqueName, TEXT("base_footprint"));
 
     return true;
 }
