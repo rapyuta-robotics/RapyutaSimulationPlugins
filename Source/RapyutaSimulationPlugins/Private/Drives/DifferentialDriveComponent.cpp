@@ -4,32 +4,38 @@
 
 DEFINE_LOG_CATEGORY(LogDifferentialDriveComponent);
 
-UDifferentialDriveComponent::UDifferentialDriveComponent()
-{
-}
-
 void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight)
 {
-    WheelLeft = InWheelLeft;
-    WheelRight = InWheelRight;
+    auto fSetWheel = [this](UPhysicsConstraintComponent*& CurWheel, UPhysicsConstraintComponent* NewWheel)
+    {
+        if (IsValid(NewWheel))
+        {
+            CurWheel = NewWheel;
+            CurWheel->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
+            CurWheel->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
+            CurWheel->SetAngularVelocityDriveTwistAndSwing(true, false);
+        }
+        else
+        {
+            UE_LOG(LogDifferentialDriveComponent, Error, TEXT("[%s] SetWheels() NewWheel is invalid!"), *GetName());
+        }
+    };
 
-    WheelLeft->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
-    WheelLeft->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
-    WheelLeft->SetAngularVelocityDriveTwistAndSwing(true, false);
-
-    WheelRight->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
-    WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
-    WheelRight->SetAngularVelocityDriveTwistAndSwing(true, false);
+    fSetWheel(WheelLeft, InWheelLeft);
+    fSetWheel(WheelRight, InWheelRight);
 }
 
 void UDifferentialDriveComponent::SetPerimeter()
 {
     if (WheelRadius <= 1e-6)
     {
-        UE_LOG(LogDifferentialDriveComponent, Warning, TEXT("Wheel radius is too small. Wheel radius is reset to 1.0"));
         WheelRadius = 1.0f;
+        UE_LOG(LogDifferentialDriveComponent,
+               Warning,
+               TEXT("[%s] Wheel radius is too small. Wheel radius is reset to 1.0"),
+               *GetName());
     }
-    WheelPerimeter = WheelRadius * 2.0 * 3.1416;
+    WheelPerimeter = WheelRadius * 2.f * M_PI;
 }
 
 void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
@@ -46,7 +52,7 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
     }
     else
     {
-        UE_LOG(LogDifferentialDriveComponent, Error, TEXT("Wheel Joints are not set"));
+        UE_LOG(LogDifferentialDriveComponent, Error, TEXT("[%s] Wheel Joints are not set"), *GetName());
     }
 }
 
@@ -67,9 +73,6 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     OdomData.header_stamp_sec = static_cast<int32>(TimeNow);
     uint64 ns = (uint64)(TimeNow * 1e+09f);
     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
-
-    OdomData.header_frame_id = TEXT("odom");
-    OdomData.child_frame_id = TEXT("base_footprint");
 
     // vl and vr as computed here is ok for kinematics
     // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is
@@ -147,11 +150,5 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 void UDifferentialDriveComponent::Initialize()
 {
     Super::Initialize();
-
-    if (!IsValid(WheelLeft) || !IsValid(WheelRight))
-    {
-        UE_LOG(LogDifferentialDriveComponent, Error, TEXT("Wheel Joints are not set"));
-    }
-
     SetPerimeter();
 }

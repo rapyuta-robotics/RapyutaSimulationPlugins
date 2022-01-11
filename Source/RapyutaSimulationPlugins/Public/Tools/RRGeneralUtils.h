@@ -1,4 +1,5 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+#pragma once
 
 // UE
 #include "Engine/World.h"
@@ -20,5 +21,15 @@ public:
     {
         // Also invalidate the timer here-in!
         World->GetTimerManager().ClearTimer(TimerHandle);
+    }
+
+    FORCEINLINE static FString GetNewROS2NodeName(const FString& InAffix = FString())
+    {
+        return FString::Printf(TEXT("UE%s_%s"), *InAffix, *FGuid::NewGuid().ToString());
+    }
+
+    FORCEINLINE static FString ComposeROSFullFrameId(const FString& InPrefix, const TCHAR* InFrameId)
+    {
+        return InPrefix.IsEmpty() ? InFrameId : FString::Printf(TEXT("%s/%s"), *InPrefix, InFrameId);
     }
 };

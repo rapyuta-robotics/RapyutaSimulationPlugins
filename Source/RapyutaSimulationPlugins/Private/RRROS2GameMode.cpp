@@ -7,7 +7,7 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
-#include "Tools/ROS2ClockPublisher.h"
+#include "Tools/RRROS2ClockPublisher.h"
 #include "Tools/SimulationState.h"
 
 void ARRROS2GameMode::BeginPlay()
@@ -17,10 +17,11 @@ void ARRROS2GameMode::BeginPlay()
     UWorld* currentWorld = GetWorld();
     ROS2Node = currentWorld->SpawnActor<AROS2Node>();
     ROS2Node->Namespace.Reset();
+    ROS2Node->Name = UENodeName;
     ROS2Node->Init();
 
     // Create Clock publisher
-    ClockPublisher = NewObject<UROS2ClockPublisher>(this);
+    ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
     ClockPublisher->InitializeWithROS2(ROS2Node);
 

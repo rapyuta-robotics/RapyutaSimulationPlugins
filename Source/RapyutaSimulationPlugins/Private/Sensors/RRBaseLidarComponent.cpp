@@ -3,7 +3,7 @@
 #include "Sensors/RRBaseLidarComponent.h"
 
 // RapyutaSimulationPlugins
-#include "Tools/ROS2LidarPublisher.h"
+#include "Tools/RRROS2LidarPublisher.h"
 
 DEFINE_LOG_CATEGORY(LogROS2Sensor);
 
@@ -22,26 +22,25 @@ void URRBaseLidarComponent::BeginPlay()
 
 void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTopicName)
 {
-    // Only need to initialize once
+    // Init [LidarPublisher] info
     if (nullptr == LidarPublisher)
     {
         // Instantiate Lidar publisher
-        LidarPublisher = NewObject<UROS2LidarPublisher>(this, *FString::Printf(TEXT("%sLidarPublisher"), *GetName()));
+        LidarPublisher = NewObject<URRROS2LidarPublisher>(this, *FString::Printf(TEXT("%sLidarPublisher"), *GetName()));
         LidarPublisher->LidarComponent = this;
-
-        // Init [LidarPublisher] info
-        LidarPublisher->PublicationFrequencyHz = ScanFrequency;
-        LidarPublisher->MsgClass = LidarMsgClass;
     }
 
-    // The publisher could have been garbaged for some reason
+    // Update with new dynamic data (for example possibly reconfigured by BP child actor)
+    // (NOTE) The publisher could have been garbaged for some reason
     if (IsValid(LidarPublisher))
     {
+        LidarPublisher->PublicationFrequencyHz = ScanFrequency;
+        verify(LidarMsgClass);
+        LidarPublisher->MsgClass = LidarMsgClass;
+
         // Update [LidarPublisher]'s topic name
-        if (false == InTopicName.IsEmpty())
-        {
-            LidarPublisher->TopicName = InTopicName;
-        }
+        LidarPublisher->TopicName = InTopicName.IsEmpty() ? TopicName : InTopicName;
+        verify(false == LidarPublisher->TopicName.IsEmpty());
 
         // Register [LidarPublisher] to the new ROS2 node
         LidarPublisher->InitializeWithROS2(InROS2Node);

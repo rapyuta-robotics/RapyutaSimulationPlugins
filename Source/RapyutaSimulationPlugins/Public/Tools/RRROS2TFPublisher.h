@@ -2,22 +2,20 @@
 
 #pragma once
 
+// UE
 #include "CoreMinimal.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/TransformNonVectorized.h"
+
+// rclUE
+#include "Msgs/ROS2GenericMsg.h"
+#include "Msgs/ROS2TFMsg.h"
 #include "ROS2Publisher.h"
 
-#include <Msgs/ROS2GenericMsg.h>
-#include <Msgs/ROS2TFMsg.h>
-#include <Tools/UEUtilities.h>
+#include "RRROS2TFPublisher.generated.h"
 
-#include "ROS2TFPublisher.generated.h"
-
-/**
- *
- */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UROS2TFPublisher : public UROS2Publisher
+class RAPYUTASIMULATIONPLUGINS_API URRROS2TFPublisher : public UROS2Publisher
 {
     GENERATED_BODY()
 
@@ -44,6 +42,5 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetTransform(const FVector& Translation, const FQuat& Rotation);
 
-    UFUNCTION(BlueprintCallable)
-    void UpdateTFMsg(UROS2GenericMsg* Message);
+    void UpdateMessage(UROS2GenericMsg* InMessage) override;
 };

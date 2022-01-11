@@ -13,7 +13,7 @@ UROS2CameraComponent::UROS2CameraComponent()
 
 void UROS2CameraComponent::BeginPlay()
 {
-	Super::BeginPlay();	
+    Super::BeginPlay();
     Init();
 }
 
@@ -21,7 +21,7 @@ void UROS2CameraComponent::Init()
 {
     SceneCaptureComponent->FOVAngle = FieldOfView;
     SceneCaptureComponent->OrthoWidth = OrthoWidth;
-    
+
     RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
     RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_B8G8R8A8, true);
     SceneCaptureComponent->TextureTarget = RenderTarget;
@@ -30,28 +30,30 @@ void UROS2CameraComponent::Init()
     Data.width = Width;
     Data.height = Height;
     Data.encoding = Encoding;
-    Data.step = Width * 3; // todo should be variable based on encoding
+    Data.step = Width * 3;    // todo should be variable based on encoding
     Data.data.AddUninitialized(Width * Height * 3);
 
-    QueueSize = QueueSize < 1 ? 1 : QueueSize; // QueueSize should be more than 1
+    QueueSize = QueueSize < 1 ? 1 : QueueSize;    // QueueSize should be more than 1
 
     // Node and publisher initialize
     Node = GetWorld()->SpawnActor<AROS2Node>();
-    Node->Name = NodeName.IsEmpty() ? FString::Printf(TEXT("%s_%s_ROS2CameraNode"), *(GetOwner()->GetName()), *(GetName())) : NodeName;
+    Node->Name =
+        NodeName.IsEmpty() ? FString::Printf(TEXT("%s_%s_ROS2CameraNode"), *(GetOwner()->GetName()), *(GetName())) : NodeName;
     Node->Namespace = FString();
     Node->Init();
 
-    Publisher =  NewObject<UROS2Publisher>(this, UROS2Publisher::StaticClass());
+    Publisher = NewObject<UROS2Publisher>(this, UROS2Publisher::StaticClass());
     Publisher->RegisterComponent();
     Publisher->TopicName = TopicName;
     Publisher->PublicationFrequencyHz = PublishFreq;
     Publisher->MsgClass = UROS2ImageMsg::StaticClass();
-    
+
     Publisher->UpdateDelegate.BindDynamic(this, &UROS2CameraComponent::MessageUpdate);
     Node->AddPublisher(Publisher);
     Publisher->Init(UROS2QoS::KeepLast);
 
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UROS2CameraComponent::TakeImage, 1.f / static_cast<float>(FPS), true);
+    GetWorld()->GetTimerManager().SetTimer(
+        TimerHandle, this, &UROS2CameraComponent::TakeImage, 1.f / static_cast<float>(FPS), true);
 }
 
 void UROS2CameraComponent::TakeImage()
@@ -60,20 +62,23 @@ void UROS2CameraComponent::TakeImage()
     CaptureNonBlocking();
 }
 
-void UROS2CameraComponent::MessageUpdate(UROS2GenericMsg *TopicMessage)
+void UROS2CameraComponent::MessageUpdate(UROS2GenericMsg* TopicMessage)
 {
-    UROS2ImageMsg *Message = Cast<UROS2ImageMsg>(TopicMessage);
+    UROS2ImageMsg* Message = Cast<UROS2ImageMsg>(TopicMessage);
     Message->SetMsg(GetData());
 }
 
 FROSImage UROS2CameraComponent::GetData()
 {
-    if(!RenderRequestQueue.IsEmpty()){
+    if (!RenderRequestQueue.IsEmpty())
+    {
         // Peek the next RenderRequest from queue
         FRenderRequest* nextRenderRequest = nullptr;
         RenderRequestQueue.Peek(nextRenderRequest);
-        if(nextRenderRequest){ //nullptr check
-            if(nextRenderRequest->RenderFence.IsFenceComplete()){ // Check if rendering is done, indicated by RenderFence
+        if (nextRenderRequest)
+        {    // nullptr check
+            if (nextRenderRequest->RenderFence.IsFenceComplete())
+            {    // Check if rendering is done, indicated by RenderFence
                 for (int I = 0; I < nextRenderRequest->Image.Num(); I++)
                 {
                     Data.data[I * 3 + 0] = nextRenderRequest->Image[I].R;
@@ -87,7 +92,7 @@ FROSImage UROS2CameraComponent::GetData()
                 delete nextRenderRequest;
             }
         }
-    }    
+    }
 
     // SceneCaptureComponent->CaptureScene();
     // FTextureRenderTarget2DResource* RenderTargetResource;
@@ -102,7 +107,7 @@ FROSImage UROS2CameraComponent::GetData()
     //         Data.data[I * 3 + 2] = buffer[I].B;
     //     }
     // }
-    
+
     return Data;
 }
 
@@ -113,7 +118,8 @@ void UROS2CameraComponent::CaptureNonBlocking()
     // Get RenderContext
     FTextureRenderTargetResource* renderTargetResource = SceneCaptureComponent->TextureTarget->GameThread_GetRenderTargetResource();
 
-    struct FReadSurfaceContext{
+    struct FReadSurfaceContext
+    {
         FRenderTarget* SrcRenderTarget;
         TArray<FColor>* OutData;
         FIntRect Rect;
@@ -128,23 +134,23 @@ void UROS2CameraComponent::CaptureNonBlocking()
         renderTargetResource,
         &(renderRequest->Image),
         FIntRect(0, 0, renderTargetResource->GetSizeXY().X, renderTargetResource->GetSizeXY().Y),
-        FReadSurfaceDataFlags(RCM_UNorm, CubeFace_MAX)
-    };
+        FReadSurfaceDataFlags(RCM_UNorm, CubeFace_MAX)};
 
     // Above 4.22 use this
-    ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)(
-    [readSurfaceContext, this](FRHICommandListImmediate& RHICmdList){
-        RHICmdList.ReadSurfaceData(
-            readSurfaceContext.SrcRenderTarget->GetRenderTargetTexture(),
-            readSurfaceContext.Rect,
-            *readSurfaceContext.OutData,
-            readSurfaceContext.Flags
-        );
-    });
+    ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)
+    (
+        [readSurfaceContext, this](FRHICommandListImmediate& RHICmdList)
+        {
+            RHICmdList.ReadSurfaceData(readSurfaceContext.SrcRenderTarget->GetRenderTargetTexture(),
+                                       readSurfaceContext.Rect,
+                                       *readSurfaceContext.OutData,
+                                       readSurfaceContext.Flags);
+        });
 
     // Notify new task in RenderQueue
     RenderRequestQueue.Enqueue(renderRequest);
-    if(QueueCount > QueueSize){
+    if (QueueCount > QueueSize)
+    {
         RenderRequestQueue.Pop();
     }
     else
