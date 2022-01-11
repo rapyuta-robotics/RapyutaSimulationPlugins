@@ -40,4 +40,10 @@ public:
     void RevokeUpdateCallback() override;
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
     bool GetOdomData(FROSOdometry& OutOdomData) const;
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bPublishOdomTf = false;
+
+    UPROPERTY(BlueprintReadWrite)
+    bool AppendNodeNamespace = true;
 };

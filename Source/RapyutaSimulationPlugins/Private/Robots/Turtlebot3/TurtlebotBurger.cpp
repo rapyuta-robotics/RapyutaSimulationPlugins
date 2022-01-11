@@ -16,8 +16,6 @@ ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) 
     PrimaryActorTick.bCanEverTick = true;
     VehicleMoveComponentClass = UDifferentialDriveComponent::StaticClass();
     bBodyComponentsCreated = false;
-    WheelRadius = 3.3f;
-    WheelSeparationHalf = 7.9f;
     SetupBody();
 }
 

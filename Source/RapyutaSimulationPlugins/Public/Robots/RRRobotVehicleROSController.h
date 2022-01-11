@@ -49,4 +49,10 @@ protected:
 
     UFUNCTION(BlueprintCallable)
     void SubscribeToMovementCommandTopic(const FString& InTopicName);
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bPublishOdom = true;
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bPublishOdomTf = false;
 };

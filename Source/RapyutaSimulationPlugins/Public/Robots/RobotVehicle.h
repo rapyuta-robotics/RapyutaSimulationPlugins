@@ -51,13 +51,6 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetAngularVel(const FVector& InAngularVelocity);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float WheelRadius = 1.f;
-
-    // todo get data from links
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float WheelSeparationHalf = 1.f;
-
 protected:
     virtual void PostInitializeComponents() override;
     virtual void ConfigureVehicleMoveComponent()

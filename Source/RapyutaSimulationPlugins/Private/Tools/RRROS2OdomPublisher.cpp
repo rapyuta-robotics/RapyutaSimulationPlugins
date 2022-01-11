@@ -23,12 +23,16 @@ void URRROS2OdomPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
 void URRROS2OdomPublisher::InitializeTFWithROS2(AROS2Node* InROS2Node)
 {
-    if (nullptr == TFPublisher)
+    if (bPublishOdomTf)
     {
-        TFPublisher = NewObject<URRROS2TFPublisher>(this);
-        TFPublisher->SetupUpdateCallback();
+        if (nullptr == TFPublisher)
+        {
+            TFPublisher = NewObject<URRROS2TFPublisher>(this);
+            TFPublisher->SetupUpdateCallback();
+            TFPublisher->PublicationFrequencyHz = PublicationFrequencyHz;
+        }
+        TFPublisher->InitializeWithROS2(InROS2Node);
     }
-    TFPublisher->InitializeWithROS2(InROS2Node);
 }
 
 void URRROS2OdomPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
@@ -47,9 +51,21 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdometry& OutOdomData) const
         RobotVehicle.IsValid() ? RobotVehicle.Get()->RobotVehicleMoveComponent : nullptr;
     if (moveComponent && moveComponent->OdomData.IsValid())
     {
-        // Also update TFPublisher's TF
-        TFPublisher->TF = moveComponent->GetOdomTF();
+        
         OutOdomData = ConversionUtils::OdomUEToROS(moveComponent->OdomData);
+        if (AppendNodeNamespace)
+        {
+            OutOdomData.header_frame_id = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.header_frame_id);
+            OutOdomData.child_frame_id = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.child_frame_id);
+        }
+        
+        if (bPublishOdomTf && TFPublisher)
+        {
+            TFPublisher->TF = moveComponent->GetOdomTF();
+            TFPublisher->FrameId = OutOdomData.header_frame_id;
+            TFPublisher->ChildFrameId = OutOdomData.child_frame_id;
+        }
+        
         return true;
     }
     else
@@ -61,5 +77,8 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdometry& OutOdomData) const
 void URRROS2OdomPublisher::RevokeUpdateCallback()
 {
     Super::RevokeUpdateCallback();
-    TFPublisher->RevokeUpdateCallback();
+    if (bPublishOdomTf && TFPublisher)
+    {
+        TFPublisher->RevokeUpdateCallback();
+    }
 }
