@@ -114,6 +114,9 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     TArray<FHitResult> RecordedHits;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bAppendNodeNamespace = true;
+
 #if TRACE_ASYNC
     TArray<FTraceHandle> TraceHandles;
 #endif

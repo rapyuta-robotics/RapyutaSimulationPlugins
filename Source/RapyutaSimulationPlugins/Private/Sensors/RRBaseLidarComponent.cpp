@@ -42,6 +42,12 @@ void URRBaseLidarComponent::InitLidar(AROS2Node* InROS2Node, const FString& InTo
         LidarPublisher->TopicName = InTopicName.IsEmpty() ? TopicName : InTopicName;
         verify(false == LidarPublisher->TopicName.IsEmpty());
 
+        if (bAppendNodeNamespace)
+        {
+            FrameId = URRGeneralUtils::ComposeROSFullFrameId(InROS2Node->Namespace, *FrameId);
+            verify(false == FrameId.IsEmpty());
+        }
+
         // Register [LidarPublisher] to the new ROS2 node
         LidarPublisher->InitializeWithROS2(InROS2Node);
     }
