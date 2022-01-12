@@ -45,5 +45,5 @@ public:
     bool bPublishOdomTf = false;
 
     UPROPERTY(BlueprintReadWrite)
-    bool AppendNodeNamespace = true;
+    bool bAppendNodeNamespace = true;
 };
