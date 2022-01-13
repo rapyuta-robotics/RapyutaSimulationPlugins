@@ -30,7 +30,10 @@ public:
     UPROPERTY(BlueprintReadWrite)
     FString UENodeName = TEXT("UENode");
 
-
 protected:
-    virtual void BeginPlay() override;
+    virtual void InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage) override;
+    virtual void InitSim();
+
+private:
+    void InitROS2();
 };

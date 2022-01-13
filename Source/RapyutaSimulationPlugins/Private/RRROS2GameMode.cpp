@@ -2,6 +2,9 @@
 
 #include "RRROS2GameMode.h"
 
+// UE
+#include "HAL/PlatformMisc.h"
+
 // rclUE
 #include "Msgs/ROS2ClockMsg.h"
 #include "ROS2Node.h"
@@ -10,9 +13,39 @@
 #include "Tools/RRROS2ClockPublisher.h"
 #include "Tools/SimulationState.h"
 
-void ARRROS2GameMode::BeginPlay()
+void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
 {
-    Super::BeginPlay();
+    Super::InitGame(InMapName, InOptions, OutErrorMessage);
+    UE_LOG(LogRapyutaCore,
+           Log,
+           TEXT("[ARRROS2GameMode] INIT GAME [%s/%s] - Options: %s\n%s!"),
+           *InMapName,
+           *GetWorld()->GetName(),
+           *InOptions,
+           *OutErrorMessage);
+    UE_LOG(LogRapyutaCore,
+           Log,
+           TEXT("NUM OF CPU CORES: [%d] - WITH HYPERTHREADS: [%d] - RECOMMENDED NUM OF WORKER THREADS: [%d]"),
+           FPlatformMisc::NumberOfCores(),
+           FPlatformMisc::NumberOfCoresIncludingHyperthreads(),
+           FPlatformMisc::NumberOfWorkerThreadsToSpawn());
+    UE_LOG(LogRapyutaCore, Display, TEXT("ShouldUseThreadingForPerformance: %d"), FApp::ShouldUseThreadingForPerformance());
+
+    // Init Sim main components
+    InitSim();
+}
+
+void ARRROS2GameMode::InitSim()
+{
+    InitROS2();
+}
+
+void ARRROS2GameMode::InitROS2()
+{
+    if (IsValid(ROS2Node))
+    {
+        return;
+    }
 
     UWorld* currentWorld = GetWorld();
     ROS2Node = currentWorld->SpawnActor<AROS2Node>();
@@ -27,6 +60,5 @@ void ARRROS2GameMode::BeginPlay()
 
     // Simulation state
     SimulationState = currentWorld->SpawnActor<ASimulationState>();
-    SimulationState->ROSServiceNode = ROS2Node;
-    SimulationState->Init();
+    SimulationState->Init(ROS2Node);
 }
