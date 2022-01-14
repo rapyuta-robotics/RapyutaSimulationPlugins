@@ -52,7 +52,7 @@ public:
                                       FQuat& InOrientation);
 
     // need node that will handle services - this class will only define and register the service
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(BlueprintReadOnly)
     AROS2Node* ROSServiceNode = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

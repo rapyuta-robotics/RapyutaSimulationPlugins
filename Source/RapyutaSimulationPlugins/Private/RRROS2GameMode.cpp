@@ -18,7 +18,7 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
     Super::InitGame(InMapName, InOptions, OutErrorMessage);
     UE_LOG(LogRapyutaCore,
            Log,
-           TEXT("[ARRROS2GameMode] INIT GAME [%s/%s] - Options: %s\n%s!"),
+           TEXT("[ARRROS2GameMode] INIT GAME [%s/%s] - Options: %s\n%s"),
            *InMapName,
            *GetWorld()->GetName(),
            *InOptions,
