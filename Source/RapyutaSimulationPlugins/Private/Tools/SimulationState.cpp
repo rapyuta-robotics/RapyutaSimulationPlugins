@@ -22,8 +22,10 @@ ASimulationState::ASimulationState()
     PrimaryActorTick.bCanEverTick = true;
 }
 
-void ASimulationState::Init()
+void ASimulationState::InitializeWithROS2(AROS2Node* InROS2Node)
 {
+    ROSServiceNode = InROS2Node;
+
     // register delegates to node
     FServiceCallback GetEntityStateSrvCallback;
     FServiceCallback SetEntityStateSrvCallback;

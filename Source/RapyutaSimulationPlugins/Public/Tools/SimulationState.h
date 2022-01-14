@@ -21,7 +21,7 @@ public:
 
 public:
     UFUNCTION(BlueprintCallable)
-    void Init();
+    void InitializeWithROS2(AROS2Node* InROS2Node);
 
     UFUNCTION(BlueprintCallable)
     void GetEntityStateSrv(UROS2GenericSrv* Service);

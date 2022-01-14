@@ -18,6 +18,11 @@ UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
     GENERATED_BODY()
 
 public:
+    ARRROS2GameMode();
+
+    UFUNCTION(BlueprintCallable)
+    virtual void Init();
+
     UPROPERTY(BlueprintReadWrite)
     AROS2Node* ROS2Node = nullptr;
 
@@ -27,8 +32,11 @@ public:
     UPROPERTY(BlueprintReadWrite)
     ASimulationState* SimulationState = nullptr;
 
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString UENodeName = TEXT("UENode");
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bAutoStart = true;
 
 
 protected:
