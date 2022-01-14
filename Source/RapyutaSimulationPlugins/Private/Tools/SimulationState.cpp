@@ -22,8 +22,10 @@ ASimulationState::ASimulationState()
     PrimaryActorTick.bCanEverTick = true;
 }
 
-void ASimulationState::Init()
+void ASimulationState::Init(AROS2Node* InROS2Node)
 {
+    ROSServiceNode = InROS2Node;
+
     // register delegates to node
     FServiceCallback GetEntityStateSrvCallback;
     FServiceCallback SetEntityStateSrvCallback;
@@ -56,7 +58,6 @@ void ASimulationState::Init()
 
 void ASimulationState::AddEntity(AActor* Entity)
 {
-    // is GetName for editor only?
     Entities.Emplace(Entity->GetName(), Entity);
 }
 

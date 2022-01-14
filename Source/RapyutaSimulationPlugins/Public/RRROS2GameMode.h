@@ -18,19 +18,22 @@ UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
     GENERATED_BODY()
 
 public:
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(BlueprintReadOnly)
     AROS2Node* ROS2Node = nullptr;
 
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(BlueprintReadOnly)
     URRROS2ClockPublisher* ClockPublisher = nullptr;
 
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(BlueprintReadOnly)
     ASimulationState* SimulationState = nullptr;
 
     UPROPERTY(BlueprintReadWrite)
     FString UENodeName = TEXT("UENode");
 
-
 protected:
-    virtual void BeginPlay() override;
+    virtual void InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage) override;
+    virtual void InitSim();
+
+private:
+    void InitROS2();
 };
