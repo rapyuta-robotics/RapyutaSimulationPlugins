@@ -20,9 +20,6 @@ public:
 	AROS2CameraActor();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	
 	/** The camera component for this camera */
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UROS2CameraComponent* CameraComponent;

@@ -75,6 +75,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 QueueSize = 2;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bAutoStart = true;
+
 	// ROS 
 	UFUNCTION(BlueprintCallable)
 	virtual FROSImage GetData();
@@ -96,6 +99,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 PublishFreq = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FrameId = TEXT("camera");;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Encoding = TEXT("rgb8");;

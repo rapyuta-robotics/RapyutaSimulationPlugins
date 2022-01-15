@@ -14,9 +14,3 @@ AROS2CameraActor::AROS2CameraActor()
 	
 	RootComponent = CameraComponent;
 }
-
-void AROS2CameraActor::BeginPlay()
-{
-    Super::BeginPlay();
-    CameraComponent->Init();
-}

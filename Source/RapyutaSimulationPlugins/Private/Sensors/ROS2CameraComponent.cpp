@@ -14,6 +14,10 @@ UROS2CameraComponent::UROS2CameraComponent()
 void UROS2CameraComponent::BeginPlay()
 {
     Super::BeginPlay();
+    if (bAutoStart)
+    {
+        Init();
+    }
 }
 
 void UROS2CameraComponent::Init()
@@ -27,6 +31,7 @@ void UROS2CameraComponent::Init()
     SceneCaptureComponent->TextureTarget = RenderTarget;
 
     // Initialize image data
+    Data.header_frame_id = FrameId;
     Data.width = Width;
     Data.height = Height;
     Data.encoding = Encoding;
