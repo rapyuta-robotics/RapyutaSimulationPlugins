@@ -53,8 +53,8 @@ void URobotVehicleMovementComponent::InitOdom()
         InitialTransform.SetRotation(owner->GetActorQuat()); 
     }
     else { //odom source = world. Odom frame start from world origin
-        InitialTransform.SetTranslation(FVector(0,0,0));
-        InitialTransform.SetRotation(FQuat(0,0,0,1));          
+        InitialTransform.SetTranslation(FVector::ZeroVector);
+        InitialTransform.SetRotation(FQuat::Identity);          
     }
 
     OdomData.pose_pose_position_x = InitialTransform.GetTranslation().X;
@@ -106,13 +106,13 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     AActor* owner = GetOwner();
 
     // position
-    FVector Pos = owner->GetActorLocation() - InitialTransform.GetTranslation();
+    FVector Pos = InitialTransform.GetRotation().UnrotateVector(owner->GetActorLocation() - InitialTransform.GetTranslation());
     FVector PreviousPos = PreviousTransform.GetTranslation(); //prev pos without noise
     PreviousTransform.SetTranslation(Pos);
     Pos += PreviousEstimatedPos - PreviousPos + WithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
 
     FRotator NoiseRot = FRotator(0, 0, WithNoise * GaussianRNGRotation(Gen));
-    FQuat Rot =  owner->GetActorRotation().Quaternion() * InitialTransform.GetRotation().Inverse();
+    FQuat Rot =  owner->GetActorQuat() * InitialTransform.GetRotation().Inverse();
     FQuat PreviousRot = PreviousTransform.GetRotation();
     PreviousTransform.SetRotation(Rot);
     Rot = NoiseRot.Quaternion() * PreviousEstimatedRot * PreviousRot.Inverse() * Rot;
