@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "Sensors/ROS2CameraComponent.h"
 
+// rclUE
+#include "ROS2Node.h"
+
 #include "ROS2CameraActor.generated.h"
 
 /**
@@ -19,7 +22,19 @@ public:
 
 	AROS2CameraActor();
 
+    UPROPERTY(Transient)
+    AROS2Node* Node;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString NodeName;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString NodeNamespace;
+
 protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	
 	/** The camera component for this camera */
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UROS2CameraComponent* CameraComponent;

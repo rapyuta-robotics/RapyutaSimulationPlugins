@@ -23,6 +23,5 @@ public:
     UPROPERTY()
     URRBaseLidarComponent* LidarComponent = nullptr;
 
-    void InitializeWithROS2(AROS2Node* InROS2Node) override;
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
 };

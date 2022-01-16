@@ -6,25 +6,18 @@ UROS2CameraComponent::UROS2CameraComponent()
 {
     // component initialization
     SceneCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCaptureComponent"));
-
-    // Initialize capture and texture component
     SceneCaptureComponent->SetupAttachment(this);
+
+    CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+    CameraComponent->SetupAttachment(this);
+
+    SensorMsgClass = UROS2ImageMsg::StaticClass();
 }
 
-void UROS2CameraComponent::BeginPlay()
+void UROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName)
 {
-    Super::BeginPlay();
-    if (bAutoStart)
-    {
-        Init();
-    }
-}
-
-void UROS2CameraComponent::Init()
-{
-
-    SceneCaptureComponent->FOVAngle = FieldOfView;
-    SceneCaptureComponent->OrthoWidth = OrthoWidth;
+    SceneCaptureComponent->FOVAngle = CameraComponent->FieldOfView;
+    SceneCaptureComponent->OrthoWidth = CameraComponent->OrthoWidth;
 
     RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
     RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_B8G8R8A8, true);
@@ -40,23 +33,14 @@ void UROS2CameraComponent::Init()
 
     QueueSize = QueueSize < 1 ? 1 : QueueSize;    // QueueSize should be more than 1
 
-    // Node and publisher initialize
-    Node = GetWorld()->SpawnActor<AROS2Node>();
-    Node->Name =
-        NodeName.IsEmpty() ? FString::Printf(TEXT("%s_%s_ROS2CameraNode"), *(GetOwner()->GetName()), *(GetName())) : NodeName;
-    Node->Namespace = Namespace;
-    Node->Init();
+    Super::PreInitializePublisher(InROS2Node, InTopicName);
+    if (IsValid(SensorPublisher))
+    {
+        SensorPublisher->UpdateDelegate.BindDynamic(this, &UROS2CameraComponent::MessageUpdate);
+    }
+}
 
-    Publisher = NewObject<UROS2Publisher>(this, UROS2Publisher::StaticClass());
-    Publisher->RegisterComponent();
-    Publisher->TopicName = TopicName;
-    Publisher->PublicationFrequencyHz = PublishFreq;
-    Publisher->MsgClass = UROS2ImageMsg::StaticClass();
-
-    Publisher->UpdateDelegate.BindDynamic(this, &UROS2CameraComponent::MessageUpdate);
-    Node->AddPublisher(Publisher);
-    Publisher->Init(UROS2QoS::KeepLast);
-
+void UROS2CameraComponent::Run(){
     GetWorld()->GetTimerManager().SetTimer(
         TimerHandle, this, &UROS2CameraComponent::TakeImage, 1.f / static_cast<float>(FPS), true);
 }

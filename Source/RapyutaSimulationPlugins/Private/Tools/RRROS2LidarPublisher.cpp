@@ -17,14 +17,6 @@ URRROS2LidarPublisher::URRROS2LidarPublisher()
     TopicName = TEXT("scan");
 }
 
-void URRROS2LidarPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
-{
-    Super::InitializeWithROS2(InROS2Node);
-
-    // [ROS2LidarPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
-    Init(UROS2QoS::SensorData);
-}
-
 void URRROS2LidarPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
     auto* lidar2D = Cast<URR2DLidarComponent>(LidarComponent);
