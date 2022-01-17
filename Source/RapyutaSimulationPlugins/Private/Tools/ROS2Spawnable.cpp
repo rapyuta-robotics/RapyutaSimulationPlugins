@@ -8,7 +8,7 @@
 void UROS2Spawnable::InitializeParameters(const FROSSpawnEntity_Request& InRequest)
 {
     SetName(InRequest.state_name);
-    SetNamespace(InRequest.robot_namespace);
+    SetNamespace(InRequest.robot_namespace.Replace(TEXT("/"),TEXT("")));
 }
 
 void UROS2Spawnable::SetName(const FString& InName)
