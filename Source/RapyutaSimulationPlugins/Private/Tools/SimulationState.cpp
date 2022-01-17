@@ -58,7 +58,10 @@ void ASimulationState::Init(AROS2Node* InROS2Node)
 
 void ASimulationState::AddEntity(AActor* Entity)
 {
-    Entities.Emplace(Entity->GetName(), Entity);
+    if (IsValid(Entity))
+    {
+        Entities.Emplace(Entity->GetName(), Entity);
+    }
 }
 
 void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
@@ -74,35 +77,58 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
     Response.success = false;
     if (Entities.Contains(Request.name))
     {
-        Response.success = true;
-        FVector RefPos = FVector::ZeroVector;
-        FQuat RefQuat = FQuat::Identity;
-        Response.state_reference_frame.Reset();
-        if (Entities.Contains(Request.reference_frame))
+        if (IsValid(Entities[Request.name]))
         {
-            AActor* Ref = Entities[Request.reference_frame];
-            RefPos = Ref->GetActorLocation() / 100.f;
-            RefQuat = Ref->GetActorQuat();
-            Response.state_reference_frame = Request.reference_frame;
+            Response.success = true;
+            FVector RefPos = FVector::ZeroVector;
+            FQuat RefQuat = FQuat::Identity;
+            Response.state_reference_frame.Reset();
+            if (Entities.Contains(Request.reference_frame))
+            {
+                if (IsValid(Entities[Request.reference_frame]))
+                {
+                    AActor* Ref = Entities[Request.reference_frame];
+                    RefPos = Ref->GetActorLocation() / 100.f;
+                    RefQuat = Ref->GetActorQuat();
+                    Response.state_reference_frame = Request.reference_frame;
+                }
+                else
+                {
+                    Entities.Remove(Request.reference_frame);
+                    UE_LOG(LogRapyutaCore,
+                           Warning,
+                           TEXT("Reference frame %s entity gets invalid -> removed from Entities"),
+                           *Request.reference_frame);
+                }
+            }
+            else
+            {
+                UE_LOG(LogRapyutaCore, Warning, TEXT("Reference frame %s entity not found"), *Request.reference_frame);
+            }
+            AActor* Entity = Entities[Request.name];
+            Response.state_name = Request.name;
+            FVector Pos = RefQuat.Inverse().RotateVector(Entity->GetActorLocation() / 100.f - RefPos);
+            Response.state_pose_position_x = Pos.X;
+            Response.state_pose_position_y = Pos.Y;
+            Response.state_pose_position_z = Pos.Z;
+            Response.state_pose_orientation = Entity->GetActorQuat() * RefQuat.Inverse();
+            Response.state_pose_orientation.Normalize();
+            LeftToRight(Response.state_pose_position_x,
+                        Response.state_pose_position_y,
+                        Response.state_pose_position_z,
+                        Response.state_pose_orientation);
+            Response.state_twist_linear = FVector::ZeroVector;
+            Response.state_twist_angular = FVector::ZeroVector;
         }
         else
         {
-            UE_LOG(LogTemp, Warning, TEXT("Reference frame %s not found"), *Request.reference_frame);
+            Entities.Remove(Request.name);
+            UE_LOG(LogRapyutaCore, Warning, TEXT("Request name %s entity gets invalid -> removed from Entities"), *Request.name);
         }
-        AActor* Entity = Entities[Request.name];
-        Response.state_name = Request.name;
-        FVector Pos = RefQuat.Inverse().RotateVector(Entity->GetActorLocation() / 100.f - RefPos);
-        Response.state_pose_position_x = Pos.X;
-        Response.state_pose_position_y = Pos.Y;
-        Response.state_pose_position_z = Pos.Z;
-        Response.state_pose_orientation = Entity->GetActorQuat() * RefQuat.Inverse();
-        Response.state_pose_orientation.Normalize();
-        LeftToRight(Response.state_pose_position_x,
-                    Response.state_pose_position_y,
-                    Response.state_pose_position_z,
-                    Response.state_pose_orientation);
-        Response.state_twist_linear = FVector::ZeroVector;
-        Response.state_twist_angular = FVector::ZeroVector;
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore, Warning, TEXT("Request name %s entity not found"), *Request.name);
     }
 
     GetEntityStateService->SetResponse(Response);
