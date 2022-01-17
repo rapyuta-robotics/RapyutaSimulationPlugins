@@ -46,10 +46,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxForce = 1000.f;
 
-private:
     UPROPERTY()
-    float WheelPerimeter = 6.28f;
+    float WheelPerimeter = 2 * PI;
 
+protected:
     UPROPERTY()
     float PoseEncoderX = 0.f;
     UPROPERTY()

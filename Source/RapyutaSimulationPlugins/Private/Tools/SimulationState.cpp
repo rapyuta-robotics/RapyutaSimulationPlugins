@@ -215,6 +215,7 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* Service)
         AActor* Entity1 = Entities[Request.name1];
         AActor* Entity2 = Entities[Request.name2];
 
+            Response.success = true;
         if (!Entity2->IsAttachedTo(Entity1))
         {
             Entity2->AttachToActor(Entity1, FAttachmentTransformRules::KeepWorldTransform);

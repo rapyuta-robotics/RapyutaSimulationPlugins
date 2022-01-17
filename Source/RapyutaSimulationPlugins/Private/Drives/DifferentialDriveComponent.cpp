@@ -58,9 +58,8 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 
 void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 {
-    // need to add noise!
+    if (!bIsOdomInitialized)
 
-    if (!IsOdomInitialized)
     {
         InitOdom();
         PoseEncoderX = 0;
@@ -88,8 +87,8 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // noise added as a component of vl, vr
     // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
     //  seems to be Introduction to Autonomous Mobile Robots (Sigwart, Nourbakhsh, Scaramuzza)
-    float sl = (vl + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
-    float sr = (vr + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
+    float sl = (vl + bWithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
+    float sr = (vr + bWithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
     float ssum = sl + sr;
 
     float sdiff = sr - sl;

@@ -8,7 +8,8 @@
 #include "Kismet/KismetMathLibrary.h"
 
 void URobotVehicleMovementComponent::Initialize()
-{    
+{
+    Velocity = FVector::ZeroVector;
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 
@@ -41,20 +42,22 @@ void URobotVehicleMovementComponent::SetFrameIds(const FString& InFrameId, const
     OdomData.child_frame_id = ChildFrameId = InChildFrameId;
 }
 
-//todo separate ROS
+// todo separate ROS
 void URobotVehicleMovementComponent::InitOdom()
 {
     AActor* owner = GetOwner();
     OdomData.header_frame_id = FrameId;
     OdomData.child_frame_id = ChildFrameId;
 
-    if (OdomSource == EOdomSource::ENCODER) { //odom source = encoder. Odom frame start from robot initial pose
+    if (OdomSource == EOdomSource::ENCODER)
+    {    // odom source = encoder. Odom frame start from robot initial pose
         InitialTransform.SetTranslation(owner->GetActorLocation());
-        InitialTransform.SetRotation(owner->GetActorQuat()); 
+        InitialTransform.SetRotation(owner->GetActorQuat());
     }
-    else { //odom source = world. Odom frame start from world origin
+    else
+    {    // odom source = world. Odom frame start from world origin
         InitialTransform.SetTranslation(FVector::ZeroVector);
-        InitialTransform.SetRotation(FQuat::Identity);          
+        InitialTransform.SetRotation(FQuat::Identity);
     }
 
     OdomData.pose_pose_position_x = InitialTransform.GetTranslation().X;
@@ -81,13 +84,12 @@ void URobotVehicleMovementComponent::InitOdom()
     OdomData.twist_covariance[28] = 1e+12;
     OdomData.twist_covariance[35] = 1e-03f;
 
-    IsOdomInitialized = true;
-
+    bIsOdomInitialized = true;
 }
 
 void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
 {
-    if (!IsOdomInitialized)
+    if (!bIsOdomInitialized)
     {
         InitOdom();
     }
@@ -107,12 +109,12 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
 
     // position
     FVector Pos = InitialTransform.GetRotation().UnrotateVector(owner->GetActorLocation() - InitialTransform.GetTranslation());
-    FVector PreviousPos = PreviousTransform.GetTranslation(); //prev pos without noise
+    FVector PreviousPos = PreviousTransform.GetTranslation();    // prev pos without noise
     PreviousTransform.SetTranslation(Pos);
-    Pos += PreviousEstimatedPos - PreviousPos + WithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
+    Pos += PreviousEstimatedPos - PreviousPos + bWithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
 
-    FRotator NoiseRot = FRotator(0, 0, WithNoise * GaussianRNGRotation(Gen));
-    FQuat Rot =  owner->GetActorQuat() * InitialTransform.GetRotation().Inverse();
+    FRotator NoiseRot = FRotator(0, 0, bWithNoise * GaussianRNGRotation(Gen));
+    FQuat Rot = owner->GetActorQuat() * InitialTransform.GetRotation().Inverse();
     FQuat PreviousRot = PreviousTransform.GetRotation();
     PreviousTransform.SetRotation(Rot);
     Rot = NoiseRot.Quaternion() * PreviousEstimatedRot * PreviousRot.Inverse() * Rot;

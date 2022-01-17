@@ -70,7 +70,9 @@ public:
 protected:
     virtual void UpdateMovement(float InDeltaTime);
     virtual void UpdateOdom(float InDeltaTime);
-    bool IsOdomInitialized = false;
+
+    UPROPERTY()
+    bool bIsOdomInitialized = false;
 
     UPROPERTY()
     FTransform PreviousTransform = FTransform::Identity;
@@ -93,7 +95,7 @@ protected:
     float NoiseVarianceRot = 0.05f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    bool WithNoise = true;
+    bool bWithNoise = true;
 
 public:
     virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
