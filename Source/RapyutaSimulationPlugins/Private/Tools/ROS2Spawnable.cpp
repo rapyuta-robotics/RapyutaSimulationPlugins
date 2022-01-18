@@ -8,6 +8,7 @@
 void UROS2Spawnable::InitializeParameters(const FROSSpawnEntity_Request& InRequest)
 {
     SetName(InRequest.state_name);
+    UE_LOG(LogTemp, Warning, TEXT("Pruning / from recieved namespace %s, namespace in UE4 will be set as: %s"), *InRequest.robot_namespace, *InRequest.robot_namespace.Replace(TEXT("/"),TEXT("")));
     SetNamespace(InRequest.robot_namespace.Replace(TEXT("/"),TEXT("")));
 }
 
