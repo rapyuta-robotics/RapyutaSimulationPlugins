@@ -15,6 +15,13 @@
 
 #include "RobotVehicleMovementComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class EOdomSource : uint8
+{
+    WORLD UMETA(DisplayName="World"),
+    ENCODER UMETA(DisplayName = "Encoder")
+};
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RCLUE_API URobotVehicleMovementComponent : public UPawnMovementComponent
 {
@@ -56,6 +63,9 @@ public:
 
     UPROPERTY()
     int8 InversionFactor = 1;
+
+    UPROPERTY(EditAnywhere)
+    EOdomSource OdomSource =  EOdomSource::WORLD;
 
 protected:
     virtual void UpdateMovement(float InDeltaTime);

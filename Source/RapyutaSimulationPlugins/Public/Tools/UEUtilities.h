@@ -33,7 +33,7 @@ namespace ConversionUtils
     {
         FVector Output = Input;
 
-        Output.X = -Output.X;
+        Output.Y = -Output.Y;
         Output.Z = -Output.Z;
 
         return Output;
@@ -103,7 +103,7 @@ namespace ConversionUtils
     {
         FVector Output = Input;
 
-        Output.X = -Output.X;
+        Output.Y = -Output.Y;
         Output.Z = -Output.Z;
 
         return Output;
