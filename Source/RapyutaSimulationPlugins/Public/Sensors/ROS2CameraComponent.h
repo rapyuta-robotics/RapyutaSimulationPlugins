@@ -9,6 +9,7 @@
 
 #include <Msgs/ROS2ImageMsg.h>
 #include "ROS2BaseSensorComponent.h"
+#include "Tools/ROS2ImagePublisher.h"
 
 #include "ROS2CameraComponent.generated.h"
 
@@ -30,6 +31,8 @@ class RAPYUTASIMULATIONPLUGINS_API UROS2CameraComponent : public UROS2BaseSensor
 public:
 
 	UROS2CameraComponent();
+	
+	virtual void CreatePublisher(const FString& InPublisherName = TEXT("")) override;
 
     virtual void PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName) override;
 
@@ -78,7 +81,7 @@ public:
 
 	// ROS 
 	UFUNCTION(BlueprintCallable)
-	virtual FROSImage GetData();
+	virtual FROSImage GetROS2Data();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Encoding = TEXT("rgb8");;

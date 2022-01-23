@@ -14,6 +14,19 @@ UROS2CameraComponent::UROS2CameraComponent()
     SensorMsgClass = UROS2ImageMsg::StaticClass();
 }
 
+void UROS2CameraComponent::CreatePublisher(const FString& InPublisherName)
+{
+    // Init [SensorPublisher] info
+    if (nullptr == SensorPublisher)
+    {
+        // Instantiate Lidar publisher
+        SensorPublisher = NewObject<UROS2ImagePublisher>(this, *FString::Printf(TEXT("%sCameraPublisher"), *GetName()));
+        auto* publisher = Cast<UROS2ImagePublisher>(SensorPublisher);
+        publisher->DataSourceComponent = this;
+    }
+    
+}
+
 void UROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName)
 {
     SceneCaptureComponent->FOVAngle = CameraComponent->FieldOfView;
@@ -54,10 +67,10 @@ void UROS2CameraComponent::TakeImage()
 void UROS2CameraComponent::MessageUpdate(UROS2GenericMsg* TopicMessage)
 {
     UROS2ImageMsg* Message = Cast<UROS2ImageMsg>(TopicMessage);
-    Message->SetMsg(GetData());
+    Message->SetMsg(GetROS2Data());
 }
 
-FROSImage UROS2CameraComponent::GetData()
+FROSImage UROS2CameraComponent::GetROS2Data()
 {
     if (!RenderRequestQueue.IsEmpty())
     {

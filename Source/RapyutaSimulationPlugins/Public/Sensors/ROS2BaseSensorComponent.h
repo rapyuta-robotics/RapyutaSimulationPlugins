@@ -28,13 +28,13 @@ public:
 
 public:
     UFUNCTION(BlueprintCallable)
-    virtual void InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InTopicName = TEXT(""), const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
+    virtual void InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InPublisherName = TEXT(""), const FString& InTopicName = TEXT(""), const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
 
     UFUNCTION(BlueprintCallable)
-    virtual void CreatePublisher();
+    virtual void CreatePublisher(const FString& InPublisherName = TEXT(""));
 
     UFUNCTION(BlueprintCallable)
-    virtual void PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName);
+    virtual void PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName = TEXT(""));
 
     UFUNCTION(BlueprintCallable)
     virtual void InitializePublisher(AROS2Node* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);

@@ -9,10 +9,10 @@ UROS2BaseSensorComponent::UROS2BaseSensorComponent()
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InTopicName, const TEnumAsByte<UROS2QoS> InQoS)
+void UROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InPublisherName, const FString& InTopicName, const TEnumAsByte<UROS2QoS> InQoS)
 {
 
-    CreatePublisher();
+    CreatePublisher(InPublisherName);
     PreInitializePublisher(InROS2Node, InTopicName);
     InitializePublisher(InROS2Node, InQoS);
 
@@ -20,13 +20,14 @@ void UROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node, const FS
     Run();
 }
 
-void UROS2BaseSensorComponent::CreatePublisher()
+void UROS2BaseSensorComponent::CreatePublisher(const FString& InPublisherName)
 {
     // Init [SensorPublisher] info
     if (nullptr == SensorPublisher)
     {
+        FString PublisherName = InPublisherName.IsEmpty() ? FString::Printf(TEXT("%sSensorPublisher"), *GetName()) : InPublisherName;
         // Instantiate publisher
-        SensorPublisher = NewObject<UROS2Publisher>(this, *FString::Printf(TEXT("%sSensorPublisher"), *GetName()));
+        SensorPublisher = NewObject<UROS2Publisher>(this, *PublisherName);
     }
 }
 
@@ -54,7 +55,7 @@ void UROS2BaseSensorComponent::InitializePublisher(AROS2Node* InROS2Node, const 
 {
     if (IsValid(SensorPublisher))
     {
-        InROS2Node->AddPublisher(SensorPublisher);
+        SensorPublisher->InitializeWithROS2(InROS2Node);
         SensorPublisher->Init(InQoS);
     }
 }

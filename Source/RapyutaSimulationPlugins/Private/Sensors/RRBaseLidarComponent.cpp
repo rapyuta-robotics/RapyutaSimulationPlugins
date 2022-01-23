@@ -17,7 +17,7 @@ void URRBaseLidarComponent::BeginPlay()
     GaussianRNGIntensity = std::normal_distribution<>{IntensityNoiseMean, IntensityNoiseVariance};
 }
 
-void URRBaseLidarComponent::CreatePublisher()
+void URRBaseLidarComponent::CreatePublisher(const FString& InPublisherName)
 {
     // Init [SensorPublisher] info
     if (nullptr == SensorPublisher)
@@ -29,14 +29,6 @@ void URRBaseLidarComponent::CreatePublisher()
     }
     
 }
-void URRBaseLidarComponent::InitializePublisher(AROS2Node* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS)
-{
-    if (IsValid(SensorPublisher))
-    {
-        InitalizeWithROS2(InROS2Node);
-    }
-}
-
 
 void URRBaseLidarComponent::GetData(TArray<FHitResult>& OutHits, float& OutTime) const
 {

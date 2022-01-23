@@ -30,9 +30,7 @@ protected:
 
 public:
 
-    virtual void CreatePublisher() override;
-
-    virtual void InitializePublisher(AROS2Node* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData) override;
+    virtual void CreatePublisher(const FString& InPublisherName = TEXT("")) override;
 
     UFUNCTION(BlueprintCallable)
     virtual void Scan()
