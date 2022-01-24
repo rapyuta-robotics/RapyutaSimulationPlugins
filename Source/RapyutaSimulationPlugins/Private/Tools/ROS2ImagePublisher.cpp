@@ -10,15 +10,6 @@
 
 UROS2ImagePublisher::UROS2ImagePublisher()
 {
-    // TopicName could be overridden later by users
-    TopicName = TEXT("img");
-}
-
-void UROS2ImagePublisher::UpdateMessage(UROS2GenericMsg* InMessage)
-{
-    auto* comp = Cast<UROS2CameraComponent>(DataSourceComponent);
-    if (nullptr != comp)
-    {
-        CastChecked<UROS2ImageMsg>(InMessage)->SetMsg(comp->GetROS2Data());
-    }
+   TopicName = TEXT("raw_image");
+   MsgClass = UROS2ImageMsg::StaticClass();
 }

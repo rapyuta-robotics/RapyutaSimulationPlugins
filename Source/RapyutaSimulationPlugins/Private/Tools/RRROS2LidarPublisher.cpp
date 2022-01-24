@@ -11,25 +11,16 @@
 #include "Msgs/ROS2LaserScanMsg.h"
 #include "Msgs/ROS2PointCloud2Msg.h"
 
-URRROS2LidarPublisher::URRROS2LidarPublisher()
+URRROS2LaserScanPublisher::URRROS2LaserScanPublisher()
 {
     // TopicName could be overridden later by users
     TopicName = TEXT("scan");
+    MsgClass = UROS2LaserScanMsg::StaticClass();
 }
 
-void URRROS2LidarPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
+URRROS2PointCloud2Publisher::URRROS2PointCloud2Publisher()
 {
-    auto* lidar2D = Cast<URR2DLidarComponent>(LidarComponent);
-    if (nullptr != lidar2D)
-    {
-        CastChecked<UROS2LaserScanMsg>(InMessage)->SetMsg(lidar2D->GetROS2Data());
-    }
-    else
-    {
-        auto* lidar3D = Cast<URR3DLidarComponent>(LidarComponent);
-        if (nullptr != lidar3D)
-        {
-            CastChecked<UROS2PointCloud2Msg>(InMessage)->SetMsg(lidar3D->GetROS2Data());
-        }
-    }
+    // TopicName could be overridden later by users
+    TopicName = TEXT("scan");
+    MsgClass = UROS2PointCloud2Msg::StaticClass();
 }

@@ -34,6 +34,8 @@ public:
     UFUNCTION(BlueprintCallable)
     FROSLaserScan GetROS2Data();
 
+    virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
+
     UFUNCTION(BlueprintCallable)
     float GetMinAngleRadians() const;
 

@@ -32,16 +32,13 @@ public:
 
 	UROS2CameraComponent();
 	
-	virtual void CreatePublisher(const FString& InPublisherName = TEXT("")) override;
-
     virtual void PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName) override;
 
     virtual void Run() override;
-	
+	    
 protected:
 	
 	UFUNCTION()
-	void MessageUpdate(UROS2GenericMsg *TopicMessage);
 
 	void CaptureNonBlocking();
 
@@ -82,6 +79,8 @@ public:
 	// ROS 
 	UFUNCTION(BlueprintCallable)
 	virtual FROSImage GetROS2Data();
+
+	virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Encoding = TEXT("rgb8");;

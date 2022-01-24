@@ -8,6 +8,7 @@
 // rclUE
 #include "ROS2Node.h"
 #include "ROS2Publisher.h"
+#include "Tools/ROS2BaseSensorPublisher.h"
 
 #include "ROS2BaseSensorComponent.generated.h"
 
@@ -23,10 +24,6 @@ class RAPYUTASIMULATIONPLUGINS_API UROS2BaseSensorComponent : public USceneCompo
 public:
     UROS2BaseSensorComponent();
 
-    UPROPERTY()
-    TSubclassOf<UROS2GenericMsg> SensorMsgClass;
-
-public:
     UFUNCTION(BlueprintCallable)
     virtual void InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InPublisherName = TEXT(""), const FString& InTopicName = TEXT(""), const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
 
@@ -44,9 +41,18 @@ public:
     {
         checkNoEntry();
     }
+    
+    UFUNCTION(BlueprintCallable)
+	virtual void SetROS2Msg(UROS2GenericMsg* InMessage)
+    {
+        checkNoEntry();
+    }
+
+    UPROPERTY()
+    TSubclassOf<UROS2Publisher> SensorPublisherClass;
 
     UPROPERTY(Transient)
-    UROS2Publisher* SensorPublisher = nullptr;
+    UROS2BaseSensorPublisher* SensorPublisher = nullptr;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString TopicName = TEXT("sensor_data");

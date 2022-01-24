@@ -11,20 +11,7 @@ UROS2CameraComponent::UROS2CameraComponent()
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
     CameraComponent->SetupAttachment(this);
 
-    SensorMsgClass = UROS2ImageMsg::StaticClass();
-}
-
-void UROS2CameraComponent::CreatePublisher(const FString& InPublisherName)
-{
-    // Init [SensorPublisher] info
-    if (nullptr == SensorPublisher)
-    {
-        // Instantiate Lidar publisher
-        SensorPublisher = NewObject<UROS2ImagePublisher>(this, *FString::Printf(TEXT("%sCameraPublisher"), *GetName()));
-        auto* publisher = Cast<UROS2ImagePublisher>(SensorPublisher);
-        publisher->DataSourceComponent = this;
-    }
-    
+    SensorPublisherClass = UROS2ImagePublisher::StaticClass();
 }
 
 void UROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName)
@@ -47,10 +34,6 @@ void UROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const F
     QueueSize = QueueSize < 1 ? 1 : QueueSize;    // QueueSize should be more than 1
 
     Super::PreInitializePublisher(InROS2Node, InTopicName);
-    if (IsValid(SensorPublisher))
-    {
-        SensorPublisher->UpdateDelegate.BindDynamic(this, &UROS2CameraComponent::MessageUpdate);
-    }
 }
 
 void UROS2CameraComponent::Run(){
@@ -62,55 +45,6 @@ void UROS2CameraComponent::TakeImage()
 {
     SceneCaptureComponent->CaptureScene();
     CaptureNonBlocking();
-}
-
-void UROS2CameraComponent::MessageUpdate(UROS2GenericMsg* TopicMessage)
-{
-    UROS2ImageMsg* Message = Cast<UROS2ImageMsg>(TopicMessage);
-    Message->SetMsg(GetROS2Data());
-}
-
-FROSImage UROS2CameraComponent::GetROS2Data()
-{
-    if (!RenderRequestQueue.IsEmpty())
-    {
-        // Peek the next RenderRequest from queue
-        FRenderRequest* nextRenderRequest = nullptr;
-        RenderRequestQueue.Peek(nextRenderRequest);
-        if (nextRenderRequest)
-        {    // nullptr check
-            if (nextRenderRequest->RenderFence.IsFenceComplete())
-            {    // Check if rendering is done, indicated by RenderFence
-                for (int I = 0; I < nextRenderRequest->Image.Num(); I++)
-                {
-                    Data.data[I * 3 + 0] = nextRenderRequest->Image[I].R;
-                    Data.data[I * 3 + 1] = nextRenderRequest->Image[I].G;
-                    Data.data[I * 3 + 2] = nextRenderRequest->Image[I].B;
-                }
-
-                // Delete the first element from RenderQueue
-                RenderRequestQueue.Pop();
-                QueueCount--;
-                delete nextRenderRequest;
-            }
-        }
-    }
-
-    // SceneCaptureComponent->CaptureScene();
-    // FTextureRenderTarget2DResource* RenderTargetResource;
-    // RenderTargetResource = (FTextureRenderTarget2DResource*)RenderTarget->GameThread_GetRenderTargetResource();
-    // if (RenderTargetResource) {
-    //     TArray<FColor> buffer;
-    //     RenderTargetResource->ReadPixels(buffer);
-    //     for (int I = 0; I < buffer.Num(); I++)
-    //     {
-    //         Data.data[I * 3 + 0] = buffer[I].R;
-    //         Data.data[I * 3 + 1] = buffer[I].G;
-    //         Data.data[I * 3 + 2] = buffer[I].B;
-    //     }
-    // }
-
-    return Data;
 }
 
 // reference https://github.com/TimmHess/UnrealImageCapture
@@ -162,4 +96,52 @@ void UROS2CameraComponent::CaptureNonBlocking()
 
     // Set RenderCommandFence
     renderRequest->RenderFence.BeginFence();
+}
+
+FROSImage UROS2CameraComponent::GetROS2Data()
+{
+    if (!RenderRequestQueue.IsEmpty())
+    {
+        // Peek the next RenderRequest from queue
+        FRenderRequest* nextRenderRequest = nullptr;
+        RenderRequestQueue.Peek(nextRenderRequest);
+        if (nextRenderRequest)
+        {    // nullptr check
+            if (nextRenderRequest->RenderFence.IsFenceComplete())
+            {    // Check if rendering is done, indicated by RenderFence
+                for (int I = 0; I < nextRenderRequest->Image.Num(); I++)
+                {
+                    Data.data[I * 3 + 0] = nextRenderRequest->Image[I].R;
+                    Data.data[I * 3 + 1] = nextRenderRequest->Image[I].G;
+                    Data.data[I * 3 + 2] = nextRenderRequest->Image[I].B;
+                }
+
+                // Delete the first element from RenderQueue
+                RenderRequestQueue.Pop();
+                QueueCount--;
+                delete nextRenderRequest;
+            }
+        }
+    }
+
+    // SceneCaptureComponent->CaptureScene();
+    // FTextureRenderTarget2DResource* RenderTargetResource;
+    // RenderTargetResource = (FTextureRenderTarget2DResource*)RenderTarget->GameThread_GetRenderTargetResource();
+    // if (RenderTargetResource) {
+    //     TArray<FColor> buffer;
+    //     RenderTargetResource->ReadPixels(buffer);
+    //     for (int I = 0; I < buffer.Num(); I++)
+    //     {
+    //         Data.data[I * 3 + 0] = buffer[I].R;
+    //         Data.data[I * 3 + 1] = buffer[I].G;
+    //         Data.data[I * 3 + 2] = buffer[I].B;
+    //     }
+    // }
+
+    return Data;
+}
+
+void UROS2CameraComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
+{
+    CastChecked<UROS2ImageMsg>(InMessage)->SetMsg(GetROS2Data());
 }

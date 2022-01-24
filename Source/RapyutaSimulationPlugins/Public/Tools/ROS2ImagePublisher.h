@@ -5,22 +5,19 @@
 // UE
 #include "CoreMinimal.h"
 
-// rclUE
-#include "ROS2Publisher.h"
+// RapyutaSimulationPlugins
+#include "Tools/ROS2BaseSensorPublisher.h"
 
 #include "ROS2ImagePublisher.generated.h"
 
 class UROS2CameraComponent;
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UROS2ImagePublisher : public UROS2Publisher
+class RAPYUTASIMULATIONPLUGINS_API UROS2ImagePublisher : public UROS2BaseSensorPublisher
 {
     GENERATED_BODY()
 
 public:
     UROS2ImagePublisher();
 
-    UPROPERTY()
-    UROS2CameraComponent* DataSourceComponent = nullptr;
-
-    void UpdateMessage(UROS2GenericMsg* InMessage) override;
+    // void UpdateMessage(UROS2GenericMsg* InMessage) override;
 };

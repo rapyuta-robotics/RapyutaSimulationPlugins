@@ -17,19 +17,6 @@ void URRBaseLidarComponent::BeginPlay()
     GaussianRNGIntensity = std::normal_distribution<>{IntensityNoiseMean, IntensityNoiseVariance};
 }
 
-void URRBaseLidarComponent::CreatePublisher(const FString& InPublisherName)
-{
-    // Init [SensorPublisher] info
-    if (nullptr == SensorPublisher)
-    {
-        // Instantiate Lidar publisher
-        SensorPublisher = NewObject<URRROS2LidarPublisher>(this, *FString::Printf(TEXT("%sLidarPublisher"), *GetName()));
-        URRROS2LidarPublisher* publisher = Cast<URRROS2LidarPublisher>(SensorPublisher);
-        publisher->LidarComponent = this;
-    }
-    
-}
-
 void URRBaseLidarComponent::GetData(TArray<FHitResult>& OutHits, float& OutTime) const
 {
     // what about the rest of the information?

@@ -30,8 +30,6 @@ protected:
 
 public:
 
-    virtual void CreatePublisher(const FString& InPublisherName = TEXT("")) override;
-
     UFUNCTION(BlueprintCallable)
     virtual void Scan()
     {

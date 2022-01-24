@@ -27,7 +27,8 @@ void UROS2BaseSensorComponent::CreatePublisher(const FString& InPublisherName)
     {
         FString PublisherName = InPublisherName.IsEmpty() ? FString::Printf(TEXT("%sSensorPublisher"), *GetName()) : InPublisherName;
         // Instantiate publisher
-        SensorPublisher = NewObject<UROS2Publisher>(this, *PublisherName);
+        SensorPublisher = NewObject<UROS2BaseSensorPublisher>(this, SensorPublisherClass, *PublisherName);
+        SensorPublisher->DataSourceComponent = this;
     }
 }
 
@@ -36,8 +37,6 @@ void UROS2BaseSensorComponent::PreInitializePublisher(AROS2Node* InROS2Node, con
     if (IsValid(SensorPublisher))
     {
         SensorPublisher->PublicationFrequencyHz = PublicationFrequencyHz;
-        verify(SensorMsgClass);
-        SensorPublisher->MsgClass = SensorMsgClass;
 
         // Update [SensorPublisher]'s topic name
         SensorPublisher->TopicName = InTopicName.IsEmpty() ? TopicName : InTopicName;

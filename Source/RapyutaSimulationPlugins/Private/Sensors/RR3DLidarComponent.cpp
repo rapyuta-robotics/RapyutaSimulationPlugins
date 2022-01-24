@@ -4,9 +4,8 @@
 
 URR3DLidarComponent::URR3DLidarComponent()
 {
-    SensorMsgClass = UROS2PointCloud2Msg::StaticClass();
+    SensorPublisherClass = URRROS2PointCloud2Publisher::StaticClass();
 }
-
 void URR3DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -369,4 +368,9 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
     retValue.is_dense = true;
 
     return retValue;
+}
+
+void URR3DLidarComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
+{
+    CastChecked<UROS2PointCloud2Msg>(InMessage)->SetMsg(GetROS2Data());
 }

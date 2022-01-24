@@ -6,11 +6,13 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 
+#include "Tools/RRROS2LidarPublisher.h"
+
 #include <limits>
 
 URR2DLidarComponent::URR2DLidarComponent()
 {
-    SensorMsgClass = UROS2LaserScanMsg::StaticClass();
+    SensorPublisherClass = URRROS2LaserScanPublisher::StaticClass();
 }
 
 void URR2DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -346,4 +348,9 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
     }
 
     return retValue;
+}
+
+void URR2DLidarComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
+{
+    CastChecked<UROS2LaserScanMsg>(InMessage)->SetMsg(GetROS2Data());
 }
