@@ -18,7 +18,7 @@
 UENUM(BlueprintType)
 enum class EOdomSource : uint8
 {
-    WORLD UMETA(DisplayName="World"),
+    WORLD UMETA(DisplayName = "World"),
     ENCODER UMETA(DisplayName = "Encoder")
 };
 
@@ -45,7 +45,7 @@ public:
     FString FrameId = TEXT("odom");
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString ChildFrameId =  TEXT("base_footprint");
+    FString ChildFrameId = TEXT("base_footprint");
 
     void SetFrameIds(const FString& InFrameId, const FString& InChildFrameId);
 
@@ -65,7 +65,7 @@ public:
     int8 InversionFactor = 1;
 
     UPROPERTY(EditAnywhere)
-    EOdomSource OdomSource =  EOdomSource::WORLD;
+    EOdomSource OdomSource = EOdomSource::WORLD;
 
 protected:
     virtual void UpdateMovement(float InDeltaTime);
@@ -96,6 +96,15 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     bool bWithNoise = true;
+
+    FORCEINLINE float GetDesiredForwardReverseVelocity()
+    {
+        return Velocity.X;
+    }
+    FORCEINLINE float GetDesiredSteeringVelocity()
+    {
+        return AngularVelocity.Z;
+    }
 
 public:
     virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

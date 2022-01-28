@@ -51,9 +51,26 @@ public:
 
 protected:
     UPROPERTY()
-    float PoseEncoderX = 0.f;
+    double PoseEncoderX = 0.f;
     UPROPERTY()
-    float PoseEncoderY = 0.f;
+    double PoseEncoderY = 0.f;
     UPROPERTY()
-    float PoseEncoderTheta = 0.f;
+    double PoseEncoderTheta = 0.f;
+
+    // From controller
+    FORCEINLINE virtual float GetDesiredWheelSpeed(bool bIsLeftWheel) const
+    {
+        return GetDesiredForwardReverseVelocity() +
+               (bIsLeftWheel ? 1.f : -1.f) * GetDesiredSteeringVelocity() * WheelSeparationHalf;
+    }
+
+    // From encoder (revolution/sec)
+    virtual double GetLeftWheelSpeed() const
+    {
+        return GetDesiredWheelSpeed(true);
+    }
+    virtual double GetRightWheelSpeed() const
+    {
+        return GetDesiredWheelSpeed(false);
+    }
 };
