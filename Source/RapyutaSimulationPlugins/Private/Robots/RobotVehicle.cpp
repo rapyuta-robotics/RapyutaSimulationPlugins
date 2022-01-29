@@ -49,7 +49,7 @@ bool ARobotVehicle::InitSensors(AROS2Node* InROS2Node)
 
     // (NOTE) Use [ForEachComponent] would cause a fatal log on
     // [Container has changed during ranged-for iteration!]
-    TInlineComponentArray<UROS2BaseSensorComponent*> sensorComponents(this);
+    TInlineComponentArray<URRROS2BaseSensorComponent*> sensorComponents(this);
     for (auto& sensorComp : sensorComponents)
     {
         sensorComp->InitalizeWithROS2(InROS2Node);

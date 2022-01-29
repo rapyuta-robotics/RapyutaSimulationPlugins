@@ -8,19 +8,19 @@
 // rclUE
 #include "ROS2Publisher.h"
 
-#include "ROS2BaseSensorPublisher.generated.h"
+#include "RRROS2BaseSensorPublisher.generated.h"
 
-class UROS2BaseSensorComponent;
+class URRROS2BaseSensorComponent;
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UROS2BaseSensorPublisher : public UROS2Publisher
+class RAPYUTASIMULATIONPLUGINS_API URRROS2BaseSensorPublisher : public UROS2Publisher
 {
     GENERATED_BODY()
 
 public:
-    UROS2BaseSensorPublisher();
+    URRROS2BaseSensorPublisher();
     
     UPROPERTY()
-    UROS2BaseSensorComponent* DataSourceComponent = nullptr;
+    URRROS2BaseSensorComponent* DataSourceComponent = nullptr;
 
     virtual void UpdateMessage(UROS2GenericMsg* InMessage);
 };

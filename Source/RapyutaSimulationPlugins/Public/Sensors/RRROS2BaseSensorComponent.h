@@ -8,21 +8,21 @@
 // rclUE
 #include "ROS2Node.h"
 #include "ROS2Publisher.h"
-#include "Tools/ROS2BaseSensorPublisher.h"
+#include "Tools/RRROS2BaseSensorPublisher.h"
 
-#include "ROS2BaseSensorComponent.generated.h"
+#include "RRROS2BaseSensorComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
 #define TRACE_ASYNC 1
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UROS2BaseSensorComponent : public USceneComponent
+class RAPYUTASIMULATIONPLUGINS_API URRROS2BaseSensorComponent : public USceneComponent
 {
     GENERATED_BODY()
 
 public:
-    UROS2BaseSensorComponent();
+    URRROS2BaseSensorComponent();
 
     UFUNCTION(BlueprintCallable)
     virtual void InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InPublisherName = TEXT(""), const FString& InTopicName = TEXT(""), const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
@@ -52,7 +52,7 @@ public:
     TSubclassOf<UROS2Publisher> SensorPublisherClass;
 
     UPROPERTY(Transient)
-    UROS2BaseSensorPublisher* SensorPublisher = nullptr;
+    URRROS2BaseSensorPublisher* SensorPublisher = nullptr;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString TopicName = TEXT("sensor_data");

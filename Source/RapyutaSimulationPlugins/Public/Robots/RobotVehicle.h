@@ -10,7 +10,7 @@
 
 // RapyutaSimulationPlugins
 #include "Drives/RobotVehicleMovementComponent.h"
-#include "Sensors/ROS2BaseSensorComponent.h"
+#include "Sensors/RRROS2BaseSensorComponent.h"
 
 // rclUE
 #include "ROS2Node.h"

@@ -1,8 +1,8 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Sensors/ROS2CameraComponent.h"
+#include "Sensors/RRROS2CameraComponent.h"
 
-UROS2CameraComponent::UROS2CameraComponent()
+URRROS2CameraComponent::URRROS2CameraComponent()
 {
     // component initialization
     SceneCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCaptureComponent"));
@@ -11,10 +11,10 @@ UROS2CameraComponent::UROS2CameraComponent()
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
     CameraComponent->SetupAttachment(this);
 
-    SensorPublisherClass = UROS2ImagePublisher::StaticClass();
+    SensorPublisherClass = URRROS2ImagePublisher::StaticClass();
 }
 
-void UROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName)
+void URRROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName)
 {
     SceneCaptureComponent->FOVAngle = CameraComponent->FieldOfView;
     SceneCaptureComponent->OrthoWidth = CameraComponent->OrthoWidth;
@@ -36,19 +36,19 @@ void UROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const F
     Super::PreInitializePublisher(InROS2Node, InTopicName);
 }
 
-void UROS2CameraComponent::Run(){
+void URRROS2CameraComponent::Run(){
     GetWorld()->GetTimerManager().SetTimer(
-        TimerHandle, this, &UROS2CameraComponent::TakeImage, 1.f / static_cast<float>(FPS), true);
+        TimerHandle, this, &URRROS2CameraComponent::TakeImage, 1.f / static_cast<float>(FPS), true);
 }
 
-void UROS2CameraComponent::TakeImage()
+void URRROS2CameraComponent::TakeImage()
 {
     SceneCaptureComponent->CaptureScene();
     CaptureNonBlocking();
 }
 
 // reference https://github.com/TimmHess/UnrealImageCapture
-void UROS2CameraComponent::CaptureNonBlocking()
+void URRROS2CameraComponent::CaptureNonBlocking()
 {
     SceneCaptureComponent->TextureTarget->TargetGamma = GEngine->GetDisplayGamma();
     // Get RenderContext
@@ -98,7 +98,7 @@ void UROS2CameraComponent::CaptureNonBlocking()
     renderRequest->RenderFence.BeginFence();
 }
 
-FROSImage UROS2CameraComponent::GetROS2Data()
+FROSImage URRROS2CameraComponent::GetROS2Data()
 {
     if (!RenderRequestQueue.IsEmpty())
     {
@@ -141,7 +141,7 @@ FROSImage UROS2CameraComponent::GetROS2Data()
     return Data;
 }
 
-void UROS2CameraComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
+void URRROS2CameraComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
 {
     CastChecked<UROS2ImageMsg>(InMessage)->SetMsg(GetROS2Data());
 }

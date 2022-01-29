@@ -8,10 +8,10 @@
 #include "Engine/TextureRenderTarget2D.h"
 
 #include <Msgs/ROS2ImageMsg.h>
-#include "ROS2BaseSensorComponent.h"
-#include "Tools/ROS2ImagePublisher.h"
+#include "RRROS2BaseSensorComponent.h"
+#include "Tools/RRROS2ImagePublisher.h"
 
-#include "ROS2CameraComponent.generated.h"
+#include "RRROS2CameraComponent.generated.h"
 
 /**
  * 
@@ -24,13 +24,13 @@ struct FRenderRequest{
 };
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UROS2CameraComponent : public UROS2BaseSensorComponent
+class RAPYUTASIMULATIONPLUGINS_API URRROS2CameraComponent : public URRROS2BaseSensorComponent
 {
 	GENERATED_BODY()
 	
 public:
 
-	UROS2CameraComponent();
+	URRROS2CameraComponent();
 	
     virtual void PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName) override;
 

@@ -10,7 +10,7 @@
 #include "CoreMinimal.h"
 
 // RapyutaSimulationPlugins
-#include "ROS2BaseSensorComponent.h"
+#include "RRROS2BaseSensorComponent.h"
 
 #include "RRBaseLidarComponent.generated.h"
 
@@ -18,7 +18,7 @@
 
 class URRROS2LidarPublisher;
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRBaseLidarComponent : public UROS2BaseSensorComponent
+class RAPYUTASIMULATIONPLUGINS_API URRBaseLidarComponent : public URRROS2BaseSensorComponent
 {
     GENERATED_BODY()
 

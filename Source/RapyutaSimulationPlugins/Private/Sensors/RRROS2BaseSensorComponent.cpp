@@ -1,15 +1,15 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Sensors/ROS2BaseSensorComponent.h"
+#include "Sensors/RRROS2BaseSensorComponent.h"
 
 DEFINE_LOG_CATEGORY(LogROS2Sensor);
 
-UROS2BaseSensorComponent::UROS2BaseSensorComponent()
+URRROS2BaseSensorComponent::URRROS2BaseSensorComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InPublisherName, const FString& InTopicName, const TEnumAsByte<UROS2QoS> InQoS)
+void URRROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InPublisherName, const FString& InTopicName, const TEnumAsByte<UROS2QoS> InQoS)
 {
 
     CreatePublisher(InPublisherName);
@@ -20,19 +20,19 @@ void UROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node, const FS
     Run();
 }
 
-void UROS2BaseSensorComponent::CreatePublisher(const FString& InPublisherName)
+void URRROS2BaseSensorComponent::CreatePublisher(const FString& InPublisherName)
 {
     // Init [SensorPublisher] info
     if (nullptr == SensorPublisher)
     {
         FString PublisherName = InPublisherName.IsEmpty() ? FString::Printf(TEXT("%sSensorPublisher"), *GetName()) : InPublisherName;
         // Instantiate publisher
-        SensorPublisher = NewObject<UROS2BaseSensorPublisher>(this, SensorPublisherClass, *PublisherName);
+        SensorPublisher = NewObject<URRROS2BaseSensorPublisher>(this, SensorPublisherClass, *PublisherName);
         SensorPublisher->DataSourceComponent = this;
     }
 }
 
-void UROS2BaseSensorComponent::PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName)
+void URRROS2BaseSensorComponent::PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName)
 {
     if (IsValid(SensorPublisher))
     {
@@ -50,7 +50,7 @@ void UROS2BaseSensorComponent::PreInitializePublisher(AROS2Node* InROS2Node, con
     }
 }
 
-void UROS2BaseSensorComponent::InitializePublisher(AROS2Node* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS)
+void URRROS2BaseSensorComponent::InitializePublisher(AROS2Node* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS)
 {
     if (IsValid(SensorPublisher))
     {

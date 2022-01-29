@@ -3,24 +3,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Sensors/ROS2CameraComponent.h"
+#include "Sensors/RRROS2CameraComponent.h"
 
 // rclUE
 #include "ROS2Node.h"
 
-#include "ROS2CameraActor.generated.h"
+#include "RRROS2CameraActor.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API AROS2CameraActor : public AActor
+class RAPYUTASIMULATIONPLUGINS_API ARRROS2CameraActor : public AActor
 {
 	GENERATED_BODY()
 	
 public:
 
-	AROS2CameraActor();
+	ARRROS2CameraActor();
 
     UPROPERTY(Transient)
     AROS2Node* Node;
@@ -37,5 +37,5 @@ protected:
 	
 	/** The camera component for this camera */
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UROS2CameraComponent* CameraComponent;
+	URRROS2CameraComponent* CameraComponent;
 };
