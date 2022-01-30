@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ROS2Node.h"
+#include "Tools/UEUtilities.h"
+#include "Tools/RRGeneralUtils.h"
 
 #include "SimulationState.generated.h"
 
@@ -44,15 +46,10 @@ public:
     UFUNCTION(BlueprintCallable)
     void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
 
-    void LeftToRight(double& pos_x, double& pos_y, double& pos_z, FQuat& orientation);
-
-    void LeftToRight(FVector& position, FQuat& orientation);
-
-    bool ReferenceFrameToInertiaFrame(const FString& InReferenceFrame,
-                                      double& InPositionX,
-                                      double& InPositionY,
-                                      double& InPositionZ,
-                                      FQuat& InOrientation);
+    template<typename T>
+    bool CheckEntity(TMap<FString, T> InEntities, const FString & InEntityName, const bool AllowEmpty = false);
+    bool CheckEntity(const FString & InEntityName, const bool AllowEmpty = false);
+    bool CheckSpawnableEntity(const FString & InEntityName, const bool AllowEmpty = false);
 
     // need node that will handle services - this class will only define and register the service
     UPROPERTY(BlueprintReadOnly)
