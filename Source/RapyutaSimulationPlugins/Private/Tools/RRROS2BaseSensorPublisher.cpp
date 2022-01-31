@@ -11,8 +11,13 @@ URRROS2BaseSensorPublisher::URRROS2BaseSensorPublisher()
 
 void URRROS2BaseSensorPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-    if (nullptr != DataSourceComponent)
+    if (nullptr != DataSourceComponent && DataSourceComponent->bIsValid)
     {
+        bPublish = true;
         DataSourceComponent->SetROS2Msg(InMessage);
+    }
+    else
+    {
+        bPublish = false;
     }
 }

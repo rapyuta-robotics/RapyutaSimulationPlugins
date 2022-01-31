@@ -138,13 +138,14 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
 
     if (Response.success)
     {
-        FTransform relativeTransf = Entities[Request.name]->GetTransform();
-        if (!Request.reference_frame.IsEmpty())
-        {
-            AActor* ref = Entities[Request.reference_frame];
-            Response.state_reference_frame = Request.reference_frame;
-            relativeTransf = URRGeneralUtils::GetRelativeTransform(ref->GetTransform(), relativeTransf);
-        }
+        FTransform relativeTransf;
+        FTransform worldTransf = Entities[Request.name]->GetTransform();
+        URRGeneralUtils::GetRelativeTransform(
+            Request.reference_frame, 
+            Entities.Contains(Request.reference_frame) ? Entities[Request.reference_frame] : nullptr, 
+            worldTransf, 
+            relativeTransf
+        );
         relativeTransf = ConversionUtils::TransformUEToROS(relativeTransf);
 
         Response.state_pose_position_x = relativeTransf.GetTranslation().X;
@@ -174,14 +175,15 @@ void ASimulationState::SetEntityStateSrv(UROS2GenericSrv* Service)
     if (Response.success)
     {
         FVector pos(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
-        FTransform worldTransf(Request.state_pose_orientation, pos);
-        worldTransf = ConversionUtils::TransformROSToUE(worldTransf);
-        if (!Request.state_reference_frame.IsEmpty())
-        {
-            AActor* ref = Entities[Request.state_reference_frame];
-            worldTransf = URRGeneralUtils::GetWorldTransform(ref->GetTransform(), worldTransf);
-        }
-
+        FTransform relativeTransf(Request.state_pose_orientation, pos);
+        relativeTransf = ConversionUtils::TransformROSToUE(relativeTransf);
+        FTransform worldTransf;
+        URRGeneralUtils::GetWorldTransform(
+            Request.state_reference_frame, 
+            Entities.Contains(Request.state_reference_frame) ? Entities[Request.state_reference_frame] : nullptr,
+            relativeTransf,
+            worldTransf
+        );
         Entities[Request.state_name]->SetActorTransform(worldTransf);
     }
 
@@ -237,20 +239,22 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
     if (Response.success)
     {
         FVector Pos(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
-        FTransform WorldTrans(Request.state_pose_orientation, Pos);
-        if (!Request.state_reference_frame.IsEmpty())
-        {
-            AActor* Ref = Entities[Request.state_reference_frame];
-            WorldTrans = URRGeneralUtils::GetWorldTransform(Ref->GetTransform(), WorldTrans);
-        }
-        WorldTrans = ConversionUtils::TransformROSToUE(WorldTrans);
-
+        FTransform relativeTransf(Request.state_pose_orientation, Pos);
+        FTransform worldTransf;
+        URRGeneralUtils::GetWorldTransform(
+            Request.state_reference_frame, 
+            Entities.Contains(Request.state_reference_frame) ? Entities[Request.state_reference_frame] : nullptr, 
+            relativeTransf,
+            worldTransf
+        );
+        worldTransf = ConversionUtils::TransformROSToUE(worldTransf);
+        
         // todo: check data.name is valid
         // todo: check same name object is exists or not.
 
         UE_LOG(LogRapyutaCore, Warning, TEXT("Spawning %s"), *Request.xml);
 
-        AActor* NewEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[Request.xml], WorldTrans);
+        AActor* NewEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[Request.xml], worldTransf);
         UROS2Spawnable* SpawnableComponent = NewObject<UROS2Spawnable>(NewEntity, FName("ROS2 Spawn Parameters"));
 
         SpawnableComponent->RegisterComponent();
@@ -261,7 +265,7 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
 #endif
         NewEntity->Rename(*Request.state_name);
 
-        UGameplayStatics::FinishSpawningActor(NewEntity, WorldTrans);
+        UGameplayStatics::FinishSpawningActor(NewEntity, worldTransf);
         AddEntity(NewEntity);
 
         UE_LOG(LogRapyutaCore, Warning, TEXT("New Spawned Entity Name: %s"), *NewEntity->GetName());

@@ -33,7 +33,7 @@ public:
 
     void Run() override;
 
-    void Scan() override;
+    void SensorUpdate() override;
 
     bool Visible(AActor* TargetActor) override;
 
