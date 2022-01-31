@@ -5,12 +5,19 @@
 // UE
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/LineBatchComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 
 // rclUE
 #include "Msgs/ROS2LaserScanMsg.h"
 
 // RapyutaSimulationPlugins
 #include "Sensors/RRBaseLidarComponent.h"
+#include "Tools/RRROS2LidarPublisher.h"
+
+// Others
+#include <limits>
 
 #include "RR2DLidarComponent.generated.h"
 

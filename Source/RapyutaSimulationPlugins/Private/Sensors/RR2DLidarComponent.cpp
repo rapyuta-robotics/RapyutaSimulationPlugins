@@ -2,14 +2,6 @@
 
 #include "Sensors/RR2DLidarComponent.h"
 
-#include "Components/LineBatchComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "PhysicalMaterials/PhysicalMaterial.h"
-
-#include "Tools/RRROS2LidarPublisher.h"
-
-#include <limits>
-
 URR2DLidarComponent::URR2DLidarComponent()
 {
     SensorPublisherClass = URRROS2LaserScanPublisher::StaticClass();
