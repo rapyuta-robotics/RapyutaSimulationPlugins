@@ -2,9 +2,14 @@
 
 #pragma once
 
+// UE
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+// rclUE
 #include "ROS2Node.h"
+
+// RapyutaSimulationPlugins
 #include "Tools/UEUtilities.h"
 #include "Tools/RRGeneralUtils.h"
 
@@ -47,9 +52,9 @@ public:
     void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
 
     template<typename T>
-    bool CheckEntity(TMap<FString, T> InEntities, const FString & InEntityName, const bool AllowEmpty = false);
-    bool CheckEntity(const FString & InEntityName, const bool AllowEmpty = false);
-    bool CheckSpawnableEntity(const FString & InEntityName, const bool AllowEmpty = false);
+    bool CheckEntity(TMap<FString, T> InEntities, const FString & InEntityName, const bool bAllowEmpty = false);
+    bool CheckEntity(const FString & InEntityName, const bool bAllowEmpty = false);
+    bool CheckSpawnableEntity(const FString & InEntityName, const bool bAllowEmpty = false);
 
     // need node that will handle services - this class will only define and register the service
     UPROPERTY(BlueprintReadOnly)

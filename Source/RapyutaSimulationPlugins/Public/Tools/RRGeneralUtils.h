@@ -24,32 +24,27 @@ public:
     }
 
 
-    static FTransform RelativeTransform(const FTransform& RefTrans, const FTransform& WorldTrans)
+    static FTransform GetRelativeTransform(const FTransform& RefTransf, const FTransform& WorldTransf)
     {
-        FTransform RelativeTrans;
 
-        FQuat RefQuatInv = RefTrans.GetRotation().Inverse();
+        FTransform RefTransfNormalized = RefTransf;
+        RefTransfNormalized.NormalizeRotation();
 
-        RelativeTrans.SetTranslation(RefQuatInv.RotateVector(WorldTrans.GetTranslation() - RefTrans.GetTranslation()));
-        RelativeTrans.SetRotation(WorldTrans.GetRotation() * RefQuatInv);
+        FTransform RelativeTransf = WorldTransf.GetRelativeTransform(RefTransfNormalized);
+        RelativeTransf.NormalizeRotation();
 
-        RelativeTrans.NormalizeRotation();
-
-        return RelativeTrans;
+        return RelativeTransf;
     }
 
-    static FTransform WorldTransform(const FTransform& RefTrans, const FTransform& RelativeTrans)
+    static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)
     {
-        FTransform WorldTrans;
+        FTransform WorldTransf;
         
-        FQuat RefQuat = RefTrans.GetRotation();
+        FTransform::Multiply(&WorldTransf, &RelativeTransf, &RefTransf);
 
-        WorldTrans.SetTranslation(RefQuat.RotateVector(RelativeTrans.GetTranslation()) + RefTrans.GetTranslation());
-        WorldTrans.SetRotation(RelativeTrans.GetRotation() * RefQuat);
+        WorldTransf.NormalizeRotation();
 
-        WorldTrans.NormalizeRotation();
-
-        return WorldTrans;
+        return WorldTransf;
     }
 
     FORCEINLINE static FString GetNewROS2NodeName(const FString& InAffix = FString())

@@ -73,7 +73,7 @@ void ASimulationState::AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> I
 }
 
 template<typename T>
-bool ASimulationState::CheckEntity(TMap<FString, T> InEntities, const FString & InEntityName, const bool AllowEmpty)
+bool ASimulationState::CheckEntity(TMap<FString, T> InEntities, const FString & InEntityName, const bool bAllowEmpty)
 {
     bool result = false;
     if (InEntities.Contains(InEntityName))
@@ -88,7 +88,7 @@ bool ASimulationState::CheckEntity(TMap<FString, T> InEntities, const FString & 
             InEntities.Remove(InEntityName);
         }
     }
-    else if (AllowEmpty && InEntityName.IsEmpty()){
+    else if (bAllowEmpty && InEntityName.IsEmpty()){
         result = true;
     }
     else
@@ -102,14 +102,14 @@ bool ASimulationState::CheckEntity(TMap<FString, T> InEntities, const FString & 
     return result;
 }
 
-bool ASimulationState::CheckEntity(const FString & InEntityName, const bool AllowEmpty)
+bool ASimulationState::CheckEntity(const FString & InEntityName, const bool bAllowEmpty)
 {
-    return CheckEntity<AActor*>(Entities, InEntityName, AllowEmpty);
+    return CheckEntity<AActor*>(Entities, InEntityName, bAllowEmpty);
 }
 
-bool ASimulationState::CheckSpawnableEntity(const FString & InEntityName, const bool AllowEmpty)
+bool ASimulationState::CheckSpawnableEntity(const FString & InEntityName, const bool bAllowEmpty)
 {
-    return CheckEntity<TSubclassOf<AActor>>(SpawnableEntities, InEntityName, AllowEmpty);
+    return CheckEntity<TSubclassOf<AActor>>(SpawnableEntities, InEntityName, bAllowEmpty);
 }
 
 void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
@@ -142,7 +142,7 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
             {
                 AActor* Ref = Entities[Request.reference_frame];
                 Response.state_reference_frame = Request.reference_frame;
-                RelativeTrans = URRGeneralUtils::RelativeTransform(Ref->GetTransform(), RelativeTrans);
+                RelativeTrans = URRGeneralUtils::GetRelativeTransform(Ref->GetTransform(), RelativeTrans);
 
             }
             RelativeTrans = ConversionUtils::TransformUEToROS(RelativeTrans);
@@ -178,12 +178,12 @@ void ASimulationState::SetEntityStateSrv(UROS2GenericSrv* Service)
         {
             Response.success = true;
             FVector Pos(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
-            FTransform WorldTrans(Request.state_pose_orientation, Pos, FVector::OneVector);
+            FTransform WorldTrans(Request.state_pose_orientation, Pos);
             WorldTrans = ConversionUtils::TransformROSToUE(WorldTrans);
             if (!Request.state_reference_frame.IsEmpty())
             {
                 AActor* Ref = Entities[Request.state_reference_frame];
-                WorldTrans = URRGeneralUtils::WorldTransform(Ref->GetTransform(), WorldTrans);
+                WorldTrans = URRGeneralUtils::GetWorldTransform(Ref->GetTransform(), WorldTrans);
             }
 
             AActor* Entity = Entities[Request.state_name];
@@ -260,11 +260,11 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
         {
             Response.success = true;
             FVector Pos(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
-            FTransform WorldTrans(Request.state_pose_orientation, Pos, FVector::OneVector);
+            FTransform WorldTrans(Request.state_pose_orientation, Pos);
             if (!Request.state_reference_frame.IsEmpty())
             {
                 AActor* Ref = Entities[Request.state_reference_frame];
-                WorldTrans = URRGeneralUtils::WorldTransform(Ref->GetTransform(), WorldTrans);
+                WorldTrans = URRGeneralUtils::GetWorldTransform(Ref->GetTransform(), WorldTrans);
             }
             WorldTrans = ConversionUtils::TransformROSToUE(WorldTrans);
 
