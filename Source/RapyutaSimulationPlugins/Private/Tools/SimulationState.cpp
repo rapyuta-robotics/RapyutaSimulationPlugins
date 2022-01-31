@@ -147,19 +147,19 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
         if (CheckEntity(Request.reference_frame, true))
         {
             Response.success = true;
-            FTransform RelativeTrans = Entity->GetTransform();
+            FTransform relativeTransf = Entity->GetTransform();
             if (!Request.reference_frame.IsEmpty())
             {
-                AActor* Ref = Entities[Request.reference_frame];
+                AActor* ref = Entities[Request.reference_frame];
                 Response.state_reference_frame = Request.reference_frame;
-                RelativeTrans = URRGeneralUtils::GetRelativeTransform(Ref->GetTransform(), RelativeTrans);
+                relativeTransf = URRGeneralUtils::GetRelativeTransform(ref->GetTransform(), relativeTransf);
             }
-            RelativeTrans = ConversionUtils::TransformUEToROS(RelativeTrans);
+            relativeTransf = ConversionUtils::TransformUEToROS(relativeTransf);
 
-            Response.state_pose_position_x = RelativeTrans.GetTranslation().X;
-            Response.state_pose_position_y = RelativeTrans.GetTranslation().Y;
-            Response.state_pose_position_z = RelativeTrans.GetTranslation().Z;
-            Response.state_pose_orientation = RelativeTrans.GetRotation();
+            Response.state_pose_position_x = relativeTransf.GetTranslation().X;
+            Response.state_pose_position_y = relativeTransf.GetTranslation().Y;
+            Response.state_pose_position_z = relativeTransf.GetTranslation().Z;
+            Response.state_pose_orientation = relativeTransf.GetRotation();
 
             Response.state_twist_linear = FVector::ZeroVector;
             Response.state_twist_angular = FVector::ZeroVector;
@@ -179,25 +179,20 @@ void ASimulationState::SetEntityStateSrv(UROS2GenericSrv* Service)
     // UE_LOG(LogTemp, Warning, TEXT("SetEntityStateService called - Currently ignoring Twist"));
 
     FROSSetEntityState_Response Response;
-    Response.success = false;
+    Response.success = CheckEntity(Request.state_name, false) && CheckEntity(Request.state_reference_frame, true);
 
-    if (CheckEntity(Request.state_name, false))
+    if (Response.success)
     {
-        if (CheckEntity(Request.state_reference_frame, true))
+        FVector pos(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
+        FTransform worldTransf(Request.state_pose_orientation, pos);
+        worldTransf = ConversionUtils::TransformROSToUE(worldTransf);
+        if (!Request.state_reference_frame.IsEmpty())
         {
-            Response.success = true;
-            FVector Pos(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
-            FTransform WorldTrans(Request.state_pose_orientation, Pos);
-            WorldTrans = ConversionUtils::TransformROSToUE(WorldTrans);
-            if (!Request.state_reference_frame.IsEmpty())
-            {
-                AActor* Ref = Entities[Request.state_reference_frame];
-                WorldTrans = URRGeneralUtils::GetWorldTransform(Ref->GetTransform(), WorldTrans);
-            }
-
-            AActor* Entity = Entities[Request.state_name];
-            Entity->SetActorTransform(WorldTrans);
+            AActor* ref = Entities[Request.state_reference_frame];
+            worldTransf = URRGeneralUtils::GetWorldTransform(ref->GetTransform(), worldTransf);
         }
+
+        Entities[Request.state_name]->SetActorTransform(worldTransf);
     }
 
     SetEntityStateService->SetResponse(Response);
