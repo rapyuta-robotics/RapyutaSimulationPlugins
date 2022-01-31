@@ -64,6 +64,9 @@ public:
     TMap<FString, AActor*> Entities;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TMap<FString, TArray<AActor*>> EntitiesWithTag;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntities;
 
     // need to keep track of "Entities"? or just use a search?

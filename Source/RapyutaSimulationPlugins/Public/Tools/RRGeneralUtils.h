@@ -4,6 +4,7 @@
 // UE
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "EngineUtils.h"
 
 #include "RRGeneralUtils.generated.h"
 
@@ -23,28 +24,80 @@ public:
         World->GetTimerManager().ClearTimer(TimerHandle);
     }
 
+    //GetAllActors is slow operation.
+    static AActor* GetActorByName(UWorld* World, const FString& InName)
+    {
+        for (TActorIterator<AActor> It(World, AActor::StaticClass()); It; ++It)
+        {
+            if (InName.Equals(*It->GetName()))
+            {
+                return *It;
+            }
+        }
+
+        UE_LOG(LogTemp, Warning, TEXT("Actor named %s was not found."), *InName);
+        return nullptr;
+    }
+
+    static bool GetRefTransform(const FString& RefActorName, const AActor* RefActor, FTransform& OutTransf)
+    {
+        if (RefActorName.IsEmpty()) //refrence is world origin
+        {
+            OutTransf = FTransform::Identity;
+        }
+        else
+        {
+            if (RefActor == nullptr)
+            {
+                return false;
+            }
+            OutTransf = RefActor->GetTransform();
+        }
+        return true;
+    }
 
     static FTransform GetRelativeTransform(const FTransform& RefTransf, const FTransform& WorldTransf)
     {
+        FTransform refTransfNormalized = RefTransf;
+        refTransfNormalized.NormalizeRotation();
 
-        FTransform RefTransfNormalized = RefTransf;
-        RefTransfNormalized.NormalizeRotation();
+        FTransform relativeTransf = WorldTransf.GetRelativeTransform(refTransfNormalized);
+        relativeTransf.NormalizeRotation();
 
-        FTransform RelativeTransf = WorldTransf.GetRelativeTransform(RefTransfNormalized);
-        RelativeTransf.NormalizeRotation();
+        return relativeTransf;
+    }
 
-        return RelativeTransf;
+    static bool GetRelativeTransform(const FString& RefActorName, const AActor* RefActor, const FTransform& InTransf, FTransform& OutTransf)
+    {
+        FTransform refTransf;
+        bool result = GetRefTransform(RefActorName, RefActor, refTransf);
+        if(result)
+        {
+            OutTransf = URRGeneralUtils::GetRelativeTransform(refTransf, InTransf);
+        }
+        return result;
     }
 
     static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)
     {
-        FTransform WorldTransf;
+        FTransform worldTransf;
         
-        FTransform::Multiply(&WorldTransf, &RelativeTransf, &RefTransf);
+        FTransform::Multiply(&worldTransf, &RelativeTransf, &RefTransf);
 
-        WorldTransf.NormalizeRotation();
+        worldTransf.NormalizeRotation();
 
-        return WorldTransf;
+        return worldTransf;
+    }
+    
+    static bool GetWorldTransform(const FString& RefActorName, const AActor* RefActor, const FTransform& InTransf, FTransform& OutTransf)
+    {
+        FTransform refTransf;
+        bool result = GetRefTransform(RefActorName, RefActor, refTransf);
+        if(result)
+        {
+            OutTransf = URRGeneralUtils::GetWorldTransform(refTransf, InTransf);
+        }
+        return result;
     }
 
     FORCEINLINE static FString GetNewROS2NodeName(const FString& InAffix = FString())

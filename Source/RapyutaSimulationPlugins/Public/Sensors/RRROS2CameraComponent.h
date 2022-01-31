@@ -34,7 +34,7 @@ public:
 	
     virtual void PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName) override;
 
-    virtual void Run() override;
+    virtual void SensorUpdate() override;
 	    
 protected:
 	
@@ -42,14 +42,11 @@ protected:
 
 	void CaptureNonBlocking();
 
-	void TakeImage();
+	// void TakeImage();
 
 	TQueue<FRenderRequest*> RenderRequestQueue;
 
 	FROSImage Data;
-
-	UPROPERTY()
-    FTimerHandle TimerHandle;
 
 	int32 QueueCount = 0;
 
@@ -63,9 +60,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UTextureRenderTarget2D *RenderTarget = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 FPS = 30;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Width = 640;

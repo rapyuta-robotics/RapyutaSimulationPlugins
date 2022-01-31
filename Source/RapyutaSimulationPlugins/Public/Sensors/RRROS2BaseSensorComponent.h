@@ -37,7 +37,10 @@ public:
     virtual void InitializePublisher(AROS2Node* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
 
     UFUNCTION(BlueprintCallable)
-    virtual void Run()
+    virtual void Run();
+
+    UFUNCTION(BlueprintCallable)
+    virtual void SensorUpdate()
     {
         checkNoEntry();
     }
@@ -65,5 +68,12 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bAppendNodeNamespace = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsValid = true;
+
+protected:
+	UPROPERTY()
+    FTimerHandle TimerHandle;
 
 };

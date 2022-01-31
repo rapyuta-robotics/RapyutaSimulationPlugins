@@ -58,3 +58,8 @@ void URRROS2BaseSensorComponent::InitializePublisher(AROS2Node* InROS2Node, cons
         SensorPublisher->Init(InQoS);
     }
 }
+
+void URRROS2BaseSensorComponent::Run(){
+    GetWorld()->GetTimerManager().SetTimer(
+        TimerHandle, this, &URRROS2BaseSensorComponent::SensorUpdate, 1.f / static_cast<float>(PublicationFrequencyHz), true);
+}
