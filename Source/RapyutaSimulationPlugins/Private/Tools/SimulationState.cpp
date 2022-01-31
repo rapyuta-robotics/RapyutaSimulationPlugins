@@ -73,7 +73,7 @@ void ASimulationState::AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> I
 }
 
 template<typename T>
-bool ASimulationState::CheckEntity(TMap<FString, T> InEntities, const FString& InEntityName, const bool bAllowEmpty)
+bool ASimulationState::CheckEntity(TMap<FString, T>& InEntities, const FString& InEntityName, const bool bAllowEmpty)
 {
     bool result = false;
     if (InEntities.Contains(InEntityName))
@@ -103,6 +103,15 @@ bool ASimulationState::CheckEntity(TMap<FString, T> InEntities, const FString& I
 
     return result;
 }
+
+// https://isocpp.org/wiki/faq/templates#templates-defn-vs-decl
+template bool ASimulationState::CheckEntity<AActor*>(TMap<FString, AActor*>& InEntities,
+                                                     const FString& InEntityName,
+                                                     const bool bAllowEmpty);
+
+template bool ASimulationState::CheckEntity<TSubclassOf<AActor>>(TMap<FString, TSubclassOf<AActor>>& InEntities,
+                                                                 const FString& InEntityName,
+                                                                 const bool bAllowEmpty);
 
 bool ASimulationState::CheckEntity(const FString& InEntityName, const bool bAllowEmpty)
 {
