@@ -2,15 +2,9 @@
 
 #include "Sensors/RR2DLidarComponent.h"
 
-#include "Components/LineBatchComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "PhysicalMaterials/PhysicalMaterial.h"
-
-#include <limits>
-
 URR2DLidarComponent::URR2DLidarComponent()
 {
-    LidarMsgClass = UROS2LaserScanMsg::StaticClass();
+    SensorPublisherClass = URRROS2LaserScanPublisher::StaticClass();
 }
 
 void URR2DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -57,7 +51,7 @@ void URR2DLidarComponent::Run()
 #endif
 
     GetWorld()->GetTimerManager().SetTimer(
-        TimerHandle, this, &URR2DLidarComponent::Scan, 1.f / static_cast<float>(ScanFrequency), true);
+        TimerHandle, this, &URR2DLidarComponent::Scan, 1.f / static_cast<float>(PublicationFrequencyHz), true);
 }
 
 void URR2DLidarComponent::Scan()
@@ -139,7 +133,7 @@ void URR2DLidarComponent::Scan()
     }
 
     TimeOfLastScan = UGameplayStatics::GetTimeSeconds(GetWorld());
-    Dt = 1.f / static_cast<float>(ScanFrequency);
+    Dt = 1.f / static_cast<float>(PublicationFrequencyHz);
 
     // need to store on a structure associating hits with time?
     // GetROS2Data needs to get all data since the last Get? or the last within the last time interval?
@@ -346,4 +340,9 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
     }
 
     return retValue;
+}
+
+void URR2DLidarComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
+{
+    CastChecked<UROS2LaserScanMsg>(InMessage)->SetMsg(GetROS2Data());
 }
