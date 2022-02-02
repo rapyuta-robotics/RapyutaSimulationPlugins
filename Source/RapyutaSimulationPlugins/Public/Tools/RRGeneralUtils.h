@@ -23,6 +23,30 @@ public:
         World->GetTimerManager().ClearTimer(TimerHandle);
     }
 
+
+    static FTransform GetRelativeTransform(const FTransform& RefTransf, const FTransform& WorldTransf)
+    {
+
+        FTransform RefTransfNormalized = RefTransf;
+        RefTransfNormalized.NormalizeRotation();
+
+        FTransform RelativeTransf = WorldTransf.GetRelativeTransform(RefTransfNormalized);
+        RelativeTransf.NormalizeRotation();
+
+        return RelativeTransf;
+    }
+
+    static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)
+    {
+        FTransform WorldTransf;
+        
+        FTransform::Multiply(&WorldTransf, &RelativeTransf, &RefTransf);
+
+        WorldTransf.NormalizeRotation();
+
+        return WorldTransf;
+    }
+
     FORCEINLINE static FString GetNewROS2NodeName(const FString& InAffix = FString())
     {
         return FString::Printf(TEXT("UE%s_%s"), *InAffix, *FGuid::NewGuid().ToString());
