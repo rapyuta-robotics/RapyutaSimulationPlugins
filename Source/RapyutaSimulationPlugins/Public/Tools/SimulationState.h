@@ -15,6 +15,18 @@
 
 #include "SimulationState.generated.h"
 
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FActorsWithTag
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    FName tag;
+
+    UPROPERTY()
+    TArray<AActor*> Actors;
+};
+
 class UROS2GenericSrv;
 
 UCLASS()
@@ -62,6 +74,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
+    
+    UPROPERTY()
+    TMap<FName, FActorsWithTag> EntitiesWithTag;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntities;

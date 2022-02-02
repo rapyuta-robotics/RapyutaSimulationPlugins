@@ -61,6 +61,20 @@ void ASimulationState::AddEntity(AActor* Entity)
     if (IsValid(Entity))
     {
         Entities.Emplace(Entity->GetName(), Entity);
+        for (auto& tag :Entity->Tags)
+        {
+            if (EntitiesWithTag.Contains(tag))
+            {
+                EntitiesWithTag[tag].Actors.Emplace(Entity);
+            }
+            else
+            {
+                FActorsWithTag array;
+                array.tag = tag;
+                array.Actors.Emplace(Entity);
+                EntitiesWithTag.Emplace(tag, array);
+            }
+        }
     }
 }
 
@@ -263,6 +277,10 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
 #if WITH_EDITOR
         NewEntity->SetActorLabel(*Request.state_name);
 #endif
+        for (auto& tag :Request.tags)
+        {
+            NewEntity->Tags.Emplace(tag);
+        }
         NewEntity->Rename(*Request.state_name);
 
         UGameplayStatics::FinishSpawningActor(NewEntity, worldTransf);
