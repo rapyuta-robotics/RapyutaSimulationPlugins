@@ -12,7 +12,7 @@ void URRROS2OdomPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
     MsgClass = UROS2OdometryMsg::StaticClass();
     TopicName = TEXT("odom");
-    PublicationFrequencyHz = 30;
+    PublicationFrequencyHz = 100;
 
     // [URRROS2OdomPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
     Init(UROS2QoS::KeepLast);
@@ -51,21 +51,21 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdometry& OutOdomData) const
         RobotVehicle.IsValid() ? RobotVehicle.Get()->RobotVehicleMoveComponent : nullptr;
     if (moveComponent && moveComponent->OdomData.IsValid())
     {
-        
-        OutOdomData = ConversionUtils::OdomUEToROS(moveComponent->OdomData);
+        OutOdomData = moveComponent->GetROSOdomData();
         if (bAppendNodeNamespace)
         {
-            OutOdomData.header_frame_id = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.header_frame_id);
+            OutOdomData.header_frame_id =
+                URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.header_frame_id);
             OutOdomData.child_frame_id = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.child_frame_id);
         }
-        
+
         if (bPublishOdomTf && TFPublisher)
         {
             TFPublisher->TF = moveComponent->GetOdomTF();
             TFPublisher->FrameId = OutOdomData.header_frame_id;
             TFPublisher->ChildFrameId = OutOdomData.child_frame_id;
         }
-        
+
         return true;
     }
     else

@@ -10,6 +10,9 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
 
+// RapyutaSimulationPlugins
+#include "Tools/UEUtilities.h"
+
 // rclUE
 #include "Msgs/ROS2OdometryMsg.h"
 
@@ -61,6 +64,11 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void InitOdom();
 
+    FORCEINLINE virtual FROSOdometry GetROSOdomData() const
+    {
+        return ConversionUtils::OdomUEToROS(OdomData);
+    }
+
     UPROPERTY()
     int8 InversionFactor = 1;
 
@@ -97,11 +105,16 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Noise")
     bool bWithNoise = true;
 
-    FORCEINLINE float GetDesiredForwardReverseVelocity()
+    FORCEINLINE void SetDesiredVelocities(const FVector& InLinearVel, const FVector& InAngularVel)
+    {
+        Velocity = InLinearVel;
+        AngularVelocity = InAngularVel;
+    }
+    FORCEINLINE float GetDesiredForwardReverseVelocity() const
     {
         return Velocity.X;
     }
-    FORCEINLINE float GetDesiredSteeringVelocity()
+    FORCEINLINE float GetDesiredSteeringVelocity() const
     {
         return AngularVelocity.Z;
     }
