@@ -7,8 +7,9 @@
 #include "EngineUtils.h"
 
 // rclUE
-#include <Msgs/ROS2EntityStateMsg.h>
 #include "RRROS2BaseSensorComponent.h"
+
+#include <Msgs/ROS2EntityStateMsg.h>
 
 // RapyutaSimulationPlugins
 #include "Tools/RRGeneralUtils.h"
@@ -17,40 +18,39 @@
 #include "RRROS2EntityStateSensorComponent.generated.h"
 
 /**
- * 
+ *
  */
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2EntityStateSensorComponent : public URRROS2BaseSensorComponent
 {
-	GENERATED_BODY()
-	
+    GENERATED_BODY()
+
 public:
+    URRROS2EntityStateSensorComponent();
 
-	URRROS2EntityStateSensorComponent();
+    void BeginPlay() override;
 
-	void BeginPlay() override;
+    virtual void SensorUpdate() override;
 
-	virtual void SensorUpdate() override;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FString ReferenceActorName = TEXT("");
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FString ReferenceActorName = TEXT("");
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	AActor* ReferenceActor = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    AActor* ReferenceActor = nullptr;
 
-	UFUNCTION(BlueprintCallable)
-	virtual void SetReferenceActor(const FString& InName);
+    UFUNCTION(BlueprintCallable)
+    virtual void SetReferenceActorByName(const FString& InName);
 
-	UFUNCTION(BlueprintCallable)
-	virtual void SetReferenceActor(const AActor* InActor);
+    UFUNCTION(BlueprintCallable)
+    virtual void SetReferenceActorByActor(AActor* InActor);
 
-	// ROS 
-	UFUNCTION(BlueprintCallable)
-	virtual FROSEntityState GetROS2Data();
+    // ROS
+    UFUNCTION(BlueprintCallable)
+    virtual FROSEntityState GetROS2Data();
 
-	virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
+    virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
 
-	UPROPERTY(BlueprintReadWrite)
-	FROSEntityState Data;	
+    UPROPERTY(BlueprintReadWrite)
+    FROSEntityState Data;
 };

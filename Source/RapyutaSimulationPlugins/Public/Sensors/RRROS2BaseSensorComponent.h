@@ -8,6 +8,8 @@
 // rclUE
 #include "ROS2Node.h"
 #include "ROS2Publisher.h"
+
+// RapyutaSimulationPlugins
 #include "Tools/RRROS2BaseSensorPublisher.h"
 
 #include "RRROS2BaseSensorComponent.generated.h"
@@ -25,7 +27,10 @@ public:
     URRROS2BaseSensorComponent();
 
     UFUNCTION(BlueprintCallable)
-    virtual void InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InPublisherName = TEXT(""), const FString& InTopicName = TEXT(""), const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
+    virtual void InitalizeWithROS2(AROS2Node* InROS2Node,
+                                   const FString& InPublisherName = TEXT(""),
+                                   const FString& InTopicName = TEXT(""),
+                                   const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
 
     UFUNCTION(BlueprintCallable)
     virtual void CreatePublisher(const FString& InPublisherName = TEXT(""));
@@ -44,7 +49,7 @@ public:
     {
         checkNoEntry();
     }
-    
+
     UFUNCTION(BlueprintCallable)
     virtual void SetROS2Msg(UROS2GenericMsg* InMessage)
     {
@@ -56,7 +61,7 @@ public:
 
     UPROPERTY(Transient)
     URRROS2BaseSensorPublisher* SensorPublisher = nullptr;
-    
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString TopicName = TEXT("sensor_data");
 
@@ -75,5 +80,4 @@ public:
 protected:
     UPROPERTY()
     FTimerHandle TimerHandle;
-
 };

@@ -61,7 +61,7 @@ void ASimulationState::AddEntity(AActor* Entity)
     if (IsValid(Entity))
     {
         Entities.Emplace(Entity->GetName(), Entity);
-        for (auto& tag :Entity->Tags)
+        for (auto& tag : Entity->Tags)
         {
             if (EntitiesWithTag.Contains(tag))
             {
@@ -154,11 +154,10 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
         FTransform relativeTransf;
         FTransform worldTransf = Entities[Request.name]->GetTransform();
         URRGeneralUtils::GetRelativeTransform(
-            Request.reference_frame, 
-            Entities.Contains(Request.reference_frame) ? Entities[Request.reference_frame] : nullptr, 
-            worldTransf, 
-            relativeTransf
-        );
+            Request.reference_frame,
+            Entities.Contains(Request.reference_frame) ? Entities[Request.reference_frame] : nullptr,
+            worldTransf,
+            relativeTransf);
         relativeTransf = ConversionUtils::TransformUEToROS(relativeTransf);
 
         Response.state_pose_position_x = relativeTransf.GetTranslation().X;
@@ -192,11 +191,10 @@ void ASimulationState::SetEntityStateSrv(UROS2GenericSrv* Service)
         relativeTransf = ConversionUtils::TransformROSToUE(relativeTransf);
         FTransform worldTransf;
         URRGeneralUtils::GetWorldTransform(
-            Request.state_reference_frame, 
+            Request.state_reference_frame,
             Entities.Contains(Request.state_reference_frame) ? Entities[Request.state_reference_frame] : nullptr,
             relativeTransf,
-            worldTransf
-        );
+            worldTransf);
         Entities[Request.state_name]->SetActorTransform(worldTransf);
     }
 
@@ -255,13 +253,12 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
         FTransform relativeTransf(Request.state_pose_orientation, Pos);
         FTransform worldTransf;
         URRGeneralUtils::GetWorldTransform(
-            Request.state_reference_frame, 
-            Entities.Contains(Request.state_reference_frame) ? Entities[Request.state_reference_frame] : nullptr, 
+            Request.state_reference_frame,
+            Entities.Contains(Request.state_reference_frame) ? Entities[Request.state_reference_frame] : nullptr,
             relativeTransf,
-            worldTransf
-        );
+            worldTransf);
         worldTransf = ConversionUtils::TransformROSToUE(worldTransf);
-        
+
         // todo: check data.name is valid
         // todo: check same name object is exists or not.
 
@@ -276,7 +273,7 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
 #if WITH_EDITOR
         NewEntity->SetActorLabel(*Request.state_name);
 #endif
-        for (auto& tag :Request.tags)
+        for (auto& tag : Request.tags)
         {
             NewEntity->Tags.Emplace(tag);
         }

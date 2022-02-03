@@ -2,78 +2,81 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
+#include "CoreMinimal.h"
 #include "Engine/TextureRenderTarget2D.h"
 
+// rclUE
 #include <Msgs/ROS2ImageMsg.h>
+
+// RapyutaSimulationPlugins
 #include "RRROS2BaseSensorComponent.h"
 #include "Tools/RRROS2ImagePublisher.h"
 
 #include "RRROS2CameraComponent.generated.h"
 
 /**
- * 
+ *
  */
 USTRUCT()
-struct FRenderRequest{
-	GENERATED_BODY()
-	TArray<FColor> Image;
-	FRenderCommandFence RenderFence;
+struct FRenderRequest
+{
+    GENERATED_BODY()
+    TArray<FColor> Image;
+    FRenderCommandFence RenderFence;
 };
 
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2CameraComponent : public URRROS2BaseSensorComponent
 {
-	GENERATED_BODY()
-	
-public:
+    GENERATED_BODY()
 
-	URRROS2CameraComponent();
-	
+public:
+    URRROS2CameraComponent();
+
     virtual void PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName) override;
 
     virtual void SensorUpdate() override;
-	    
+
 protected:
-	
-	UFUNCTION()
+    UFUNCTION()
 
-	void CaptureNonBlocking();
+    void CaptureNonBlocking();
 
-	TQueue<FRenderRequest*> RenderRequestQueue;
+    TQueue<FRenderRequest*> RenderRequestQueue;
 
-	FROSImage Data;
+    FROSImage Data;
 
-	int32 QueueCount = 0;
+    int32 QueueCount = 0;
 
 public:
-	// Camera
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UCameraComponent *CameraComponent = nullptr;
+    // Camera
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    UCameraComponent* CameraComponent = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	USceneCaptureComponent2D *SceneCaptureComponent = nullptr;
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    USceneCaptureComponent2D* SceneCaptureComponent = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UTextureRenderTarget2D *RenderTarget = nullptr;
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    UTextureRenderTarget2D* RenderTarget = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Width = 640;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Height = 480;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 Width = 640;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 QueueSize = 2;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 Height = 480;
 
-	// ROS 
-	UFUNCTION(BlueprintCallable)
-	virtual FROSImage GetROS2Data();
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 QueueSize = 2;
 
-	virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
+    // ROS
+    UFUNCTION(BlueprintCallable)
+    virtual FROSImage GetROS2Data();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Encoding = TEXT("rgb8");;
+    virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString Encoding = TEXT("rgb8");
+    ;
 };

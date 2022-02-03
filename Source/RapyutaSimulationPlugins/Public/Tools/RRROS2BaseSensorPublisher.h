@@ -18,7 +18,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2BaseSensorPublisher : public UROS2Publ
 
 public:
     URRROS2BaseSensorPublisher();
-    
+
     UPROPERTY()
     URRROS2BaseSensorComponent* DataSourceComponent = nullptr;
 

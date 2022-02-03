@@ -4,23 +4,21 @@
 
 URRROS2EntityStateSensorComponent::URRROS2EntityStateSensorComponent()
 {
-
     SensorPublisherClass = URRROS2EntityStatePublisher::StaticClass();
 }
 
 void URRROS2EntityStateSensorComponent::BeginPlay()
 {
-    SetReferenceActor(ReferenceActorName);
     Super::BeginPlay();
 }
 
-void URRROS2EntityStateSensorComponent::SetReferenceActor(const FString& InName)
+void URRROS2EntityStateSensorComponent::SetReferenceActorByName(const FString& InName)
 {
     ReferenceActor = URRGeneralUtils::GetActorByName(GetWorld(), InName);
     ReferenceActorName = InName;
 }
 
-void URRROS2EntityStateSensorComponent::SetReferenceActor(const AActor* InActor)
+void URRROS2EntityStateSensorComponent::SetReferenceActorByActor(AActor* InActor)
 {
     ReferenceActor = InActor;
     ReferenceActorName = ReferenceActor->GetName();
@@ -34,11 +32,11 @@ FROSEntityState URRROS2EntityStateSensorComponent::GetROS2Data()
 void URRROS2EntityStateSensorComponent::SensorUpdate()
 {
     FTransform relativeTransf;
-    if (!URRGeneralUtils::GetRelativeTransform(ReferenceActorName, ReferenceActor, GetComponentTransform(), relativeTransf)) 
+    if (!URRGeneralUtils::GetRelativeTransform(ReferenceActorName, ReferenceActor, GetComponentTransform(), relativeTransf))
     {
         if (bIsValid)
         {
-            //warning output once
+            // warning output once
             UE_LOG(LogRapyutaCore, Warning, TEXT("Reference Actor %s is not valid."), *ReferenceActorName);
         }
         bIsValid = false;
@@ -53,7 +51,7 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
     Data.pose_orientation = relativeTransf.GetRotation();
     Data.reference_frame = ReferenceActorName;
 
-    //todo calc vel
+    // todo calc vel
     Data.twist_linear = FVector::ZeroVector;
     Data.twist_angular = FVector::ZeroVector;
 

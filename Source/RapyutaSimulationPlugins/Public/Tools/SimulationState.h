@@ -71,7 +71,7 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
-    
+
     UPROPERTY()
     TMap<FName, FActors> EntitiesWithTag;
 
