@@ -49,12 +49,11 @@ void URR2DLidarComponent::Run()
 #if TRACE_ASYNC
     TraceHandles.Init(FTraceHandle(), NSamplesPerScan);
 #endif
-
-    GetWorld()->GetTimerManager().SetTimer(
-        TimerHandle, this, &URR2DLidarComponent::Scan, 1.f / static_cast<float>(PublicationFrequencyHz), true);
+    
+    Super::Run();
 }
 
-void URR2DLidarComponent::Scan()
+void URR2DLidarComponent::SensorUpdate()
 {
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 

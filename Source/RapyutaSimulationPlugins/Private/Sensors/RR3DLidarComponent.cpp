@@ -49,12 +49,10 @@ void URR3DLidarComponent::Run()
 #if TRACE_ASYNC
     TraceHandles.Init(FTraceHandle(), nTotalScan);
 #endif
-
-    GetWorld()->GetTimerManager().SetTimer(
-        TimerHandle, this, &URR3DLidarComponent::Scan, 1.f / static_cast<float>(PublicationFrequencyHz), true);
+    Super::Run();
 }
 
-void URR3DLidarComponent::Scan()
+void URR3DLidarComponent::SensorUpdate()
 {
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
     DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);

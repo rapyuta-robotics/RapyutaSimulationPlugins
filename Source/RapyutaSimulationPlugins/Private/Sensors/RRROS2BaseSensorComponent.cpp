@@ -9,9 +9,11 @@ URRROS2BaseSensorComponent::URRROS2BaseSensorComponent()
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-void URRROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node, const FString& InPublisherName, const FString& InTopicName, const TEnumAsByte<UROS2QoS> InQoS)
+void URRROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node,
+                                                   const FString& InPublisherName,
+                                                   const FString& InTopicName,
+                                                   const TEnumAsByte<UROS2QoS> InQoS)
 {
-
     CreatePublisher(InPublisherName);
     PreInitializePublisher(InROS2Node, InTopicName);
     InitializePublisher(InROS2Node, InQoS);
@@ -25,7 +27,8 @@ void URRROS2BaseSensorComponent::CreatePublisher(const FString& InPublisherName)
     // Init [SensorPublisher] info
     if (nullptr == SensorPublisher)
     {
-        FString PublisherName = InPublisherName.IsEmpty() ? FString::Printf(TEXT("%sSensorPublisher"), *GetName()) : InPublisherName;
+        FString PublisherName =
+            InPublisherName.IsEmpty() ? FString::Printf(TEXT("%sSensorPublisher"), *GetName()) : InPublisherName;
         // Instantiate publisher
         SensorPublisher = NewObject<URRROS2BaseSensorPublisher>(this, SensorPublisherClass, *PublisherName);
         SensorPublisher->DataSourceComponent = this;
@@ -57,4 +60,10 @@ void URRROS2BaseSensorComponent::InitializePublisher(AROS2Node* InROS2Node, cons
         SensorPublisher->InitializeWithROS2(InROS2Node);
         SensorPublisher->Init(InQoS);
     }
+}
+
+void URRROS2BaseSensorComponent::Run()
+{
+    GetWorld()->GetTimerManager().SetTimer(
+        TimerHandle, this, &URRROS2BaseSensorComponent::SensorUpdate, 1.f / static_cast<float>(PublicationFrequencyHz), true);
 }

@@ -36,12 +36,7 @@ void URRROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const
     Super::PreInitializePublisher(InROS2Node, InTopicName);
 }
 
-void URRROS2CameraComponent::Run(){
-    GetWorld()->GetTimerManager().SetTimer(
-        TimerHandle, this, &URRROS2CameraComponent::TakeImage, 1.f / static_cast<float>(FPS), true);
-}
-
-void URRROS2CameraComponent::TakeImage()
+void URRROS2CameraComponent::SensorUpdate()
 {
     SceneCaptureComponent->CaptureScene();
     CaptureNonBlocking();

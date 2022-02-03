@@ -31,12 +31,6 @@ protected:
 public:
 
     UFUNCTION(BlueprintCallable)
-    virtual void Scan()
-    {
-        checkNoEntry();
-    }
-
-    UFUNCTION(BlueprintCallable)
     virtual bool Visible(AActor* TargetActor)
     {
         checkNoEntry();
@@ -91,9 +85,6 @@ public:
 #if TRACE_ASYNC
     TArray<FTraceHandle> TraceHandles;
 #endif
-
-    UPROPERTY()
-    FTimerHandle TimerHandle;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool ShowLidarRays = true;
