@@ -11,7 +11,7 @@
 #include "Msgs/ROS2GenericMsg.h"
 #include "Msgs/ROS2TFMsg.h"
 #include "Srvs/ROS2SetBoolSrv.h"
-#include "ROS2Publisher.h"
+#include "Tools/RRROS2TFPublisher.h"
 
 #include "RRROS2ActorTFPublisher.generated.h"
 

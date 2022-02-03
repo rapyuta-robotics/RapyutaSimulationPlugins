@@ -45,6 +45,7 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
     Data.pose_position_y = relativeTransf.GetTranslation().Y;
     Data.pose_position_z = relativeTransf.GetTranslation().Z;
     Data.pose_orientation = relativeTransf.GetRotation();
+    Data.reference_frame = ReferenceActorName;
 
     //todo calc vel
     Data.twist_linear = FVector::ZeroVector;
