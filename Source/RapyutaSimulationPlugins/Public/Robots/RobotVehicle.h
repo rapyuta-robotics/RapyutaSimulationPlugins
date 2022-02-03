@@ -13,6 +13,7 @@
 #include "Sensors/RRROS2BaseSensorComponent.h"
 
 // rclUE
+#include "Msgs/ROS2JointStateMsg.h"
 #include "ROS2Node.h"
 
 #include "RobotVehicle.generated.h"
@@ -55,6 +56,13 @@ public:
 
     UFUNCTION(BlueprintCallable)
     virtual void SetAngularVel(const FVector& InAngularVelocity);
+
+    UFUNCTION()
+    virtual FROSJointState GetJointStates()
+    {
+        checkNoEntry();
+        return FROSJointState();
+    }
 
 protected:
     virtual void PostInitializeComponents() override;

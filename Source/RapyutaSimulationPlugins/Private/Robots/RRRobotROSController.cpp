@@ -59,6 +59,17 @@ bool ARRRobotROSController::InitPublishers(APawn* InPawn)
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
         OdomPublisher->RobotVehicle = CastChecked<ARobotVehicle>(InPawn);
     }
+
+    if (bPublishJointStates)
+    {
+        if (nullptr == JointStatesPublisher)
+        {
+            JointStatesPublisher = NewObject<URRROS2JointStatesPublisher>(this);
+            JointStatesPublisher->SetupUpdateCallback();
+        }
+        JointStatesPublisher->InitializeWithROS2(RobotROS2Node);
+        JointStatesPublisher->SetTargetRobot(CastChecked<ARobotVehicle>(InPawn));
+    }
     return true;
 }
 

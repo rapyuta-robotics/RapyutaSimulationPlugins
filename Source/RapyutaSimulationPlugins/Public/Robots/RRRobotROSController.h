@@ -11,6 +11,7 @@
 
 // rclUE
 #include "ROS2Node.h"
+#include "Tools/RRROS2JointStatesPublisher.h"
 #include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
 
@@ -37,6 +38,10 @@ protected:
 
     UPROPERTY(Transient, BlueprintReadWrite)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
+
+    UPROPERTY(Transient, BlueprintReadWrite)
+    URRROS2JointStatesPublisher* JointStatesPublisher = nullptr;
+
     UFUNCTION()
     virtual bool InitPublishers(APawn* InPawn);
 
@@ -50,6 +55,9 @@ protected:
     virtual void OnPossess(APawn* InPawn) override;
 
     virtual void OnUnPossess() override;
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bPublishJointStates = false;
 
     UPROPERTY(BlueprintReadWrite)
     bool bPublishOdom = true;
