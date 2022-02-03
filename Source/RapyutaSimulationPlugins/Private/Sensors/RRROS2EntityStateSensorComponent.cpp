@@ -20,6 +20,12 @@ void URRROS2EntityStateSensorComponent::SetReferenceActor(const FString& InName)
     ReferenceActorName = InName;
 }
 
+void URRROS2EntityStateSensorComponent::SetReferenceActor(const AActor* InActor)
+{
+    ReferenceActor = InActor;
+    ReferenceActorName = ReferenceActor->GetName();
+}
+
 FROSEntityState URRROS2EntityStateSensorComponent::GetROS2Data()
 {
     return Data;

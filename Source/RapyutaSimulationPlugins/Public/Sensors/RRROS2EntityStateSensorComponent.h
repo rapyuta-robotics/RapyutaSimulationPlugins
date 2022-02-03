@@ -42,6 +42,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void SetReferenceActor(const FString& InName);
 
+	UFUNCTION(BlueprintCallable)
+	virtual void SetReferenceActor(const AActor* InActor);
+
 	// ROS 
 	UFUNCTION(BlueprintCallable)
 	virtual FROSEntityState GetROS2Data();
