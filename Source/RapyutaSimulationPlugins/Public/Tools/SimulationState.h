@@ -21,7 +21,7 @@ public:
 
 public:
     UFUNCTION(BlueprintCallable)
-    void Init();
+    void Init(AROS2Node* InROS2Node);
 
     UFUNCTION(BlueprintCallable)
     void GetEntityStateSrv(UROS2GenericSrv* Service);
@@ -41,6 +41,9 @@ public:
     UFUNCTION(BlueprintCallable)
     void AddEntity(AActor* Entity);
 
+    UFUNCTION(BlueprintCallable)
+    void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
+
     void LeftToRight(double& pos_x, double& pos_y, double& pos_z, FQuat& orientation);
 
     void LeftToRight(FVector& position, FQuat& orientation);
@@ -52,8 +55,8 @@ public:
                                       FQuat& InOrientation);
 
     // need node that will handle services - this class will only define and register the service
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    AROS2Node* ROSServiceNode;
+    UPROPERTY(BlueprintReadOnly)
+    AROS2Node* ROSServiceNode = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;

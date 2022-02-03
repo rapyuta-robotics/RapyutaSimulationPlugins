@@ -1,10 +1,17 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Tools/ROS2TFPublisher.h"
+#include "Tools/RRROS2TFPublisher.h"
 
-void UROS2TFPublisher::InitTFPublisher(AROS2Node* Node)
+// rclUE
+#include "Msgs/ROS2TFMsg.h"
+
+void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
+    Super::InitializeWithROS2(InROS2Node);
+
+    MsgClass = UROS2TFMsg::StaticClass();
     TEnumAsByte<UROS2QoS> QoS;
+    // (NOTE) [/tf, /tf_static] has its [tf_prefix] only for frame ids, not topics
     if (IsStatic)
     {
         TopicName = TEXT("/tf_static");
@@ -15,19 +22,17 @@ void UROS2TFPublisher::InitTFPublisher(AROS2Node* Node)
         TopicName = TEXT("/tf");
         QoS = UROS2QoS::DynamicBroadcaster;
     }
-    MsgClass = UROS2TFMsg::StaticClass();
-    UpdateDelegate.BindDynamic(this, &UROS2TFPublisher::UpdateTFMsg);
-    Node->AddPublisher(this);
+    PublicationFrequencyHz = 50;
     Init(QoS);
 }
 
-void UROS2TFPublisher::SetTransform(const FVector& Translation, const FQuat& Rotation)
+void URRROS2TFPublisher::SetTransform(const FVector& Translation, const FQuat& Rotation)
 {
     TF.SetTranslation(Translation);
     TF.SetRotation(Rotation);
 }
 
-void UROS2TFPublisher::UpdateTFMsg(UROS2GenericMsg* Message)
+void URRROS2TFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
     TArray<FTFData> tfarray;
 
@@ -48,7 +53,5 @@ void UROS2TFPublisher::UpdateTFMsg(UROS2GenericMsg* Message)
     tfdata.rotation = TransROS.GetRotation();
 
     tfarray.Add(tfdata);
-
-    UROS2TFMsg* TFMessage = Cast<UROS2TFMsg>(Message);
-    TFMessage->Update(tfarray);
+    CastChecked<UROS2TFMsg>(InMessage)->Update(tfarray);
 }

@@ -1,6 +1,6 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Sensors/SensorLidar.h"
+#include "Sensors/RR2DLidarComponent.h"
 
 #include "Components/LineBatchComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -8,76 +8,39 @@
 
 #include <limits>
 
-DEFINE_LOG_CATEGORY(LogROS2Sensor);
-
-// Sets default values
-ASensorLidar::ASensorLidar()
+URR2DLidarComponent::URR2DLidarComponent()
 {
-    Gen = std::mt19937{Rng()};
-    GaussianRNGPosition = std::normal_distribution<>{PositionalNoiseMean, PositionalNoiseVariance};
-    GaussianRNGIntensity = std::normal_distribution<>{IntensityNoiseMean, IntensityNoiseVariance};
-
-    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    PrimaryActorTick.bCanEverTick = true;
-
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-
-    LidarPublisher = CreateDefaultSubobject<UROS2Publisher>(TEXT("LidarPublisher"));
-    LidarPublisher->TopicName = TEXT("scan");
-    LidarPublisher->PublicationFrequencyHz = ScanFrequency;
-    LidarPublisher->MsgClass = UROS2LaserScanMsg::StaticClass();
+    LidarMsgClass = UROS2LaserScanMsg::StaticClass();
 }
 
-// Called when the game starts or when spawned
-void ASensorLidar::BeginPlay()
+void URR2DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-    Super::BeginPlay();
-}
-
-void ASensorLidar::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-    Super::EndPlay(EndPlayReason);
-}
-
-void ASensorLidar::LidarMessageUpdate(UROS2GenericMsg* TopicMessage)
-{
-    UROS2LaserScanMsg* ScanMessage = Cast<UROS2LaserScanMsg>(TopicMessage);
-    ScanMessage->SetMsg(GetROS2Data());
-}
-
-// Called every frame
-void ASensorLidar::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-    if (!IsInitialized)
-    {
-        return;
-    }
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 #if TRACE_ASYNC
+    verify(TraceHandles.Num() == RecordedHits.Num());
     UWorld* world = GetWorld();
-    for (auto i = 0; i < NSamplesPerScan; ++i)
+    for (auto i = 0; i < TraceHandles.Num(); ++i)
     {
-        if (TraceHandles[i]._Data.FrameNumber != 0)
+        FTraceHandle& traceHandle = TraceHandles[i];
+        FHitResult& recordedHit = RecordedHits[i];
+        if (traceHandle._Data.FrameNumber != 0)
         {
             FTraceDatum Output;
 
-            if (world->QueryTraceData(TraceHandles[i], Output))
+            if (world->QueryTraceData(traceHandle, Output))
             {
                 if (Output.OutHits.Num() > 0)
                 {
-                    check(Output.OutHits.Num() > 0);
-                    check(i < RecordedHits.Num());
-                    check(i < TraceHandles.Num());
-                    TraceHandles[i]._Data.FrameNumber = 0;
+                    traceHandle._Data.FrameNumber = 0;
                     // We should only be tracing the first hit anyhow
-                    RecordedHits[i] = Output.OutHits[0];
+                    recordedHit = Output.OutHits[0];
                 }
                 else
                 {
-                    TraceHandles[i]._Data.FrameNumber = 0;
-                    RecordedHits[i] = FHitResult();
-                    RecordedHits[i].TraceStart = Output.Start;
-                    RecordedHits[i].TraceEnd = Output.End;
+                    traceHandle._Data.FrameNumber = 0;
+                    recordedHit = FHitResult();
+                    recordedHit.TraceStart = Output.Start;
+                    recordedHit.TraceEnd = Output.End;
                 }
             }
         }
@@ -85,43 +48,40 @@ void ASensorLidar::Tick(float DeltaTime)
 #endif
 }
 
-void ASensorLidar::Run()
+void URR2DLidarComponent::Run()
 {
-    RecordedHits.Empty();
     RecordedHits.Init(FHitResult(ForceInit), NSamplesPerScan);
 
 #if TRACE_ASYNC
-    TraceHandles.Empty();
-    TraceHandles.Init(FTraceHandle{}, NSamplesPerScan);
+    TraceHandles.Init(FTraceHandle(), NSamplesPerScan);
 #endif
 
-    GetWorld()->GetGameInstance()->GetTimerManager().SetTimer(
-        TimerHandle, this, &ASensorLidar::Scan, 1.f / static_cast<float>(ScanFrequency), true);
-    IsInitialized = true;
+    GetWorld()->GetTimerManager().SetTimer(
+        TimerHandle, this, &URR2DLidarComponent::Scan, 1.f / static_cast<float>(ScanFrequency), true);
 }
 
-void ASensorLidar::Scan()
+void URR2DLidarComponent::Scan()
 {
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
     // complex collisions: true
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, this);
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true, GetOwner());
     TraceParams.bReturnPhysicalMaterial = true;
 
     // TraceParams.bIgnoreTouches = true;
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnFaceIndex = true;
 
-    FVector lidarPos = GetActorLocation();
-    FRotator lidarRot = GetActorRotation();
+    FVector lidarPos = GetComponentLocation();
+    FRotator lidarRot = GetComponentRotation();
 
 #if TRACE_ASYNC
     // This is cheesy, but basically if the first trace is in flight we assume they're all waiting and don't do another trace.
     // This is not good if done on other threads and only works because both timers and actor ticks happen on the game thread.
-    if (TraceHandles[0]._Data.FrameNumber == 0)
+    if ((TraceHandles.Num() > 0) && (TraceHandles[0]._Data.FrameNumber == 0))
     {
         UWorld* world = GetWorld();
-        for (auto i = 0; i < NSamplesPerScan; ++i)
+        for (auto i = 0; i < TraceHandles.Num(); ++i)
         {
             const float HAngle = StartAngle + DHAngle * i;
 
@@ -143,7 +103,7 @@ void ASensorLidar::Scan()
     }
 #else
     ParallelFor(
-        NSamplesPerScan,
+        RecordedHits.Num(),
         [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
         {
             const float HAngle = StartAngle + DHAngle * Index;
@@ -161,13 +121,13 @@ void ASensorLidar::Scan()
         false);
 #endif
 
-    if (WithNoise)
+    if (BWithNoise)
     {
         // this approach to noise is different from the above:
         // noise on the linetrace input means that the further the hit, the larger the error, while here the error is independent
         // from distance
         ParallelFor(
-            NSamplesPerScan,
+            RecordedHits.Num(),
             [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
             {
                 RecordedHits[Index].ImpactPoint +=
@@ -179,13 +139,13 @@ void ASensorLidar::Scan()
     }
 
     TimeOfLastScan = UGameplayStatics::GetTimeSeconds(GetWorld());
-    dt = 1.f / static_cast<float>(ScanFrequency);
+    Dt = 1.f / static_cast<float>(ScanFrequency);
 
     // need to store on a structure associating hits with time?
     // GetROS2Data needs to get all data since the last Get? or the last within the last time interval?
 
     ULineBatchComponent* const LineBatcher = GetWorld()->PersistentLineBatcher;
-    if (LineBatcher != nullptr && ShowLidarRays && GetParentActor()->GetRootComponent()->IsVisible())
+    if (LineBatcher != nullptr && ShowLidarRays && IsVisible()) //  && GetParentActor()->GetRootComponent()->IsVisible() ) => compilation error
     {
         for (auto& h : RecordedHits)
         {
@@ -199,16 +159,22 @@ void ASensorLidar::Scan()
                     {
                         // UE_LOG(LogTemp, Warning, TEXT("retroreflective surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorReflected, 10, .5, dt);
-                        LineBatcher->DrawPoint(
-                            h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityReflective, Distance)), 5, 10, dt);
+                        LineBatcher->DrawPoint(h.ImpactPoint,
+                                               InterpColorFromIntensity(GetIntensityFromDist(IntensityReflective, Distance)),
+                                               5,
+                                               10,
+                                               Dt);
                     }
                     // non reflective material
                     else if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
                     {
                         // UE_LOG(LogTemp, Warning, TEXT("default surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
-                        LineBatcher->DrawPoint(
-                            h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance)), 5, 10, dt);
+                        LineBatcher->DrawPoint(h.ImpactPoint,
+                                               InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)),
+                                               5,
+                                               10,
+                                               Dt);
                     }
                     // reflective material
                     else if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
@@ -229,12 +195,12 @@ void ASensorLidar::Scan()
                         // LineBatcher->DrawPoint(h.ImpactPoint, InterpolateColor(NormalAlignment), 5, 10, dt);
                         LineBatcher->DrawPoint(
                             h.ImpactPoint,
-                            GetColorFromIntensity(IntensityFromDist(
+                            InterpColorFromIntensity(GetIntensityFromDist(
                                 NormalAlignment * (IntensityReflective - IntensityNonReflective) + IntensityNonReflective,
                                 Distance)),
                             5,
                             10,
-                            dt);
+                            Dt);
                     }
                 }
                 else
@@ -242,19 +208,19 @@ void ASensorLidar::Scan()
                     // UE_LOG(LogTemp, Warning, TEXT("no physics material"));
                     // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
                     LineBatcher->DrawPoint(
-                        h.ImpactPoint, GetColorFromIntensity(IntensityFromDist(IntensityNonReflective, Distance)), 5, 10, dt);
+                        h.ImpactPoint, InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)), 5, 10, Dt);
                 }
             }
             else if (ShowLidarRayMisses)
             {
                 // LineBatcher->DrawLine(h.TraceStart, h.TraceEnd, ColorMiss, 10, .25, dt);
-                LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, 10, dt);
+                LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, 10, Dt);
             }
         }
     }
 }
 
-bool ASensorLidar::Visible(AActor* TargetActor)
+bool URR2DLidarComponent::Visible(AActor* TargetActor)
 {
     TArray<FHitResult> RecordedVizHits;
     RecordedVizHits.Init(FHitResult(ForceInit), NSamplesPerScan);
@@ -262,17 +228,17 @@ bool ASensorLidar::Visible(AActor* TargetActor)
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
     // complex collisions: true
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, this);
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true, GetOwner());
     TraceParams.bReturnPhysicalMaterial = true;
     // TraceParams.bIgnoreTouches = true;
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnFaceIndex = true;
 
-    FVector lidarPos = GetActorLocation();
-    FRotator lidarRot = GetActorRotation();
+    FVector lidarPos = GetComponentLocation();
+    FRotator lidarRot = GetComponentRotation();
 
     ParallelFor(
-        NSamplesPerScan,
+        RecordedVizHits.Num(),
         [this, &TraceParams, &lidarPos, &lidarRot, &RecordedVizHits](int32 Index)
         {
             const float HAngle = StartAngle + DHAngle * Index;
@@ -303,47 +269,17 @@ bool ASensorLidar::Visible(AActor* TargetActor)
     return false;
 }
 
-void ASensorLidar::InitLidar(AROS2Node* Node, const FString& TopicName)
-{
-    LidarPublisher->TopicName = TopicName;
-    LidarPublisher->PublicationFrequencyHz = ScanFrequency;
-    LidarPublisher->OwnerNode = Node;
-
-    InitToNode(Node);
-
-    Run();
-}
-
-void ASensorLidar::InitToNode(AROS2Node* Node)
-{
-    if (IsValid(Node))
-    {
-        check(IsValid(LidarPublisher));
-
-        LidarPublisher->UpdateDelegate.BindDynamic(this, &ASensorLidar::LidarMessageUpdate);
-        Node->AddPublisher(LidarPublisher);
-        LidarPublisher->Init(UROS2QoS::SensorData);
-    }
-}
-
-void ASensorLidar::GetData(TArray<FHitResult>& OutHits, float& OutTime)
-{
-    // what about the rest of the information?
-    OutHits = RecordedHits;
-    OutTime = TimeOfLastScan;
-}
-
-float ASensorLidar::GetMinAngleRadians() const
+float URR2DLidarComponent::GetMinAngleRadians() const
 {
     return FMath::DegreesToRadians(-StartAngle - FOVHorizontal);
 }
 
-float ASensorLidar::GetMaxAngleRadians() const
+float URR2DLidarComponent::GetMaxAngleRadians() const
 {
     return FMath::DegreesToRadians(-StartAngle);
 }
 
-FROSLaserScan ASensorLidar::GetROS2Data()
+FROSLaserScan URR2DLidarComponent::GetROS2Data()
 {
     FROSLaserScan retValue;
     retValue.header_stamp_sec = (int32)TimeOfLastScan;
@@ -355,8 +291,8 @@ FROSLaserScan ASensorLidar::GetROS2Data()
     retValue.angle_min = GetMinAngleRadians();
     retValue.angle_max = GetMaxAngleRadians();
     retValue.angle_increment = FMath::DegreesToRadians(DHAngle);
-    retValue.time_increment = dt / NSamplesPerScan;
-    retValue.scan_time = dt;
+    retValue.time_increment = Dt / NSamplesPerScan;
+    retValue.scan_time = Dt;
     retValue.range_min = MinRange * .01f;
     retValue.range_max = MaxRange * .01f;
 
@@ -370,7 +306,7 @@ FROSLaserScan ASensorLidar::GetROS2Data()
         // convert to [m]
         retValue.ranges.Add((MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f);
 
-        const float IntensityScale = 1.f + WithNoise * GaussianRNGIntensity(Gen);
+        const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
 
         UStaticMeshComponent* ComponentHit = Cast<UStaticMeshComponent>(RecordedHits.Last(i).GetComponent());
         if (RecordedHits.Last(i).PhysMaterial != nullptr)
@@ -410,23 +346,4 @@ FROSLaserScan ASensorLidar::GetROS2Data()
     }
 
     return retValue;
-}
-
-FLinearColor ASensorLidar::GetColorFromIntensity(const float Intensity)
-{
-    float NormalizedIntensity = (Intensity - IntensityMin) / (IntensityMax - IntensityMin);
-    return InterpolateColor(NormalizedIntensity);
-}
-
-FLinearColor ASensorLidar::InterpolateColor(float x)
-{
-    // this means that viz and data sent won't correspond, which should be ok
-    x = x + WithNoise * GaussianRNGIntensity(Gen);
-    return x > .5 ? FLinearColor::LerpUsingHSV(ColorMid, ColorMax, 2 * x - 1)
-                  : FLinearColor::LerpUsingHSV(ColorMin, ColorMid, 2 * x);
-}
-
-float ASensorLidar::IntensityFromDist(float BaseIntensity, float Distance)
-{
-    return BaseIntensity * 1.3f * exp(-.1f * (pow(3.5f * Distance, .6f))) / (1 + exp(-((3.5f * Distance))));
 }

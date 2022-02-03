@@ -2,11 +2,13 @@
 
 #pragma once
 
+// UE
 #include "CoreMinimal.h"
-#include "Robots/RobotVehicle.h"
 
-#include "Drives/DifferentialDriveComponent.h"
+// RapyutaSimulationPlugins
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "Robots/RobotVehicle.h"
+#include "Sensors/RR2DLidarComponent.h"
 
 #include "TurtlebotBurger.generated.h"
 
@@ -15,71 +17,74 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARobotVehicle
 {
-	GENERATED_BODY()
-	
-public:	
-	ATurtlebotBurger(const FObjectInitializer& ObjectInitializer);
+    GENERATED_BODY()
+
+public:
+    ATurtlebotBurger(const FObjectInitializer& ObjectInitializer);
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    virtual void PostInitializeComponents() override;
+    virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    UFUNCTION()
+    void SetupBody();
 
-	UFUNCTION(BlueprintCallable)
-	virtual void Init();
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* Base = nullptr;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UStaticMeshComponent* Base;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* LidarSensor = nullptr;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UStaticMeshComponent* LidarSensor;
-	
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UStaticMeshComponent* WheelLeft;
-	
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UStaticMeshComponent* WheelRight;
-	
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UStaticMeshComponent* CasterBack;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URR2DLidarComponent* LidarComponent = nullptr;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* WheelLeft = nullptr;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UPhysicsConstraintComponent* Base_LidarSensor;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* WheelRight = nullptr;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UPhysicsConstraintComponent* Base_WheelLeft;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* CasterBack = nullptr;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UPhysicsConstraintComponent* Base_WheelRight;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPhysicsConstraintComponent* Base_LidarSensor = nullptr;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UPhysicsConstraintComponent* Base_CasterBack;
-	
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	float MaxForce = 1000;
-	
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UMaterial* VehicleMaterial;
-	
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	UMaterial* BallMaterial;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPhysicsConstraintComponent* Base_WheelLeft = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
-	bool IsInitialized = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPhysicsConstraintComponent* Base_WheelRight = nullptr;
 
-protected:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPhysicsConstraintComponent* Base_CasterBack = nullptr;
 
-	UFUNCTION()
-	void SetupConstraintsAndPhysics();
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float MaxForce = 1000.f;
 
-	UFUNCTION()
-	void SetupWheels();
-	
-	
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UMaterial* VehicleMaterial = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UMaterial* BallMaterial = nullptr;
+
+    UPROPERTY(VisibleAnywhere)
+    uint8 bBodyComponentsCreated : 1;
+
+    UFUNCTION()
+    void SetupConstraintsAndPhysics();
+
+    UFUNCTION()
+    void SetupWheelDrives();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float WheelRadius = 3.3f;
+
+    // todo get data from links
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float WheelSeparationHalf = 7.9f;
 };

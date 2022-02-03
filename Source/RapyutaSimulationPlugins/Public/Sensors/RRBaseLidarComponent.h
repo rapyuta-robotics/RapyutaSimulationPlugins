@@ -6,83 +6,76 @@
 #include <random>
 
 // UE
+#include "Components/StaticMeshComponent.h"
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 
 // rclUE
-#include "Msgs/ROS2LaserScanMsg.h"
 #include "ROS2Node.h"
 #include "ROS2Publisher.h"
 
-#include "SensorLidar.generated.h"
+#include "RRBaseLidarComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
 #define TRACE_ASYNC 1
 
+class URRROS2LidarPublisher;
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API ASensorLidar : public AActor
+class RAPYUTASIMULATIONPLUGINS_API URRBaseLidarComponent : public USceneComponent
 {
     GENERATED_BODY()
 
 public:
-    // Sets default values for this actor's properties
-    ASensorLidar();
+    URRBaseLidarComponent();
+
+    UPROPERTY()
+    TSubclassOf<UROS2GenericMsg> LidarMsgClass;
 
 protected:
-    // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-    UFUNCTION()
-    void LidarMessageUpdate(UROS2GenericMsg* TopicMessage);
-
 public:
-    // Called every frame
-    virtual void Tick(float DeltaTime) override;
+    UFUNCTION(BlueprintCallable)
+    void InitLidar(AROS2Node* InROS2Node, const FString& InTopicName = TEXT(""));
 
     UFUNCTION(BlueprintCallable)
-    void Run();
+    virtual void Run()
+    {
+        checkNoEntry();
+    }
 
     UFUNCTION(BlueprintCallable)
-    void Scan();
+    virtual void Scan()
+    {
+        checkNoEntry();
+    }
 
     UFUNCTION(BlueprintCallable)
-    bool Visible(AActor* TargetActor);
-
-    UFUNCTION(BlueprintCallable)
-    void InitLidar(AROS2Node* Node, const FString& TopicName);
-
-    UFUNCTION(BlueprintCallable)
-    void InitToNode(AROS2Node* Node);
+    virtual bool Visible(AActor* TargetActor)
+    {
+        checkNoEntry();
+        return false;
+    }
 
     // adding the rest of the necessary information might be tedious
     // eventually split into multiple getters
     UFUNCTION(BlueprintCallable)
-    void GetData(TArray<FHitResult>& OutHits, float& OutTime);
+    void GetData(TArray<FHitResult>& OutHits, float& OutTime) const;
 
-    // this should probably be removed so that the sensor can be decoupled from the message types
-    UFUNCTION(BlueprintCallable)
-    FROSLaserScan GetROS2Data();
-
-    UFUNCTION(BlueprintCallable)
-    float GetMinAngleRadians() const;
-
-    UFUNCTION(BlueprintCallable)
-    float GetMaxAngleRadians() const;
+    UPROPERTY(Transient)
+    URRROS2LidarPublisher* LidarPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UROS2Publisher* LidarPublisher;
+    FString TopicName = TEXT("scan");
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString FrameId = TEXT("base_scan");
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 NSamplesPerScan = 0;
+    int32 NSamplesPerScan = 360;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 ScanFrequency = 0;
+    int32 ScanFrequency = 30;
 
     // [degrees]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -91,13 +84,13 @@ public:
     // scan goes from StartAngle to StartAngle+FOVHorizontal
     // [degrees]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float FOVHorizontal = 0.f;
+    float FOVHorizontal = 360.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MinRange = 0.f;
+    float MinRange = 12.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MaxRange = 0.f;
+    float MaxRange = 350.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
     FLinearColor ColorMiss = FColor(255, 127, 0, 255);
@@ -120,6 +113,9 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     TArray<FHitResult> RecordedHits;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bAppendNodeNamespace = true;
 
 #if TRACE_ASYNC
     TArray<FTraceHandle> TraceHandles;
@@ -146,15 +142,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
     float IntensityMax = 10000.f;
 
-    FLinearColor GetColorFromIntensity(const float Intensity);
+    FLinearColor InterpColorFromIntensity(const float InIntensity);
 
-private:
-    float dt = 0.f;
-    bool IsInitialized = false;
+protected:
+    UPROPERTY()
+    float Dt = 0.f;
 
     // C++11 RNG for noise
     std::random_device Rng;
-    std::mt19937 Gen;
+    std::mt19937 Gen = std::mt19937{Rng()};
     std::normal_distribution<> GaussianRNGPosition;
     std::normal_distribution<> GaussianRNGIntensity;
 
@@ -171,9 +167,8 @@ private:
     float IntensityNoiseVariance = .1f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    bool WithNoise = true;
+    uint8 BWithNoise : 1;
 
-    FLinearColor InterpolateColor(float x);
-
-    float IntensityFromDist(float BaseIntensity, float Distance);
+    FLinearColor InterpolateColor(float InX);
+    static float GetIntensityFromDist(float InBaseIntensity, float InDistance);
 };
