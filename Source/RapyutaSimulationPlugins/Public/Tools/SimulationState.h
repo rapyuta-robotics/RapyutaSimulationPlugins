@@ -16,12 +16,9 @@
 #include "SimulationState.generated.h"
 
 USTRUCT()
-struct RAPYUTASIMULATIONPLUGINS_API FActorsWithTag
+struct RAPYUTASIMULATIONPLUGINS_API FActors
 {
     GENERATED_BODY()
-
-    UPROPERTY()
-    FName tag;
 
     UPROPERTY()
     TArray<AActor*> Actors;
@@ -76,7 +73,7 @@ public:
     TMap<FString, AActor*> Entities;
     
     UPROPERTY()
-    TMap<FName, FActorsWithTag> EntitiesWithTag;
+    TMap<FName, FActors> EntitiesWithTag;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntities;

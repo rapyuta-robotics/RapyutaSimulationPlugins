@@ -69,10 +69,9 @@ void ASimulationState::AddEntity(AActor* Entity)
             }
             else
             {
-                FActorsWithTag array;
-                array.tag = tag;
-                array.Actors.Emplace(Entity);
-                EntitiesWithTag.Emplace(tag, array);
+                FActors actors;
+                actors.Actors.Emplace(Entity);
+                EntitiesWithTag.Emplace(tag, actors);
             }
         }
     }
