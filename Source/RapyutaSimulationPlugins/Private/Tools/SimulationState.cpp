@@ -32,16 +32,16 @@ void ASimulationState::Init(AROS2Node* InROS2Node)
     FServiceCallback AttachSrvCallback;
     FServiceCallback SpawnEntitySrvCallback;
     FServiceCallback DeleteEntitySrvCallback;
-    GetEntityStateSrvCallback.BindUObject(this, &ASimulationState::GetEntityStateSrv);
-    SetEntityStateSrvCallback.BindUObject(this, &ASimulationState::SetEntityStateSrv);
-    AttachSrvCallback.BindUObject(this, &ASimulationState::AttachSrv);
-    SpawnEntitySrvCallback.BindUObject(this, &ASimulationState::SpawnEntitySrv);
-    DeleteEntitySrvCallback.BindUObject(this, &ASimulationState::DeleteEntitySrv);
-    ROSServiceNode->AddService(TEXT("GetEntityState"), UROS2GetEntityStateSrv::StaticClass(), GetEntityStateSrvCallback);
-    ROSServiceNode->AddService(TEXT("SetEntityState"), UROS2SetEntityStateSrv::StaticClass(), SetEntityStateSrvCallback);
-    ROSServiceNode->AddService(TEXT("Attach"), UROS2AttachSrv::StaticClass(), AttachSrvCallback);
-    ROSServiceNode->AddService(TEXT("SpawnEntity"), UROS2SpawnEntitySrv::StaticClass(), SpawnEntitySrvCallback);
-    ROSServiceNode->AddService(TEXT("DeleteEntity"), UROS2DeleteEntitySrv::StaticClass(), DeleteEntitySrvCallback);
+    GetEntityStateSrvCallback.BindDynamic(this, &ASimulationState::GetEntityStateSrv);
+    SetEntityStateSrvCallback.BindDynamic(this, &ASimulationState::SetEntityStateSrv);
+    AttachSrvCallback.BindDynamic(this, &ASimulationState::AttachSrv);
+    SpawnEntitySrvCallback.BindDynamic(this, &ASimulationState::SpawnEntitySrv);
+    DeleteEntitySrvCallback.BindDynamic(this, &ASimulationState::DeleteEntitySrv);
+    ROSServiceNode->AddServiceServer(TEXT("GetEntityState"), UROS2GetEntityStateSrv::StaticClass(), GetEntityStateSrvCallback);
+    ROSServiceNode->AddServiceServer(TEXT("SetEntityState"), UROS2SetEntityStateSrv::StaticClass(), SetEntityStateSrvCallback);
+    ROSServiceNode->AddServiceServer(TEXT("Attach"), UROS2AttachSrv::StaticClass(), AttachSrvCallback);
+    ROSServiceNode->AddServiceServer(TEXT("SpawnEntity"), UROS2SpawnEntitySrv::StaticClass(), SpawnEntitySrvCallback);
+    ROSServiceNode->AddServiceServer(TEXT("DeleteEntity"), UROS2DeleteEntitySrv::StaticClass(), DeleteEntitySrvCallback);
 
     // add all actors
 #if WITH_EDITOR

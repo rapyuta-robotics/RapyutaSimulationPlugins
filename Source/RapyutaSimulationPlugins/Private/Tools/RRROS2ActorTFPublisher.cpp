@@ -8,8 +8,8 @@ void URRROS2ActorTFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
     // register delegates to node
     FServiceCallback TriggerPublishSrvCallback;
-    TriggerPublishSrvCallback.BindUObject(this, &URRROS2ActorTFPublisher::TriggerPublishSrv);
-    InROS2Node->AddService(TriggerServiceName, UROS2SetBoolSrv::StaticClass(), TriggerPublishSrvCallback);
+    TriggerPublishSrvCallback.BindDynamic(this, &URRROS2ActorTFPublisher::TriggerPublishSrv);
+    InROS2Node->AddServiceServer(TriggerServiceName, UROS2SetBoolSrv::StaticClass(), TriggerPublishSrvCallback);
 }
 
 void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
