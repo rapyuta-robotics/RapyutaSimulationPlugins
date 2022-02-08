@@ -27,6 +27,7 @@ void URRROS2BaseSensorComponent::CreatePublisher(const FString& InPublisherName)
     // Init [SensorPublisher] info
     if (nullptr == SensorPublisher)
     {
+        verify(SensorPublisherClass);
         FString PublisherName =
             InPublisherName.IsEmpty() ? FString::Printf(TEXT("%sSensorPublisher"), *GetName()) : InPublisherName;
         // Instantiate publisher

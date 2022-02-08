@@ -8,6 +8,8 @@
 URRBaseLidarComponent::URRBaseLidarComponent()
 {
     BWithNoise = true;
+    TopicName = TEXT("scan");
+    FrameId = TEXT("base_scan");
 }
 
 void URRBaseLidarComponent::BeginPlay()
