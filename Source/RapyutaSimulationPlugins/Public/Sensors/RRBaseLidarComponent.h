@@ -125,7 +125,7 @@ public:
     FTimerHandle TimerHandle;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool ShowLidarRays = true;
+    bool bShowLidarRays = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool ShowLidarRayMisses = false;
