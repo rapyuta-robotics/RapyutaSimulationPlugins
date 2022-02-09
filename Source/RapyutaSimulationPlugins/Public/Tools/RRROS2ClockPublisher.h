@@ -10,7 +10,6 @@
 
 #include "RRROS2ClockPublisher.generated.h"
 
-class AROS2Node;
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2ClockPublisher : public UROS2Publisher
 {

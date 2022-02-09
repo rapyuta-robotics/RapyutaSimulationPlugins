@@ -2,11 +2,27 @@
 
 #pragma once
 
+// UE
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+// rclUE
 #include "ROS2Node.h"
 
+// RapyutaSimulationPlugins
+#include "Tools/RRGeneralUtils.h"
+#include "Tools/UEUtilities.h"
+
 #include "SimulationState.generated.h"
+
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FActors
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    TArray<AActor*> Actors;
+};
 
 class UROS2GenericSrv;
 
@@ -44,15 +60,10 @@ public:
     UFUNCTION(BlueprintCallable)
     void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
 
-    void LeftToRight(double& pos_x, double& pos_y, double& pos_z, FQuat& orientation);
-
-    void LeftToRight(FVector& position, FQuat& orientation);
-
-    bool ReferenceFrameToInertiaFrame(const FString& InReferenceFrame,
-                                      double& InPositionX,
-                                      double& InPositionY,
-                                      double& InPositionZ,
-                                      FQuat& InOrientation);
+    template<typename T>
+    bool CheckEntity(TMap<FString, T>& InEntities, const FString& InEntityName, const bool bAllowEmpty = false);
+    bool CheckEntity(const FString& InEntityName, const bool bAllowEmpty = false);
+    bool CheckSpawnableEntity(const FString& InEntityName, const bool bAllowEmpty = false);
 
     // need node that will handle services - this class will only define and register the service
     UPROPERTY(BlueprintReadOnly)
@@ -60,6 +71,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
+
+    UPROPERTY()
+    TMap<FName, FActors> EntitiesWithTag;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntities;
