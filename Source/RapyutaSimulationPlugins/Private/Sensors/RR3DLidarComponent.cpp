@@ -86,7 +86,8 @@ void URR3DLidarComponent::SensorUpdate()
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // To be considered: += WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // To be considered: += bWithNoise *
+            // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             TraceHandles[i] = world->AsyncLineTraceByChannel(EAsyncTraceType::Single,
                                                              startPos,
@@ -112,7 +113,7 @@ void URR3DLidarComponent::SensorUpdate()
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // + WithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // + bWithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             GetWorld()->LineTraceSingleByChannel(
                 RecordedHits[Index], startPos, endPos, ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
@@ -120,7 +121,7 @@ void URR3DLidarComponent::SensorUpdate()
         false);
 #endif
 
-    if (BWithNoise)
+    if (bWithNoise)
     {
         // this approach to noise is different from the above:
         // noise on the linetrace input means that the further the hit, the larger the error, while here the error is independent
@@ -318,7 +319,7 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
     for (auto i = 0; i < RecordedHits.Num(); i++)
     {
         float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
-        const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
+        const float IntensityScale = 1.f + bWithNoise * GaussianRNGIntensity(Gen);
         float Intensity = 0;
         if (RecordedHits.Last(i).PhysMaterial != nullptr)
         {

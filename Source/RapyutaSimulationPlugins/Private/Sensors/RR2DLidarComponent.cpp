@@ -49,7 +49,7 @@ void URR2DLidarComponent::Run()
 #if TRACE_ASYNC
     TraceHandles.Init(FTraceHandle(), NSamplesPerScan);
 #endif
-    
+
     Super::Run();
 }
 
@@ -83,7 +83,8 @@ void URR2DLidarComponent::SensorUpdate()
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // To be considered: += WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // To be considered: += bWithNoise *
+            // FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             TraceHandles[i] = world->AsyncLineTraceByChannel(EAsyncTraceType::Single,
                                                              startPos,
@@ -106,7 +107,7 @@ void URR2DLidarComponent::SensorUpdate()
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // + WithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // + bWithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             GetWorld()->LineTraceSingleByChannel(
                 RecordedHits[Index], startPos, endPos, ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
@@ -114,7 +115,7 @@ void URR2DLidarComponent::SensorUpdate()
         false);
 #endif
 
-    if (BWithNoise)
+    if (bWithNoise)
     {
         // this approach to noise is different from the above:
         // noise on the linetrace input means that the further the hit, the larger the error, while here the error is independent
@@ -242,7 +243,7 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // To be considered: + WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // To be considered: + bWithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
             GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index],
                                                  startPos,
@@ -300,7 +301,7 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
         // convert to [m]
         retValue.ranges.Add((MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f);
 
-        const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
+        const float IntensityScale = 1.f + bWithNoise * GaussianRNGIntensity(Gen);
 
         UStaticMeshComponent* ComponentHit = Cast<UStaticMeshComponent>(RecordedHits.Last(i).GetComponent());
         if (RecordedHits.Last(i).PhysMaterial != nullptr)

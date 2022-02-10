@@ -29,7 +29,6 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-
     UFUNCTION(BlueprintCallable)
     virtual bool Visible(AActor* TargetActor)
     {
@@ -129,7 +128,7 @@ protected:
     float IntensityNoiseVariance = .1f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    uint8 BWithNoise : 1;
+    uint8 bWithNoise : 1;
 
     FLinearColor InterpolateColor(float InX);
     static float GetIntensityFromDist(float InBaseIntensity, float InDistance);

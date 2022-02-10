@@ -286,9 +286,9 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     FVector Pos = InitialTransform.GetRotation().UnrotateVector(owner->GetActorLocation() - InitialTransform.GetTranslation());
     FVector PreviousPos = PreviousTransform.GetTranslation();    // prev pos without noise
     PreviousTransform.SetTranslation(Pos);
-    Pos += PreviousEstimatedPos - PreviousPos + WithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
+    Pos += PreviousEstimatedPos - PreviousPos + bWithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
 
-    FRotator NoiseRot = FRotator(0, 0, WithNoise * GaussianRNGRotation(Gen));
+    FRotator NoiseRot = FRotator(0, 0, bWithNoise * GaussianRNGRotation(Gen));
     FQuat Rot = owner->GetActorQuat() * InitialTransform.GetRotation().Inverse();
     FQuat PreviousRot = PreviousTransform.GetRotation();
     PreviousTransform.SetRotation(Rot);

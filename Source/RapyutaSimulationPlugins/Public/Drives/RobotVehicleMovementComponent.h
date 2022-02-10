@@ -136,7 +136,7 @@ protected:
     float NoiseVarianceRot = 0.05f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    bool WithNoise = true;
+    bool bWithNoise = true;
 
 public:
     virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
