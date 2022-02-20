@@ -2,11 +2,16 @@
 
 #pragma once
 
+// std
+#include <random>
+
+// UE
 #include "CoreMinimal.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 
-#include <random>
+// RapyutaSimulationPlugins
+#include "Tools/UEUtilities.h"
 
 #include "DifferentialDriveComponent.generated.h"
 
@@ -19,7 +24,7 @@ class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponent : public URobotVe
 
 public:
     virtual void UpdateMovement(float DeltaTime) override;
-    virtual void UpdateOdom(float DeltaTime) override;
+    void UpdateOdom(float DeltaTime) override;
 
     UFUNCTION(BlueprintCallable)
     void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);

@@ -7,6 +7,9 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 
+// RapyutaSimulationPlugins
+#include "RRObjectCommon.h"
+
 void URobotVehicleMovementComponent::Initialize()
 {
     Velocity = FVector::ZeroVector;

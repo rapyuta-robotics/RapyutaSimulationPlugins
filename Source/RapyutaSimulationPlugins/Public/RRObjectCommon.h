@@ -12,6 +12,10 @@
 
 // Note: For avoiding cyclic inclusion, only UE built-in source header files could be included herein.
 
+#define RAPYUTA_PHYSICS_USE_MUJOCO (1)
+#define RAPYUTA_PHYSICS_USE_EXTERNAL (RAPYUTA_PHYSICS_USE_MUJOCO)
+#define RAPYUTA_PHYSICS_USE_UE (!RAPYUTA_PHYSICS_USE_EXTERNAL)
+
 // SIM RESOURCE DATA --
 //
 UENUM(BlueprintType)

@@ -2,6 +2,10 @@
 
 #include "Tools/RRROS2ActorTFPublisher.h"
 
+// RapyutaSimulationPlugins
+#include "RRObjectCommon.h"
+#include "Tools/RRGeneralUtils.h"
+
 void URRROS2ActorTFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
@@ -56,6 +60,7 @@ void URRROS2ActorTFPublisher::SetTargetActorByActor(AActor* InActor)
 
 void URRROS2ActorTFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
+    check(RAPYUTA_PHYSICS_USE_UE);
     if (TargetActor == nullptr)
     {
         if (bIsValid)

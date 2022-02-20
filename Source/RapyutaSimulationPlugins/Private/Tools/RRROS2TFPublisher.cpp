@@ -5,6 +5,10 @@
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
 
+// RapyutaSimulationPlugins
+#include "RRObjectCommon.h"
+#include "Tools/UEUtilities.h"
+
 void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
@@ -28,6 +32,7 @@ void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
 void URRROS2TFPublisher::SetTransform(const FVector& Translation, const FQuat& Rotation)
 {
+    check(RAPYUTA_PHYSICS_USE_UE);
     TF.SetTranslation(Translation);
     TF.SetRotation(Rotation);
 }
@@ -45,7 +50,7 @@ void URRROS2TFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
     tfdata.frame_id = FrameId;
     tfdata.child_frame_id = ChildFrameId;
 
-    FTransform transfROS = ConversionUtils::TransformUEToROS(TF);
+    const FTransform& transfROS = RAPYUTA_PHYSICS_USE_UE ? ConversionUtils::TransformUEToROS(TF) : TF;
 
     tfdata.translation = transfROS.GetTranslation();
     tfdata.rotation = transfROS.GetRotation();

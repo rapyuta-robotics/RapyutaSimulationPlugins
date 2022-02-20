@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 
 // RapyutaSimulationPlugins
+#include "RRObjectCommon.h"
 #include "Tools/UEUtilities.h"
 
 // rclUE
@@ -64,9 +65,14 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void InitOdom();
 
-    FORCEINLINE virtual FROSOdometry GetROSOdomData() const
+    FORCEINLINE FROSOdometry GetROSOdomData() const
     {
+#if RAPYUTA_PHYSICS_USE_UE
         return ConversionUtils::OdomUEToROS(OdomData);
+#else
+        // OdomData fetched from external dynamics, which already conforms with ROS metrics
+        return OdomData;
+#endif
     }
 
     UPROPERTY()
