@@ -251,13 +251,13 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
     {
         FVector Pos(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
         FTransform relativeTransf(Request.state_pose_orientation, Pos);
+        relativeTransf = ConversionUtils::TransformROSToUE(relativeTransf);
         FTransform worldTransf;
         URRGeneralUtils::GetWorldTransform(
             Request.state_reference_frame,
             Entities.Contains(Request.state_reference_frame) ? Entities[Request.state_reference_frame] : nullptr,
             relativeTransf,
             worldTransf);
-        worldTransf = ConversionUtils::TransformROSToUE(worldTransf);
 
         // todo: check data.name is valid
         // todo: check same name object is exists or not.
