@@ -40,7 +40,7 @@ class CmdVelPublisher(Node):
 
     async def twist_robot(self):
         if (self._twist_pub_count < PUBLISHING_NUM):
-            self.get_logger().info(f'Publishing to {TOPIC_NAME_CMD_VEL}: "{0}"'.format(self._twist))
+            self.get_logger().info(f'Publishing to {TOPIC_NAME_CMD_VEL}: {self._twist}')
             self._twist_pub.publish(self._twist)
             self._twist_pub_count += 1
         else:
