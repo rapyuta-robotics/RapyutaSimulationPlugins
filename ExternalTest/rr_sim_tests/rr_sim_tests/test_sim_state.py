@@ -20,6 +20,7 @@ import pytest
 """
 Test if UE simulation state service servers exist
 """
+LAUNCH_ARG_TIMEOUT = 'timeout'
 
 SERVICE_NAME_SPAWN_ENTITY = 'SpawnEntity'
 SERVICE_NAME_DELETE_ENTITY = 'DeleteEntity'
@@ -30,7 +31,12 @@ SERVICE_NAME_ATTACH_ENTITY = 'Attach'
 @pytest.mark.launch_test
 @launch_testing.markers.keep_alive
 def generate_test_description():
+    timeout = launch.substitutions.LaunchConfiguration(LAUNCH_ARG_TIMEOUT, default='5')
     return launch.LaunchDescription([
+        launch.actions.DeclareLaunchArgument(
+            LAUNCH_ARG_TIMEOUT,
+            default_value=timeout,
+            description='Sim state initialization timeout in sec'),
         launch_testing.actions.ReadyToTest()
     ])
 
@@ -66,7 +72,8 @@ def wait_for_sim_state(in_timeout=10.0):
     return True
 
 class TestSimState(unittest.TestCase):
-    def test_check_sim_state_ready(self, proc_output):
+    def test_check_sim_state_ready(self, proc_output, test_args):
         rclpy.init()
-        assert wait_for_sim_state(10.0)
+        assert(LAUNCH_ARG_TIMEOUT in test_args)
+        assert wait_for_sim_state(float(test_args[LAUNCH_ARG_TIMEOUT]))
         rclpy.shutdown()
