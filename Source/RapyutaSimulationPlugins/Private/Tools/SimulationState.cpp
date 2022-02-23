@@ -9,39 +9,28 @@
 #include "Kismet/GameplayStatics.h"
 
 // rclUE
+#include "Actions/ROS2SimShutDownAction.h"
+#include "ROS2ActionServer.h"
 #include "Srvs/ROS2AttachSrv.h"
 #include "Srvs/ROS2DeleteEntitySrv.h"
 #include "Srvs/ROS2GetEntityStateSrv.h"
 #include "Srvs/ROS2SetEntityStateSrv.h"
 #include "Srvs/ROS2SpawnEntitySrv.h"
 
-// Sets default values
+// RapyutaSimulationPlugins
+#include "Tools/RRGeneralUtils.h"
+
 ASimulationState::ASimulationState()
 {
-    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
 }
 
 void ASimulationState::Init(AROS2Node* InROS2Node)
 {
-    ROSServiceNode = InROS2Node;
+    ROS2Node = InROS2Node;
 
-    // register delegates to node
-    FServiceCallback GetEntityStateSrvCallback;
-    FServiceCallback SetEntityStateSrvCallback;
-    FServiceCallback AttachSrvCallback;
-    FServiceCallback SpawnEntitySrvCallback;
-    FServiceCallback DeleteEntitySrvCallback;
-    GetEntityStateSrvCallback.BindDynamic(this, &ASimulationState::GetEntityStateSrv);
-    SetEntityStateSrvCallback.BindDynamic(this, &ASimulationState::SetEntityStateSrv);
-    AttachSrvCallback.BindDynamic(this, &ASimulationState::AttachSrv);
-    SpawnEntitySrvCallback.BindDynamic(this, &ASimulationState::SpawnEntitySrv);
-    DeleteEntitySrvCallback.BindDynamic(this, &ASimulationState::DeleteEntitySrv);
-    ROSServiceNode->AddServiceServer(TEXT("GetEntityState"), UROS2GetEntityStateSrv::StaticClass(), GetEntityStateSrvCallback);
-    ROSServiceNode->AddServiceServer(TEXT("SetEntityState"), UROS2SetEntityStateSrv::StaticClass(), SetEntityStateSrvCallback);
-    ROSServiceNode->AddServiceServer(TEXT("Attach"), UROS2AttachSrv::StaticClass(), AttachSrvCallback);
-    ROSServiceNode->AddServiceServer(TEXT("SpawnEntity"), UROS2SpawnEntitySrv::StaticClass(), SpawnEntitySrvCallback);
-    ROSServiceNode->AddServiceServer(TEXT("DeleteEntity"), UROS2DeleteEntitySrv::StaticClass(), DeleteEntitySrvCallback);
+    InitROSServiceServers();
+    InitROSActionServers();
 
     // add all actors
 #if WITH_EDITOR
@@ -54,6 +43,39 @@ void ASimulationState::Init(AROS2Node* InROS2Node)
         AActor* actor = *It;
         AddEntity(actor);
     }
+}
+
+void ASimulationState::InitROSServiceServers()
+{
+    // register delegates to node
+    FServiceCallback GetEntityStateSrvCallback;
+    FServiceCallback SetEntityStateSrvCallback;
+    FServiceCallback AttachSrvCallback;
+    FServiceCallback SpawnEntitySrvCallback;
+    FServiceCallback DeleteEntitySrvCallback;
+    GetEntityStateSrvCallback.BindDynamic(this, &ASimulationState::GetEntityStateSrv);
+    SetEntityStateSrvCallback.BindDynamic(this, &ASimulationState::SetEntityStateSrv);
+    AttachSrvCallback.BindDynamic(this, &ASimulationState::AttachSrv);
+    SpawnEntitySrvCallback.BindDynamic(this, &ASimulationState::SpawnEntitySrv);
+    DeleteEntitySrvCallback.BindDynamic(this, &ASimulationState::DeleteEntitySrv);
+    ROS2Node->AddServiceServer(TEXT("GetEntityState"), UROS2GetEntityStateSrv::StaticClass(), GetEntityStateSrvCallback);
+    ROS2Node->AddServiceServer(TEXT("SetEntityState"), UROS2SetEntityStateSrv::StaticClass(), SetEntityStateSrvCallback);
+    ROS2Node->AddServiceServer(TEXT("Attach"), UROS2AttachSrv::StaticClass(), AttachSrvCallback);
+    ROS2Node->AddServiceServer(TEXT("SpawnEntity"), UROS2SpawnEntitySrv::StaticClass(), SpawnEntitySrvCallback);
+    ROS2Node->AddServiceServer(TEXT("DeleteEntity"), UROS2DeleteEntitySrv::StaticClass(), DeleteEntitySrvCallback);
+}
+
+void ASimulationState::InitROSActionServers()
+{
+    FActionCallback simShutDownCallback;
+    simShutDownCallback.BindDynamic(this, &ASimulationState::SimShutDownAction);
+    ROS2Node->AddActionServer(TEXT("SimShutDown"),
+                              UROS2SimShutDownAction::StaticClass(),
+                              FActionCallback(),
+                              FActionCallback(),
+                              simShutDownCallback,
+                              FSimpleCallback(),
+                              FSimpleCallback());
 }
 
 void ASimulationState::AddEntity(AActor* Entity)
@@ -311,4 +333,25 @@ void ASimulationState::DeleteEntitySrv(UROS2GenericSrv* Service)
     }
 
     DeleteEntityService->SetResponse(Response);
+}
+
+void ASimulationState::SimShutDownAction(UROS2GenericAction* InAction)
+{
+    UROS2SimShutDownAction* simShutDownAction = CastChecked<UROS2SimShutDownAction>(InAction);
+    // Request
+    FROSSimShutDown_GetResult_Request shutDownRequest;
+    simShutDownAction->GetResultRequest(shutDownRequest);
+
+    // Response
+    FROSSimShutDown_GetResult_Response shutDownResponse;
+    shutDownResponse.success = true;
+    simShutDownAction->SetResultResponse(shutDownResponse);
+
+    // Feedback
+    FROSSimShutDown_FeedbackMessage shutDownFeedback;
+    shutDownFeedback.done = true;
+    simShutDownAction->SetFeedback(shutDownFeedback);
+
+    // Shutdown the sim
+    URRGeneralUtils::ShutDownSim(this);
 }

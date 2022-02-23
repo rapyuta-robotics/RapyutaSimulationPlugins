@@ -38,6 +38,11 @@ public:
 public:
     UFUNCTION(BlueprintCallable)
     void Init(AROS2Node* InROS2Node);
+    UPROPERTY(BlueprintReadOnly)
+    AROS2Node* ROS2Node = nullptr;
+
+    void InitROSServiceServers();
+    void InitROSActionServers();
 
     UFUNCTION(BlueprintCallable)
     void GetEntityStateSrv(UROS2GenericSrv* Service);
@@ -55,6 +60,9 @@ public:
     void DeleteEntitySrv(UROS2GenericSrv* Service);
 
     UFUNCTION(BlueprintCallable)
+    void SimShutDownAction(UROS2GenericAction* InAction);
+
+    UFUNCTION(BlueprintCallable)
     void AddEntity(AActor* Entity);
 
     UFUNCTION(BlueprintCallable)
@@ -64,10 +72,6 @@ public:
     bool CheckEntity(TMap<FString, T>& InEntities, const FString& InEntityName, const bool bAllowEmpty = false);
     bool CheckEntity(const FString& InEntityName, const bool bAllowEmpty = false);
     bool CheckSpawnableEntity(const FString& InEntityName, const bool bAllowEmpty = false);
-
-    // need node that will handle services - this class will only define and register the service
-    UPROPERTY(BlueprintReadOnly)
-    AROS2Node* ROSServiceNode = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;

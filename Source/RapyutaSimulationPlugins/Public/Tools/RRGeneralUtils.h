@@ -3,8 +3,9 @@
 
 // UE
 #include "Engine/World.h"
-#include "TimerManager.h"
 #include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 #include "RRGeneralUtils.generated.h"
 
@@ -13,6 +14,27 @@ class RAPYUTASIMULATIONPLUGINS_API URRGeneralUtils : public UBlueprintFunctionLi
 {
     GENERATED_BODY()
 public:
+    // SIM CONSOLE COMMANDS --
+    static constexpr const TCHAR* CMD_SIM_QUIT = TEXT("quit");
+    template<typename T>
+    static T* GetPlayerController(int8 InPlayerControllerID, const UObject* InContextObject)
+    {
+        return CastChecked<T>(UGameplayStatics::GetPlayerControllerFromID(InContextObject, InPlayerControllerID));
+    }
+
+    static void ExecuteConsoleCommand(const UObject* InContextObject, const FString& InCommandText)
+    {
+        GetPlayerController<APlayerController>(0, InContextObject)->ConsoleCommand(InCommandText);
+        // OR either one of these:
+        // + GEngine->Exec(World, *CommandText);
+        // + World->Exec(World, *CommandText);
+    }
+
+    static void ShutDownSim(const UObject* InContextObject)
+    {
+        ExecuteConsoleCommand(InContextObject, CMD_SIM_QUIT);
+    }
+
     static bool CheckWithTimeOut(const TFunctionRef<bool()>& Condition,
                                  const TFunctionRef<void()>& Action,
                                  const FDateTime& BeginTime,
@@ -24,7 +46,7 @@ public:
         World->GetTimerManager().ClearTimer(TimerHandle);
     }
 
-    //GetAllActors is slow operation.
+    // GetAllActors is slow operation.
     static AActor* GetActorByName(UWorld* World, const FString& InName)
     {
         for (TActorIterator<AActor> It(World, AActor::StaticClass()); It; ++It)
@@ -41,7 +63,7 @@ public:
 
     static bool GetRefTransform(const FString& RefActorName, const AActor* RefActor, FTransform& OutTransf)
     {
-        if (RefActorName.IsEmpty()) //refrence is world origin
+        if (RefActorName.IsEmpty())    // refrence is world origin
         {
             OutTransf = FTransform::Identity;
         }
@@ -67,11 +89,14 @@ public:
         return relativeTransf;
     }
 
-    static bool GetRelativeTransform(const FString& RefActorName, const AActor* RefActor, const FTransform& InTransf, FTransform& OutTransf)
+    static bool GetRelativeTransform(const FString& RefActorName,
+                                     const AActor* RefActor,
+                                     const FTransform& InTransf,
+                                     FTransform& OutTransf)
     {
         FTransform refTransf;
         bool result = GetRefTransform(RefActorName, RefActor, refTransf);
-        if(result)
+        if (result)
         {
             OutTransf = URRGeneralUtils::GetRelativeTransform(refTransf, InTransf);
         }
@@ -81,19 +106,22 @@ public:
     static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)
     {
         FTransform worldTransf;
-        
+
         FTransform::Multiply(&worldTransf, &RelativeTransf, &RefTransf);
 
         worldTransf.NormalizeRotation();
 
         return worldTransf;
     }
-    
-    static bool GetWorldTransform(const FString& RefActorName, const AActor* RefActor, const FTransform& InTransf, FTransform& OutTransf)
+
+    static bool GetWorldTransform(const FString& RefActorName,
+                                  const AActor* RefActor,
+                                  const FTransform& InTransf,
+                                  FTransform& OutTransf)
     {
         FTransform refTransf;
         bool result = GetRefTransform(RefActorName, RefActor, refTransf);
-        if(result)
+        if (result)
         {
             OutTransf = URRGeneralUtils::GetWorldTransform(refTransf, InTransf);
         }
