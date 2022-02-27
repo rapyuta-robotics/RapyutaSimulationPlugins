@@ -9,6 +9,7 @@
 
 // RapyutaSimulationPlugins
 #include "RRObjectCommon.h"
+#include "Robots/RobotVehicle.h"
 
 void URobotVehicleMovementComponent::Initialize()
 {
@@ -17,6 +18,14 @@ void URobotVehicleMovementComponent::Initialize()
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 
     InitOdom();
+}
+
+void URobotVehicleMovementComponent::SetDesiredVelocities(const FVector& InLinearVel, const FVector& InAngularVel)
+{
+    Velocity = InLinearVel;
+    AngularVelocity = InAngularVel;
+    ARobotVehicle* robot = CastChecked<ARobotVehicle>(GetOwner());
+    robot->bStopOrdered = (InLinearVel.IsZero() && InAngularVel.IsZero());
 }
 
 void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)

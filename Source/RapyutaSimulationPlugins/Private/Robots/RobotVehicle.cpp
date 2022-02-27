@@ -39,6 +39,7 @@ void ARobotVehicle::SetupDefault()
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+    bStopOrdered = false;
 }
 
 bool ARobotVehicle::InitSensors(AROS2Node* InROS2Node)

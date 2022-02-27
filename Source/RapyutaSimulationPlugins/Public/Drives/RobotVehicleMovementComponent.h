@@ -111,11 +111,7 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Noise")
     bool bWithNoise = true;
 
-    FORCEINLINE void SetDesiredVelocities(const FVector& InLinearVel, const FVector& InAngularVel)
-    {
-        Velocity = InLinearVel;
-        AngularVelocity = InAngularVel;
-    }
+    void SetDesiredVelocities(const FVector& InLinearVel, const FVector& InAngularVel);
     FORCEINLINE float GetDesiredForwardReverseVelocity() const
     {
         return Velocity.X;

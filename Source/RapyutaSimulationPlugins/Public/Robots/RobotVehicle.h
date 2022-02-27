@@ -47,6 +47,7 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
+    TAtomic<bool> bStopOrdered;
 
     bool InitSensors(AROS2Node* InROS2Node);
     void SetupDefault();

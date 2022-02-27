@@ -49,4 +49,16 @@ public:
     {
         return GetEnumValueAsString("ERRResourceDataType", InDataType);
     }
+
+    FORCEINLINE static FString GetTypeName(UObject* Object)
+    {
+        // NOTE THAT: UE REMOVES 'U' FROM UObject's CHILD CLASS NAME
+        return Object->GetClass()->GetName();    // This would return "Object" for UObject :)
+    }
+
+    template<typename T>    // Only acccept UObject type
+    FORCEINLINE static FString GetTypeName()
+    {
+        return T::StaticClass()->GetName();
+    }
 };
