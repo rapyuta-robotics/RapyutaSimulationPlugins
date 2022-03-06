@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ROS2Node.h"
+#include "Tools/SimulationStateData.h"
 
 #include "SimulationState.generated.h"
 
@@ -21,7 +22,7 @@ public:
 
 public:
     UFUNCTION(BlueprintCallable)
-    void Init(AROS2Node* InROS2Node);
+    void Init(AROS2Node* InROS2Node, ASimulationStateData* InSimulationStateData);
 
     UFUNCTION(BlueprintCallable)
     void GetEntityStateSrv(UROS2GenericSrv* Service);
@@ -58,11 +59,10 @@ public:
     UPROPERTY(BlueprintReadOnly)
     AROS2Node* ROSServiceNode = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TMap<FString, AActor*> Entities;
+    UPROPERTY(BlueprintReadOnly)
+    ASimulationStateData* SimulationStateData = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntities;
-
     // need to keep track of "Entities"? or just use a search?
 };

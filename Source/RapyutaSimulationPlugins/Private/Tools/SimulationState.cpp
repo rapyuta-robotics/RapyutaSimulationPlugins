@@ -1,7 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/SimulationState.h"
-
+#include "Tools/SimulationStateData.h"
 #include "Tools/ROS2Spawnable.h"
 // UE
 #include "Engine/World.h"
@@ -14,6 +14,7 @@
 #include "Srvs/ROS2GetEntityStateSrv.h"
 #include "Srvs/ROS2SetEntityStateSrv.h"
 #include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Tools/RRROS2PlayerController.h"
 
 // Sets default values
 ASimulationState::ASimulationState()
@@ -22,10 +23,10 @@ ASimulationState::ASimulationState()
     PrimaryActorTick.bCanEverTick = true;
 }
 
-void ASimulationState::Init(AROS2Node* InROS2Node)
+void ASimulationState::Init(AROS2Node* InROS2Node, ASimulationStateData* InSimulationStateData)
 {
     ROSServiceNode = InROS2Node;
-
+    SimulationStateData = InSimulationStateData;
     // register delegates to node
     FServiceCallback GetEntityStateSrvCallback;
     FServiceCallback SetEntityStateSrvCallback;
@@ -60,7 +61,7 @@ void ASimulationState::AddEntity(AActor* Entity)
 {
     if (IsValid(Entity))
     {
-        Entities.Emplace(Entity->GetName(), Entity);
+        SimulationStateData->AddEntity(Entity);
     }
 }
 
@@ -83,26 +84,26 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
 
     FROSGetEntityState_Response Response;
     Response.success = false;
-    if (Entities.Contains(Request.name))
+    if (SimulationStateData->Entities.Contains(Request.name))
     {
-        if (IsValid(Entities[Request.name]))
+        if (IsValid(SimulationStateData->Entities[Request.name]))
         {
             Response.success = true;
             FVector RefPos = FVector::ZeroVector;
             FQuat RefQuat = FQuat::Identity;
             Response.state_reference_frame.Reset();
-            if (Entities.Contains(Request.reference_frame))
+            if (SimulationStateData->Entities.Contains(Request.reference_frame))
             {
-                if (IsValid(Entities[Request.reference_frame]))
+                if (IsValid(SimulationStateData->Entities[Request.reference_frame]))
                 {
-                    AActor* Ref = Entities[Request.reference_frame];
+                    AActor* Ref = SimulationStateData->Entities[Request.reference_frame];
                     RefPos = Ref->GetActorLocation() / 100.f;
                     RefQuat = Ref->GetActorQuat();
                     Response.state_reference_frame = Request.reference_frame;
                 }
                 else
                 {
-                    Entities.Remove(Request.reference_frame);
+                    SimulationStateData->Entities.Remove(Request.reference_frame);
                     UE_LOG(LogRapyutaCore,
                            Warning,
                            TEXT("Reference frame %s entity gets invalid -> removed from Entities"),
@@ -113,7 +114,7 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
             {
                 UE_LOG(LogRapyutaCore, Warning, TEXT("Reference frame %s entity not found"), *Request.reference_frame);
             }
-            AActor* Entity = Entities[Request.name];
+            AActor* Entity = SimulationStateData->Entities[Request.name];
             Response.state_name = Request.name;
             FVector Pos = RefQuat.Inverse().RotateVector(Entity->GetActorLocation() / 100.f - RefPos);
             Response.state_pose_position_x = Pos.X;
@@ -130,7 +131,7 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
         }
         else
         {
-            Entities.Remove(Request.name);
+            SimulationStateData->Entities.Remove(Request.name);
             UE_LOG(LogRapyutaCore, Warning, TEXT("Request name %s entity gets invalid -> removed from Entities"), *Request.name);
         }
     }
@@ -171,12 +172,12 @@ bool ASimulationState::ReferenceFrameToInertiaFrame(const FString& InReferenceFr
         OutPositionY *= 100.;
         OutPositionZ *= 100.;
     }
-    else if (Entities.Contains(InReferenceFrame))
+    else if (SimulationStateData->Entities.Contains(InReferenceFrame))
     {
-        if (IsValid(Entities[InReferenceFrame]))
+        if (IsValid(SimulationStateData->Entities[InReferenceFrame]))
         {
             bSuccess = true;
-            AActor* ref = Entities[InReferenceFrame];
+            AActor* ref = SimulationStateData->Entities[InReferenceFrame];
             FVector refPos = ref->GetActorLocation();
             FQuat refQuat = ref->GetActorQuat();
             FVector OutputVec = FVector(OutPositionX, OutPositionY, OutPositionZ);
@@ -190,7 +191,7 @@ bool ASimulationState::ReferenceFrameToInertiaFrame(const FString& InReferenceFr
         else
         {
             bSuccess = false;
-            Entities.Remove(InReferenceFrame);
+            SimulationStateData->Entities.Remove(InReferenceFrame);
             UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("ReferenceFrameToInertiaFrame(): InReferenceFrame %s entity gets invalid -> Removed from Entities"),
@@ -226,18 +227,18 @@ void ASimulationState::SetEntityStateSrv(UROS2GenericSrv* Service)
                                                     Request.state_pose_orientation);
     if (Response.success)
     {
-        if (Entities.Contains(Request.state_name))
+        if (SimulationStateData->Entities.Contains(Request.state_name))
         {
-            if (IsValid(Entities[Request.state_name]))
+            if (IsValid(SimulationStateData->Entities[Request.state_name]))
             {
-                AActor* Entity = Entities[Request.state_name];
+                AActor* Entity = SimulationStateData->Entities[Request.state_name];
                 FVector Pos(Request.state_pose_position_x, Request.state_pose_position_y, Request.state_pose_position_z);
                 Entity->SetActorLocationAndRotation(Pos, Request.state_pose_orientation);
             }
             else
             {
                 Response.success = false;
-                Entities.Remove(Request.state_name);
+                SimulationStateData->Entities.Remove(Request.state_name);
                 UE_LOG(LogRapyutaCore,
                        Warning,
                        TEXT("SetEntityStateSrv(): Entity %s gets invalid -> removed from Entities"),
@@ -266,20 +267,20 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* Service)
 
     FROSAttach_Response Response;
     Response.success = false;
-    if (Entities.Contains(Request.name1) && Entities.Contains(Request.name2))
+    if (SimulationStateData->Entities.Contains(Request.name1) && SimulationStateData->Entities.Contains(Request.name2))
     {
         Response.success = true;
-        AActor* Entity1 = Entities[Request.name1];
-        AActor* Entity2 = Entities[Request.name2];
+        AActor* Entity1 = SimulationStateData->Entities[Request.name1];
+        AActor* Entity2 = SimulationStateData->Entities[Request.name2];
 
         if (false == IsValid(Entity1))
         {
-            Entities.Remove(Request.name1);
+            SimulationStateData->Entities.Remove(Request.name1);
             UE_LOG(LogRapyutaCore, Warning, TEXT("AttachSrv(): Entity %s gets invalid -> removed from Entities"), *Request.name1);
         }
         else if (false == IsValid(Entity2))
         {
-            Entities.Remove(Request.name2);
+            SimulationStateData->Entities.Remove(Request.name2);
             UE_LOG(LogRapyutaCore, Warning, TEXT("AttachSrv(): Entity %s gets invalid -> removed from Entities"), *Request.name2);
         }
         else
@@ -353,11 +354,21 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
                 UGameplayStatics::FinishSpawningActor(NewEntity, Transform);
                 AddEntity(NewEntity);
 
+                ARRROS2GameMode *ros2GameMode = Cast<ARRROS2GameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+
+                for (APlayerController* Player : ros2GameMode->ClientControllerList)
+                {
+                    if(Cast<ARRROS2PlayerController>(Player)->PlayerName == *NewEntity->GetName()) {
+                        Player->Possess(Cast<APawn>(NewEntity));
+                    }
+                }
+
                 UE_LOG(LogRapyutaCore, Warning, TEXT("New Spawned Entity Name: %s"), *NewEntity->GetName());
             }
             else
             {
-                Entities.Remove(Request.xml);
+                SimulationStateData->Entities.Remove(Request.xml);
                 UE_LOG(LogRapyutaCore,
                        Warning,
                        TEXT("SpawnEntitySrv(): Entity %s gets invalid -> removed from Entities"),
@@ -389,9 +400,9 @@ void ASimulationState::DeleteEntitySrv(UROS2GenericSrv* Service)
 
     FROSDeleteEntity_Response Response;
     Response.success = false;
-    if (Entities.Contains(Request.name))
+    if (SimulationStateData->Entities.Contains(Request.name))
     {
-        AActor* Removed = Entities.FindAndRemoveChecked(Request.name);
+        AActor* Removed = SimulationStateData->Entities.FindAndRemoveChecked(Request.name);
         Removed->Destroy();
     }
     else

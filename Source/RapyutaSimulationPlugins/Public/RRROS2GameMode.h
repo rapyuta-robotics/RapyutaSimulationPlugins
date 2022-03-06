@@ -13,11 +13,13 @@
 class AROS2Node;
 class URRROS2ClockPublisher;
 class ASimulationState;
+class ASimulationStateData;
 UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 {
     GENERATED_BODY()
 
 public:
+    ARRROS2GameMode();
     UPROPERTY(BlueprintReadOnly)
     AROS2Node* ROS2Node = nullptr;
 
@@ -27,13 +29,21 @@ public:
     UPROPERTY(BlueprintReadOnly)
     ASimulationState* SimulationState = nullptr;
 
+    UPROPERTY(BlueprintReadOnly)
+    ASimulationStateData* SimulationStateData = nullptr;
+
     UPROPERTY(BlueprintReadWrite)
     FString UENodeName = TEXT("UENode");
 
+    TArray<class APlayerController*> ClientControllerList;
+
 protected:
     virtual void InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage) override;
+//    virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
     virtual void InitSim();
+    virtual void PostLogin(APlayerController* InPlayer) override;
 
 private:
     void InitROS2();
+
 };
