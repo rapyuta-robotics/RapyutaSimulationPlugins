@@ -5,10 +5,13 @@
 #include "Engine/EngineTypes.h"
 #include "GameFramework/GameMode.h"
 
+// RapyutaSimulationPlugins
+#include "RRROS2GameMode.h"
+
 #include "RRGameMode.generated.h"
 
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARRGameMode : public AGameMode
+class RAPYUTASIMULATIONPLUGINS_API ARRGameMode : public ARRROS2GameMode
 {
     GENERATED_BODY()
 
