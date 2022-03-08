@@ -9,46 +9,26 @@
 #include "Components/StaticMeshComponent.h"
 #include "CoreMinimal.h"
 
-// rclUE
-#include "ROS2Node.h"
-#include "ROS2Publisher.h"
+// RapyutaSimulationPlugins
+#include "RRROS2BaseSensorComponent.h"
 
 #include "RRBaseLidarComponent.generated.h"
-
-DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
 #define TRACE_ASYNC 1
 
 class URRROS2LidarPublisher;
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRBaseLidarComponent : public USceneComponent
+class RAPYUTASIMULATIONPLUGINS_API URRBaseLidarComponent : public URRROS2BaseSensorComponent
 {
     GENERATED_BODY()
 
 public:
     URRBaseLidarComponent();
 
-    UPROPERTY()
-    TSubclassOf<UROS2GenericMsg> LidarMsgClass;
-
 protected:
     virtual void BeginPlay() override;
 
 public:
-    UFUNCTION(BlueprintCallable)
-    void InitLidar(AROS2Node* InROS2Node, const FString& InTopicName = TEXT(""));
-
-    UFUNCTION(BlueprintCallable)
-    virtual void Run()
-    {
-        checkNoEntry();
-    }
-
-    UFUNCTION(BlueprintCallable)
-    virtual void Scan()
-    {
-        checkNoEntry();
-    }
 
     UFUNCTION(BlueprintCallable)
     virtual bool Visible(AActor* TargetActor)
@@ -62,20 +42,8 @@ public:
     UFUNCTION(BlueprintCallable)
     void GetData(TArray<FHitResult>& OutHits, float& OutTime) const;
 
-    UPROPERTY(Transient)
-    URRROS2LidarPublisher* LidarPublisher = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString TopicName = TEXT("scan");
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString FrameId = TEXT("base_scan");
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 NSamplesPerScan = 360;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 ScanFrequency = 30;
 
     // [degrees]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -114,15 +82,9 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     TArray<FHitResult> RecordedHits;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bAppendNodeNamespace = true;
-
 #if TRACE_ASYNC
     TArray<FTraceHandle> TraceHandles;
 #endif
-
-    UPROPERTY()
-    FTimerHandle TimerHandle;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool ShowLidarRays = true;

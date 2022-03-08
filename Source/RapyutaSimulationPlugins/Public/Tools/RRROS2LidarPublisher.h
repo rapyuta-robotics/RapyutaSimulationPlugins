@@ -7,22 +7,26 @@
 
 // rclUE
 #include "ROS2Node.h"
-#include "ROS2Publisher.h"
+
+// RapyutaSimulationPlugins
+#include "Tools/RRROS2BaseSensorPublisher.h"
 
 #include "RRROS2LidarPublisher.generated.h"
 
-class URRBaseLidarComponent;
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRROS2LidarPublisher : public UROS2Publisher
+class RAPYUTASIMULATIONPLUGINS_API URRROS2LaserScanPublisher : public URRROS2BaseSensorPublisher
 {
     GENERATED_BODY()
 
 public:
-    URRROS2LidarPublisher();
+    URRROS2LaserScanPublisher();
+};
 
-    UPROPERTY()
-    URRBaseLidarComponent* LidarComponent = nullptr;
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRROS2PointCloud2Publisher : public URRROS2BaseSensorPublisher
+{
+    GENERATED_BODY()
 
-    void InitializeWithROS2(AROS2Node* InROS2Node) override;
-    void UpdateMessage(UROS2GenericMsg* InMessage) override;
+public:
+    URRROS2PointCloud2Publisher();
 };

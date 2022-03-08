@@ -4,9 +4,8 @@
 
 URR3DLidarComponent::URR3DLidarComponent()
 {
-    LidarMsgClass = UROS2PointCloud2Msg::StaticClass();
+    SensorPublisherClass = URRROS2PointCloud2Publisher::StaticClass();
 }
-
 void URR3DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -50,12 +49,10 @@ void URR3DLidarComponent::Run()
 #if TRACE_ASYNC
     TraceHandles.Init(FTraceHandle(), nTotalScan);
 #endif
-
-    GetWorld()->GetTimerManager().SetTimer(
-        TimerHandle, this, &URR3DLidarComponent::Scan, 1.f / static_cast<float>(ScanFrequency), true);
+    Super::Run();
 }
 
-void URR3DLidarComponent::Scan()
+void URR3DLidarComponent::SensorUpdate()
 {
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
     DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
@@ -141,7 +138,7 @@ void URR3DLidarComponent::Scan()
     }
 
     TimeOfLastScan = UGameplayStatics::GetTimeSeconds(GetWorld());
-    Dt = 1.f / static_cast<float>(ScanFrequency);
+    Dt = 1.f / static_cast<float>(PublicationFrequencyHz);
 
     // need to store on a structure associating hits with time?
     // GetROS2Data needs to get all data since the last Get? or the last within the last time interval?
@@ -369,4 +366,9 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
     retValue.is_dense = true;
 
     return retValue;
+}
+
+void URR3DLidarComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
+{
+    CastChecked<UROS2PointCloud2Msg>(InMessage)->SetMsg(GetROS2Data());
 }

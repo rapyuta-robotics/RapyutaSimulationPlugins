@@ -25,13 +25,15 @@ public:
 
     void Run() override;
 
-    void Scan() override;
+    void SensorUpdate() override;
 
     bool Visible(AActor* TargetActor) override;
 
     // (ToDo) this should probably be removed so that the sensor can be decoupled from the message types
     FROSPointCloud2 GetROS2Data();
-
+    
+    virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
+    
     // vertical samples
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 NChannelsPerScan = 32;

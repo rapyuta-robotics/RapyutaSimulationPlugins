@@ -45,12 +45,10 @@ void URRROS2TFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
     tfdata.frame_id = FrameId;
     tfdata.child_frame_id = ChildFrameId;
 
-    FTransform TransROS = TF;
-    TransROS.SetTranslation(ConversionUtils::VectorUEToROS(TF.GetTranslation()));
-    TransROS.SetRotation(ConversionUtils::QuatUEToROS(TF.GetRotation()));
+    FTransform transfROS = ConversionUtils::TransformUEToROS(TF);
 
-    tfdata.translation = TransROS.GetTranslation();
-    tfdata.rotation = TransROS.GetRotation();
+    tfdata.translation = transfROS.GetTranslation();
+    tfdata.rotation = transfROS.GetRotation();
 
     tfarray.Add(tfdata);
     CastChecked<UROS2TFMsg>(InMessage)->Update(tfarray);
