@@ -18,14 +18,26 @@ void ASimulationStateData::Init() {
 //        AddEntity(actor);
 //    }
 }
-void ASimulationStateData::AddEntity(AActor* Entity)
+void ASimulationState::AddEntity(AActor* Entity)
 {
     if (IsValid(Entity))
     {
         Entities.Emplace(Entity->GetName(), Entity);
+        for (auto& tag : Entity->Tags)
+        {
+            if (EntitiesWithTag.Contains(tag))
+            {
+                EntitiesWithTag[tag].Actors.Emplace(Entity);
+            }
+            else
+            {
+                FActors actors;
+                actors.Actors.Emplace(Entity);
+                EntitiesWithTag.Emplace(tag, actors);
+            }
+        }
     }
 }
-
 //void ASimulationStateData::AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities)
 //{
 //    for (auto& Elem :InSpawnableEntities)

@@ -73,9 +73,6 @@ public:
     UPROPERTY(BlueprintReadOnly)
     ASimulationStateData* SimulationStateData = nullptr;
 
-    UPROPERTY()
-    TMap<FName, FActors> EntitiesWithTag;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntities;
     // need to keep track of "Entities"? or just use a search?

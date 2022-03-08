@@ -44,7 +44,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
-//
+
+    UPROPERTY()
+    TMap<FName, FActors> EntitiesWithTag;
 //    UPROPERTY(EditAnywhere, BlueprintReadWrite)
 //    TMap<FString, TSubclassOf<AActor>> SpawnableEntities;
 
