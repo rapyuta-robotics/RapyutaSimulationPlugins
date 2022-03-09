@@ -78,7 +78,7 @@ def spawn_robot(in_robot_model, in_robot_name, in_robot_namespace, in_robot_ref_
     assert(len(in_robot_name) > 0)
     node = rclpy.create_node(f'spawn_{in_robot_name}')
     cli = wait_for_service(node, SpawnEntity, SERVICE_NAME_SPAWN_ENTITY)
-    if not cli.service_is_ready:
+    if not cli.service_is_ready():
         return False
 
     # Prepare SpawnEntity request
@@ -132,5 +132,5 @@ class TestRobotSpawn(unittest.TestCase):
                            argstr(LAUNCH_ARG_ROBOT_REF_FRAME),
                            robot_pose)
         is_robot_spawned, _ = wait_for_spawned_robot(robot_name, 8.0)
-        assert(is_robot_spawned, f'{robot_name} failed being spawned!')
+        assert is_robot_spawned, f'{robot_name} failed being spawned!'
         rclpy.shutdown()

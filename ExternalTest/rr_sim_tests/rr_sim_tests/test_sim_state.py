@@ -44,27 +44,27 @@ def wait_for_sim_state(in_timeout=10.0):
     node = rclpy.create_node(f'wait_for_sim_state_service_servers')
     
     cli = wait_for_service(node, SpawnEntity, SERVICE_NAME_SPAWN_ENTITY, in_timeout)
-    if not cli.service_is_ready:
+    if not cli.service_is_ready():
         node.destroy_node()
         return False
 
     cli = wait_for_service(node, DeleteEntity, SERVICE_NAME_DELETE_ENTITY, in_timeout)
-    if not cli.service_is_ready:
+    if not cli.service_is_ready():
         node.destroy_node()
         return False
 
     cli = wait_for_service(node, GetEntityState, SERVICE_NAME_GET_ENTITY_STATE, in_timeout)
-    if not cli.service_is_ready:
+    if not cli.service_is_ready():
         node.destroy_node()
         return False
 
     cli = wait_for_service(node, SetEntityState, SERVICE_NAME_SET_ENTITY_STATE, in_timeout)
-    if not cli.service_is_ready:
+    if not cli.service_is_ready():
         node.destroy_node()
         return False
 
     cli = wait_for_service(node, Attach, SERVICE_NAME_ATTACH_ENTITY, in_timeout)
-    if not cli.service_is_ready:
+    if not cli.service_is_ready():
         node.destroy_node()
         return False
 

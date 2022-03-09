@@ -13,7 +13,7 @@ def wait_for_spawned_robot(in_robot_name, in_timeout=10.0):
     print(f'Waiting for robot [{in_robot_name}]...')
     node = rclpy.create_node(f'wait_for_{in_robot_name}')
     cli = wait_for_service(node, GetEntityState, SERVICE_NAME_GET_ENTITY_STATE, in_timeout)
-    if not cli.service_is_ready:
+    if not cli.service_is_ready():
         return False
 
     # Query entity state
@@ -38,7 +38,7 @@ def wait_for_spawned_robot(in_robot_name, in_timeout=10.0):
                 )
                 robot_pose = result.state.pose
                 assert(result.state.name == req.name)
-                is_spawned = True
+                is_spawned = result.success
                 break
     finally:
         node.destroy_node()
