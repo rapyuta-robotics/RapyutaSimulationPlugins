@@ -42,7 +42,7 @@ def remove_robot(in_robot_name, in_timeout=5.0):
     assert(len(in_robot_name) > 0)
     node = rclpy.create_node(f'spawn_{in_robot_name}')
     cli = wait_for_service(node, DeleteEntity, SERVICE_NAME_DELETE_ENTITY)
-    if not cli.service_is_ready:
+    if not cli.service_is_ready():
         return False
 
     # Prepare DeleteEntity request
@@ -72,9 +72,9 @@ class TestRobotRemove(unittest.TestCase):
         robot_name = argstr(LAUNCH_ARG_ROBOT_NAME)
 
         is_robot_found, _ = wait_for_spawned_robot(robot_name, 1.0)
-        assert(is_robot_found, f'{robot_name} is not available!')
+        assert is_robot_found, f'{robot_name} is not available!'
 
         assert remove_robot(robot_name)
         is_robot_found, _ = wait_for_spawned_robot(robot_name, 1.0)
-        assert(False == is_robot_found, f'{robot_name} failed being removed!')
+        assert False == is_robot_found, f'{robot_name} failed being removed!'
         rclpy.shutdown()
