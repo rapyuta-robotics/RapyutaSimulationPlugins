@@ -10,11 +10,11 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Templates/UniquePtr.h"
 
-// RapyutaSim
-#include "RRObjectCommon.h"
+// RapyutaSimulationPlugins
+#include "Core/RRAssetUtils.h"
+#include "Core/RRObjectCommon.h"
+#include "Core/RRTypeUtils.h"
 #include "RapyutaSimulationPlugins.h"
-#include "Tools/RRAssetUtils.h"
-#include "Tools/RRTypeUtils.h"
 
 #include "RRGameSingleton.generated.h"
 

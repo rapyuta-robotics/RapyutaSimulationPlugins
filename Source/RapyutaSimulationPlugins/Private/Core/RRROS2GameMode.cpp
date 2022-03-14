@@ -1,6 +1,6 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "RRROS2GameMode.h"
+#include "Core/RRROS2GameMode.h"
 
 // UE
 #include "HAL/PlatformMisc.h"
@@ -10,6 +10,8 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRGameState.h"
+#include "Core/RRPlayerController.h"
 #include "Tools/RRROS2ClockPublisher.h"
 #include "Tools/SimulationState.h"
 

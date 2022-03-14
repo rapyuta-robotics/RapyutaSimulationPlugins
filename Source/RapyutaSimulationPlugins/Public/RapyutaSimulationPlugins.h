@@ -6,6 +6,7 @@
 #include "Modules/ModuleManager.h"
 
 #define RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME (TEXT("RapyutaSimulationPlugins"))
+#define RAPYUTA_SIMULATION_PLUGINS_MODULE_FOLDER_NAME RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME
 class FRapyutaSimulationPluginsModule : public IModuleInterface
 {
 public:

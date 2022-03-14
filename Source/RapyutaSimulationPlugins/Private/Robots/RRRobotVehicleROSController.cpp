@@ -10,9 +10,9 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRGeneralUtils.h"
 #include "Robots/RobotVehicle.h"
 #include "Sensors/RR2DLidarComponent.h"
-#include "Tools/RRGeneralUtils.h"
 #include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
 #include "Tools/UEUtilities.h"
@@ -46,7 +46,7 @@ bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
     {
         return false;
     }
-    
+
     // OdomPublisher (with TF)
     if (bPublishOdom)
     {

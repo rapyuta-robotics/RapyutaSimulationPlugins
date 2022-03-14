@@ -1,13 +1,13 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "RRGameSingleton.h"
+#include "Core/RRGameSingleton.h"
 
 // UE
 #include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
 
 // RapyutaSim
-#include "Tools/RRTypeUtils.h"
+#include "Core/RRTypeUtils.h"
 
 TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_MODULE_NAMES = {
     {ERRResourceDataType::UE_STATIC_MESH, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
