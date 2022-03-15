@@ -64,6 +64,8 @@ enum class ERRFileType : uint8
     // 3D Description Format
     URDF,
     SDF,
+    GAZEBO_WORLD,
+    GAZEBO_YAML,
     MJCF,    // MuJoCo
     TOTAL
 };

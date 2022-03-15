@@ -34,6 +34,8 @@ const TMap<ERRFileType, const TCHAR*> URRCoreUtils::SimFileExts = {
     {ERRFileType::IMAGE_EXR, TEXT(".exr")},
     {ERRFileType::URDF, TEXT(".urdf")},
     {ERRFileType::SDF, TEXT(".sdf")},
+    {ERRFileType::GAZEBO_WORLD, TEXT(".world")},
+    {ERRFileType::GAZEBO_YAML, TEXT(".yaml")},
     {ERRFileType::MJCF, TEXT(".mjcf")},
 };
 
