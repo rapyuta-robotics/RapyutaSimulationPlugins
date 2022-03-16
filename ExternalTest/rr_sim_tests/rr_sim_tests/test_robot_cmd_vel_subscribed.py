@@ -65,6 +65,8 @@ class CmdVelPublisher(Node):
 
     def wait_for_robot_twisted(self, in_robot_name, in_robot_prev_pose, in_timeout=5.0):
         assert self._is_pub_finished
+        # Wait a while for robot to receive Twist message
+        time.sleep(1.0)
         is_robot_found, robot_pose = wait_for_spawned_robot(in_robot_name, in_timeout)
         assert is_robot_found, f'wait_for_robot_twisted(): {in_robot_name} unavailable!'
         return (robot_pose != in_robot_prev_pose)
