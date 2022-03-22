@@ -29,7 +29,6 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-
     UFUNCTION(BlueprintCallable)
     virtual bool Visible(AActor* TargetActor)
     {
@@ -87,7 +86,7 @@ public:
 #endif
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool ShowLidarRays = true;
+    bool bShowLidarRays = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool ShowLidarRayMisses = false;
@@ -129,7 +128,7 @@ protected:
     float IntensityNoiseVariance = .1f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    uint8 BWithNoise : 1;
+    uint8 bWithNoise : 1;
 
     FLinearColor InterpolateColor(float InX);
     static float GetIntensityFromDist(float InBaseIntensity, float InDistance);

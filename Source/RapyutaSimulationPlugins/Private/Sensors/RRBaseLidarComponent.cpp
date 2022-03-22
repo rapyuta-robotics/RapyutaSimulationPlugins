@@ -7,7 +7,7 @@
 
 URRBaseLidarComponent::URRBaseLidarComponent()
 {
-    BWithNoise = true;
+    bWithNoise = true;
     TopicName = TEXT("scan");
     FrameId = TEXT("base_scan");
 }
@@ -34,7 +34,7 @@ FLinearColor URRBaseLidarComponent::InterpColorFromIntensity(const float InInten
 FLinearColor URRBaseLidarComponent::InterpolateColor(float InX)
 {
     // this means that viz and data sent won't correspond, which should be ok
-    InX = InX + BWithNoise * GaussianRNGIntensity(Gen);
+    InX = InX + bWithNoise * GaussianRNGIntensity(Gen);
     return (InX > .5f) ? FLinearColor::LerpUsingHSV(ColorMid, ColorMax, 2 * InX - 1)
                        : FLinearColor::LerpUsingHSV(ColorMin, ColorMid, 2 * InX);
 }
