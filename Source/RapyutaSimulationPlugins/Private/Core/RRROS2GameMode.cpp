@@ -13,7 +13,6 @@
 #include "Core/RRGameState.h"
 #include "Core/RRPlayerController.h"
 #include "Tools/RRROS2ClockPublisher.h"
-#include "Tools/SimulationState.h"
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
 {
@@ -61,6 +60,6 @@ void ARRROS2GameMode::InitROS2()
     ClockPublisher->InitializeWithROS2(ROS2Node);
 
     // Simulation state
-    SimulationState = currentWorld->SpawnActor<ASimulationState>();
+    SimulationState = currentWorld->SpawnActor<ASimulationState>(SimulationStateClass);
     SimulationState->Init(ROS2Node);
 }

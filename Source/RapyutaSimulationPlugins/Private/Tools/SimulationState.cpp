@@ -262,8 +262,10 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
         // todo: check data.name is valid
         // todo: check same name object is exists or not.
 
-        UE_LOG(LogRapyutaCore, Warning, TEXT("Spawning %s"), *Request.xml);
+        verify(false == Request.state_name.IsEmpty());
+        UE_LOG(LogRapyutaCore, Warning, TEXT("Spawning Entity of model %s as %s"), *Request.xml, *Request.state_name);
 
+        // todo: details rationale to justify using SpawnActorDeferred
         AActor* NewEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[Request.xml], worldTransf);
         UROS2Spawnable* SpawnableComponent = NewObject<UROS2Spawnable>(NewEntity, FName("ROS2 Spawn Parameters"));
 

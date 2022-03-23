@@ -37,7 +37,7 @@ public:
 
 public:
     UFUNCTION(BlueprintCallable)
-    void Init(AROS2Node* InROS2Node);
+    virtual void Init(AROS2Node* InROS2Node);
 
     UFUNCTION(BlueprintCallable)
     void GetEntityStateSrv(UROS2GenericSrv* Service);
