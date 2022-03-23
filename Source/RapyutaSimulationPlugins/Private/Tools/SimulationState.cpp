@@ -25,9 +25,10 @@ ASimulationState::ASimulationState()
     PrimaryActorTick.bCanEverTick = true;
 }
 
-void ASimulationState::Init(AROS2Node* InROS2Node)
+void ASimulationState::Init(AROS2Node* InROS2Node, ASimulationStateData* InSimulationStateData)
 {
     ROSServiceNode = InROS2Node;
+    SimulationStateData = InSimulationStateData;
 
     // register delegates to node
     FServiceCallback GetEntityStateSrvCallback;
@@ -61,7 +62,7 @@ void ASimulationState::Init(AROS2Node* InROS2Node)
 
 void ASimulationState::AddEntity(AActor* Entity)
 {
-    SimulationStateData->Entities.AddEntity(Entity);
+    SimulationStateData->AddEntity(Entity);
 //    if (IsValid(Entity))
 //    {
 //        Entities.Emplace(Entity->GetName(), Entity);
@@ -282,6 +283,15 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
             NewEntity->Tags.Emplace(tag);
         }
         NewEntity->Rename(*Request.state_name);
+
+        ARRROS2GameMode *ros2GameMode = Cast<ARRROS2GameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+        for (APlayerController* Player : ros2GameMode->ClientControllerList)
+        {
+            if(Cast<ARRROS2PlayerController>(Player)->PlayerName == *NewEntity->GetName()) {
+                Player->Possess(Cast<APawn>(NewEntity));
+            }
+        }
 
         UGameplayStatics::FinishSpawningActor(NewEntity, worldTransf);
         AddEntity(NewEntity);

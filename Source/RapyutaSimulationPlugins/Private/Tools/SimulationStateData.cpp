@@ -18,7 +18,7 @@ void ASimulationStateData::Init() {
 //        AddEntity(actor);
 //    }
 }
-void ASimulationState::AddEntity(AActor* Entity)
+void ASimulationStateData::AddEntity(AActor* Entity)
 {
     if (IsValid(Entity))
     {

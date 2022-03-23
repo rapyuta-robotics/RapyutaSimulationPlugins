@@ -44,6 +44,7 @@ protected:
     virtual void PostLogin(APlayerController* InPlayer) override;
 
 private:
+    int numPlayers;
     void InitROS2();
 
 };

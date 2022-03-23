@@ -19,7 +19,7 @@ ARRROS2GameMode::ARRROS2GameMode()
 {
 //    ASimulationStateData* SimulationStateData = currentWorld->SpawnActor<ASimulationStateData>();
 //    GameStateClass = ASimulationStateData::StaticClass();
-    PlayerControllerClass = ARRROS2PlayerController::StaticClass();
+//    PlayerControllerClass = ARRROS2PlayerController::StaticClass();
 };
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
@@ -44,11 +44,7 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
     InitSim();
 }
 
-//APlayerController* ARRROS2GameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
-//{
-//    Super::Login(NewPlayer, InRemoteRole, Portal, Options, FUniqueNetIdRepl& UniqueId, ErrorMessage);
-//
-//}
+
 void ARRROS2GameMode::InitSim()
 {
     InitROS2();
@@ -58,6 +54,9 @@ void ARRROS2GameMode::PostLogin(APlayerController* InPlayer) {
     Super::PostLogin(InPlayer);
 
     ClientControllerList.Add(InPlayer);
+    numPlayers += 1;
+
+    Cast<ARRROS2PlayerController>(InPlayer)->Init("amr" + FString::FromInt(numPlayers-1));
 }
 
 void ARRROS2GameMode::InitROS2()

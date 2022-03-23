@@ -4,8 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
+#include "GameFramework/Actor.h"
 
 #include "SimulationStateData.generated.h"
+
+
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FActors
+{
+        GENERATED_BODY()
+
+        UPROPERTY()
+        TArray<AActor*> Actors;
+};
 
 class UROS2GenericSrv;
 

@@ -16,15 +16,17 @@
 
 #include "RRROS2PlayerController.generated.h"
 UCLASS(config=Game)
-class ARRROS2PlayerController : public APlayerController
+class RAPYUTASIMULATIONPLUGINS_API ARRROS2PlayerController : public APlayerController
 {
     GENERATED_BODY()
 
 public:
+    void Init(FString InName);
+
     ARRROS2PlayerController();
-//
-//    UPROPERTY(BlueprintReadOnly)
-//    AROS2Node* ROS2Node = nullptr;
+
+    UPROPERTY(BlueprintReadOnly)
+    AROS2Node* ROS2Node = nullptr;
 
     UPROPERTY(BlueprintReadOnly)
     URRROS2ClockPublisher* ClockPublisher = nullptr;
@@ -33,42 +35,57 @@ public:
     ASimulationState* SimulationState = nullptr;
 
     UPROPERTY(BlueprintReadWrite)
-    FString PlayerName = TEXT("amr1");
+    FString PlayerName = "";
+
+    UPROPERTY(BlueprintReadWrite)
+    FString Namespace = "";
 
 //protected:
 //    virtual void InitPlayer();
 
     UPROPERTY(Transient)
     AROS2Node* RobotROS2Node = nullptr;
+
+//    UFUNCTION(Client, Reliable)
     void InitRobotROS2Node(APawn* InPawn);
 
+    UPROPERTY()
+    FVector InitialPosition = FVector::ZeroVector;
+
+    UPROPERTY()
+    FRotator InitialOrientation = FRotator::ZeroRotator;
+
+    UPROPERTY(Transient, BlueprintReadWrite)
+    URRROS2OdomPublisher* OdomPublisher = nullptr;
+    UFUNCTION()
+    virtual bool InitPublishers(APawn* InPawn);
+
+    UFUNCTION()
+    virtual void MovementCallback(const UROS2GenericMsg* Msg);
+
+    virtual void OnPossess(APawn* InPawn) override;
+
+    virtual void OnUnPossess() override;
+
+    UFUNCTION(BlueprintCallable)
+    void SubscribeToMovementCommandTopic(const FString& InTopicName);
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bPublishOdom = true;
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bPublishOdomTf = false;
+
+//    std::random_device Rng;
+//    std::mt19937 Gen = std::mt19937{Rng()};
+//    std::normal_distribution<> GaussianRNGOdom;
 //
-//    UPROPERTY()
-//    FVector InitialPosition = FVector::ZeroVector;
+//    UPROPERTY(EditAnywhere, Category = "Noise")
+//    float OdomNoiseMean = 0.f;
 //
-//    UPROPERTY()
-//    FRotator InitialOrientation = FRotator::ZeroRotator;
+//    UPROPERTY(EditAnywhere, Category = "Noise")
+//    float OdomNoiseVariance = 1.f;
 //
-//    UPROPERTY(Transient, BlueprintReadWrite)
-//    URRROS2OdomPublisher* OdomPublisher = nullptr;
-//    UFUNCTION()
-//    virtual bool InitPublishers(APawn* InPawn);
-//
-//    UFUNCTION()
-//    virtual void MovementCallback(const UROS2GenericMsg* Msg);
-//
-//    virtual void OnPossess(APawn* InPawn) override;
-//
-//    virtual void OnUnPossess() override;
-//
-//    UFUNCTION(BlueprintCallable)
-//    void SubscribeToMovementCommandTopic(const FString& InTopicName);
-//
-//    UPROPERTY(BlueprintReadWrite)
-//    bool bPublishOdom = true;
-//
-//    UPROPERTY(BlueprintReadWrite)
-//    bool bPublishOdomTf = false;
-//private:
-//    void InitROS2();
+//    UPROPERTY(EditAnywhere, Category = "Noise")
+//    bool bWithNoise = true;
 };
