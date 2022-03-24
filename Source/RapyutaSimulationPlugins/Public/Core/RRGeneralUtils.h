@@ -3,8 +3,8 @@
 
 // UE
 #include "Engine/World.h"
-#include "TimerManager.h"
 #include "EngineUtils.h"
+#include "TimerManager.h"
 
 #include "RRGeneralUtils.generated.h"
 
@@ -24,24 +24,9 @@ public:
         World->GetTimerManager().ClearTimer(TimerHandle);
     }
 
-    //GetAllActors is slow operation.
-    static AActor* GetActorByName(UWorld* World, const FString& InName)
-    {
-        for (TActorIterator<AActor> It(World, AActor::StaticClass()); It; ++It)
-        {
-            if (InName.Equals(*It->GetName()))
-            {
-                return *It;
-            }
-        }
-
-        UE_LOG(LogTemp, Warning, TEXT("Actor named %s was not found."), *InName);
-        return nullptr;
-    }
-
     static bool GetRefTransform(const FString& RefActorName, const AActor* RefActor, FTransform& OutTransf)
     {
-        if (RefActorName.IsEmpty()) //refrence is world origin
+        if (RefActorName.IsEmpty())    // refrence is world origin
         {
             OutTransf = FTransform::Identity;
         }
@@ -67,11 +52,14 @@ public:
         return relativeTransf;
     }
 
-    static bool GetRelativeTransform(const FString& RefActorName, const AActor* RefActor, const FTransform& InTransf, FTransform& OutTransf)
+    static bool GetRelativeTransform(const FString& RefActorName,
+                                     const AActor* RefActor,
+                                     const FTransform& InTransf,
+                                     FTransform& OutTransf)
     {
         FTransform refTransf;
         bool result = GetRefTransform(RefActorName, RefActor, refTransf);
-        if(result)
+        if (result)
         {
             OutTransf = URRGeneralUtils::GetRelativeTransform(refTransf, InTransf);
         }
@@ -81,19 +69,22 @@ public:
     static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)
     {
         FTransform worldTransf;
-        
+
         FTransform::Multiply(&worldTransf, &RelativeTransf, &RefTransf);
 
         worldTransf.NormalizeRotation();
 
         return worldTransf;
     }
-    
-    static bool GetWorldTransform(const FString& RefActorName, const AActor* RefActor, const FTransform& InTransf, FTransform& OutTransf)
+
+    static bool GetWorldTransform(const FString& RefActorName,
+                                  const AActor* RefActor,
+                                  const FTransform& InTransf,
+                                  FTransform& OutTransf)
     {
         FTransform refTransf;
         bool result = GetRefTransform(RefActorName, RefActor, refTransf);
-        if(result)
+        if (result)
         {
             OutTransf = URRGeneralUtils::GetWorldTransform(refTransf, InTransf);
         }

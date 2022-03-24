@@ -256,7 +256,22 @@ public:
     UFUNCTION()
     static void RegisterActorComponent(UActorComponent* Comp);
 
-    // [FIND ACTOR BY SUBNAME] --
+    // [FIND ACTOR BY NAME/SUBNAME] --
+    // GetAllActors() is expensive
+    template<typename T>
+    static T* FindActorByName(UWorld* InWorld, const FString& InName, const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (actorItr->GetName().Equals(InName, InCaseType))
+            {
+                return *actorItr;
+            }
+        }
+        UE_LOG(LogTemp, Log, TEXT("Actor named [%s] is unavailable."), *InName);
+        return nullptr;
+    }
+
     template<typename T>
     static T* FindActorBySubname(UWorld* InWorld,
                                  const FString& InSubname,
@@ -269,6 +284,7 @@ public:
                 return *actorItr;
             }
         }
+        UE_LOG(LogTemp, Log, TEXT("Actor name containing [%s] is unavailable."), *InSubname);
         return nullptr;
     }
 

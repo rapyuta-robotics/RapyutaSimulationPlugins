@@ -57,6 +57,7 @@ public:
     UFUNCTION(BlueprintCallable)
     void AddEntity(AActor* Entity);
 
+    // BP callable thus the param could not be const&
     UFUNCTION(BlueprintCallable)
     void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
 
