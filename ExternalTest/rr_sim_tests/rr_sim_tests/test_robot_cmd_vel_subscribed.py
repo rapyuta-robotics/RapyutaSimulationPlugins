@@ -14,7 +14,7 @@ from rclpy.node import Node
 from rclpy.executors import SingleThreadedExecutor
 from geometry_msgs.msg import Twist
 
-from rr_sim_tests.utils.wait_for_spawned_robot import wait_for_spawned_robot
+from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
 import pytest
 
 TOPIC_NAME_CMD_VEL = 'cmd_vel'
@@ -67,7 +67,7 @@ class CmdVelPublisher(Node):
         assert self._is_pub_finished
         # Wait a while for robot to receive Twist message
         time.sleep(1.0)
-        is_robot_found, robot_pose = wait_for_spawned_robot(in_robot_name, in_timeout)
+        is_robot_found, robot_pose = wait_for_spawned_entity(in_robot_name, in_timeout)
         assert is_robot_found, f'wait_for_robot_twisted(): {in_robot_name} unavailable!'
         return (robot_pose != in_robot_prev_pose)
 
@@ -118,7 +118,7 @@ class TestRobotTwist(unittest.TestCase):
         # Query robot current pose
         assert(arghas(LAUNCH_ARG_ROBOT_NAME))
         robot_name = argstr(LAUNCH_ARG_ROBOT_NAME)
-        is_robot_found, robot_current_pose = wait_for_spawned_robot(robot_name)
+        is_robot_found, robot_current_pose = wait_for_spawned_entity(robot_name)
         assert is_robot_found, f'Robot named {robot_name} unavailable!'
 
         # Prepare robot twist data
