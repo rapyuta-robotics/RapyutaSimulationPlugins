@@ -74,6 +74,7 @@ UENUM()
 enum class ERRShapeType : uint8
 {
     INVALID,
+    PLANE,
     BOX,
     CYLINDER,
     SPHERE,

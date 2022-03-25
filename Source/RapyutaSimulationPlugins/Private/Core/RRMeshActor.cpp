@@ -126,6 +126,7 @@ TArray<URRStaticMeshComponent*> ARRMeshActor::CreateMeshComponentList(USceneComp
     }
     MeshCompList.Append(addedMeshCompList);
 
+#if 0    // To be confirmed
     // Base Mesh Component Configs
     if (MeshCompList.Num() > 0)
     {
@@ -141,6 +142,7 @@ TArray<URRStaticMeshComponent*> ARRMeshActor::CreateMeshComponentList(USceneComp
             SetRootComponent(BaseMeshComp);
         }
     }
+#endif
     return addedMeshCompList;
 }
 
