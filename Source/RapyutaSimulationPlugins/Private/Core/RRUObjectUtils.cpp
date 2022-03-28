@@ -142,12 +142,3 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
 
     return newActor;
 }
-
-void URRUObjectUtils::SetCameraToLookAt(UCameraComponent* InCameraComponent, const FVector& InTargetLocation)
-{
-    // Reference: UnrealEngine/Engine/Source/Runtime/UMG/Public/Components/Viewport.h - SetLookAtLocation()
-    FMatrix newCameraViewMatrix =
-        URRMathUtils::ComputeViewMatrixFromObjectToTarget(InCameraComponent->GetComponentTransform(), InTargetLocation);
-
-    InCameraComponent->SetWorldTransform(FTransform(newCameraViewMatrix.Rotator(), newCameraViewMatrix.GetOrigin()));
-}

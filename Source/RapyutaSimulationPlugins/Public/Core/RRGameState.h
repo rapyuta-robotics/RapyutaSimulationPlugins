@@ -26,28 +26,8 @@ public:
     ARRGameState();
     virtual void StartSim();
 
-    static constexpr const TCHAR* RAPYUTA_SIM_VERSION_FILE_NAME = TEXT("RapyutaSimVersion.ini");
-    UFUNCTION()
-    FString GetSimVersionFilePath() const
-    {
-        return GetSimOutputsBaseFolderPath() / RAPYUTA_SIM_VERSION_FILE_NAME;
-    }
-
     UPROPERTY(config)
     int8 SCENE_INSTANCES_NUM = 1;
-
-    UPROPERTY(config)
-    int32 RGB_RANDOMIZATION_NUM = 1;
-
-    UPROPERTY(config)
-    int32 OPERATION_BATCH_NUM = 10;
-
-    UFUNCTION()
-    uint64 GetTotalPlannedCaptureCount()
-    {
-        static const uint64 sPlannedNum = SCENE_INSTANCES_NUM * RGB_RANDOMIZATION_NUM * OPERATION_BATCH_NUM;
-        return sPlannedNum;
-    }
 
     UPROPERTY()
     ARRGameMode* GameMode = nullptr;
@@ -80,38 +60,6 @@ public:
 
     UFUNCTION()
     virtual bool HasInitialized(bool bIsLogged = false) const;
-
-    // SIM MESH ACTORS
-    UPROPERTY()
-    TArray<ARRMeshActor*> TotalMeshActors;
-
-    // SIM OUTPUTS ==
-    static constexpr const TCHAR* SIM_LOG_DATA_FILE_NAME = TEXT("RRSimLogData.db");
-    static constexpr const TCHAR* SIM_LOG_DATA_FOLDER_NAME = TEXT("RRSimLog");
-    UPROPERTY(config)
-    FString FOLDER_NAME_OUTPUTS_BASE = TEXT("OutputData");
-
-    // To faciliate testing on CI, Outputs base folder need to be cleared duing the test.
-    // Thus, it would be clearer as using [ProjectSavedDir()] as the CI default output folder.
-    UFUNCTION()
-    FString GetSimOutputsBaseFolderPath() const
-    {
-        return FPaths::IsRelative(FOLDER_NAME_OUTPUTS_BASE)
-                 ? FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / FOLDER_NAME_OUTPUTS_BASE)
-                 : FOLDER_NAME_OUTPUTS_BASE;
-    }
-
-    UFUNCTION()
-    FString GetSimLogFolderPath()
-    {
-        return GetSimOutputsBaseFolderPath() / SIM_LOG_DATA_FOLDER_NAME;
-    }
-
-    UFUNCTION()
-    FString GetSimLogFilePath()
-    {
-        return GetSimLogFolderPath() / SIM_LOG_DATA_FILE_NAME;
-    }
 
 protected:
     virtual void CreateSceneInstance(int8 InSceneInstanceId);

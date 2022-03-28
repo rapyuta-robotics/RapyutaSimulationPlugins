@@ -37,30 +37,6 @@ class RAPYUTASIMULATIONPLUGINS_API URRCoreUtils : public UBlueprintFunctionLibra
     GENERATED_BODY()
 
 public:
-    // The real number of captured RGB images having been successfully generated.
-    static uint64 SCapturedRGBImagesTotalCount;
-
-    // Increments every time the whole Sim application is restarted, or the next Play in the Editor.
-    static uint16 SLatestSessionIndex;
-
-    UFUNCTION()
-    static uint16 GetSimNextFolderSessionIndex(const FString& InBasePath, const uint16 InFolderIndex)
-    {
-        uint16 sessionIndex = 0;
-        while (FPaths::DirectoryExists(FString::Printf(TEXT("%s/%d_%d"), *InBasePath, InFolderIndex, sessionIndex)))
-        {
-            sessionIndex++;
-        }
-
-        return sessionIndex;
-    }
-
-    UFUNCTION()
-    static uint64 GetCapturedRGBImagesTotalCount()
-    {
-        return SCapturedRGBImagesTotalCount;
-    }
-
     UFUNCTION()
     static void OnWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources);
 
@@ -88,7 +64,6 @@ public:
 
     // TYPE-RELATED UTILS --
     //
-
     // STRING UTILS --
     FORCEINLINE static FString GetSanitizedXMLString(const FString& InXMLString)
     {
@@ -109,11 +84,6 @@ public:
     FORCEINLINE static std::string FToStdString(const FString& InUEString)
     {
         return std::string(TCHAR_TO_UTF8(*InUEString));
-    }
-
-    FORCEINLINE static FString ComposeRuntimeMeshResourceName(const FString& InMeshPrefix, const FString& InMeshName)
-    {
-        return FString::Printf(TEXT("%s_%s"), *InMeshPrefix, *InMeshName);
     }
 
     // SIM CONSOLE COMMANDS --
@@ -164,8 +134,6 @@ public:
 // SIM COMMAND LINE EXECUTION --
 #define CCMDLINE_ARG_FORMAT (TEXT("%s="))
     static constexpr const TCHAR* CCMDLINE_ARG_INT_PHYSX_DISPATCHER_NUM = TEXT("physxDispatcher");
-
-    UFUNCTION()
     static void ExecuteConsoleCommand(const UObject* InContextObject, const FString& InCommandText)
     {
         GetPlayerController<APlayerController>(0, InContextObject)->ConsoleCommand(InCommandText);
@@ -279,7 +247,6 @@ public:
     }
 
     // This value could be configured in [DefaultEngine.ini]
-    UFUNCTION()
     static int32 GetMaxSplitscreenPlayers(const UObject* InContextObject);
 
     template<typename TRRObject>
@@ -288,60 +255,35 @@ public:
         return (URRActorCommon::DEFAULT_SCENE_INSTANCE_ID == InSimObject->SceneInstanceId);
     }
 
-    UFUNCTION()
     static FString GetSimDefaultConfigFileName(const UObject* InContextObject)
     {
         return InContextObject->GetDefaultConfigFilename();
     }
 
-    UFUNCTION()
     static FString GetSimConfigFileName(const UObject* InContextObject)
     {
         return InContextObject->GetClass()->GetConfigName();
     }
 
-    UFUNCTION()
     static bool HasPlayerControllerListInitialized(const UObject* InContextObject, bool bIsLogged = false);
 
     // GameState & PlayerController should be able to be recognized polymorphically!
-    UFUNCTION()
     static bool HasSimInitialized(const UObject* InContextObject, bool bIsLogged = false);
-
-    UFUNCTION()
     static URRSceneInstance* GetSceneInstance(const UObject* InContextObject, int8 InSceneInstanceId);
-
-    UFUNCTION()
     static ARRSceneDirector* GetSceneDirector(const UObject* InContextObject, int8 InSceneInstanceId);
-
-    UFUNCTION()
     static FVector GetSceneInstanceLocation(int8 InSceneInstanceId);
-
-    UFUNCTION()
-    static float GetDistanceToSimSceneOrigin(int8 InSceneInstanceId, const FVector& InTargetLocation);
-
-    UFUNCTION()    // uint64 is not supported by Blueprint, so it is not possible to expose it
-    static bool HasEnoughDiskSpace(const FString& InPath, uint64 InRequiredMemorySizeInBytes);
 
     static uint32 GetNewGuid()
     {
         return GetTypeHash(FGuid::NewGuid());
     }
 
-    UFUNCTION()
-    static bool ComposeSimVersionFile();
-
-    static bool HaveAllSimSceneInstancesCompleted(ARRGameState* InGameState);
-
-    static bool ShutDownSim(const UObject* InContextObject, uint64 InSimCompletionTimeoutInSecs);
-    static void ExecuteSimQuitCommand(const UObject* InContextObject);
-
     // -------------------------------------------------------------------------------------------------------------------------
     // FILE/DIR UTILS --
     //
-    UFUNCTION(BlueprintCallable)
     static bool LoadFullFilePaths(const FString& FolderPath, TArray<FString>& OutFilePaths, const TArray<ERRFileType>& InFileTypes);
 
-    UFUNCTION() static bool CreateDirectoryIfNotExisting(const FString& DirPath)
+    static bool CreateDirectoryIfNotExisting(const FString& DirPath)
     {
         FString dirFullPath = FPaths::IsRelative(DirPath) ? FPaths::ConvertRelativePathToFull(DirPath) : DirPath;
         if (FPaths::DirectoryExists(dirFullPath))
@@ -359,8 +301,7 @@ public:
         }
     }
 
-    UFUNCTION()
-    static void VerifyDirPathAbsoluteAndExisting(const FString& InDirPath)
+    static void VerifyDirPathAbsoluteAndExist(const FString& InDirPath)
     {
         if (false == InDirPath.IsEmpty())
         {
@@ -385,13 +326,6 @@ public:
         return FPlatformTime::Seconds();
     }
 
-    // It was observed that with high polling frequency as [0.01] or sometimes [0.1] second, we got crash on AutomationTest
-    // module. Thus, [IntervalTimeInSec] as [0.5] sec is used for now.
-    static bool WaitUntilThenAct(TFunctionRef<bool()> InCond,
-                                 TFunctionRef<void()> InPassedCondAct,
-                                 float InTimeoutInSec,
-                                 float InIntervalTimeInSec = 0.5f);
-
     template<typename T>
     FORCEINLINE static FTimerHandle PlanToExecuteOnNextTick(T* InObj,
                                                             typename FTimerDelegate::TUObjectMethodDelegate<T>::FMethodPtr InMethod)
@@ -407,30 +341,6 @@ public:
     FORCEINLINE static FTimerHandle PlanToExecuteOnNextTick(UWorld* InWorld, TFunction<void()> InCallback)
     {
         return InWorld->GetTimerManager().SetTimerForNextTick(MoveTemp(InCallback));
-    }
-
-    template<typename T>
-    FORCEINLINE static void RegisterRepeatedExecution(T* InObj,
-                                                      FTimerHandle& InTimerHandle,
-                                                      typename FTimerDelegate::TUObjectMethodDelegate<T>::FMethodPtr InMethod,
-                                                      float InRate = 0.5f)
-    {
-        InObj->GetWorld()->GetTimerManager().SetTimer(InTimerHandle, InObj, InMethod, InRate, true);
-    }
-
-    template<typename T>
-    FORCEINLINE static void RegisterRepeatedExecution(T* InObj,
-                                                      FTimerHandle& InTimerHandle,
-                                                      TFunction<void()> Callback,
-                                                      float InRate = 0.5f)
-    {
-        InObj->GetWorld()->GetTimerManager().SetTimer(InTimerHandle, MoveTemp(Callback), InRate, true);
-    }
-
-    static void StopRegisteredExecution(UWorld* InWorld, FTimerHandle& InTimerHandle)
-    {
-        // Also invalidate it here-in!
-        InWorld->GetTimerManager().ClearTimer(InTimerHandle);
     }
 
     // -------------------------------------------------------------------------------------------------------------------------
@@ -451,33 +361,6 @@ public:
         }
 
         return loadedTexture;
-    }
-
-    UFUNCTION()
-    static bool IsValidBitDepth(int32 InBitDepth)
-    {
-        return (URRActorCommon::IMAGE_BIT_DEPTH_INT8 == InBitDepth) || (URRActorCommon::IMAGE_BIT_DEPTH_FLOAT16 == InBitDepth) ||
-               (URRActorCommon::IMAGE_BIT_DEPTH_FLOAT32 == InBitDepth);
-    }
-
-    template<int8 InBitDepth>
-    FORCEINLINE static void GetCompressedImageData(const ERRFileType ImageFileType,
-                                                   const FRRColorArray& InImageData,
-                                                   const FIntPoint& ImageSize,
-                                                   const int8 BitDepth,    // normally 8
-                                                   const ERGBFormat RGBFormat,
-                                                   TArray64<uint8>& OutCompressedData)
-    {
-        TSharedPtr<IImageWrapper> imageWrapper = URRCoreUtils::SImageWrappers[ImageFileType];
-        verify(imageWrapper.IsValid());
-        const auto& bitmap = InImageData.GetImageData<InBitDepth>();
-        imageWrapper->SetRaw(bitmap.GetData(), bitmap.GetAllocatedSize(), ImageSize.X, ImageSize.Y, RGBFormat, BitDepth);
-
-        // Get compressed data because uncompressed is the same fidelity, but much larger
-        // EImageCompressionQuality::Default will make the Quality as 85, which is not optimal
-        // Besides, this Quality value only matters to JPG, PNG compression is always lossless
-        // Please refer to FJpegImageWrapper, FPngImageWrapper for details
-        OutCompressedData = imageWrapper->GetCompressed(100);
     }
 
     // -------------------------------------------------------------------------------------------------------------------------

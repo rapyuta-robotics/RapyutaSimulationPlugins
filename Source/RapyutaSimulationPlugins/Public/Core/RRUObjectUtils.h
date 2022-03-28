@@ -379,6 +379,4 @@ public:
         const FString& InActorName = EMPTY_STR,
         const FTransform& InActorTransform = FTransform::Identity,
         const ESpawnActorCollisionHandlingMethod InCollisionHandlingType = ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-
-    static void SetCameraToLookAt(UCameraComponent* InCameraComponent, const FVector& InTargetLocation);
 };

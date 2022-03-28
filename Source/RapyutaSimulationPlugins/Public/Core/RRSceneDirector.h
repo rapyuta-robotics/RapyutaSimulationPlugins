@@ -20,17 +20,12 @@
 
 class ARRPlayerController;
 
-DECLARE_DELEGATE_OneParam(FOnSpawnedActorsSettled, bool /*bIsForNewOperationBatch*/);
-
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRSceneDirector : public ARRBaseActor
 {
     GENERATED_BODY()
 
 public:
-    UPROPERTY()
-    int32 OperationBatchId = 0;
-
     UPROPERTY()
     FString SceneName;
 
@@ -43,22 +38,16 @@ public:
         return bSceneInitialized;
     }
 
-    FOnSpawnedActorsSettled OnSpawnedActorsSettled;
-
     virtual bool HasOperationCompleted(bool bIsLogged = false)
     {
         if (bIsLogged)
         {
-            if (IsDataCollecting)
-            {
-                UE_LOG(LogRapyutaCore, Display, TEXT("SimModeInstance[%d] is still collecting data!"), SceneInstanceId);
-            }
-            else if (IsOperating)
+            if (IsOperating)
             {
                 UE_LOG(LogRapyutaCore, Display, TEXT("SimModeInstance[%d] is still operating!"), SceneInstanceId);
             }
         }
-        return !(IsDataCollecting || IsOperating);
+        return !IsOperating;
     }
 
 protected:
@@ -68,34 +57,10 @@ protected:
     // Start (Initialize + Run) Operation
     virtual bool InitializeOperation();
     virtual void RunOperation();
-
-    virtual void ContinueOperation(bool bIsLastOperationSuccessful, bool bContinueRandomizing)
-    {
-    }
-
-    virtual void OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhase);
     virtual void EndSceneInstance();
 
     UPROPERTY()
-    FTimerHandle DataCollectionTimerHandle;
-    // Also use this if needed: FTimerDelegate DataCollectionTimerDelegate;
-
-    UPROPERTY()
-    bool IsDataCollecting = false;
-
-    virtual void DoDataCollecting()
-    {
-        IsDataCollecting = true;
-    }
-
-    UPROPERTY()
     bool IsOperating = false;
-
-    UPROPERTY()
-    int32 OperationBatchLoopLeft = 0;
-    virtual void SpawnActors()
-    {
-    }
 
 private:
     UFUNCTION()

@@ -81,19 +81,7 @@ bool ARRSceneDirector::InitializeOperation()
 
 void ARRSceneDirector::RunOperation()
 {
-    OperationBatchLoopLeft = GameState->OPERATION_BATCH_NUM;
-    OperationBatchId = 1;
     IsOperating = true;
-
-    SpawnActors();
-}
-
-void ARRSceneDirector::OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhase)
-{
-    if (bIsFinalDataCollectingPhase)
-    {
-        IsDataCollecting = false;
-    }
 }
 
 void ARRSceneDirector::EndSceneInstance()
@@ -103,9 +91,4 @@ void ARRSceneDirector::EndSceneInstance()
     // [EndSceneInstance()] is virtual, and also wait polling for Sim's completion, thus it must be run on another thread,
     // then end the Sim in GameThread upon the waiting return.
     UE_LOG(LogRapyutaCore, Display, TEXT("SCENE INSTANCE (%d) [%s] - THE END!"), SceneInstanceId, *SceneName);
-
-    // This is also supposed to run ONCE only, thus using a static result
-    // On average, each capture take ~1 sec (including all capture types collectively),
-    // thus we take the total planned capture count as the time-out in [sec]!
-    static bool result = URRCoreUtils::ShutDownSim(GetWorld(), 2 * GameState->GetTotalPlannedCaptureCount());
 }

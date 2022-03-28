@@ -152,7 +152,7 @@ void ARRGameMode::StartSim()
 {
     // 1- LOAD [ImageWrapperModule]
     // This must be loaded this early for possible external image-based texture loading at Sim initialization!
-    URRCoreUtils::LoadImageWrapperModule();
+    // Todo
 
     // 2- LOAD SIM STATIC GLOBAL RESOURCES --
     URRGameSingleton::Get()->InitializeResources();
