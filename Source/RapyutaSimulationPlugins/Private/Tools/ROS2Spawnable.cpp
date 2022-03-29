@@ -5,11 +5,11 @@
 // rclUE
 #include "Srvs/ROS2SpawnEntitySrv.h"
 
-void UROS2Spawnable::InitializeParameters(const FROSSpawnEntity_Request& InRequest)
+void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityRequest& InRequest)
 {
-    SetName(InRequest.state_name);
-    UE_LOG(LogTemp, Warning, TEXT("Pruning / from recieved namespace %s, namespace in UE4 will be set as: %s"), *InRequest.robot_namespace, *InRequest.robot_namespace.Replace(TEXT("/"),TEXT("")));
-    SetNamespace(InRequest.robot_namespace.Replace(TEXT("/"),TEXT("")));
+    SetName(InRequest.StateName);
+    UE_LOG(LogTemp, Warning, TEXT("Pruning / from recieved namespace %s, namespace in UE4 will be set as: %s"), *InRequest.RobotNamespace, *InRequest.RobotNamespace.Replace(TEXT("/"),TEXT("")));
+    SetNamespace(InRequest.RobotNamespace.Replace(TEXT("/"),TEXT("")));
 }
 
 void UROS2Spawnable::SetName(const FString& InName)

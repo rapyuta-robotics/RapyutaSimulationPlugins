@@ -23,7 +23,7 @@ public:
 
 public:
     UFUNCTION(BlueprintCallable)
-    virtual void InitializeParameters(const FROSSpawnEntity_Request& InRequest);
+    virtual void InitializeParameters(const FROSSpawnEntityRequest& InRequest);
 
     UFUNCTION(BlueprintCallable)
     virtual void SetName(const FString& InName);
