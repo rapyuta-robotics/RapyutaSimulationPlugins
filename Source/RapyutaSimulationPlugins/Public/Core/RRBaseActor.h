@@ -21,7 +21,7 @@ class ARRPlayerController;
  * - Be assigned a sim mode instance id
  * - Provide accessible handles to the common Game framework objects (GameInstance, GameMode, GameState) and
  * the corresponding [ActorCommon] of the Sim Mode instance it belongs to.
- * - Does not necessarily has a USceneComponent as Root!
+ * - Does not necessarily have a USceneComponent, which is only required for spatially wise or mesh-based actors, as Root!
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRBaseActor : public APawn
