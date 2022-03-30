@@ -287,12 +287,15 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
             UGameplayStatics::FinishSpawningActor(newEntity, worldTransf);
             AddEntity(newEntity);
 
-            UE_LOG(LogRapyutaCore, Warning, TEXT("New Spawned Entity Name: %s"), *newEntity->GetName());
+            Response.StatusMessage = FString::Printf(TEXT("Newly spawned Entity: %s"), *newEntity->GetName());
+            UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *Response.StatusMessage);
         }
         else
         {
             Response.bSuccess = false;
-            UE_LOG(LogRapyutaCore, Error, TEXT("Entity spawning failed - [%s] given name actor already exists!"), *entityName);
+            Response.StatusMessage =
+                FString::Printf(TEXT("Entity spawning failed - [%s] given name actor already exists!"), *entityName);
+            UE_LOG(LogRapyutaCore, Error, TEXT("%s"), Response.StatusMessage);
         }
     }
 
