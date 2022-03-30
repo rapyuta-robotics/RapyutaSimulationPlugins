@@ -164,10 +164,10 @@ public:
     }
 
     template<typename T>
-    static FORCEINLINE constexpr bool ParseParams(const FString& InParams,
-                                                  const TCHAR* InArgName,
-                                                  T& OutArgValue,
-                                                  bool bIsLogged = false)
+    static FORCEINLINE constexpr bool ParseCommandLineParams(const FString& InParams,
+                                                             const TCHAR* InArgName,
+                                                             T& OutArgValue,
+                                                             bool bIsLogged = false)
     {
         bool bResult = false;
         if constexpr (TIsSame<T, bool>::Value)

@@ -15,7 +15,6 @@
 class ARRGameMode;
 class URRGameInstance;
 class ARRPlayerController;
-class ARRMeshActor;
 
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRGameState : public AGameState

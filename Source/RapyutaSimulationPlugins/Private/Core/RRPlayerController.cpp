@@ -26,10 +26,10 @@ void ARRPlayerController::BeginPlay()
     GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
     check(GameMode);
 
-    GameState = Cast<ARRGameState>(UGameplayStatics::GetGameState(this));
+    GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
     check(GameState);
 
-    GameInstance = Cast<URRGameInstance>(UGameplayStatics::GetGameInstance(this));
+    GameInstance = URRCoreUtils::GetGameInstance<URRGameInstance>(this);
     check(GameInstance);
 
     // [Initialize()] is virtual, thus need to be run AFTER but OUTSIDE of [BeginPlay()]

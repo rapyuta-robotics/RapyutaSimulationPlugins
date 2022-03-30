@@ -13,7 +13,6 @@
 
 #include "RRUObjectUtils.generated.h"
 
-class ARRMeshActor;
 class URRStaticMeshComponent;
 
 UCLASS()

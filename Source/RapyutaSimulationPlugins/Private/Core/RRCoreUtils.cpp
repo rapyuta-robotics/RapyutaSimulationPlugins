@@ -29,7 +29,7 @@ const TMap<ERRFileType, const TCHAR*> URRCoreUtils::SimFileExts = {
     {ERRFileType::URDF, TEXT(".urdf")},
     {ERRFileType::SDF, TEXT(".sdf")},
     {ERRFileType::GAZEBO_WORLD, TEXT(".world")},
-    {ERRFileType::GAZEBO_YAML, TEXT(".yaml")},
+    {ERRFileType::YAML, TEXT(".yaml")},
     {ERRFileType::MJCF, TEXT(".mjcf")},
 };
 

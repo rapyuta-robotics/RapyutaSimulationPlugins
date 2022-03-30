@@ -295,7 +295,7 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
             Response.bSuccess = false;
             Response.StatusMessage =
                 FString::Printf(TEXT("Entity spawning failed - [%s] given name actor already exists!"), *entityName);
-            UE_LOG(LogRapyutaCore, Error, TEXT("%s"), Response.StatusMessage);
+            UE_LOG(LogRapyutaCore, Error, TEXT("%s"), *Response.StatusMessage);
         }
     }
 

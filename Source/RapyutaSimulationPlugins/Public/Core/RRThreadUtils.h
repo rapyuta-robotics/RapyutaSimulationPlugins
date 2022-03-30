@@ -26,19 +26,4 @@ public:
         auto& ThreadContext = FUObjectThreadContext::Get();
         return (ThreadContext.IsInConstructor > 0);
     }
-
-    static void Sleep(float Seconds)
-    {
-        FPlatformProcess::Sleep(Seconds);
-    }
-
-    static uint32 GetCurrentProcessId()
-    {
-        return FPlatformProcess::GetCurrentProcessId();
-    }
-
-    static uint32 GetCurrentThreadId()
-    {
-        return FPlatformTLS::GetCurrentThreadId();
-    }
 };
