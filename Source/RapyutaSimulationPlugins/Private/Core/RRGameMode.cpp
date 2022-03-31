@@ -101,7 +101,6 @@ void ARRGameMode::ConfigureSimInPlay()
         gameSettings->ApplyResolutionSettings(false);
     }
 
-    URRCoreUtils::ExecuteConsoleCommand(this, URRCoreUtils::CMD_RHI_ENABLE_GPU_CAPTURE_OPTIONS);
     URRCoreUtils::ExecuteConsoleCommand(this, URRCoreUtils::CMD_AO_USE_HISTORY_DISABLED);
 
     for (auto& moduleNames : URRGameSingleton::SASSET_OWNING_MODULE_NAMES)
