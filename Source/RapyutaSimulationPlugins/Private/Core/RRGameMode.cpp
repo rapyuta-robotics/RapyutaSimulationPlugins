@@ -11,7 +11,6 @@
 #include "Core/RRGameInstance.h"
 #include "Core/RRGameSingleton.h"
 #include "Core/RRGameState.h"
-#include "Core/RRGeneralUtils.h"
 #include "Core/RRPlayerController.h"
 #include "Tools/RRROS2ClockPublisher.h"
 
@@ -172,12 +171,12 @@ bool ARRGameMode::TryStartingSim()
     // !NOTE: This method was scheduled to be run by BeginPlay()
     // 1 - WAIT FOR RESOURCE LOADING, in prep for Sim mode initialization
     UWorld* world = GetWorld();
-    bool bResult = URRGeneralUtils::CheckWithTimeOut(
+    bool bResult = URRCoreUtils::CheckWithTimeOut(
         []() { return URRGameSingleton::Get()->HaveAllResourcesBeenLoaded(); },
         [this, world]()
         {
             // Clear the timer to avoid repeated call to the method
-            URRGeneralUtils::StopRegisteredTimer(world, OwnTimerHandle);
+            URRCoreUtils::StopRegisteredTimer(world, OwnTimerHandle);
             UE_LOG(LogRapyutaCore, Fatal, TEXT("[ARRGameMode] DYNAMIC RESOURCES LOADING TIMEOUT -> SHUTTING DOWN THE SIM..."))
         },
         sBeginTime,
@@ -189,7 +188,7 @@ bool ARRGameMode::TryStartingSim()
         return false;
     }
     // Clear the timer to avoid repeated call to the method
-    URRGeneralUtils::StopRegisteredTimer(world, OwnTimerHandle);
+    URRCoreUtils::StopRegisteredTimer(world, OwnTimerHandle);
 
     URRCoreUtils::ScreenMsg(FColor::Yellow, TEXT("ALL DYNAMIC RESOURCES LOADED!"), 10.f);
     UE_LOG(LogRapyutaCore,

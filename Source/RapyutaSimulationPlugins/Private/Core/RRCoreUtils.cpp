@@ -101,6 +101,9 @@ FVector URRCoreUtils::GetSceneInstanceLocation(int8 InSceneInstanceId)
     return URRActorCommon::GetActorCommon(InSceneInstanceId)->SceneInstanceLocation;
 }
 
+// -------------------------------------------------------------------------------------------------------------------------
+// FILE/DIR UTILS --
+//
 bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
                                      TArray<FString>& OutFilePaths,
                                      const TArray<ERRFileType>& InFileTypes)
@@ -135,4 +138,25 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
         UE_LOG(LogRapyutaCore, Error, TEXT("[%s] Directory NOT exist!"), *FPaths::ConvertRelativePathToFull(InFolderPath));
     }
     return result;
+}
+
+// -------------------------------------------------------------------------------------------------------------------------
+// TIMER UTILS --
+//
+bool URRCoreUtils::CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
+                                    const TFunctionRef<void()>& InAction,
+                                    const FDateTime& InBeginTime,
+                                    float InTimeoutInSec)
+{
+    if (InCondition())
+    {
+        return true;
+    }
+
+    double elapsed_time = FTimespan(FDateTime::UtcNow() - InBeginTime).GetTotalSeconds();
+    if (elapsed_time > InTimeoutInSec)
+    {
+        InAction();
+    }
+    return false;
 }

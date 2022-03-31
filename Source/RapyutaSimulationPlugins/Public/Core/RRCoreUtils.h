@@ -326,6 +326,17 @@ public:
         return FPlatformTime::Seconds();
     }
 
+    static bool CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
+                                 const TFunctionRef<void()>& InAction,
+                                 const FDateTime& InBeginTime,
+                                 float InTimeoutInSec);
+
+    static void StopRegisteredTimer(UWorld* InWorld, FTimerHandle& InTimerHandle)
+    {
+        // Also invalidate the timer here-in!
+        InWorld->GetTimerManager().ClearTimer(InTimerHandle);
+    }
+
     template<typename T>
     FORCEINLINE static FTimerHandle PlanToExecuteOnNextTick(T* InObj,
                                                             typename FTimerDelegate::TUObjectMethodDelegate<T>::FMethodPtr InMethod)

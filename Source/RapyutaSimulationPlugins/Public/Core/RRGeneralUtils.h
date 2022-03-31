@@ -13,17 +13,6 @@ class RAPYUTASIMULATIONPLUGINS_API URRGeneralUtils : public UBlueprintFunctionLi
 {
     GENERATED_BODY()
 public:
-    static bool CheckWithTimeOut(const TFunctionRef<bool()>& Condition,
-                                 const TFunctionRef<void()>& Action,
-                                 const FDateTime& BeginTime,
-                                 float TimeoutInSec);
-
-    static void StopRegisteredTimer(UWorld* World, FTimerHandle& TimerHandle)
-    {
-        // Also invalidate the timer here-in!
-        World->GetTimerManager().ClearTimer(TimerHandle);
-    }
-
     static bool GetRefTransform(const FString& RefActorName, const AActor* RefActor, FTransform& OutTransf)
     {
         if (RefActorName.IsEmpty())    // refrence is world origin
