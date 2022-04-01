@@ -15,7 +15,7 @@
 #include "Sensors/RR2DLidarComponent.h"
 #include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
-#include "Tools/UEUtilities.h"
+#include "Core/RRConversionUtils.h"
 
 void ARRRobotVehicleROSController::InitRobotROS2Node(APawn* InPawn)
 {

@@ -16,10 +16,4 @@ UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRMathUtils : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
-
-public:
-    FORCEINLINE static FVector ConvertHandedness(const FVector& InLocation)
-    {
-        return FVector(InLocation.X, -InLocation.Y, InLocation.Z);
-    }
 };
