@@ -106,7 +106,6 @@ void ARRMeshActor::SetCustomDepthEnabled(bool bIsCustomDepthEnabled)
         meshComp->SetRenderCustomDepth(bIsCustomDepthEnabled);
     }
 }
-
 bool ARRMeshActor::IsCustomDepthEnabled() const
 {
     for (const auto& meshComp : MeshCompList)
@@ -144,7 +143,7 @@ void ARRMeshActor::DeclareFullCreation(bool bInCreationResult)
         UE_LOG(LogRapyutaCore, Error, TEXT("[%s] MESH ACTOR CREATION FAILED!"), *GetName());
     }
 
-    // (NOTE) Since [ProcMeshComp] also created a default material instance once mesh section is built,
+    // (NOTE) Since [ProcMeshComp] also created default material instance once mesh section is created,
     // [ActorInfo]'s Override materials could only be set here once the full creation is done.
     if (ActorInfo.IsValid())
     {
@@ -158,12 +157,9 @@ void ARRMeshActor::DeclareFullCreation(bool bInCreationResult)
     }
 
     // SIGNAL [MESH ACTOR]
-    ActorCommon->OnMeshActorFullyCreated.ExecuteIfBound(
-        bInCreationResult, this, ActorInfo.IsValid() ? ActorInfo->EntityModelName : FString());
+    ActorCommon->OnMeshActorFullyCreated.ExecuteIfBound(bInCreationResult, this);
 
 #if RAPYUTA_SIM_VISUAL_DEBUG
-    FVector actorCenter, actorExtent;
-    GetActorBounds(false, actorCenter, actorExtent);
-    DrawDebugBox(GetWorld(), actorCenter, actorExtent, FColor::Yellow, false, 2.f, 0, 2.f);
+    URRUObjectUtils::DrawActorBoundingBox(this);
 #endif
 }

@@ -66,6 +66,18 @@ public:
         }
     }
 
+    template<typename TFunc, typename... TArgs>
+    static void DoTaskInGameThreadLater(TFunc&& InTaskInGameThread, float InWaitingTime)
+    {
+        DoAsyncTaskInThread<void>(
+            [InWaitingTime]()
+            {
+                // Wait for the physics to complete the computation given earlier vel cmds
+                FPlatformProcess::Sleep(InWaitingTime);
+            },
+            [InTaskInGameThread = Forward<TFunc>(InTaskInGameThread)]() { DoTaskInGameThread(InTaskInGameThread); });
+    }
+
     template<typename TResult>
     static auto DoAsyncTaskInThread(TFunction<TResult()> InTask,
                                     TFunction<void()> InCompletionCallback,
@@ -81,5 +93,21 @@ public:
             InExecutionThread,
             MoveTemp(InTask),
             TUniqueFunction<void()>([InCompletionCallback = MoveTemp(InCompletionCallback)]() { InCompletionCallback(); }));
+    }
+    template<typename TResult>
+    static auto AddAsyncTaskInThreadPool(FRRAsyncJob& OutAsyncJob,
+                                         const uint64& InCurrentCaptureBatchId,
+                                         TFunction<TResult()> InTask,
+                                         TFunction<void()> InCompletionCallback)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogTemp,
+               Warning,
+               TEXT("[%ld:%s] ASYNC JOB NUM: %d"),
+               InCurrentCaptureBatchId,
+               *OutAsyncJob.JobName,
+               OutAsyncJob.GetTasksNum());
+#endif
+        OutAsyncJob.AddAsyncTask(InCurrentCaptureBatchId, DoAsyncTaskInThread(MoveTemp(InTask), MoveTemp(InCompletionCallback)));
     }
 };

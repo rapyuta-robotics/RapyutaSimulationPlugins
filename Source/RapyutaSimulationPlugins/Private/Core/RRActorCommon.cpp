@@ -5,6 +5,7 @@
 // UE
 
 // RapyutaSimulationPlugins
+#include "Core/RRCamera.h"
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameMode.h"
 #include "Core/RRGameSingleton.h"
@@ -73,6 +74,7 @@ FRRActorSpawnInfo::FRRActorSpawnInfo()
     bIsPhysicsEnabled = true;
     bIsCollisionEnabled = true;
     bIsSelfCollision = false;
+    bIsDataSynthEntity = false;
 }
 
 FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
@@ -96,6 +98,7 @@ FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
 {
     bIsTickEnabled = false;
     bIsSelfCollision = false;
+    bIsDataSynthEntity = false;
 }
 
 void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
@@ -110,10 +113,10 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
 {
     EntityModelName = InEntityModelName;
     UniqueName = InUniqueName;
-
+    ActorTransform = InActorTransform;
+    MeshRelTransformList = InMeshRelTransformList;
     MeshUniqueNameList = InMeshUniqueNameList;
     MeshUniqueNameList.Remove(EMPTY_STR);
-    MeshRelTransformList = InMeshRelTransformList;
 
     // Even if this actor has mesh content, it could use the [StaticMesh]'s built-in materials.
     // Thus, [MaterialNameList], which is configured to be passed in at [ARRMeshActor] spawning,
@@ -126,6 +129,7 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
     bIsCollisionEnabled = bInIsCollisionEnabled;
     bIsTickEnabled = false;
     bIsSelfCollision = false;
+    bIsDataSynthEntity = false;
 }
 
 // ===================================================================================================================================
@@ -199,10 +203,29 @@ void URRActorCommon::SetupEnvironment()
         MainEnvironment = URRUObjectUtils::FindEnvironmentActor(currentWorld);
         // Not all maps has MainEnvironment setup
     }
+
+    // Spawn MainCamera
+    MainCamera =
+        Cast<ARRCamera>(URRUObjectUtils::SpawnSimActor(GetWorld(),
+                                                       SceneInstanceId,
+                                                       ARRCamera::StaticClass(),
+                                                       TEXT("RapyutaCamera"),
+                                                       FString::Printf(TEXT("%d_MainCamera"), SceneInstanceId),
+                                                       FTransform(SceneInstanceLocation),
+                                                       ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn));
+    verify(MainCamera);
 }
 
 bool URRActorCommon::HasInitialized(bool bIsLogged) const
 {
+    if (!MainCamera)
+    {
+        if (bIsLogged)
+        {
+            UE_LOG(LogRapyutaCore, Display, TEXT("[URRActorCommon]:: MainCamera is NULL!"))
+        }
+        return false;
+    }
     return true;
 }
 

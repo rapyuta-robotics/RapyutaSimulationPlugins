@@ -35,6 +35,13 @@ bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
     MeshUniqueName = FPaths::GetBaseFilename(InMeshFileName);
     const bool bIsMeshAlreadyLoaded = FRRMeshData::IsMeshDataAvailable(MeshUniqueName);
 
+    ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
+    if (ownerActor->GameMode->IsDataSynthSimType() && ownerActor->IsDataSynthEntity())
+    {
+        // CustomDepthStencilValue
+        SetCustomDepthStencilValue(URRActorCommon::GenerateUniqueDepthStencilValue());
+    }
+
     ShapeType = InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_PLANE)    ? ERRShapeType::PLANE
               : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CUBE)     ? ERRShapeType::BOX
               : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CYLINDER) ? ERRShapeType::CYLINDER

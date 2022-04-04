@@ -13,6 +13,13 @@
 #include "Core/RRThreadUtils.h"
 #include "Core/RRUObjectUtils.h"
 
+ARRSceneDirector::ARRSceneDirector()
+{
+    bSceneInitialized = false;
+    bIsDataCollecting = false;
+    bIsOperating = false;
+}
+
 void ARRSceneDirector::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
@@ -71,6 +78,11 @@ bool ARRSceneDirector::InitializeOperation()
     // Plugin common objects (which should be valid only after Sim has initialized) --
     ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
 
+    // Camera
+    MainCamera = ActorCommon->MainCamera;
+    verify(MainCamera);
+
+    // PostProcessVolume
     MainPostProcessVolume = Cast<APostProcessVolume>(URRUObjectUtils::FindPostProcessVolume(GetWorld()));
 
     // Plan to run the main operation after Initializing is finished, in the next tick --
@@ -81,14 +93,52 @@ bool ARRSceneDirector::InitializeOperation()
 
 void ARRSceneDirector::RunOperation()
 {
-    IsOperating = true;
+    OperationBatchLoopLeft = GameState->OPERATION_BATCHES_NUM;
+    OperationBatchId = 1;
+    bIsOperating = true;
+
+    verify(SpawnActors());
+}
+
+bool ARRSceneDirector::HasOperationCompleted(bool bIsLogged)
+{
+    if (bIsLogged)
+    {
+        if (bIsDataCollecting)
+        {
+            UE_LOG(LogRapyutaCore, Display, TEXT("SceneInstance[%d] is still collecting data!"), SceneInstanceId);
+        }
+        else if (bIsOperating)
+        {
+            UE_LOG(LogRapyutaCore, Display, TEXT("SceneInstance[%d] is still operating!"), SceneInstanceId);
+        }
+    }
+    return !(bIsDataCollecting || bIsOperating);
+}
+
+void ARRSceneDirector::OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhase)
+{
+    if (bIsFinalDataCollectingPhase)
+    {
+        bIsDataCollecting = false;
+    }
+}
+
+void ARRSceneDirector::ResetScene()
+{
+    GameState->SetAllEntitiesActivated(false);
 }
 
 void ARRSceneDirector::EndSceneInstance()
 {
-    IsOperating = false;
+    bIsOperating = false;
 
     // [EndSceneInstance()] is virtual, and also wait polling for Sim's completion, thus it must be run on another thread,
     // then end the Sim in GameThread upon the waiting return.
-    UE_LOG(LogRapyutaCore, Display, TEXT("SCENE INSTANCE (%d) [%s] - THE END!"), SceneInstanceId, *SceneName);
+    UE_LOG(LogRapyutaCore,
+           Display,
+           TEXT("SCENE INSTANCE (%d) [%s] - Still collecting data %d - THE END!"),
+           SceneInstanceId,
+           *SceneName,
+           bIsDataCollecting);
 }

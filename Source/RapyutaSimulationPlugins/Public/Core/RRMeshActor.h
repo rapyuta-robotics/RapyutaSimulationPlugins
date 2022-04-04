@@ -16,7 +16,6 @@
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRMeshActor.generated.h"
-
 /**
  * @brief Mesh actor.
  * 
@@ -57,6 +56,9 @@ public:
 
     UPROPERTY(VisibleAnywhere)
     UMeshComponent* BaseMeshComp = nullptr;
+
+    UPROPERTY(VisibleAnywhere)
+    TArray<ARRMeshActor*> PartnerList;
 
     virtual void DeclareFullCreation(bool bInCreationResult);
 
@@ -170,11 +172,13 @@ public:
 
     FORCEINLINE void SetActivated(bool bInIsActivated)
     {
+#if RAPYUTA_SIM_VISUAL_DEBUG
         // Visible/Invisibile
         SetActorHiddenInGame(!bInIsActivated);
 
         // RenderCustomDepth
         SetCustomDepthEnabled(bInIsActivated);
+#endif
 
         // Then teleport itself to a camera-blind location if being deactivated,
         // so when it get activated back, it would not happen to appear at an unintended pose
@@ -185,6 +189,7 @@ public:
     }
 
 protected:
+
     UPROPERTY(VisibleAnywhere)
     uint8 bLastMeshCreationResult : 1;
 

@@ -158,3 +158,34 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
         Data.Reset();
     }
 };
+
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
+{
+    GENERATED_BODY()
+    UPROPERTY(VisibleAnywhere)
+    FString Name;
+    UPROPERTY(VisibleAnywhere)
+    FLinearColor Color = FLinearColor::Transparent;
+    UPROPERTY(VisibleAnywhere)
+    FString AlbedoTextureName;
+    UPROPERTY(VisibleAnywhere)
+    FString MaskTextureName;
+    UPROPERTY(VisibleAnywhere)
+    FLinearColor ColorAlbedo = FLinearColor::Transparent;
+    UPROPERTY(VisibleAnywhere)
+    FString ORMTextureName;
+    UPROPERTY(VisibleAnywhere)
+    FString NormalTextureName;
+
+    void PrintSelf() const
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Material: %s"), *Name);
+        UE_LOG(LogTemp, Display, TEXT("- Color: %s"), *Color.ToString());
+        UE_LOG(LogTemp, Display, TEXT("- MaskColor: %s"), *ColorAlbedo.ToString());
+        UE_LOG(LogTemp, Display, TEXT("- AlbedoTextureName: %s"), *AlbedoTextureName);
+        UE_LOG(LogTemp, Display, TEXT("- MaskTextureName: %s"), *MaskTextureName);
+        UE_LOG(LogTemp, Display, TEXT("- ORMTextureName: %s"), *ORMTextureName);
+        UE_LOG(LogTemp, Display, TEXT("- NormalTextureName: %s"), *NormalTextureName);
+    }
+};

@@ -24,7 +24,7 @@ class URRGameInstance;
 UENUM()
 enum class ERRSimType : uint8
 {
-    DEFAULT = 0x00,
+    NONE = 0x00,
     DATA_SYNTH = 0x01,
     ROBOT_SIM = 0x02
 };
@@ -43,13 +43,16 @@ public:
     static constexpr int32 SIM_START_TIMEOUT_MINS = 2;
     static constexpr int32 SIM_START_TIMEOUT_SECS = 60 * SIM_START_TIMEOUT_MINS;
 
-    UPROPERTY(config)
+    UPROPERTY()
     ERRSimType SimType = ERRSimType::ROBOT_SIM;
 
-    UFUNCTION()
     FString GetSimTypeName() const
     {
         return URRTypeUtils::GetEnumValueAsString(TEXT("ERRSimType"), SimType);
+    }
+    bool IsDataSynthSimType() const
+    {
+        return (static_cast<uint8>(ERRSimType::DATA_SYNTH) & static_cast<uint8>(SimType));
     }
 
     UPROPERTY()
@@ -65,10 +68,8 @@ public:
      */
     virtual void StartPlay() override;
 
-    UFUNCTION()
-    void PrintSimConfig() const;
-    UFUNCTION()
-    void PrintUEPreprocessors();
+    virtual void PrintSimConfig() const;
+    virtual void PrintUEPreprocessors() const;
 
     virtual void ConfigureSimInPlay();
 
@@ -81,9 +82,6 @@ public:
      *  asynchronous resource loading, could only run after this [ARRGameState::BeginPlay()] ends!
      */ 
     void StartSim();
-
-    UPROPERTY(Config)
-    FIntPoint CaptureResolution = FIntPoint(1024, 1024);
 
     UPROPERTY(config)
     bool bBenchmark = true;

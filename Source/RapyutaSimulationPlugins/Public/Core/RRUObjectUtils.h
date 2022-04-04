@@ -516,8 +516,27 @@ public:
         const FTransform& InActorTransform = FTransform::Identity,
         const ESpawnActorCollisionHandlingMethod InCollisionHandlingType = ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
+    static FVector GetActorExtent(AActor* InActor, bool bOnlyCollidingComponents = true, bool bIncludeFromChildActors = false)
+    {
+        FVector actorOrigin, actorExtent;
+        InActor->GetActorBounds(bOnlyCollidingComponents, actorOrigin, actorExtent, bIncludeFromChildActors);
+        return actorExtent;
+    }
+
+    static FVector GetActorSize(AActor* InActor, bool bOnlyCollidingComponents = true, bool bIncludeFromChildActors = false)
+    {
+        return 2.f * GetActorExtent(InActor, bOnlyCollidingComponents, bIncludeFromChildActors);
+    }
+
+    static void DrawActorBoundingBox(AActor* InActor)
+    {
+        FVector actorCenter, actorExtent;
+        InActor->GetActorBounds(false, actorCenter, actorExtent);
+        DrawDebugBox(InActor->GetWorld(), actorCenter, actorExtent, FColor::Yellow, false, 2.f, 0, 2.f);
+    }
+
     template<typename T>
-    static FVector GetActorGroupCenter(const TArray<T*>& InActors)
+    static FVector GetActorsGroupCenter(const TArray<T*>& InActors)
     {
         FVector sumLocation = FVector::ZeroVector;
         for (const auto& actor : InActors)
@@ -531,7 +550,7 @@ public:
     static void HuddleActors(const TArray<T*>& InActors)
     {
         // (NOTE) Actors should be not touching the floor so they could sweep
-        const FVector center = URRUObjectUtils::GetActorGroupCenter(InActors);
+        const FVector center = URRUObjectUtils::GetActorsGroupCenter(InActors);
         const auto actorsNum = InActors.Num();
         const auto actorsNumHalf = FMath::CeilToInt(0.5f * actorsNum);
         for (auto i = actorsNumHalf; i < actorsNum; ++i)
@@ -554,4 +573,5 @@ public:
     static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                     int32 InMaterialIndex,
                                                                     const FString& InMaterialInterfaceName);
+    static bool ApplyMeshActorMaterialProps(ARRMeshActor* InActor, const FRRMaterialProperty& InMaterialInfo);
 };

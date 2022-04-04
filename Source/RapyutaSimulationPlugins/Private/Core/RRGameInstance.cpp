@@ -38,6 +38,7 @@ void URRGameInstance::Init()
 {
     UE_LOG(LogRapyutaCore, Display, TEXT("URRGameInstance: INIT!"))
     Super::Init();
+    URRMathUtils::InitializeRandomStream();
 }
 
 void URRGameInstance::LoadComplete(const float InLoadTime, const FString& InMapName)

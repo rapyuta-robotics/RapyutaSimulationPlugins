@@ -6,6 +6,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRBaseActor.h"
+#include "Core/RRGameSingleton.h"
 #include "Core/RRMathUtils.h"
 
 void URRUObjectUtils::SetupActorTick(AActor* InActor, bool bIsTickEnabled, float InTickInterval)
@@ -131,7 +132,7 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
     verify(newActor);
     // This is set in ctor
     verify(newActor->SceneInstanceId == InSceneInstanceId);
-    newActor->EntityModelName = InEntityModelName;
+    newActor->SetEntityModelName(InEntityModelName);
 
 #if WITH_EDITOR
     // [newObjectActor] ActorUniqueName is set inside the CTOR
@@ -198,4 +199,48 @@ UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshC
     const FString& dynamicMaterialName = FString::Printf(TEXT("%s%s"), *InMeshComp->GetName(), *InMaterialInterfaceName);
     return InMeshComp->CreateDynamicMaterialInstance(
         InMaterialIndex, URRGameSingleton::Get()->GetMaterial(InMaterialInterfaceName), FName(*dynamicMaterialName));
+}
+
+
+UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
+                                                                          int32 InMaterialIndex,
+                                                                          const FString& InMaterialInterfaceName)
+{
+    const FString& dynamicMaterialName = FString::Printf(TEXT("%s%s"), *InMeshComp->GetName(), *InMaterialInterfaceName);
+    return InMeshComp->CreateDynamicMaterialInstance(
+        InMaterialIndex, URRGameSingleton::Get()->GetMaterial(InMaterialInterfaceName), FName(*dynamicMaterialName));
+}
+
+bool URRUObjectUtils::ApplyMeshActorMaterialProps(ARRMeshActor* InMeshActor, const FRRMaterialProperty& InMaterialInfo)
+{
+    UMaterialInstanceDynamic* baseMaterial = Cast<UMaterialInstanceDynamic>(InMeshActor->BaseMeshComp->GetMaterial(0));
+    if (baseMaterial)
+    {
+        URRGameSingleton* gameSingleton = URRGameSingleton::Get();
+        if (false == InMaterialInfo.AlbedoTextureName.IsEmpty())
+        {
+            baseMaterial->SetTextureParameterValue(TEXT("AlbedoTexture"),
+                                                   gameSingleton->GetTexture(InMaterialInfo.AlbedoTextureName));
+        }
+        if (false == InMaterialInfo.ORMTextureName.IsEmpty())
+        {
+            baseMaterial->SetTextureParameterValue(TEXT("MergeMapInput"), gameSingleton->GetTexture(InMaterialInfo.ORMTextureName));
+        }
+        if (false == InMaterialInfo.NormalTextureName.IsEmpty())
+        {
+            baseMaterial->SetTextureParameterValue(TEXT("MainNormalInput"),
+                                                   gameSingleton->GetTexture(InMaterialInfo.NormalTextureName));
+        }
+        if (false == InMaterialInfo.MaskTextureName.IsEmpty())
+        {
+            baseMaterial->SetTextureParameterValue(TEXT("MaskSelection"),
+                                                   gameSingleton->GetTexture(InMaterialInfo.MaskTextureName));
+        }
+        if (FLinearColor::Transparent != InMaterialInfo.ColorAlbedo)
+        {
+            baseMaterial->SetVectorParameterValue(TEXT("ColorAlbedo"), InMaterialInfo.ColorAlbedo);
+        }
+        return true;
+    }
+    return false;
 }

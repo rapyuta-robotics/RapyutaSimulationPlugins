@@ -19,6 +19,7 @@
 class ARRGameMode;
 class URRGameInstance;
 class ARRPlayerController;
+class ARRMeshActor;
 
 /**
  * @brief Game state
@@ -31,7 +32,6 @@ UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRGameState : public AGameState
 {
     GENERATED_BODY()
-
 public:
     ARRGameState();
     virtual void StartSim();
@@ -39,13 +39,18 @@ public:
     UPROPERTY(config)
     int8 SCENE_INSTANCES_NUM = 1;
 
+    UPROPERTY(config)
+    int32 OPERATION_BATCHES_NUM = 10;
+
     UPROPERTY()
     ARRGameMode* GameMode = nullptr;
 
     UPROPERTY()
     URRGameInstance* GameInstance = nullptr;
 
-    static constexpr const float SCENE_INSTANCES_DISTANCE_INTERVAL = 2000.f;
+    UPROPERTY(config)
+    float SCENE_INSTANCES_DISTANCE_INTERVAL = 200.f;
+
     UPROPERTY()
     TArray<URRSceneInstance*> SceneInstanceList;
 
@@ -59,17 +64,45 @@ public:
         return instance;
     }
 
-    UFUNCTION()
     bool HasSceneInstance(int8 InSceneInstanceId)
     {
         return SceneInstanceList.IsValidIndex(InSceneInstanceId) && SceneInstanceList[InSceneInstanceId];
     }
 
-    UFUNCTION()
     virtual bool HasSceneInstanceListBeenCreated(bool bIsLogged = false) const;
-
-    UFUNCTION()
     virtual bool HasInitialized(bool bIsLogged = false) const;
+
+    virtual bool HaveAllSceneInstancesCompleted() const;
+
+    // SIM OUTPUTS
+    UPROPERTY(config)
+    FString SIM_OUTPUTS_BASE_FOLDER_NAME = TEXT("OutputData");
+
+    // To faciliate testing on CI, Outputs base folder need to be cleared during the test.
+    // Thus, it would be clearer as using [ProjectSavedDir()] as the CI default output folder.
+    FString GetSimOutputsBaseFolderPath() const
+    {
+        return FPaths::IsRelative(SIM_OUTPUTS_BASE_FOLDER_NAME)
+                 ? FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / SIM_OUTPUTS_BASE_FOLDER_NAME)
+                 : SIM_OUTPUTS_BASE_FOLDER_NAME;
+    }
+
+    // ENTITIES
+    ARRMeshActor* FindEntityByModel(const FString& InEntityModelName, bool bToActivate, bool bToTakeAway);
+    void SetAllEntitiesActivated(bool bIsActivated);
+    FORCEINLINE void AddEntity(ARRMeshActor* InEntity)
+    {
+        AllDynamicMeshEntities.AddUnique(InEntity);
+    }
+
+    template<typename T>
+    void AddEntities(const TArray<T*> InEntityList)
+    {
+        for (const auto& entity : InEntityList)
+        {
+            AddEntity(entity);
+        }
+    }
 
 protected:
     virtual void CreateSceneInstance(int8 InSceneInstanceId);
@@ -89,4 +122,13 @@ protected:
 protected:
     UPROPERTY()
     TSubclassOf<URRSceneInstance> SceneInstanceClass;
+
+    // Pool of all entities having been spawned
+    UPROPERTY()
+    TArray<ARRMeshActor*> AllDynamicMeshEntities;
+
+private:
+    // To avoid early GC, this exists only to keep ones temporarily taken away from [AllDynamicMeshEntities] & recycled later
+    UPROPERTY()
+    TArray<AActor*> OrphanEntities;
 };

@@ -307,10 +307,11 @@ public:
     FString FOLDER_PATH_ASSET_MATERIALS = TEXT("Materials");
 
     // Here we only define specially used materials for some specific purpose!
-    static constexpr const TCHAR* MATERIAL_NAME_FLOOR = TEXT("M_FloorMat");
-    static constexpr const TCHAR* MATERIAL_NAME_MASTER = TEXT("M_Base");
+    static constexpr const TCHAR* MATERIAL_NAME_BASE = TEXT("M_Base");
+    static constexpr const TCHAR* MATERIAL_NAME_ASSET_MASTER = TEXT("M_RapyutaAssetMaster");
+    static constexpr const TCHAR* MATERIAL_NAME_PROP_MASTER = TEXT("M_RapyutaPropMaster");
 
-    FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName)
+    FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName) const
     {
         return GetSimResource<UMaterialInterface>(ERRResourceDataType::UE_MATERIAL, InMaterialName);
     }
