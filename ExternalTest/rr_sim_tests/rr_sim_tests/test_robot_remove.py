@@ -14,7 +14,7 @@ from rclpy.node import Node
 from ue_msgs.srv import DeleteEntity
 
 from rr_sim_tests.utils.wait_for_service import wait_for_service
-from rr_sim_tests.utils.wait_for_spawned_robot import wait_for_spawned_robot
+from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
 
 import pytest
 
@@ -71,10 +71,10 @@ class TestRobotRemove(unittest.TestCase):
         assert(arghas(LAUNCH_ARG_ROBOT_NAME))
         robot_name = argstr(LAUNCH_ARG_ROBOT_NAME)
 
-        is_robot_found, _ = wait_for_spawned_robot(robot_name, 1.0)
+        is_robot_found, _ = wait_for_spawned_entity(robot_name, 1.0)
         assert is_robot_found, f'{robot_name} is not available!'
 
         assert remove_robot(robot_name)
-        is_robot_found, _ = wait_for_spawned_robot(robot_name, 1.0)
+        is_robot_found, _ = wait_for_spawned_entity(robot_name, 1.0)
         assert False == is_robot_found, f'{robot_name} failed being removed!'
         rclpy.shutdown()

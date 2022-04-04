@@ -17,7 +17,7 @@ from geometry_msgs.msg import Pose, Quaternion
 from tf_transformations import quaternion_from_euler
 
 from rr_sim_tests.utils.wait_for_service import wait_for_service
-from rr_sim_tests.utils.wait_for_spawned_robot import wait_for_spawned_robot
+from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
 
 import pytest
 
@@ -131,6 +131,6 @@ class TestRobotSpawn(unittest.TestCase):
                            argstr(LAUNCH_ARG_ROBOT_NAMESPACE),
                            argstr(LAUNCH_ARG_ROBOT_REF_FRAME),
                            robot_pose)
-        is_robot_spawned, _ = wait_for_spawned_robot(robot_name, 8.0)
+        is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 8.0)
         assert is_robot_spawned, f'{robot_name} failed being spawned!'
         rclpy.shutdown()

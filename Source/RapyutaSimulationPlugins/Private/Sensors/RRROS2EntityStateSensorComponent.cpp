@@ -2,6 +2,9 @@
 
 #include "Sensors/RRROS2EntityStateSensorComponent.h"
 
+// RapyutaSimulationPlugins
+#include "Core/RRUObjectUtils.h"
+
 URRROS2EntityStateSensorComponent::URRROS2EntityStateSensorComponent()
 {
     SensorPublisherClass = URRROS2EntityStatePublisher::StaticClass();
@@ -14,7 +17,7 @@ void URRROS2EntityStateSensorComponent::BeginPlay()
 
 void URRROS2EntityStateSensorComponent::SetReferenceActorByName(const FString& InName)
 {
-    ReferenceActor = URRGeneralUtils::GetActorByName(GetWorld(), InName);
+    ReferenceActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
     ReferenceActorName = InName;
 }
 

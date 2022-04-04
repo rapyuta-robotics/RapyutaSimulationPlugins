@@ -10,11 +10,11 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Templates/UniquePtr.h"
 
-// RapyutaSim
-#include "RRObjectCommon.h"
+// RapyutaSimulationPlugins
+#include "Core/RRAssetUtils.h"
+#include "Core/RRObjectCommon.h"
+#include "Core/RRTypeUtils.h"
 #include "RapyutaSimulationPlugins.h"
-#include "Tools/RRAssetUtils.h"
-#include "Tools/RRTypeUtils.h"
 
 #include "RRGameSingleton.generated.h"
 
@@ -243,6 +243,7 @@ public:
     static constexpr const TCHAR* SHAPE_NAME_CUBE = TEXT("Cube");
     static constexpr const TCHAR* SHAPE_NAME_CYLINDER = TEXT("Cylinder");
     static constexpr const TCHAR* SHAPE_NAME_SPHERE = TEXT("Sphere");
+    static constexpr const TCHAR* SHAPE_NAME_CAPSULE = TEXT("Capsule");
 
     UFUNCTION()
     FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName)

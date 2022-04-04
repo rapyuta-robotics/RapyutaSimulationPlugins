@@ -3,10 +3,10 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "RapyutaSimulationPlugins",
-	"Description": "Robot common assets which is used with rclUE",
+	"Description": "Common simulated robot functionalities for ROS-compatible systems with rclUE",
 	"Category": "Robotics",
 	"CreatedBy": "Rapyuta Robotics",
-	"CreatedByURL": "https://www.rapyuta-robotics.com/",
+	"CreatedByURL": "https://www.rapyuta-robotics.com",
 	"DocsURL": "",
 	"MarketplaceURL": "",
 	"SupportURL": "",
@@ -22,10 +22,10 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"Plugins": [					   
-	 {								
-	   "Name": "rclUE",	
-	   "Enabled": true				
-	 }								
-   ]  
+	"Plugins": [
+	 {
+	   "Name": "rclUE",
+	   "Enabled": true
+	 }
+   ]
 }
