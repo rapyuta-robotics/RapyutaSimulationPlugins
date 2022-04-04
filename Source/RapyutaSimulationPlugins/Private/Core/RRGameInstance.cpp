@@ -8,6 +8,7 @@
 #include "Core/RRGameSingleton.h"
 #include "Core/RRMathUtils.h"
 
+FString URRGameInstance::SMapName;
 void URRGameInstance::PreloadContentForURL(FURL InURL)
 {
     UE_LOG(LogRapyutaCore, Display, TEXT("[URRGameInstance]: Preload Content for Map [%s]"), *InURL.Map)
@@ -22,8 +23,8 @@ AGameModeBase* URRGameInstance::CreateGameModeForURL(FURL InURL, UWorld* InWorld
            *InURL.Map,
            *InWorld->GetName());
 
-    InitialMapName = InWorld->GetName();
-    URRCoreUtils::ScreenMsg(FColor::Yellow, FString::Printf(TEXT("MAP: %s"), *InitialMapName));
+    SMapName = InWorld->GetName();
+    URRCoreUtils::ScreenMsg(FColor::Yellow, FString::Printf(TEXT("MAP: %s"), *SMapName));
     return Super::CreateGameModeForURL(InURL, InWorld);
 }
 

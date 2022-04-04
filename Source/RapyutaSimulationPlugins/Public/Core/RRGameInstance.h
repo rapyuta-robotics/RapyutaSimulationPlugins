@@ -28,8 +28,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRGameInstance : public UGameInstance
     GENERATED_BODY()
 
 public:
-    UPROPERTY()
-    FString InitialMapName;
+    static FString SMapName;
 
     virtual void PreloadContentForURL(FURL InURL) override;
     virtual class AGameModeBase* CreateGameModeForURL(FURL InURL, UWorld* InWorld) override;

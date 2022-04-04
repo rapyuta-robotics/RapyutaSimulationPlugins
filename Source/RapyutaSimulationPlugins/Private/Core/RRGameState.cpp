@@ -75,7 +75,7 @@ void ARRGameState::CreateSceneInstance(int8 InSceneInstanceId)
 {
     verify(InSceneInstanceId >= 0);
     URRSceneInstance* newSceneInstance = Cast<URRSceneInstance>(URRUObjectUtils::CreateSelfSubobject(
-        this, SceneInstanceClass, FString::Printf(TEXT("%d_%s"), InSceneInstanceId, *GameInstance->InitialMapName)));
+        this, SceneInstanceClass, FString::Printf(TEXT("%d_%s"), InSceneInstanceId, *URRGameInstance::SMapName)));
     verify(newSceneInstance);
     newSceneInstance->ConfigureStaticClasses();
     SceneInstanceList.Add(newSceneInstance);
