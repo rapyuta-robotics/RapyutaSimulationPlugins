@@ -88,7 +88,6 @@ bool ARobotVehicle::InitMoveComponent()
 
 void ARobotVehicle::SetLinearVel(const FVector& InLinearVelocity)
 {
-    // We're assuming input is in meters, so convert to centimeters.
     RobotVehicleMoveComponent->Velocity = InLinearVelocity;
 }
 
