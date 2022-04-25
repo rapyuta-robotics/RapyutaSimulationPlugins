@@ -5,12 +5,15 @@
 // rclUE
 #include "Msgs/ROS2StringMsg.h"
 
+URRROS2StringPublisher::URRROS2StringPublisher()
+{
+    MsgClass = UROS2StringMsg::StaticClass();
+    PublicationFrequencyHz = 1;
+}
+
 void URRROS2StringPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
-
-    MsgClass = UROS2StringMsg::StaticClass();
-    PublicationFrequencyHz = 1;
     Init(UROS2QoS::DynamicBroadcaster);
 }
 

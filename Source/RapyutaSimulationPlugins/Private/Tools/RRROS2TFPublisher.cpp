@@ -5,6 +5,11 @@
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
 
+URRROS2TFPublisher::URRROS2TFPublisher()
+{
+    PublicationFrequencyHz = 50;
+}
+
 void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
@@ -22,7 +27,6 @@ void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
         TopicName = TEXT("/tf");
         QoS = UROS2QoS::DynamicBroadcaster;
     }
-    PublicationFrequencyHz = 50;
     Init(QoS);
 }
 
