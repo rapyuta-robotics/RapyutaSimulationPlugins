@@ -52,6 +52,7 @@ public:
     UPROPERTY(config)
     FRRCameraProperties CameraProperties;
 
+    virtual bool Initialize() override;
     void LookAt(const FVector& InTargetLocation);
     template<typename T>
     void LookAt(const TArray<T*>& InTargetActors)
@@ -69,6 +70,5 @@ public:
     }
 
 protected:
-    virtual void BeginPlay() override;
     virtual void PrintSimConfig() const override;
 };

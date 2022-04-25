@@ -97,7 +97,7 @@ void ARRSceneDirector::RunOperation()
     OperationBatchId = 1;
     bIsOperating = true;
 
-    verify(SpawnActors());
+    SpawnActors();
 }
 
 bool ARRSceneDirector::HasOperationCompleted(bool bIsLogged)

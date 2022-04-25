@@ -18,6 +18,8 @@
 
 #include "RRUObjectUtils.generated.h"
 
+class ARRBaseActor;
+class ARRMeshActor;
 class URRStaticMeshComponent;
 
 /**
@@ -380,7 +382,7 @@ public:
     static AActor* FindEnvironmentActor(UWorld* InWorld)
     {
         // There is only one common [Environment] actor of all Scene instances!
-        return FindActorBySubname<AActor>(InWorld, TEXT("RapyutaEnvironment"));
+        return FindActorBySubname<AActor>(InWorld, TEXT("MainEnvironment"));
     }
 
     UFUNCTION()
@@ -395,6 +397,20 @@ public:
     {
         // There is only one common [SkyLight] actor of all Scene instances!
         return FindActorBySubname<ASkyLight>(InWorld, TEXT("SkyLight"));
+    }
+
+    UFUNCTION()
+    static AActor* FindFloorActor(UWorld* InWorld)
+    {
+        // There is only one common [Environment] actor of all Scene instances!
+        return FindActorBySubname<AActor>(InWorld, TEXT("MainFloor"));
+    }
+
+    UFUNCTION()
+    static AActor* FindWallActor(UWorld* InWorld)
+    {
+        // There is only one common [Environment] actor of all Scene instances!
+        return FindActorBySubname<AActor>(InWorld, TEXT("MainWall"));
     }
 
     UFUNCTION()
@@ -506,6 +522,9 @@ public:
         const FTransform& InActorTransform = FTransform::Identity,
         const ESpawnActorCollisionHandlingMethod InCollisionHandlingType = ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
+    static void GetActorCenterAndBoundingBoxVertices(const AActor* InActor,
+                                                     TArray<FVector>& OutCenterAndVerticesWorld,
+                                                     bool bInIncludeNonColliding = true);
     static FVector GetActorExtent(AActor* InActor, bool bOnlyCollidingComponents = true, bool bIncludeFromChildActors = false)
     {
         FVector actorOrigin, actorExtent;
@@ -554,12 +573,11 @@ public:
             actor->AddActorWorldOffset(center - actor->GetActorLocation(), true);
         }
     }
-
+    static FString GetSegMaskDepthStencilsAsText(ARRMeshActor* InActor);
     static bool GetPhysicsActorHandles(FBodyInstance* InBody1,
                                        FBodyInstance* InBody2,
                                        FPhysicsActorHandle& OutActorRef1,
                                        FPhysicsActorHandle& OutActorRef2);
-
     static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                     int32 InMaterialIndex,
                                                                     const FString& InMaterialInterfaceName);

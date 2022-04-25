@@ -84,6 +84,9 @@ enum class ERRFileType : uint8
     IMAGE_EXR,
     IMAGE_HDR,
 
+    // Meta Data
+    JSON,
+
     // 3D Description Format
     URDF,
     SDF,
@@ -246,6 +249,27 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRAsyncJob
             asyncTask.Task.Get();
         }
     }
+};
+
+// For storing entity info in advance for the Logging task. This might have been updated at the moment of Logging.
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FRREntityLogInfo
+{
+    GENERATED_BODY()
+
+    FRREntityLogInfo()
+    {
+    }
+
+    FRREntityLogInfo(AActor* InEntity, const uint64& InSceneId) : Entity(InEntity), SceneId(InSceneId)
+    {
+    }
+
+    UPROPERTY()
+    AActor* Entity = nullptr;
+
+    UPROPERTY()
+    uint64 SceneId = 0;
 };
 
 template<int8 InBitDepth>
@@ -482,14 +506,30 @@ public:
     UPROPERTY()
     ARRGameState* GameState = nullptr;
 
+    // Each scene instance house a series of scene, in which operations are performed.
     UPROPERTY()
     int8 SceneInstanceId = DEFAULT_SCENE_INSTANCE_ID;
 
     UPROPERTY()
     FVector SceneInstanceLocation = FVector::ZeroVector;
 
+    // Each scene is assigned with a unique id, regardless of which scene instance it belongs
+    static uint64 SLatestSceneId;
+    FORCEINLINE static uint64 GetNextSceneId()
+    {
+        return ++SLatestSceneId;
+    }
+    UPROPERTY()
+    uint64 CurrentSceneId = 0;
+
     UPROPERTY()
     AActor* MainEnvironment = nullptr;
+
+    UPROPERTY()
+    AActor* MainFloor = nullptr;
+
+    UPROPERTY()
+    AActor* MainWall = nullptr;
 
     UPROPERTY()
     ARRCamera* MainCamera = nullptr;

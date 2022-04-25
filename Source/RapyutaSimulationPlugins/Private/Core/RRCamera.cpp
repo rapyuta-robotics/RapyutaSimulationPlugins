@@ -28,12 +28,14 @@ void ARRCamera::PrintSimConfig() const
     CameraProperties.PrintSelf();
 }
 
-void ARRCamera::BeginPlay()
+bool ARRCamera::Initialize()
 {
-    Super::BeginPlay();
-
-    // Initialize
+    if (false == Super::Initialize())
+    {
+        return false;
+    }
     CameraComponent->FieldOfView = URRMathUtils::GetRandomFloatInRange(CameraProperties.HFoVRangeInDegree);
+    return true;
 }
 
 void ARRCamera::LookAt(const FVector& InTargetLocation)
@@ -65,5 +67,6 @@ void ARRCamera::RandomizePose(bool bIsRandomLocationOnly)
 
 float ARRCamera::GetDistanceToFloor() const
 {
-    return FVector::Dist(CameraComponent->GetComponentLocation(), ActorCommon->MainEnvironment->GetActorLocation());
+    check(IsValid(ActorCommon->MainFloor));
+    return FVector::Dist(CameraComponent->GetComponentLocation(), ActorCommon->MainFloor->GetActorLocation());
 };

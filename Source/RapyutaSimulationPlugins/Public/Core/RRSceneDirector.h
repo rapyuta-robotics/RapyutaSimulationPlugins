@@ -91,9 +91,8 @@ protected:
 
     UPROPERTY()
     int32 OperationBatchLoopLeft = 0;
-    virtual bool SpawnActors()
+    virtual void SpawnActors()
     {
-        return true;
     }
 
     virtual void ResetScene();

@@ -136,6 +136,7 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
 // [URRActorCommon] --
 //
 std::once_flag URRActorCommon::OnceFlag;
+uint64 URRActorCommon::SLatestSceneId = 0;
 // This is used as a map due to the unequivalence of element order with [ARRGameState::SceneInstanceList]
 TMap<int8, URRActorCommon*> URRActorCommon::SActorCommonList;
 URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* InActorCommonClass, UObject* InOuter)
@@ -202,6 +203,18 @@ void URRActorCommon::SetupEnvironment()
     {
         MainEnvironment = URRUObjectUtils::FindEnvironmentActor(currentWorld);
         // Not all maps has MainEnvironment setup
+    }
+
+    if (!MainFloor)
+    {
+        MainFloor = URRUObjectUtils::FindFloorActor(currentWorld);
+        // Not all maps has MainFloor setup
+    }
+
+    if (!MainWall)
+    {
+        MainWall = URRUObjectUtils::FindWallActor(currentWorld);
+        // Not all maps has MainWall setup
     }
 
     // Spawn MainCamera

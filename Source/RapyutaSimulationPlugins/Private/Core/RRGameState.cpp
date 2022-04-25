@@ -49,10 +49,7 @@ void ARRGameState::StartSim()
     // [UGameViewportClient::MaxSplitscreenPlayers]
     const int32 maxSplitscreenPlayers = URRCoreUtils::GetMaxSplitscreenPlayers(this);
     UE_LOG(LogRapyutaCore, Display, TEXT("MAX SPLIT SCREEN PLAYERS: %d"), maxSplitscreenPlayers);
-
-#if WITH_EDITOR
-    check(SCENE_INSTANCES_NUM <= maxSplitscreenPlayers);
-#endif
+    verify(SCENE_INSTANCES_NUM <= maxSplitscreenPlayers);
 
     for (int8 i = 0; i < SCENE_INSTANCES_NUM; ++i)
     {

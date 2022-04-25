@@ -35,6 +35,9 @@ const TMap<ERRFileType, const TCHAR*> URRCoreUtils::SimFileExts = {{ERRFileType:
                                                                    {ERRFileType::IMAGE_EXR, TEXT(".exr")},
                                                                    {ERRFileType::IMAGE_HDR, TEXT(".hdr")},
 
+                                                                   // Meta data
+                                                                   {ERRFileType::JSON, TEXT(".json")},
+
                                                                    // 3D Description formats
                                                                    {ERRFileType::URDF, TEXT(".urdf")},
                                                                    {ERRFileType::SDF, TEXT(".sdf")},

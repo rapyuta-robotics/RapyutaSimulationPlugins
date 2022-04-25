@@ -6,6 +6,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Core/RRCamera.h"
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameInstance.h"
 #include "Core/RRGameState.h"
@@ -45,6 +46,9 @@ bool ARRPlayerController::Initialize()
     check(ActorCommon);
     check(ActorCommon->SceneInstanceId == SceneInstanceId);
 
+    MainCamera = ActorCommon->MainCamera;
+    check(MainCamera);
+
     // Not all maps has GlobalPostProcessVolume
     MainPostProcessVolume = Cast<APostProcessVolume>(URRUObjectUtils::FindPostProcessVolume(GetWorld()));
 
@@ -58,6 +62,15 @@ bool ARRPlayerController::HasInitialized(bool bIsLogged) const
         if (bIsLogged)
         {
             UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRPlayerController]:: ActorCommon is NULL!"));
+        }
+        return false;
+    }
+
+    if (!MainCamera)
+    {
+        if (bIsLogged)
+        {
+            UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRPlayerController]:: MainCamera is NULL!"));
         }
         return false;
     }

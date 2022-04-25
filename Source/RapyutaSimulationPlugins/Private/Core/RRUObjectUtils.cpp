@@ -8,6 +8,7 @@
 #include "Core/RRBaseActor.h"
 #include "Core/RRGameSingleton.h"
 #include "Core/RRMathUtils.h"
+#include "Core/RRMeshActor.h"
 
 void URRUObjectUtils::SetupActorTick(AActor* InActor, bool bIsTickEnabled, float InTickInterval)
 {
@@ -145,6 +146,54 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
 
     return newActor;
 }
+void URRUObjectUtils::GetActorCenterAndBoundingBoxVertices(const AActor* InActor,
+                                                           TArray<FVector>& OutCenterAndVerticesWorld,
+                                                           bool bInIncludeNonColliding)
+{
+    // [InActor]'s global Rotation
+    const FQuat& actorQuat = InActor->GetActorQuat();
+
+    // [InActor]'s Local bounding box
+    FVector centerLocal, extentsLocal;
+    FBox actorLocalBox = InActor->CalculateComponentsBoundingBoxInLocalSpace(bInIncludeNonColliding);
+    actorLocalBox.GetCenterAndExtents(centerLocal, extentsLocal);
+
+    // [InActor]'s global bounding box with rotation
+    // Reference : DrawDebugBox()
+    // (snote) The exact order of points is important. Consult with Robot Research team before adjusting.
+    //
+    // Transfom [centerLocal] to global
+    const FVector& centerWorld = InActor->GetTransform().TransformPosition(centerLocal);
+    OutCenterAndVerticesWorld.Emplace(centerWorld);
+
+    // Calculate global vertices as : [centerWorld] + Rotated [ExtentsLocal]
+    OutCenterAndVerticesWorld.Emplace(centerWorld +
+                                      actorQuat.RotateVector(FVector(extentsLocal.X, extentsLocal.Y, extentsLocal.Z)));
+    OutCenterAndVerticesWorld.Emplace(centerWorld +
+                                      actorQuat.RotateVector(FVector(extentsLocal.X, -extentsLocal.Y, extentsLocal.Z)));
+    OutCenterAndVerticesWorld.Emplace(centerWorld +
+                                      actorQuat.RotateVector(FVector(-extentsLocal.X, -extentsLocal.Y, extentsLocal.Z)));
+    OutCenterAndVerticesWorld.Emplace(centerWorld +
+                                      actorQuat.RotateVector(FVector(-extentsLocal.X, extentsLocal.Y, extentsLocal.Z)));
+    OutCenterAndVerticesWorld.Emplace(centerWorld +
+                                      actorQuat.RotateVector(FVector(extentsLocal.X, extentsLocal.Y, -extentsLocal.Z)));
+    OutCenterAndVerticesWorld.Emplace(centerWorld +
+                                      actorQuat.RotateVector(FVector(extentsLocal.X, -extentsLocal.Y, -extentsLocal.Z)));
+    OutCenterAndVerticesWorld.Emplace(centerWorld +
+                                      actorQuat.RotateVector(FVector(-extentsLocal.X, -extentsLocal.Y, -extentsLocal.Z)));
+    OutCenterAndVerticesWorld.Emplace(centerWorld +
+                                      actorQuat.RotateVector(FVector(-extentsLocal.X, extentsLocal.Y, -extentsLocal.Z)));
+
+#if RAPYUTA_SIM_VISUAL_DEBUG
+    if (IsInGameThread())
+    {
+        // Draw [InActor]'s bounding box before projecting it onto screen to get the 2D coordinates.
+        OutCenterAndVerticesWorld.RemoveAt(0);
+        URRFunctionLibrary::DrawActorBounds(InActor->GetWorld(), OutCenterAndVerticesWorld);
+        OutCenterAndVerticesWorld.Insert(centerWorld, 0);
+    }
+#endif
+}
 
 // Ref: ConstraintInstance.cpp - GetActorRefs()
 bool URRUObjectUtils::GetPhysicsActorHandles(FBodyInstance* InBody1,
@@ -154,19 +203,16 @@ bool URRUObjectUtils::GetPhysicsActorHandles(FBodyInstance* InBody1,
 {
     FPhysicsActorHandle actorRef1 = InBody1 ? InBody1->ActorHandle : FPhysicsActorHandle();
     FPhysicsActorHandle actorRef2 = InBody2 ? InBody2->ActorHandle : FPhysicsActorHandle();
-
     // Do not create joint unless we have two actors or one of them is dynamic
     if ((!FPhysicsInterface::IsValid(actorRef1) || !FPhysicsInterface::IsRigidBody(actorRef1)) &&
         (!FPhysicsInterface::IsValid(actorRef2) || !FPhysicsInterface::IsRigidBody(actorRef2)))
     {
         return false;
     }
-
     if (FPhysicsInterface::IsValid(actorRef1) && FPhysicsInterface::IsValid(actorRef2) && (actorRef1 == actorRef2))
     {
         return false;
     }
-
     // Ensure that actors are either invalid (ie 'world') or valid to simulate.
     bool bActor1Valid = false;
     bool bActor2Valid = false;
@@ -178,34 +224,34 @@ bool URRUObjectUtils::GetPhysicsActorHandles(FBodyInstance* InBody1,
             bActor1Valid = !FPhysicsInterface::IsValid(InActor1) || FPhysicsInterface::CanSimulate_AssumesLocked(InActor1);
             bActor2Valid = !FPhysicsInterface::IsValid(InActor2) || FPhysicsInterface::CanSimulate_AssumesLocked(InActor2);
         });
-
     if (false == (bActor1Valid && bActor2Valid))
     {
         OutActorRef1 = FPhysicsActorHandle();
         OutActorRef2 = FPhysicsActorHandle();
         return false;
     }
-
     OutActorRef1 = actorRef1;
     OutActorRef2 = actorRef2;
     return true;
 }
+FString URRUObjectUtils::GetSegMaskDepthStencilsAsText(ARRMeshActor* InActor)
+{
+    TArray<uint8> depthStencilValueList;
 
+    // The validity and uniqueness of [meshComp's CustomDepthStencilValue] should have been already verified
+    for (const auto& meshComp : InActor->MeshCompList)
+    {
+        depthStencilValueList.AddUnique(static_cast<uint8>(meshComp->CustomDepthStencilValue));
+    }
+
+    return FString::JoinBy(
+        depthStencilValueList, TEXT("/"), [](const uint8& InDepthStencilValue) { return FString::FromInt(InDepthStencilValue); });
+}
 UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                           int32 InMaterialIndex,
                                                                           const FString& InMaterialInterfaceName)
 {
     verify(IsValid(InMeshComp));
-    const FString& dynamicMaterialName = FString::Printf(TEXT("%s%s"), *InMeshComp->GetName(), *InMaterialInterfaceName);
-    return InMeshComp->CreateDynamicMaterialInstance(
-        InMaterialIndex, URRGameSingleton::Get()->GetMaterial(InMaterialInterfaceName), FName(*dynamicMaterialName));
-}
-
-
-UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
-                                                                          int32 InMaterialIndex,
-                                                                          const FString& InMaterialInterfaceName)
-{
     const FString& dynamicMaterialName = FString::Printf(TEXT("%s%s"), *InMeshComp->GetName(), *InMaterialInterfaceName);
     return InMeshComp->CreateDynamicMaterialInstance(
         InMaterialIndex, URRGameSingleton::Get()->GetMaterial(InMaterialInterfaceName), FName(*dynamicMaterialName));
