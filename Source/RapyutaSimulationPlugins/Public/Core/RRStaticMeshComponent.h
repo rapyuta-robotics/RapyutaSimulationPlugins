@@ -10,6 +10,7 @@
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameSingleton.h"
+#include "Core/RRMeshData.h"
 
 #include "RRStaticMeshComponent.generated.h"
 
@@ -24,6 +25,7 @@ public:
     URRStaticMeshComponent();
     static constexpr int8 CUSTOM_DEPTH_STENCIL_VOID = 0;
     void Initialize(bool bInIsStationary, bool bInIsPhysicsEnabled);
+    FOnMeshCreationDone OnMeshCreationDone;
 
     UPROPERTY()
     int8 SceneInstanceId = 0;
@@ -33,7 +35,7 @@ public:
 
     UPROPERTY()
     FString MeshUniqueName;
-    void SetMesh(UStaticMesh* Mesh);
+    void SetMesh(UStaticMesh* InStaticMesh);
     void SetMeshSize(const FVector& InSize)
     {
         SetWorldScale3D(InSize / GetStaticMesh()->GetBoundingBox().GetSize());

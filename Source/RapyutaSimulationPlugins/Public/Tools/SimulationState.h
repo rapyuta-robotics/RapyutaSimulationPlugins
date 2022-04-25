@@ -10,8 +10,8 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
-#include "Core/RRGeneralUtils.h"
 #include "Core/RRConversionUtils.h"
+#include "Core/RRGeneralUtils.h"
 
 #include "SimulationState.generated.h"
 
@@ -26,6 +26,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FActors
 
 class UROS2GenericSrv;
 
+// (NOTE) To be renamed ARRROS2SimulationState, due to its inherent attachment to ROS2 Node
+// & thus house [Entities] spawned by ROS services, and  with ROS relevance.
+// However, check for its usage in BP and refactor if there is accordingly!
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ASimulationState : public AActor
 {

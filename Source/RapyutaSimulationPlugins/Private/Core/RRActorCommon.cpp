@@ -66,17 +66,26 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
 // ===================================================================================================================================
 // [FRRActorSpawnInfo] --
 //
-FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InUniqueName,
+FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
+                                     const FString& InUniqueName,
                                      const FTransform& InTransform,
                                      const TArray<FString>& InMeshMaterialNameList,
                                      bool bIsStationary,
                                      bool bIsPhysicsEnabled,
                                      bool bIsCollisionEnabled)
 {
-    (*this)(InUniqueName, InTransform, EMPTY_STR, InMeshMaterialNameList, bIsStationary, bIsPhysicsEnabled, bIsCollisionEnabled);
+    (*this)(InEntityModelName,
+            InUniqueName,
+            InTransform,
+            EMPTY_STR,
+            InMeshMaterialNameList,
+            bIsStationary,
+            bIsPhysicsEnabled,
+            bIsCollisionEnabled);
 }
 
-FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InUniqueName,
+FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
+                                     const FString& InUniqueName,
                                      const FTransform& InTransform,
                                      const FString& InMeshUniqueName,
                                      const TArray<FString>& InMeshMaterialNameList,
@@ -84,18 +93,26 @@ FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InUniqueName,
                                      bool bIsPhysicsEnabled,
                                      bool bIsCollisionEnabled)
 {
-    (*this)(
-        InUniqueName, InTransform, InMeshUniqueName, InMeshMaterialNameList, bIsStationary, bIsPhysicsEnabled, bIsCollisionEnabled);
+    (*this)(InEntityModelName,
+            InUniqueName,
+            InTransform,
+            InMeshUniqueName,
+            InMeshMaterialNameList,
+            bIsStationary,
+            bIsPhysicsEnabled,
+            bIsCollisionEnabled);
 }
 
-FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InUniqueName,
+FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
+                                     const FString& InUniqueName,
                                      const FTransform& InTransform,
                                      const TArray<FString>& InMeshUniqueNameList,
                                      const TArray<FString>& InMeshMaterialNameList,
                                      bool bIsStationary,
                                      bool bIsPhysicsEnabled,
                                      bool bIsCollisionEnabled)
-    : UniqueName(InUniqueName),
+    : EntityModelName(InEntityModelName),
+      UniqueName(InUniqueName),
       Transform(InTransform),
       MeshUniqueNameList(InMeshUniqueNameList),
       MeshMaterialNameList(InMeshMaterialNameList),
@@ -105,7 +122,8 @@ FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InUniqueName,
 {
 }
 
-void FRRActorSpawnInfo::operator()(const FString& InUniqueName,
+void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
+                                   const FString& InUniqueName,
                                    const FTransform& InTransform,
                                    const FString& InMeshUniqueName,
                                    const TArray<FString>& InMeshMaterialNameList,
@@ -113,6 +131,8 @@ void FRRActorSpawnInfo::operator()(const FString& InUniqueName,
                                    bool bIsPhysicsEnabled,
                                    bool bIsCollisionEnabled)
 {
+    EntityModelName = InEntityModelName;
+
     // Take in only if either one is NOT EMPTY!
     if (!InMeshUniqueName.IsEmpty())
     {
@@ -151,15 +171,20 @@ URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* I
         actorCommon->SceneInstanceId = InSceneInstanceId;
         SActorCommonList.Add(InSceneInstanceId, actorCommon);
 
-        // This [OnWorldCleanup()] is meant to called once only!
+        // This [OnPostWorldCleanup()] is meant to called once only!
         // Not sure about whether there is an UE internal check on already bound function, but better not relying on it.
         if (URRActorCommon::DEFAULT_SCENE_INSTANCE_ID == InSceneInstanceId)
         {
-            FWorldDelegates::OnPostWorldCleanup.AddStatic(&URRCoreUtils::OnWorldCleanup);
+            FWorldDelegates::OnPostWorldCleanup.AddStatic(&URRActorCommon::OnPostWorldCleanup);
         }
     }
 
     return SActorCommonList[InSceneInstanceId];
+}
+
+void URRActorCommon::OnPostWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources)
+{
+    URRActorCommon::SActorCommonList.Reset();
 }
 
 URRActorCommon::URRActorCommon()
@@ -192,9 +217,26 @@ void URRActorCommon::SetupEnvironment()
     // Here, we initialize artifacts that utilized play resources
     UWorld* currentWorld = GetWorld();
     checkf(currentWorld, TEXT("[URRActorCommon::SetupEnvironment] Failed fetching Game World"));
+
+    // Fetch Main background environment
+    if (!MainEnvironment)
+    {
+        MainEnvironment = URRUObjectUtils::FindEnvironmentActor(currentWorld);
+        // Not all maps has MainEnvironment setup
+    }
 }
 
 bool URRActorCommon::HasInitialized(bool bIsLogged) const
 {
     return true;
+}
+
+void URRActorCommon::MoveEnvironmentToSceneInstance(int8 InSceneInstanceId)
+{
+    if (IsValid(MainEnvironment))
+    {
+        const FVector currentEnvLocation = MainEnvironment->GetActorLocation();
+        const FVector sceneInstanceLocation = URRCoreUtils::GetSceneInstanceLocation(InSceneInstanceId);
+        MainEnvironment->SetActorLocation(FVector(sceneInstanceLocation.X, sceneInstanceLocation.Y, currentEnvLocation.Z));
+    }
 }

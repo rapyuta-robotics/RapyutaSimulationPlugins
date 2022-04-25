@@ -5,6 +5,7 @@
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameMode.h"
+#include "Core/RRGameSingleton.h"
 #include "Core/RRGameState.h"
 #include "Core/RRPlayerController.h"
 #include "Core/RRUObjectUtils.h"
@@ -48,13 +49,16 @@ bool ARRBaseActor::Initialize()
 
     // SETUP + CONFIGURE ESSENTIAL GAME & SIM COMMON OBJECTS
     GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
-    verify(GameMode);
+    check(GameMode);
 
     GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
-    verify(GameState);
+    check(GameState);
+
+    GameSingleton = URRGameSingleton::Get();
+    check(GameSingleton);
 
     PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
-    verify(PlayerController);
+    check(PlayerController);
 
     ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
     return true;

@@ -354,6 +354,30 @@ public:
         return InWorld->GetTimerManager().SetTimerForNextTick(MoveTemp(InCallback));
     }
 
+    template<typename T>
+    FORCEINLINE static void RegisterRepeatedExecution(T* InObj,
+                                                      FTimerHandle& InTimerHandle,
+                                                      typename FTimerDelegate::TUObjectMethodDelegate<T>::FMethodPtr InMethod,
+                                                      float InRate = 0.5f)
+    {
+        InObj->GetWorld()->GetTimerManager().SetTimer(InTimerHandle, InObj, InMethod, InRate, true);
+    }
+
+    template<typename T>
+    FORCEINLINE static void RegisterRepeatedExecution(T* InObj,
+                                                      FTimerHandle& InTimerHandle,
+                                                      TFunction<void()> Callback,
+                                                      float InRate = 0.5f)
+    {
+        InObj->GetWorld()->GetTimerManager().SetTimer(InTimerHandle, MoveTemp(Callback), InRate, true);
+    }
+
+    static void StopRegisteredExecution(UWorld* InWorld, FTimerHandle& InTimerHandle)
+    {
+        // Also invalidate it here-in!
+        InWorld->GetTimerManager().ClearTimer(InTimerHandle);
+    }
+
     // -------------------------------------------------------------------------------------------------------------------------
     // IMAGE UTILS --
     //

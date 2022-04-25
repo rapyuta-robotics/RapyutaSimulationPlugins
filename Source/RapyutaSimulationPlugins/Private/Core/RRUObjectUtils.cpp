@@ -114,6 +114,7 @@ void URRUObjectUtils::AttachComponentToComponent(USceneComponent* InChildComp,
 ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
                                              int8 InSceneInstanceId,
                                              UClass* InActorClass,
+                                             const FString& InEntityModelName,
                                              const FString& InActorName,
                                              const FTransform& InActorTransform,
                                              const ESpawnActorCollisionHandlingMethod InCollisionHandlingType)
@@ -130,6 +131,7 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
     verify(newActor);
     // This is set in ctor
     verify(newActor->SceneInstanceId == InSceneInstanceId);
+    newActor->EntityModelName = InEntityModelName;
 
 #if WITH_EDITOR
     // [newObjectActor] ActorUniqueName is set inside the CTOR
@@ -141,4 +143,14 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
     verify(newActor->Initialize());
 
     return newActor;
+}
+
+
+UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
+                                                                          int32 InMaterialIndex,
+                                                                          const FString& InMaterialInterfaceName)
+{
+    const FString& dynamicMaterialName = FString::Printf(TEXT("%s%s"), *InMeshComp->GetName(), *InMaterialInterfaceName);
+    return InMeshComp->CreateDynamicMaterialInstance(
+        InMaterialIndex, URRGameSingleton::Get()->GetMaterial(InMaterialInterfaceName), FName(*dynamicMaterialName));
 }

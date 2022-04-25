@@ -21,9 +21,12 @@
 #define RAPYUTA_SIM_DEBUG (0)
 #define RAPYUTA_SIM_VISUAL_DEBUG (0)
 
-class URRStaticMeshComponent;
+#define RAPYUTA_DATA_SYNTH_USE_ENTITY_STATIC_MESH (0)
+#define RAPYUTA_DATA_SYNTH_USE_ENTITY_PROCEDURAL_MESH (!RAPYUTA_DATA_SYNTH_USE_ENTITY_STATIC_MESH)
+
 class ARRGameMode;
 class ARRGameState;
+class ARRMeshActor;
 class URRCoreUtils;
 
 USTRUCT()
@@ -57,15 +60,18 @@ enum class ERRFileType : uint8
     NONE,
     UASSET,    // UE Asset file
     INI,
+    YAML,
+
+    // Image
     IMAGE_JPG,
     IMAGE_PNG,
     IMAGE_EXR,
+    IMAGE_HDR,
 
     // 3D Description Format
     URDF,
     SDF,
     GAZEBO_WORLD,
-    YAML,
     MJCF,    // MuJoCo
     TOTAL
 };
@@ -94,14 +100,16 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
     {
     }
 
-    FRRActorSpawnInfo(const FString& InUniqueName,
+    FRRActorSpawnInfo(const FString& InEntityModelName,
+                      const FString& InUniqueName,
                       const FTransform& InTransform,
                       const TArray<FString>& InMeshMaterialNameList = TArray<FString>(),
                       bool bIsStationary = false,
                       bool bIsPhysicsEnabled = false,
                       bool bIsCollisionEnabled = false);
 
-    FRRActorSpawnInfo(const FString& InUniqueName,
+    FRRActorSpawnInfo(const FString& InEntityModelName,
+                      const FString& InUniqueName,
                       const FTransform& InTransform,
                       const FString& InMeshUniqueName,
                       const TArray<FString>& InMeshMaterialNameList = TArray<FString>(),
@@ -109,7 +117,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
                       bool bIsPhysicsEnabled = false,
                       bool bIsCollisionEnabled = false);
 
-    FRRActorSpawnInfo(const FString& InUniqueName,
+    FRRActorSpawnInfo(const FString& InEntityModelName,
+                      const FString& InUniqueName,
                       const FTransform& InTransform,
                       const TArray<FString>& InMeshUniqueNameList,
                       const TArray<FString>& InMeshMaterialNameList = TArray<FString>(),
@@ -117,7 +126,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
                       bool bIsPhysicsEnabled = false,
                       bool bIsCollisionEnabled = false);
 
-    void operator()(const FString& InUniqueName,
+    void operator()(const FString& InEntityModelName,
+                    const FString& InUniqueName,
                     const FTransform& InTransform = FTransform::Identity,
                     const FString& InMeshUniqueName = FString(),
                     const TArray<FString>& InMeshMaterialNameList = TArray<FString>(),
@@ -125,12 +135,14 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
                     bool bIsPhysicsEnabled = false,
                     bool bIsCollisionEnabled = false);
 
-    void operator()(const FString& InMeshUniqueName);
     void ClearMeshInfo()
     {
         MeshUniqueNameList.Reset();
         MeshMaterialNameList.Reset();
     }
+
+    UPROPERTY()
+    FString EntityModelName;
 
     // Actually GetName() is also unique as noted by UE, but we just do not want to rely on it.
     // Instead, WE CREATE [UniqueName] TO MAKE OUR ID CONTROL MORE INDPENDENT of UE INTERNAL NAME HANDLING.
@@ -175,6 +187,11 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
     }
 };
 
+DECLARE_DELEGATE_ThreeParams(FOnMeshActorFullyCreated,
+                             bool /* bCreationResult */,
+                             ARRMeshActor*,
+                             const FString& /* Actor's EntityModelName*/);
+
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API URRActorCommon : public UObject
 {
@@ -193,8 +210,10 @@ public:
                                           UClass* ActorCommonClass = nullptr,
                                           UObject* Outer = nullptr);
     URRActorCommon();
-    static constexpr const TCHAR* SCRIPT_INI_PATH = TEXT("/Script/RapyutaSim.RRActorCommon");
+    static constexpr const TCHAR* SCRIPT_INI_PATH = TEXT("/Script/RapyutaSimulationPlugins.RRActorCommon");
     static std::once_flag OnceFlag;
+
+    static void OnPostWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources);
 
 public:
 #define EMPTY_STR (TEXT(""))    // Using TCHAR* = TEXT("") -> could causes linking error in some case!
@@ -226,6 +245,9 @@ public:
     UPROPERTY()
     FVector SceneInstanceLocation = FVector::ZeroVector;
 
+    UPROPERTY()
+    AActor* MainEnvironment = nullptr;
+
     virtual void PrintSimConfig() const;
 
     virtual void OnStartSim();
@@ -243,14 +265,9 @@ public:
 
     virtual bool HasInitialized(bool bIsLogged = false) const;
     virtual void SetupEnvironment();
+    void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId);
 
-    UPROPERTY()
-    TArray<AActor*> SceneLoggedActors;
-
-    UFUNCTION()
-    void ClearScene()
-    {
-    }
+    FOnMeshActorFullyCreated OnMeshActorFullyCreated;
 
     // UE only support custom depth stencil value in range [0-255]
     UFUNCTION()
