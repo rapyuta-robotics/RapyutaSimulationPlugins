@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 
 // UE
+#include "Engine/SkeletalMesh.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StreamableManager.h"
 #include "Materials/Material.h"
@@ -249,6 +250,22 @@ public:
     FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName)
     {
         return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, InStaticMeshName);
+    }
+
+    // SKELETAL ASSETS --
+    FORCEINLINE USkeletalMesh* GetSkeletalMesh(const FString& InSkeletalMeshName)
+    {
+        return GetSimResource<USkeletalMesh>(ERRResourceDataType::UE_SKELETAL_MESH, InSkeletalMeshName);
+    }
+
+    FORCEINLINE USkeleton* GetSkeleton(const FString& InSkeletonName)
+    {
+        return GetSimResource<USkeleton>(ERRResourceDataType::UE_SKELETON, InSkeletonName);
+    }
+
+    FORCEINLINE UPhysicsAsset* GetPhysicsAsset(const FString& InPhysicsAssetName)
+    {
+        return GetSimResource<UPhysicsAsset>(ERRResourceDataType::UE_PHYSICS_ASSET, InPhysicsAssetName);
     }
 
     // MATERIALS --

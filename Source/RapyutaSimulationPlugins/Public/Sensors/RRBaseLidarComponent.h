@@ -29,7 +29,6 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-
     UFUNCTION(BlueprintCallable)
     virtual bool Visible(AActor* TargetActor)
     {
@@ -79,6 +78,21 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float DHAngle = 0.f;
 
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float PositionalNoiseMean = 0.f;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float PositionalNoiseVariance = 1.f;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float IntensityNoiseMean = 0.f;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float IntensityNoiseVariance = .1f;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    uint8 BWithNoise : 1;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     TArray<FHitResult> RecordedHits;
 
@@ -115,21 +129,6 @@ protected:
     std::mt19937 Gen = std::mt19937{Rng()};
     std::normal_distribution<> GaussianRNGPosition;
     std::normal_distribution<> GaussianRNGIntensity;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float PositionalNoiseMean = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float PositionalNoiseVariance = 1.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float IntensityNoiseMean = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float IntensityNoiseVariance = .1f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    uint8 BWithNoise : 1;
 
     FLinearColor InterpolateColor(float InX);
     static float GetIntensityFromDist(float InBaseIntensity, float InDistance);

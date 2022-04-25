@@ -11,7 +11,11 @@
 
 TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_MODULE_NAMES = {
     {ERRResourceDataType::UE_STATIC_MESH, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
-    {ERRResourceDataType::UE_MATERIAL, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}}};
+    {ERRResourceDataType::UE_RUNTIME_MESH, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
+    {ERRResourceDataType::UE_SKELETAL_MESH, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
+    {ERRResourceDataType::UE_SKELETON, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
+    {ERRResourceDataType::UE_PHYSICS_ASSET, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
+};
 
 URRGameSingleton::URRGameSingleton(){
     UE_LOG(LogRapyutaCore, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"))}
@@ -69,9 +73,19 @@ bool URRGameSingleton::InitializeResources()
     GetSimResourceInfo(dataType).HasBeenAllLoaded = false;
     verify(RequestResourcesLoading(dataType));
 
+    // (NOTE) RuntimeMesh & SkeletalMesh-related resources are only created in runtime for now
+    // (though they could be also loaded from Content)
     // [RUNTIME MESH] --
-    // (NOTE) These resources are dynamically loaded at run-time
     GetSimResourceInfo(ERRResourceDataType::UE_RUNTIME_MESH).HasBeenAllLoaded = true;
+
+    // [SKELETAL MESH] --
+    GetSimResourceInfo(ERRResourceDataType::UE_SKELETAL_MESH).HasBeenAllLoaded = true;
+
+    // [SKELETON] --
+    GetSimResourceInfo(ERRResourceDataType::UE_SKELETON).HasBeenAllLoaded = true;
+
+    // [PHYSICS ASSET] --
+    GetSimResourceInfo(ERRResourceDataType::UE_PHYSICS_ASSET).HasBeenAllLoaded = true;
 
     // [MATERIAL] --
     dataType = ERRResourceDataType::UE_MATERIAL;

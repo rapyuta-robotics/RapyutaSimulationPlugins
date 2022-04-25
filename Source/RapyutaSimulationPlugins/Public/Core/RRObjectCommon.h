@@ -21,6 +21,9 @@ enum class ERRResourceDataType : uint8
     // UASSET --
     UE_STATIC_MESH,
     UE_RUNTIME_MESH,
+    UE_SKELETAL_MESH,
+    UE_SKELETON,
+    UE_PHYSICS_ASSET,
     UE_MATERIAL,
 
     TOTAL

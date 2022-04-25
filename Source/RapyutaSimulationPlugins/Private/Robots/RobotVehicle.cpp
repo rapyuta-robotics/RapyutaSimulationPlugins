@@ -59,20 +59,8 @@ bool ARobotVehicle::InitSensors(AROS2Node* InROS2Node)
     return true;
 }
 
-void ARobotVehicle::SetLinearVel(const FVector& InLinearVelocity)
+bool ARobotVehicle::InitMoveComponent()
 {
-    // We're assuming input is in meters, so convert to centimeters.
-    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
-}
-
-void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
-{
-    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
-}
-
-void ARobotVehicle::PostInitializeComponents()
-{
-    Super::PostInitializeComponents();
     if (VehicleMoveComponentClass)
     {
         // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
@@ -88,10 +76,28 @@ void ARobotVehicle::PostInitializeComponents()
 
         // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
         // to the owner actor's root
+        return true;
     }
     else
     {
         // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
         UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [VehicleMoveComponentClass] has not been configured!"), *GetName());
+        return false;
     }
+}
+
+void ARobotVehicle::SetLinearVel(const FVector& InLinearVelocity)
+{
+    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+}
+
+void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
+{
+    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
+}
+
+void ARobotVehicle::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+    InitMoveComponent();
 }
