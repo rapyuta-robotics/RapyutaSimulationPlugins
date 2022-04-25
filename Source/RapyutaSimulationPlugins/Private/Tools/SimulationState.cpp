@@ -14,6 +14,7 @@
 #include "Srvs/ROS2GetEntityStateSrv.h"
 #include "Srvs/ROS2SetEntityStateSrv.h"
 #include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Srvs/ROS2SpawnEntitiesSrv.h"
 
 // Sets default values
 ASimulationState::ASimulationState()
@@ -31,17 +32,27 @@ void ASimulationState::Init(AROS2Node* InROS2Node)
     FServiceCallback SetEntityStateSrvCallback;
     FServiceCallback AttachSrvCallback;
     FServiceCallback SpawnEntitySrvCallback;
+    FServiceCallback SpawnEntitiesSrvCallback;
     FServiceCallback DeleteEntitySrvCallback;
     GetEntityStateSrvCallback.BindDynamic(this, &ASimulationState::GetEntityStateSrv);
     SetEntityStateSrvCallback.BindDynamic(this, &ASimulationState::SetEntityStateSrv);
     AttachSrvCallback.BindDynamic(this, &ASimulationState::AttachSrv);
     SpawnEntitySrvCallback.BindDynamic(this, &ASimulationState::SpawnEntitySrv);
+    SpawnEntitiesSrvCallback.BindDynamic(this, &ASimulationState::SpawnEntitiesSrv);
     DeleteEntitySrvCallback.BindDynamic(this, &ASimulationState::DeleteEntitySrv);
     ROSServiceNode->AddServiceServer(TEXT("GetEntityState"), UROS2GetEntityStateSrv::StaticClass(), GetEntityStateSrvCallback);
+    UE_LOG(LogTemp, Warning, TEXT("Initialized GetEntityState Service !"));
     ROSServiceNode->AddServiceServer(TEXT("SetEntityState"), UROS2SetEntityStateSrv::StaticClass(), SetEntityStateSrvCallback);
+    UE_LOG(LogTemp, Warning, TEXT("Initialized SetEntityState Service !"));
     ROSServiceNode->AddServiceServer(TEXT("Attach"), UROS2AttachSrv::StaticClass(), AttachSrvCallback);
+    UE_LOG(LogTemp, Warning, TEXT("Initialized Attach Service !"));
     ROSServiceNode->AddServiceServer(TEXT("SpawnEntity"), UROS2SpawnEntitySrv::StaticClass(), SpawnEntitySrvCallback);
+    UE_LOG(LogTemp, Warning, TEXT("Initialized SpawnEntity Service !"));
+    ROSServiceNode->AddServiceServer(TEXT("SpawnEntities"), UROS2SpawnEntitiesSrv::StaticClass(), SpawnEntitiesSrvCallback);
+    UE_LOG(LogTemp, Warning, TEXT("Initialized SpawnEntities Service !"));
     ROSServiceNode->AddServiceServer(TEXT("DeleteEntity"), UROS2DeleteEntitySrv::StaticClass(), DeleteEntitySrvCallback);
+    UE_LOG(LogTemp, Warning, TEXT("Initialized DeleteEntity Service !"));
+
 
     // add all actors
 #if WITH_EDITOR
@@ -287,6 +298,60 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
 
     SpawnEntityService->SetResponse(Response);
 }
+
+
+void ASimulationState::SpawnEntitiesSrv(UROS2GenericSrv* Service)
+{
+    UROS2SpawnEntitiesSrv* SpawnEntitiesService = Cast<UROS2SpawnEntitiesSrv>(Service);
+    FROSSpawnEntities_Request Request;
+    SpawnEntitiesService->GetRequest(Request);
+
+    int numEntitySpawned = 0;
+    FString status_message = "";
+    for( uint i=0; i<Request.spawn_state_name.Num(); ++i ) 
+    {
+        UROS2SpawnEntitySrv SpawnEntityService;
+        FROSSpawnEntity_Request spawnEntityRequest;
+        spawnEntityRequest.xml = Request.spawn_state_xml[i];
+        spawnEntityRequest.robot_namespace = "";
+        spawnEntityRequest.state_name = Request.spawn_state_name[i];
+        spawnEntityRequest.state_pose_position_x = Request.spawn_state_pose_position[i].X;
+        spawnEntityRequest.state_pose_position_y = Request.spawn_state_pose_position[i].Y;
+        spawnEntityRequest.state_pose_position_z = Request.spawn_state_pose_position[i].Z;
+        spawnEntityRequest.state_pose_orientation = Request.spawn_state_pose_orientation[i];
+        spawnEntityRequest.state_twist_linear = Request.spawn_state_twist_linear[i];
+        spawnEntityRequest.state_twist_angular = Request.spawn_state_twist_angular[i];
+        spawnEntityRequest.state_reference_frame = Request.spawn_state_reference_frame[i];
+        spawnEntityRequest.tags.Add( Request.spawn_state_tags[i] );
+
+        SpawnEntityService.SetRequest( spawnEntityRequest );
+        SpawnEntitySrv( Cast<UROS2GenericSrv>( &SpawnEntityService ) );
+
+        FROSSpawnEntity_Response spawnEntityResponse;
+        SpawnEntityService.GetResponse( spawnEntityResponse );
+        if( spawnEntityResponse.success )
+        {
+            numEntitySpawned++;
+        } 
+        else 
+        {
+            status_message += Request.spawn_state_name[i] +" -> "+ spawnEntityResponse.status_message +"\n";
+        }
+    }
+
+    FROSSpawnEntities_Response Response;
+    if( numEntitySpawned == Request.spawn_state_name.Num() )
+    {
+        Response.success = true;
+        Response.status_message = "";
+    } else {
+        Response.success = false;
+        Response.status_message = status_message;
+    }
+
+    SpawnEntitiesService->SetResponse( Response );
+}
+
 
 void ASimulationState::DeleteEntitySrv(UROS2GenericSrv* Service)
 {

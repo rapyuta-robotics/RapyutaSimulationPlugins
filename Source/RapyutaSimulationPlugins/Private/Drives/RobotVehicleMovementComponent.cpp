@@ -25,6 +25,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 
     DesiredRotation = oldRotation * deltaRotation;
     DesiredMovement = (oldRotation * position);
+    //UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement -> DesiredMovement : %s"), DesiredMovement.ToString());
 
     // if Robot is on a moving platform, add the platform motion
     if (MovingPlatform != nullptr && bFollowPlatform)
@@ -138,8 +139,8 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             for (USceneComponent* Contact : ContactPoints)
             {
                 // get the contact points
-                // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Contact Point = %f %f %f"),
-                // Contact->GetComponentLocation().X, Contact->GetComponentLocation().Y, Contact->GetComponentLocation().Z );
+                //UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Contact Point = %f %f %f"),
+                //  Contact->GetComponentLocation().X, Contact->GetComponentLocation().Y, Contact->GetComponentLocation().Z );
                 FVector startPos = Contact->GetComponentLocation() + FVector(0., 0., RayOffsetUp);
                 FVector endPos = Contact->GetComponentLocation() - FVector(0., 0., RayOffsetDown);
                 bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(Hit,
@@ -182,8 +183,8 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             PlaneNormal.Normalize(0.01);
             if (PlaneNormal.Z < 0.)
                 PlaneNormal = -PlaneNormal;
-            // UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - PlaneNormal = %f %f %f"),
-            // PlaneNormal.X, PlaneNormal.Y, PlaneNormal.Z );
+            //UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - PlaneNormal = %f %f %f"),
+            //  PlaneNormal.X, PlaneNormal.Y, PlaneNormal.Z );
 
             FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), PlaneNormal);
             PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, PlaneNormal));
@@ -204,8 +205,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 
                 FVector HeightVariation = {0., 0., -MinDistance};
                 PawnOwner->AddActorWorldOffset(HeightVariation, true, &Hit, ETeleportType::TeleportPhysics);
-                // UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Distance Modification = %f"),
-                // MinDistance );
+                //UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Distance Modification = %f"), MinDistance );
             }
         }
     }
