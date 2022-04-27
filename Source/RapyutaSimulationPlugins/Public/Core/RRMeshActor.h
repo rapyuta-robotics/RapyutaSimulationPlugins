@@ -54,7 +54,7 @@ public:
     TArray<TMeshComp*> CreateMeshComponentList(USceneComponent* InParentComp,
                                                const TArray<FString>& InMeshUniqueNameList,
                                                const TArray<FTransform>& InMeshRelTransf = TArray<FTransform>(),
-                                               const TArray<FString>& InMeshMaterialNameList = TArray<FString>())
+                                               const TArray<FString>& InMaterialNameList = TArray<FString>())
     {
         // (Note) This method could be invoked multiple times
         TArray<TMeshComp*> addedMeshCompList;
@@ -62,9 +62,9 @@ public:
         {
             verify(InMeshRelTransf.Num() == InMeshUniqueNameList.Num());
         }
-        if (InMeshMaterialNameList.Num() > 0)
+        if (InMaterialNameList.Num() > 0)
         {
-            verify(InMeshMaterialNameList.Num() == InMeshUniqueNameList.Num());
+            verify(InMaterialNameList.Num() == InMeshUniqueNameList.Num());
         }
 
         TMeshComp* meshComp = nullptr;
@@ -90,9 +90,9 @@ public:
                 meshUniqueName,
                 FString::Printf(TEXT("%s_MeshComp_%ld"), *ActorInfo->UniqueName, count++),
                 InMeshRelTransf.IsValidIndex(i) ? InMeshRelTransf[i] : FTransform::Identity,
-                ActorInfo->IsStationary,
-                ActorInfo->IsPhysicsEnabled,
-                ActorInfo->IsCollisionEnabled,
+                ActorInfo->bIsStationary,
+                ActorInfo->bIsPhysicsEnabled,
+                ActorInfo->bIsCollisionEnabled,
                 InParentComp);
 
             if (meshComp)
@@ -103,10 +103,6 @@ public:
                     // (Note) This must be the full path to the mesh file on disk
                     if (meshComp->InitializeMesh(meshUniqueName))
                     {
-                        if (InMeshMaterialNameList.IsValidIndex(i))
-                        {
-                            URRUObjectUtils::CreateMeshCompMaterialInstance(meshComp, i, InMeshMaterialNameList[i]);
-                        }
                         addedMeshCompList.AddUnique(meshComp);
                     }
                     else
@@ -116,10 +112,6 @@ public:
                 }
                 else
                 {
-                    if (InMeshMaterialNameList.IsValidIndex(i))
-                    {
-                        URRUObjectUtils::CreateMeshCompMaterialInstance(meshComp, i, InMeshMaterialNameList[i]);
-                    }
                     addedMeshCompList.AddUnique(meshComp);
                     OnBodyComponentMeshCreationDone(true, meshComp);
                 }

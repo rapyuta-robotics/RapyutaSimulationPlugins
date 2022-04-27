@@ -42,7 +42,7 @@ bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
               : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CAPSULE)  ? ERRShapeType::CAPSULE
                                                                              : ERRShapeType::MESH;
 
-#if RAPYUTA_SIM_VISUAL_DEBUG
+#if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore,
            Warning,
            TEXT("URRProceduralMeshComponent::InitializeMesh: %s - %s - Already loaded %d"),
@@ -173,7 +173,7 @@ bool URRProceduralMeshComponent::CreateMeshBody()
             {
                 convexMeshes.Emplace(mesh.Vertices);
             }
-#if RAPYUTA_SIM_VISUAL_DEBUG
+#if RAPYUTA_SIM_DEBUG
             UE_LOG(LogRapyutaCore, Display, TEXT("Proc mesh-Convex Collision added: %d"), node.Meshes.Num());
 #endif
         }

@@ -96,49 +96,31 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
 {
     GENERATED_BODY()
 
-    FRRActorSpawnInfo()
-    {
-    }
-
+    FRRActorSpawnInfo();
     FRRActorSpawnInfo(const FString& InEntityModelName,
                       const FString& InUniqueName,
-                      const FTransform& InTransform,
-                      const TArray<FString>& InMeshMaterialNameList = TArray<FString>(),
-                      bool bIsStationary = false,
-                      bool bIsPhysicsEnabled = false,
-                      bool bIsCollisionEnabled = false);
-
-    FRRActorSpawnInfo(const FString& InEntityModelName,
-                      const FString& InUniqueName,
-                      const FTransform& InTransform,
-                      const FString& InMeshUniqueName,
-                      const TArray<FString>& InMeshMaterialNameList = TArray<FString>(),
-                      bool bIsStationary = false,
-                      bool bIsPhysicsEnabled = false,
-                      bool bIsCollisionEnabled = false);
-
-    FRRActorSpawnInfo(const FString& InEntityModelName,
-                      const FString& InUniqueName,
-                      const FTransform& InTransform,
-                      const TArray<FString>& InMeshUniqueNameList,
-                      const TArray<FString>& InMeshMaterialNameList = TArray<FString>(),
-                      bool bIsStationary = false,
-                      bool bIsPhysicsEnabled = false,
-                      bool bIsCollisionEnabled = false);
+                      const FTransform& InActorTransform,
+                      const TArray<FTransform>& InMeshRelTransformList = TArray<FTransform>(),
+                      const TArray<FString>& InMeshUniqueNameList = TArray<FString>(),
+                      const TArray<FString>& InMaterialNameList = TArray<FString>(),
+                      bool bInIsStationary = false,
+                      bool bInIsPhysicsEnabled = false,
+                      bool bInIsCollisionEnabled = false);
 
     void operator()(const FString& InEntityModelName,
                     const FString& InUniqueName,
-                    const FTransform& InTransform = FTransform::Identity,
-                    const FString& InMeshUniqueName = FString(),
-                    const TArray<FString>& InMeshMaterialNameList = TArray<FString>(),
-                    bool bIsStationary = false,
-                    bool bIsPhysicsEnabled = false,
-                    bool bIsCollisionEnabled = false);
+                    const FTransform& InActorTransform = FTransform::Identity,
+                    const TArray<FTransform>& InMeshRelTransformList = TArray<FTransform>(),
+                    const TArray<FString>& InMeshUniqueNameList = TArray<FString>(),
+                    const TArray<FString>& InMaterialNameList = TArray<FString>(),
+                    bool bInIsStationary = false,
+                    bool bInIsPhysicsEnabled = false,
+                    bool bInIsCollisionEnabled = false);
 
     void ClearMeshInfo()
     {
         MeshUniqueNameList.Reset();
-        MeshMaterialNameList.Reset();
+        MaterialNameList.Reset();
     }
 
     UPROPERTY()
@@ -153,28 +135,31 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
     FString UniqueName;
 
     UPROPERTY()
-    FTransform Transform;
+    FTransform ActorTransform = FTransform::Identity;
+
+    UPROPERTY()
+    TArray<FTransform> MeshRelTransformList;
 
     UPROPERTY()
     TArray<FString> MeshUniqueNameList;
 
     UPROPERTY()
-    TArray<FString> MeshMaterialNameList;
+    TArray<FString> MaterialNameList;
 
     UPROPERTY()
-    bool IsTickEnabled = false;
+    uint8 bIsTickEnabled : 1;
 
     UPROPERTY()
-    bool IsStationary = false;
+    uint8 bIsStationary : 1;
 
     UPROPERTY()
-    bool IsPhysicsEnabled = true;
+    uint8 bIsPhysicsEnabled : 1;
 
     UPROPERTY()
-    bool IsCollisionEnabled = true;
+    uint8 bIsCollisionEnabled : 1;
 
     UPROPERTY(EditAnywhere, Category = "Info")
-    bool IsSelfCollision = false;
+    uint8 bIsSelfCollision : 1;
 
     // Spawn Configuration Info --
     // [MeshComList] now belongs to [ARRMeshActor], only which SpawnSimActor<T> spawns
@@ -183,7 +168,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
 
     bool IsValid(bool bIsLogged = false) const
     {
-        return true;
+        return (false == EntityModelName.IsEmpty());
     }
 };
 

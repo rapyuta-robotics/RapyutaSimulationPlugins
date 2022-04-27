@@ -353,7 +353,7 @@ public:
         spawnInfo.SpawnCollisionHandlingOverride = CollisionHandlingType;
         T* newSimActor = InWorld->SpawnActor<T>(
             InActorSpawnInfo.TypeClass ? static_cast<UClass*>(InActorSpawnInfo.TypeClass) : static_cast<UClass*>(T::StaticClass()),
-            InActorSpawnInfo.Transform,
+            InActorSpawnInfo.ActorTransform,
             spawnInfo);
 
         if (newSimActor)
@@ -375,7 +375,7 @@ public:
                    newSimActor,
                    *spawnInfo.Name.ToString(),
                    *newSimActor->GetName(),
-                   *InActorSpawnInfo.Transform.ToString(),
+                   *InActorSpawnInfo.ActorTransform.ToString(),
                    *newSimActor->GetActorTransform().ToString());
 #endif
         }

@@ -45,7 +45,7 @@ bool ARRBaseActor::Initialize()
     std::call_once(*OnceFlagList[thisClass], [this]() { PrintSimConfig(); });
 
     // Tick setup
-    SetTickEnabled(ActorInfo ? ActorInfo->IsTickEnabled : false);
+    SetTickEnabled(ActorInfo ? ActorInfo->bIsTickEnabled : false);
 
     // SETUP + CONFIGURE ESSENTIAL GAME & SIM COMMON OBJECTS
     GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);

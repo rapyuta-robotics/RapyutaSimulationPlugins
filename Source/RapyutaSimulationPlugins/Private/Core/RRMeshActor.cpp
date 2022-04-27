@@ -33,16 +33,17 @@ bool ARRMeshActor::Initialize()
     if (ActorInfo.IsValid())
     {
         ToBeCreatedMeshesNum = ActorInfo->MeshUniqueNameList.Num();
-        CreateMeshComponentList<URRMeshComponent>(GetRootComponent(), ActorInfo->MeshUniqueNameList);
+        CreateMeshComponentList<URRMeshComponent>(
+            GetRootComponent(), ActorInfo->MeshUniqueNameList, ActorInfo->MeshRelTransformList, ActorInfo->MaterialNameList);
     }
 
-    // 2- By default, a block object has its CustomDepthRender enabled, which is cheap, for segmask capturing.
+    // 2- By default, a mesh actor has its CustomDepthRender enabled, which is cheap, for segmask capturing.
     // This requires MeshCompList having been created
     SetCustomDepthEnabled(true);
 
     // 3- This will take effect on all child mesh components
-    GetRootComponent()->SetMobility((ActorInfo.IsValid() && ActorInfo->IsStationary) ? EComponentMobility::Stationary
-                                                                                     : EComponentMobility::Movable);
+    GetRootComponent()->SetMobility((ActorInfo.IsValid() && ActorInfo->bIsStationary) ? EComponentMobility::Stationary
+                                                                                      : EComponentMobility::Movable);
     return true;
 }
 
@@ -141,6 +142,19 @@ void ARRMeshActor::DeclareFullCreation(bool bInCreationResult)
     else
     {
         UE_LOG(LogRapyutaCore, Error, TEXT("[%s] MESH ACTOR CREATION FAILED!"), *GetName());
+    }
+
+    // (NOTE) Since [ProcMeshComp] also created a default material instance once mesh section is built,
+    // [ActorInfo]'s Override materials could only be set here once the full creation is done.
+    if (ActorInfo.IsValid())
+    {
+        for (auto i = 0; i < ActorInfo->MeshUniqueNameList.Num(); ++i)
+        {
+            if (ActorInfo->MaterialNameList.IsValidIndex(i))
+            {
+                URRUObjectUtils::CreateMeshCompMaterialInstance(MeshCompList[i], 0, ActorInfo->MaterialNameList[i]);
+            }
+        }
     }
 
     // SIGNAL [MESH ACTOR]

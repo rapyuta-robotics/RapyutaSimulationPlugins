@@ -66,91 +66,66 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
 // ===================================================================================================================================
 // [FRRActorSpawnInfo] --
 //
-FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
-                                     const FString& InUniqueName,
-                                     const FTransform& InTransform,
-                                     const TArray<FString>& InMeshMaterialNameList,
-                                     bool bIsStationary,
-                                     bool bIsPhysicsEnabled,
-                                     bool bIsCollisionEnabled)
+FRRActorSpawnInfo::FRRActorSpawnInfo()
 {
-    (*this)(InEntityModelName,
-            InUniqueName,
-            InTransform,
-            EMPTY_STR,
-            InMeshMaterialNameList,
-            bIsStationary,
-            bIsPhysicsEnabled,
-            bIsCollisionEnabled);
+    bIsTickEnabled = false;
+    bIsStationary = false;
+    bIsPhysicsEnabled = true;
+    bIsCollisionEnabled = true;
+    bIsSelfCollision = false;
 }
 
 FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
                                      const FString& InUniqueName,
-                                     const FTransform& InTransform,
-                                     const FString& InMeshUniqueName,
-                                     const TArray<FString>& InMeshMaterialNameList,
-                                     bool bIsStationary,
-                                     bool bIsPhysicsEnabled,
-                                     bool bIsCollisionEnabled)
-{
-    (*this)(InEntityModelName,
-            InUniqueName,
-            InTransform,
-            InMeshUniqueName,
-            InMeshMaterialNameList,
-            bIsStationary,
-            bIsPhysicsEnabled,
-            bIsCollisionEnabled);
-}
-
-FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
-                                     const FString& InUniqueName,
-                                     const FTransform& InTransform,
+                                     const FTransform& InActorTransform,
+                                     const TArray<FTransform>& InMeshRelTransformList,
                                      const TArray<FString>& InMeshUniqueNameList,
-                                     const TArray<FString>& InMeshMaterialNameList,
-                                     bool bIsStationary,
-                                     bool bIsPhysicsEnabled,
-                                     bool bIsCollisionEnabled)
+                                     const TArray<FString>& InMaterialNameList,
+                                     bool bInIsStationary,
+                                     bool bInIsPhysicsEnabled,
+                                     bool bInIsCollisionEnabled)
     : EntityModelName(InEntityModelName),
       UniqueName(InUniqueName),
-      Transform(InTransform),
+      ActorTransform(InActorTransform),
+      MeshRelTransformList(InMeshRelTransformList),
       MeshUniqueNameList(InMeshUniqueNameList),
-      MeshMaterialNameList(InMeshMaterialNameList),
-      IsStationary(bIsStationary),
-      IsPhysicsEnabled(bIsPhysicsEnabled),
-      IsCollisionEnabled(bIsCollisionEnabled)
+      MaterialNameList(InMaterialNameList),
+      bIsStationary(bInIsStationary),
+      bIsPhysicsEnabled(bInIsPhysicsEnabled),
+      bIsCollisionEnabled(bInIsCollisionEnabled)
 {
+    bIsTickEnabled = false;
+    bIsSelfCollision = false;
 }
 
 void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
                                    const FString& InUniqueName,
-                                   const FTransform& InTransform,
-                                   const FString& InMeshUniqueName,
-                                   const TArray<FString>& InMeshMaterialNameList,
-                                   bool bIsStationary,
-                                   bool bIsPhysicsEnabled,
-                                   bool bIsCollisionEnabled)
+                                   const FTransform& InActorTransform,
+                                   const TArray<FTransform>& InMeshRelTransformList,
+                                   const TArray<FString>& InMeshUniqueNameList,
+                                   const TArray<FString>& InMaterialNameList,
+                                   bool bInIsStationary,
+                                   bool bInIsPhysicsEnabled,
+                                   bool bInIsCollisionEnabled)
 {
     EntityModelName = InEntityModelName;
+    UniqueName = InUniqueName;
 
-    // Take in only if either one is NOT EMPTY!
-    if (!InMeshUniqueName.IsEmpty())
-    {
-        MeshUniqueNameList.Add(InMeshUniqueName);
-    }
+    MeshUniqueNameList = InMeshUniqueNameList;
+    MeshUniqueNameList.Remove(EMPTY_STR);
+    MeshRelTransformList = InMeshRelTransformList;
 
     // Even if this actor has mesh content, it could use the [StaticMesh]'s built-in materials.
-    // Thus, [MeshMaterialNameList], which is configured to be passed in at [ARRMeshActor] spawning,
+    // Thus, [MaterialNameList], which is configured to be passed in at [ARRMeshActor] spawning,
     // does NOT NECESSARILY always contain some material!
-    MeshMaterialNameList = InMeshMaterialNameList;
-    MeshMaterialNameList.Remove(EMPTY_STR);
+    MaterialNameList = InMaterialNameList;
+    MaterialNameList.Remove(EMPTY_STR);
 
-    UniqueName = InUniqueName;
-    Transform = InTransform;
-
-    IsStationary = bIsStationary;
-    IsPhysicsEnabled = bIsPhysicsEnabled;
-    IsCollisionEnabled = bIsCollisionEnabled;
+    bIsStationary = bInIsStationary;
+    bIsPhysicsEnabled = bInIsPhysicsEnabled;
+    bIsCollisionEnabled = bInIsCollisionEnabled;
+    bIsTickEnabled = false;
+    bIsSelfCollision = false;
 }
 
 // ===================================================================================================================================
