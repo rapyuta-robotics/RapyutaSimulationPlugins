@@ -145,11 +145,11 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
     return newActor;
 }
 
-
 UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                           int32 InMaterialIndex,
                                                                           const FString& InMaterialInterfaceName)
 {
+    verify(IsValid(InMeshComp));
     const FString& dynamicMaterialName = FString::Printf(TEXT("%s%s"), *InMeshComp->GetName(), *InMaterialInterfaceName);
     return InMeshComp->CreateDynamicMaterialInstance(
         InMaterialIndex, URRGameSingleton::Get()->GetMaterial(InMaterialInterfaceName), FName(*dynamicMaterialName));
