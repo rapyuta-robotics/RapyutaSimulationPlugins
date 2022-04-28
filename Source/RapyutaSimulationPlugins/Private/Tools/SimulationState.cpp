@@ -334,13 +334,17 @@ void ASimulationState::SpawnEntitiesSrv(UROS2GenericSrv* Service)
             FVector Pos(spawnEntityRequest.state_pose_position_x, spawnEntityRequest.state_pose_position_y, spawnEntityRequest.state_pose_position_z);
             UE_LOG(LogRapyutaCore, Warning, TEXT(" -> spawnEntityRequest.state_pose_position : %s"), *Pos.ToString());
             FTransform relativeTransf(spawnEntityRequest.state_pose_orientation, Pos);
+            relativeTransf = ConversionUtils::TransformROSToUE( relativeTransf );
             FTransform worldTransf;
             URRGeneralUtils::GetWorldTransform(
                 spawnEntityRequest.state_reference_frame,
                 Entities.Contains(spawnEntityRequest.state_reference_frame) ? Entities[spawnEntityRequest.state_reference_frame] : nullptr,
                 relativeTransf,
                 worldTransf);
-            worldTransf = ConversionUtils::TransformROSToUE(worldTransf);
+            if( Entities.Contains(spawnEntityRequest.state_reference_frame) )
+                UE_LOG(LogRapyutaCore, Warning, TEXT(" -> reference frame %s : %s"), *spawnEntityRequest.state_reference_frame, *Entities[spawnEntityRequest.state_reference_frame]->GetActorTransform().ToString());
+            //UE_LOG(LogRapyutaCore, Warning, TEXT(" -> worldTransf before TransformROSToUE : %s"), *worldTransf.ToString());
+            //worldTransf = ConversionUtils::TransformROSToUE(worldTransf);
             UE_LOG(LogRapyutaCore, Warning, TEXT(" -> worldTransf used with SpawnActorDeferred : %s"), *worldTransf.ToString());
 
             AActor* NewEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[spawnEntityRequest.xml], worldTransf);
