@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRRobotVehicleROSController.h
+ * @brief Base Robot ROS controller class. Other robot controller class should inherit from this class. Example is #ATurtlebotROSController.
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -16,9 +20,16 @@
 
 #include "RRRobotVehicleROSController.generated.h"
 
-// (NOTE) Each robot would have a ROS-AI Controller thus also a ROS2Node for its own
-// https://answers.unrealengine.com/questions/871116/view.html
-// https://answers.unrealengine.com/questions/239159/how-many-ai-controllers-should-i-have.html
+
+/**
+ * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class. 
+ * This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
+ * You can find example at #ATurtlebotROSController.
+ * 
+ * @sa [AAIController](https://docs.unrealengine.com/4.27/en-US/API/Runtime/AIModule/AAIController/)
+ * @sa https://answers.unrealengine.com/questions/871116/view.html
+ * @sa https://answers.unrealengine.com/questions/239159/how-many-ai-controllers-should-i-have.html
+ */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public AAIController
 {
@@ -27,26 +38,55 @@ class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public AAICont
 protected:
     UPROPERTY(Transient)
     AROS2Node* RobotROS2Node = nullptr;
+
+    /**
+     * @brief Spawn ROS2Node and initialize it. This method is mainly used by #ASimulationState to spawn from ROS2 service.
+     * 
+     * @param InPawn 
+     */
     void InitRobotROS2Node(APawn* InPawn);
 
+    //! @todo is this used?
     UPROPERTY()
     FVector InitialPosition = FVector::ZeroVector;
 
+    //! @todo is this used?
     UPROPERTY()
     FRotator InitialOrientation = FRotator::ZeroRotator;
 
     UPROPERTY(Transient, BlueprintReadWrite)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
+
+    /**
+     * @brief Initialize non sensor publishes such as odometry.
+     * 
+     */
     UFUNCTION()
     virtual bool InitPublishers(APawn* InPawn);
 
+    /**
+     * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg. 
+     * Typically this receive Twist msg to move robot.
+     * 
+     */
     UFUNCTION()
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
 
+    /**
+     * @brief Initialize by calling #InitRobotROS2Node, #ARobotVehicle's InitSensors and #InitPublishers.
+     * 
+     * @sa [OnPossess](https://docs.unrealengine.com/4.27/en-US/API/Runtime/AIModule/AAIController/OnPossess/)
+     * @param InPawn 
+     */
     virtual void OnPossess(APawn* InPawn) override;
 
     virtual void OnUnPossess() override;
 
+    /**
+     * @brief Setup ROS2 subscriber by binding #MovementCallback.
+     * 
+     * @param InTopicName 
+     */
     UFUNCTION(BlueprintCallable)
     void SubscribeToMovementCommandTopic(const FString& InTopicName);
 

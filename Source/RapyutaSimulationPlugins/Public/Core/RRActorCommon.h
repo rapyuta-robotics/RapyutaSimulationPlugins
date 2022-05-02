@@ -1,6 +1,12 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRActorCommon.h
+ * @brief Asset utils
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
+
 // !NOTE: THIS FILE IS THE CORE INCLUDED FILE, THUS IT IS HIGHLY NON-RECOMMENDED TO INCLUDE OTHER FILES HERE-IN TO AVOID CYCLIC
 // INCLUSION.
 #include "CoreMinimal.h"
@@ -29,6 +35,10 @@ class ARRGameState;
 class ARRMeshActor;
 class URRCoreUtils;
 
+/**
+ * @brief todo
+ * @todo should avoid hardcoded versioning in C++ file.
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRapyutaSimVersionInfo
 {
@@ -54,6 +64,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRapyutaSimVersionInfo
 
 static const FRapyutaSimVersionInfo RAPYUTA_SIM_VERSION_INFO({0, 0, 1});
 
+/**
+ * @brief todo
+ * 
+ */
 UENUM()
 enum class ERRFileType : uint8
 {
@@ -76,6 +90,10 @@ enum class ERRFileType : uint8
     TOTAL
 };
 
+/**
+ * @brief todo
+ * 
+ */
 UENUM()
 enum class ERRShapeType : uint8
 {
@@ -89,8 +107,10 @@ enum class ERRShapeType : uint8
     TOTAL
 };
 
-// SIM ACTOR SPAWN INFO --
-//
+/**
+ * @brief todo
+ * 
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
 {
@@ -177,6 +197,10 @@ DECLARE_DELEGATE_ThreeParams(FOnMeshActorFullyCreated,
                              ARRMeshActor*,
                              const FString& /* Actor's EntityModelName*/);
 
+/**
+ * @brief Common actor
+ * @todo add documentation
+ */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API URRActorCommon : public UObject
 {
@@ -272,6 +296,12 @@ public:
 
 class ARRSceneDirector;
 class ARRPlayerController;
+
+
+/**
+ * @brief Scene Instance
+ * @todo add documentation
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRSceneInstance : public UObject
 {

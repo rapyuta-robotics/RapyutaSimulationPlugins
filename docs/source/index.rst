@@ -8,12 +8,10 @@ Welcome to RapyutaSimulationPlugins's documentation!
 RapyutaSimulationPlugins provide Actor and ActorComponents 
 which provide feature to control Actor from ROS2, output simulated sensor to ROS2 and etc.
 
-RapyutaSimulationPlugins depends on `rclUE <https://rclue.readthedocs.io/en/devel/index.html>`_ 
-to create ROS2 Node, Publisher/Subscriber, Serve server/client, and Action server/clients.
+This plugin belongs to a group of rclUE softwares which contains multiple repositories. 
+Please check `rclUE <https://rclue.readthedocs.io/en/devel/index.html>`_  to understand overview of rclUE related repositories.
 
-Pleaase check `rclUE <https://rclue.readthedocs.io/en/devel/index.html>`_  to check overview of software architecture.
-
-A demo of our tool can be found in our port of the `turtlebot examples of UE4 <https://github.com/rapyuta-robotics/turtlebot3-UE>`_.
+A demo of our tool can be found in the `turtlebot examples of UE4 <https://github.com/rapyuta-robotics/turtlebot3-UE>`_.
 
 Repositories
 ------------
@@ -26,5 +24,6 @@ Contents
 
 .. toctree::
    
+   overview
    components
    api

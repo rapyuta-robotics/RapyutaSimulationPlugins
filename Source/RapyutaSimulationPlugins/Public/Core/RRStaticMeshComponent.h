@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRStaticMeshComponent.h
+ * @brief static mesh component
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -15,6 +20,10 @@
 #include "RRStaticMeshComponent.generated.h"
 
 // [URRStaticMeshComponent] - COMPONENT OF [ARRMeshActor] --
+/**
+ * @brief Component of #ARRMeshActor. UStaticMeshComponent with utils.
+ * @todo documentation.
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRStaticMeshComponent : public UStaticMeshComponent
 {
@@ -56,6 +65,10 @@ public:
     UFUNCTION()
     FVector GetScaledExtent() const;
 
+    /**
+     * @brief  This function is used proprietarily for Generic Link/Joint (Non-Articulation) structure.
+     * 
+     */
     UFUNCTION()
     void LockSelf();
 

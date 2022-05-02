@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRGameState.h
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -16,6 +20,13 @@ class ARRGameMode;
 class URRGameInstance;
 class ARRPlayerController;
 
+/**
+ * @brief Game state
+ *
+ * @sa [AGameState](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameState/)
+ *
+ * @todo add documentation
+ */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRGameState : public AGameState
 {

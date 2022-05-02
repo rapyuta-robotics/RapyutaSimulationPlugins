@@ -1,6 +1,12 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRMeshData.h
+ * @brief MeshData.
+ * @sa  https://github.com/Chrizey91/RuntimeMeshLoader/blob/main/Source/RuntimeMeshLoader/Public/MeshLoader.h
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 #pragma once
-// Ref: https://github.com/Chrizey91/RuntimeMeshLoader/blob/main/Source/RuntimeMeshLoader/Public/MeshLoader.h
 
 // Native
 #include <string>
@@ -24,6 +30,10 @@ DECLARE_DELEGATE_TwoParams(FOnMeshCreationDone, bool /* bCreationResult */, UObj
 
 #define RAPYUTA_MESH_VISUAL_DEBUG (1)
 
+/**
+ * @brief todo
+ * 
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneProperty
 {
@@ -48,6 +58,10 @@ public:
     void PrintSelf() const;
 };
 
+/**
+ * @brief todo
+ * 
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluence
 {
@@ -62,7 +76,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluence
 };
 
 /**
- *	Contains the vertices that are most dominated by that bone. Vertices are in Bone space.
+ *	@brief Contains the vertices that are most dominated by that bone. Vertices are in Bone space.
  *	Not used at runtime, but useful for fitting physics assets etc.
  */
 USTRUCT()
@@ -77,6 +91,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
     TArray<FVector> Normals;
 };
 
+/**
+ * @brief todo
+ * 
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluenceList
 {
@@ -85,6 +103,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluenceList
     TArray<FRRBoneInfluence> BoneInfluenceList;
 };
 
+/**
+ * @brief todo
+ * 
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
 {
@@ -124,6 +146,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
     void PrintSelf() const;
 };
 
+/**
+ * @brief todo
+ * 
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNode
 {
@@ -139,6 +165,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNode
     TArray<FRRMeshNodeData> Meshes;
 };
 
+/**
+ * @brief todo
+ * 
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshData
 {

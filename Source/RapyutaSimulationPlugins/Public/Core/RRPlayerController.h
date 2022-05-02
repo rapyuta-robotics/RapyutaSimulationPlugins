@@ -1,4 +1,10 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRPlayerController.h
+ * @brief Player controller with ARRGameMode, ARRGameState, URRGameInstance and URRActorCommon.
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 #pragma once
 // UE
 #include "GameFramework/PlayerController.h"
@@ -14,6 +20,10 @@ class ARRGameState;
 class URRGameInstance;
 class ARRActorCommon;
 
+/**
+ * @brief Player controller with ARRGameMode, ARRGameState, URRGameInstance and URRActorCommon
+ * 
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRPlayerController : public APlayerController
 {
@@ -45,5 +55,10 @@ public:
 
 protected:
     virtual bool Initialize();
+
+    /**
+     * @brief Get and initialize ARRGameMode, ARRGameState, URRGameInstance and URRActorCommon.
+     * 
+     */
     virtual void BeginPlay() override;
 };

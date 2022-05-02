@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRAssetUtils.h
+ * @brief Asset utils
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 
 #pragma once
 
@@ -15,6 +20,10 @@
 
 #include "RRAssetUtils.generated.h"
 
+/**
+ * @brief Asset utils.
+ * 
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRAssetUtils : public UBlueprintFunctionLibrary
 {
@@ -160,7 +169,17 @@ public:
         return true;
     }
 
-    // Ref: https://docs.unrealengine.com/en-US/Programming/Assets/AsyncLoading/index.html
+    /**
+     * @brief Load asset with UObjectLibrary.
+     * 
+     * @tparam T 
+     * @param InAssetsPath 
+     * @param OutAssetDataList 
+     * @param bHasBPAsset 
+     * @param bIsFullLoad 
+     * @sa [UObjectLibrary](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UObjectLibrary/)
+     * @sa [AsyncLoading](https://docs.unrealengine.com/en-US/Programming/Assets/AsyncLoading/index.html)
+     */
     template<typename T>
     static void LoadAssetDataList(const FString& InAssetsPath,
                                   TArray<FAssetData>& OutAssetDataList,

@@ -36,11 +36,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FActors
 
 class UROS2GenericSrv;
 
-<<<<<<< HEAD
 // (NOTE) To be renamed ARRROS2SimulationState, due to its inherent attachment to ROS2 Node
 // & thus house [Entities] spawned by ROS services, and  with ROS relevance.
 // However, check for its usage in BP and refactor if there is accordingly!
-=======
 /**
  * @brief Provide ROS2 interfaces to interact with UE4.
  * Supportted interactions: GetEntityState, SetEntityState, Attach, SpawnEntity, DeleteEntity
@@ -50,7 +48,6 @@ class UROS2GenericSrv;
  * SimulationState can spawn only actors in #SpawnableEntities which actors can be added to by #AddSpawnableEntities.
  * 
  */
->>>>>>> 46074a9 (add documentation to Tools)
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ASimulationState : public AActor
 {

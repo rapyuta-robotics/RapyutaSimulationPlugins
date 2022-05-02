@@ -1,4 +1,10 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRConversionUtils.h
+ * @brief Convertions between ROS and UE, i.e. 
+ * m <-> cm 
+ * Left handed <-> Right handed.
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -159,6 +165,11 @@ inline static FROSOdometry OdomROSToUE(const FROSOdometry& Input)
 
 }    // namespace ConversionUtils
 
+/**
+ * @brief Convertions between ROS and UE, i.e. 
+ * - m <-> cm 
+ * - Left handed <-> Right handed.
+ */
 UCLASS()
 class URRConversionUtils : public UBlueprintFunctionLibrary
 {
