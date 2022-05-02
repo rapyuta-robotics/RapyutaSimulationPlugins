@@ -133,8 +133,8 @@ void ARRGameState::InitializeSim(int8 InSceneInstanceId)
     // This, due to making use of scene instance's actors, is spawned last.
     // ALSO, we should not write Scene-specific operation/functionality-related -starting codes inside scene instance's actors
     // (camera, actors, spawners) and leave it up to [SceneDirector] to decide the start sequence order!
-    sceneInstance->SceneDirector =
-        Cast<ARRSceneDirector>(URRUObjectUtils::SpawnSimActor(GetWorld(), InSceneInstanceId, sceneInstance->SceneDirectorClass));
+    sceneInstance->SceneDirector = Cast<ARRSceneDirector>(
+        URRUObjectUtils::SpawnSimActor(GetWorld(), InSceneInstanceId, sceneInstance->SceneDirectorClass, TEXT("SceneDirector")));
     verify(sceneInstance->SceneDirector);
     UE_LOG(LogRapyutaCore,
            Display,

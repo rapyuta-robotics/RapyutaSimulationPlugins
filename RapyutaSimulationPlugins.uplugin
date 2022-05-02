@@ -23,9 +23,13 @@
 		}
 	],
 	"Plugins": [
-	 {
-	   "Name": "rclUE",
-	   "Enabled": true
-	 }
+		{
+	   		"Name": "ProceduralMeshComponent",
+	   		"Enabled": true
+		},
+ 		{
+			"Name": "rclUE",
+			"Enabled": true
+		}
    ]
 }

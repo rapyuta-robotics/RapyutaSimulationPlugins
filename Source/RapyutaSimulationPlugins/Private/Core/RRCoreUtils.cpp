@@ -23,13 +23,14 @@ const TMap<ERRFileType, const TCHAR*> URRCoreUtils::SimFileExts = {
     {ERRFileType::NONE, EMPTY_STR},
     {ERRFileType::UASSET, TEXT(".uasset")},
     {ERRFileType::INI, TEXT(".ini")},
+    {ERRFileType::YAML, TEXT(".yaml")},
     {ERRFileType::IMAGE_JPG, TEXT(".jpg")},
     {ERRFileType::IMAGE_PNG, TEXT(".png")},
     {ERRFileType::IMAGE_EXR, TEXT(".exr")},
+    {ERRFileType::IMAGE_HDR, TEXT(".hdr")},
     {ERRFileType::URDF, TEXT(".urdf")},
     {ERRFileType::SDF, TEXT(".sdf")},
     {ERRFileType::GAZEBO_WORLD, TEXT(".world")},
-    {ERRFileType::YAML, TEXT(".yaml")},
     {ERRFileType::MJCF, TEXT(".mjcf")},
 };
 

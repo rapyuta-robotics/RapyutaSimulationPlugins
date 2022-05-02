@@ -333,6 +333,7 @@ public:
 
     static void StopRegisteredTimer(UWorld* InWorld, FTimerHandle& InTimerHandle)
     {
+        check(IsValid(InWorld));
         // Also invalidate the timer here-in!
         InWorld->GetTimerManager().ClearTimer(InTimerHandle);
     }
@@ -341,17 +342,47 @@ public:
     FORCEINLINE static FTimerHandle PlanToExecuteOnNextTick(T* InObj,
                                                             typename FTimerDelegate::TUObjectMethodDelegate<T>::FMethodPtr InMethod)
     {
+        check(IsValid(InObj));
         return InObj->GetWorld()->GetTimerManager().SetTimerForNextTick(InObj, InMethod);
     }
 
     FORCEINLINE static FTimerHandle PlanToExecuteOnNextTick(UWorld* InWorld, const FTimerDelegate& InTimerDelegate)
     {
+        check(IsValid(InWorld));
         return InWorld->GetTimerManager().SetTimerForNextTick(InTimerDelegate);
     }
 
     FORCEINLINE static FTimerHandle PlanToExecuteOnNextTick(UWorld* InWorld, TFunction<void()> InCallback)
     {
+        check(IsValid(InWorld));
         return InWorld->GetTimerManager().SetTimerForNextTick(MoveTemp(InCallback));
+    }
+
+    template<typename T>
+    FORCEINLINE static void RegisterRepeatedExecution(T* InObj,
+                                                      FTimerHandle& InTimerHandle,
+                                                      typename FTimerDelegate::TUObjectMethodDelegate<T>::FMethodPtr InMethod,
+                                                      float InRate = 0.5f)
+    {
+        check(IsValid(InObj));
+        InObj->GetWorld()->GetTimerManager().SetTimer(InTimerHandle, InObj, InMethod, InRate, true);
+    }
+
+    template<typename T>
+    FORCEINLINE static void RegisterRepeatedExecution(T* InObj,
+                                                      FTimerHandle& InTimerHandle,
+                                                      TFunction<void()> Callback,
+                                                      float InRate = 0.5f)
+    {
+        check(IsValid(InObj));
+        InObj->GetWorld()->GetTimerManager().SetTimer(InTimerHandle, MoveTemp(Callback), InRate, true);
+    }
+
+    static void StopRegisteredExecution(UWorld* InWorld, FTimerHandle& InTimerHandle)
+    {
+        check(IsValid(InWorld));
+        // Also invalidate it here-in!
+        InWorld->GetTimerManager().ClearTimer(InTimerHandle);
     }
 
     // -------------------------------------------------------------------------------------------------------------------------
