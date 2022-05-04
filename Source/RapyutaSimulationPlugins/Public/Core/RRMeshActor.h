@@ -89,13 +89,10 @@ public:
             const FString& meshUniqueName = InMeshUniqueNameList[i];
 
             // [ProcMeshComp] Verify path as absolute & existing
-            if constexpr (TIsSame<TMeshComp, URRProceduralMeshComponent>::Value)
+            if ((false == FPaths::IsRelative(meshUniqueName)) && (false == FPaths::FileExists(meshUniqueName)))
             {
-                if ((false == FPaths::IsRelative(meshUniqueName)) && (false == FPaths::FileExists(meshUniqueName)))
-                {
-                    UE_LOG(LogTemp, Error, TEXT("Mesh invalid [%s] is non-existent"), *meshUniqueName);
-                    continue;
-                }
+                UE_LOG(LogTemp, Error, TEXT("Mesh invalid [%s] is non-existent"), *meshUniqueName);
+                continue;
             }
 
             static int64 count = 0;
@@ -113,23 +110,14 @@ public:
 
             if (meshComp)
             {
-                // [ProcMeshComp] Load mesh from disk path
-                if constexpr (TIsSame<TMeshComp, URRProceduralMeshComponent>::Value)
+                // (Note) This must be the full path to the mesh file on disk
+                if (meshComp->InitializeMesh(meshUniqueName))
                 {
-                    // (Note) This must be the full path to the mesh file on disk
-                    if (meshComp->InitializeMesh(meshUniqueName))
-                    {
-                        addedMeshCompList.AddUnique(meshComp);
-                    }
-                    else
-                    {
-                        UE_LOG(LogTemp, Error, TEXT("%s: Failed initializing Proc mesh comp[%s]"), *GetName(), *meshUniqueName);
-                    }
+                    addedMeshCompList.AddUnique(meshComp);
                 }
                 else
                 {
-                    addedMeshCompList.AddUnique(meshComp);
-                    OnBodyComponentMeshCreationDone(true, meshComp);
+                    UE_LOG(LogTemp, Error, TEXT("%s: Failed initializing mesh comp[%s]"), *GetName(), *meshUniqueName);
                 }
             }
             else
@@ -189,7 +177,6 @@ public:
     }
 
 protected:
-
     UPROPERTY(VisibleAnywhere)
     uint8 bLastMeshCreationResult : 1;
 

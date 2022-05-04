@@ -515,19 +515,21 @@ public:
 
     FOnMeshActorFullyCreated OnMeshActorFullyCreated;
 
-    // UE only support custom depth stencil value in range [0-255]
-    UFUNCTION()
-    static uint8 GenerateUniqueDepthStencilValue()
+    // (NOTE) Currently UE only supports [0-255] CustomDepthStencil values,
+    // which might probably be extended to a larger range then.
+    UPROPERTY()
+    int32 LatestCustomDepthStencilValue = 0;
+
+    int32 GenerateUniqueDepthStencilValue()
     {
-        static uint8 sLatestCustomDepthStencilValue = 0;
-        if (255 <= sLatestCustomDepthStencilValue)
+        if (255 <= LatestCustomDepthStencilValue)
         {
             UE_LOG(LogRapyutaCore,
                    Error,
-                   TEXT("There are more than 255 CustomDepthStencil values having been assigned!"
-                        "Depth Segmentation Mask info would be duplicated!"));
+                   TEXT("More than 255 CustomDepthStencil values having been assigned!"
+                        "Segmentation Mask will be duplicated!"));
         }
-        return ++sLatestCustomDepthStencilValue;
+        return ++LatestCustomDepthStencilValue;
     }
 };
 

@@ -304,16 +304,6 @@ public:
             meshComp->SetMobility(EComponentMobility::Movable);
         }
 
-        // Static mesh (if applicable) --
-        if constexpr (TIsDerivedFrom<TMeshComponent, URRStaticMeshComponent>::IsDerived)
-        {
-            // Mesh -- Must be after above configuration, based on which particular mesh properties are verified!
-            // Material instance created here-in, thus no need to create a default one like based on [CMAT_NAME_GENERIC]
-            meshComp->SetMesh(URRGameSingleton::Get()->GetStaticMesh(InObjMeshUniqueName));
-        }
-        // else Runtime mesh, if available, would be fetched on-the-fly later
-        // (due to their changeable content (by users either offline or online), thus Sim would never storing ones on disk)
-
         // Physics (last)--
         const bool bIsStationary = InObjMeshUniqueName.Equals(URRGameSingleton::SHAPE_NAME_PLANE);
         // If using Custom Physics Engine, also create [PhysicsComp] here-in!

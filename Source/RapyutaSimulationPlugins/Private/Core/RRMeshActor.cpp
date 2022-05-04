@@ -143,7 +143,7 @@ void ARRMeshActor::DeclareFullCreation(bool bInCreationResult)
         UE_LOG(LogRapyutaCore, Error, TEXT("[%s] MESH ACTOR CREATION FAILED!"), *GetName());
     }
 
-    // (NOTE) Since [ProcMeshComp] also created default material instance once mesh section is created,
+    // (NOTE) Since each of [MeshCompList] also created default material instance once mesh section is created,
     // [ActorInfo]'s Override materials could only be set here once the full creation is done.
     if (ActorInfo.IsValid())
     {

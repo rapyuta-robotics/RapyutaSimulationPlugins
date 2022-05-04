@@ -12,6 +12,7 @@
 #include "RenderUtils.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRActorCommon.h"
 #include "Core/RRGameMode.h"
 #include "Core/RRGameSingleton.h"
 #include "Core/RRMeshActor.h"
@@ -30,17 +31,20 @@ URRProceduralMeshComponent::URRProceduralMeshComponent(const FObjectInitializer&
     OnMeshCreationDone.BindUObject(Cast<ARRMeshActor>(GetOwner()), &ARRMeshActor::OnBodyComponentMeshCreationDone);
 }
 
+void URRProceduralMeshComponent::Initialize(bool bIsStaticBody, bool bInIsPhysicsEnabled)
+{
+    // CustomDepthStencilValue
+    ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
+    if (ownerActor->GameMode->IsDataSynthSimType() && ownerActor->IsDataSynthEntity())
+    {
+        SetCustomDepthStencilValue(ownerActor->ActorCommon->GenerateUniqueDepthStencilValue());
+    }
+}
+
 bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
 {
     MeshUniqueName = FPaths::GetBaseFilename(InMeshFileName);
     const bool bIsMeshAlreadyLoaded = FRRMeshData::IsMeshDataAvailable(MeshUniqueName);
-
-    ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
-    if (ownerActor->GameMode->IsDataSynthSimType() && ownerActor->IsDataSynthEntity())
-    {
-        // CustomDepthStencilValue
-        SetCustomDepthStencilValue(URRActorCommon::GenerateUniqueDepthStencilValue());
-    }
 
     ShapeType = InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_PLANE)    ? ERRShapeType::PLANE
               : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CUBE)     ? ERRShapeType::BOX
@@ -98,6 +102,7 @@ bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
         case ERRShapeType::BOX:
         case ERRShapeType::SPHERE:
         case ERRShapeType::CAPSULE:
+            // Let the primitive-shape mesh be created on the fly in SetMeshSize()
             // SIGNAL [Mesh Created]
             OnMeshCreationDone.ExecuteIfBound(true, this);
             break;
@@ -168,7 +173,7 @@ bool URRProceduralMeshComponent::CreateMeshBody()
     {
         // COOK COLLISON
         // (NOTE) Temporary create an empty place-holder with [bodySetupModelName],
-        // so other ProcMeshComps, wanting to reuse the same [MeshUniqueName], could check so wait for its cooking
+        // so other ProcMeshComps, wanting to reuse the same [MeshUniqueName], could check & wait for its cooking
         gameSingleton->AddDynamicResource<UBodySetup>(ERRResourceDataType::UE_BODY_SETUP, nullptr, bodySetupModelName);
 
         // REGISTER collision info, Creating new [ProcMeshBodySetup]
@@ -215,7 +220,9 @@ bool URRProceduralMeshComponent::CreateMeshBody()
         }
         else
         {
-            FinalizeMeshBodyCreation(GetBodySetup(), bodySetupModelName);
+            // To signal [OnMeshCreationDone] async, thus MeshCompList could get fulfilled first
+            AsyncTask(ENamedThreads::GameThread,
+                      [this, bodySetupModelName]() { FinalizeMeshBodyCreation(GetBodySetup(), bodySetupModelName); });
         }
         return true;
     }

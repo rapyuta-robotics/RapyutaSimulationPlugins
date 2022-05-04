@@ -280,9 +280,10 @@ public:
     static constexpr const TCHAR* SHAPE_NAME_SPHERE = TEXT("Sphere");
     static constexpr const TCHAR* SHAPE_NAME_CAPSULE = TEXT("Capsule");
 
-    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName) const
+    // (NOTE) StaticMesh could be dynamically created
+    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName, bool bIsStaticResource = true) const
     {
-        return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, InStaticMeshName);
+        return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, InStaticMeshName, bIsStaticResource);
     }
 
     // SKELETAL ASSETS --
