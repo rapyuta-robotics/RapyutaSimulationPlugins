@@ -96,18 +96,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
  * 
  */
 USTRUCT()
-struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluenceList
-{
-    GENERATED_BODY()
-    UPROPERTY()
-    TArray<FRRBoneInfluence> BoneInfluenceList;
-};
-
 /**
  * @brief todo
  * 
  */
-USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
 {
     GENERATED_BODY()
@@ -130,7 +122,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
     TArray<FProcMeshTangent> ProcTangents;
 
     UPROPERTY()
-    TArray<FRRBoneInfluenceList> BoneInfluences;
+    TArray<FRRBoneInfluence> BoneInfluences;
 
     UPROPERTY()
     uint32 MaterialIndex = 0;
@@ -140,7 +132,6 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
         Vertices.SetNumZeroed(InNum);
         TriangleIndices.SetNumZeroed(InNum);
         ProcTangents.SetNumZeroed(InNum);
-        BoneInfluences.SetNumZeroed(InNum);
     }
 
     void PrintSelf() const;

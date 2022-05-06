@@ -115,25 +115,23 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
     }
 
     // [BoneInfluences] --
-    FRRBoneInfluenceList boneInfluences;
-    for (auto i = 0; i < InMesh->mNumBones; ++i)
+    for (auto bi = 0; bi < InMesh->mNumBones; ++bi)
     {
-        const auto& bone = InMesh->mBones[i];
+        const auto& bone = InMesh->mBones[bi];
         if (bone)
         {
             UE_LOG(LogRapyutaCore, Warning, TEXT("Bone %s mNumWeights: %u"), *FString(bone->mName.data), bone->mNumWeights);
-            for (auto j = 0; j < bone->mNumWeights; j++)
+            for (auto wi = 0; wi < bone->mNumWeights; ++wi)
             {
-                const auto& boneWeight = bone->mWeights[j];
+                const auto& boneWeight = bone->mWeights[wi];
                 FRRBoneInfluence boneInfluence;
-                boneInfluence.BoneIndex = i;
+                boneInfluence.BoneIndex = bi;
                 boneInfluence.Weight = boneWeight.mWeight;
                 boneInfluence.VertexIndex = boneWeight.mVertexId;
-                boneInfluences.BoneInfluenceList.Emplace(MoveTemp(boneInfluence));
+                outMeshNodeData.BoneInfluences.Emplace(MoveTemp(boneInfluence));
             }
         }
     }
-    outMeshNodeData.BoneInfluences.Emplace(MoveTemp(boneInfluences));
 
     // [Triangles/Faces' indices]
     if (bHasFaces)
