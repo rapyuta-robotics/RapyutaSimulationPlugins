@@ -25,11 +25,11 @@
 class URobotVehicleMovementComponent;
 
 /**
- * @brief Base RobotVehicle class. Other robot class should inherit from this class. 
+ * @brief Base RobotVehicle class. Other robot class should inherit from this class.
  * This actor moves with #URobotVehicleMovementComponent.
  * This actor is possessed by #ARRRobotVehicleROSController to be control from ROS2.
  * You can find example at #ATurtlebotBurger.
- * 
+ *
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARRBaseActor
@@ -39,25 +39,25 @@ class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARRBaseActor
 public:
     /**
      * @brief Construct a new ARobotVehicle object
-     * 
+     *
      */
     ARobotVehicle();
 
     /**
      * @brief Construct a new ARobotVehicle object
-     * 
-     * @param ObjectInitializer 
+     *
+     * @param ObjectInitializer
      */
     ARobotVehicle(const FObjectInitializer& ObjectInitializer);
 
     /**
-     * @brief 
+     * @brief
      * Actually Object's Name is also unique as noted by UE, but we just do not want to rely on it.
      * Instead, WE USE [RobotUniqueName] TO MAKE THE ROBOT ID CONTROL MORE INDPENDENT of UE INTERNAL NAME HANDLING.
      * Reasons:
      * + An Actor's Name could get updated as its Label is updated
      * + In pending-kill state, GetName() goes to [None]
-     * 
+     *
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
     FString RobotUniqueName;
@@ -79,10 +79,10 @@ public:
 
     /**
      * @brief Initialize sensors components which are child class of #URRROS2BaseSensorComponent.
-     * 
+     *
      * @param InROS2Node ROS2Node which sensor publishers belongs to.
-     * @return true 
-     * @return false 
+     * @return true
+     * @return false
      *
      * @sa [TInlineComponentArray](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/GameFramework/TInlineComponentArray/)
      * @sa [GetComponents](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/GameFramework/AActor/GetComponents/2/)
@@ -91,45 +91,47 @@ public:
 
     /**
      * @brief Initialize #RobotVehicleMoveComponent
-     * 
-     * @return true 
-     * @return false 
+     *
+     * @return true
+     * @return false
      */
     virtual bool InitMoveComponent();
 
     /**
      * @brief Initialize #SkeletalMeshComp.
-     * 
+     *
      */
     void SetupDefault();
 
     /**
      * @brief Set velocity to #RobotVehicleMoveComponent
-     * 
-     * @param InLinearVelocity 
+     *
+     * @param InLinearVelocity
      */
-    UFUNCTION(BlueprintCallable)**
+    UFUNCTION(BlueprintCallable)
     virtual void SetLinearVel(const FVector& InLinearVelocity);
 
     /**
      * @brief Set angular velocity to #RobotVehicleMoveComponent
-     * 
+     *
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetAngularVel(const FVector& InAngularVelocity);
 
 protected:
     /**
-    * @brief Post Initialization process of actor. Initialize #RobotVehicleMoveComponent by calling #InitMoveComponent.
-    * @sa [ActorLifecycle](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Actors/ActorLifecycle/)
-    * @sa [PostInitializeComponents](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
-    */
+     * @brief Post Initialization process of actor. Initialize #RobotVehicleMoveComponent by calling #InitMoveComponent.
+     * @sa
+     * [ActorLifecycle](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Actors/ActorLifecycle/)
+     * @sa
+     * [PostInitializeComponents](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
+     */
     virtual void PostInitializeComponents() override;
 
     /**
-     * @brief This method is called inside #PostInitializeComponents. 
+     * @brief This method is called inside #PostInitializeComponents.
      * Custom initialization of child class can be done by overwritting this method.
-     * 
+     *
      */
     virtual void ConfigureVehicleMoveComponent()
     {

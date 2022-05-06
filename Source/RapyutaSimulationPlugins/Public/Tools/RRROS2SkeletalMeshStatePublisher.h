@@ -1,6 +1,6 @@
 /**
  * @file RRROS2SkeletalMeshStatePublisher.h
- * @brief Publish pose of owner #ARobotVehicle which has skeltalmesh
+ * @brief Publish pose of owner #ARobotVehicle which has skeletalmesh
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -15,7 +15,7 @@
 #include "RRROS2SkeletalMeshStatePublisher.generated.h"
 
 /**
- * @brief Publish pose of owner #ARobotVehicle which has skeltalmesh
+ * @brief Publish pose of owner #ARobotVehicle which has skeletalmesh
  * 
  */
 UCLASS()

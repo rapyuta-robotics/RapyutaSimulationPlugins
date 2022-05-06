@@ -19,7 +19,7 @@ ARobotVehicle has `URRROS2BaseSensorComponent <doxygen_generated/html/d0/d58/cla
 
 \* You need to use specific method to add actors to the variables if you want to manipulate from ROS2 services.
 Actors in the level at beginplay and spawned actor by ROS2 services are added automatically.
-You can change spawnable entites in level BP, by overwriting game mode and etc.
+You can change spawnable entities in level BP, by overwriting game mode and etc.
 
 
 .. list-table:: SimulationState ROS2 Service 

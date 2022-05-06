@@ -1,6 +1,6 @@
 # RapyutaSimulationPlugins
 
-Robot common assets which is used with rclUE
+Robot common assets used with rclUE
 
 ## Online documentation
 
@@ -28,7 +28,7 @@ https://RapyutaSimulationPlugins.readthedocs.io/en/devel/
 
 ## Tools
 
-documentation is built with three tools
+Documentation is built with three tools
 
 - [doxygen](http://www.doxygen.org)
 - [sphinx](http://www.sphinx-doc.org)
@@ -36,8 +36,8 @@ documentation is built with three tools
 
 ## Locally build
 
-1. install tools in #tools section.
-2. build
+1. Install tools in #tools section.
+2. Build
    ```
    cd docs
    make --always-make html

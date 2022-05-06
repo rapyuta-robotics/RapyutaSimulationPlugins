@@ -51,7 +51,7 @@ public:
     }
 
     /**
-     * @brief Get the transfrom in reference frame.
+     * @brief Get the transform in reference frame.
      * 
      * @param RefTransf Reference frame
      * @param WorldTransf Transform in world frame
@@ -96,7 +96,7 @@ public:
      * @brief Get the transform in world frame
      * 
      * @param RefTransf Reference frame
-     * @param RelativeTransf Transfrom in reference frame
+     * @param RelativeTransf Transform in reference frame
      * @return FTransform Transform in world frame
      */
     static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)

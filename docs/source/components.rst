@@ -58,7 +58,7 @@ Robots
 
 - Turtlebot3: example of robots.
     - BP_TurtlebotROSController.uasset: inherit from C++ ARRRobotVehicleROSController. Example of construct robot controller with Blueprint.  
-    - Models: Static and skeltal meshes and materials.
+    - Models: Static and skeletal meshes and materials.
     - Physics: physics model with UDifferentialDriveComponent
         - BP_TurtlebotBurger: inherit from C++ ATurtlebotBurger and set static meshes and parameters.
         - BP_TurtlebotWaffle: inherit from C++ ARobotVehicle. Example of construct robot from Blueprint. 
@@ -83,14 +83,14 @@ Core
     - `URRGameSingleton <doxygen_generated/html/d8/def/class_u_r_r_game_singleton.html>`_: todo
 - Mesh
     - `ARRMeshActor <doxygen_generated/html/dd/de7/class_a_r_r_mesh_actor.html>`_: todo
-    - `URRProceduralMeshComponent <doxygen_generated/html/dc/d1a/class_u_r_r_procedural_mesh_component.html>`_: rocedural mesh components. this class is used to spawn robot and object from ROS2 service.
+    - `URRProceduralMeshComponent <doxygen_generated/html/dc/d1a/class_u_r_r_procedural_mesh_component.html>`_: Procedural mesh components. this class is used to spawn robot and object from ROS2 service.
 - Scene
     - `ARRSceneDirector <doxygen_generated/html/d6/d2f/class_a_r_r_scene_director.html>`_: todo
     - `URRSceneInstance <doxygen_generated/html/d7/d37/class_u_r_r_scene_instance.html>`_: todo
 - Utils
     - `URRCoreUtils <doxygen_generated/html/de/db6/class_u_r_r_core_utils.html>`_: todo
     - `URRConversionUtils <doxygen_generated/html/d4/dc1/class_u_r_r_conversion_utils.html>`_: Data Conversion between ROS and UE. m <-> cm and Left handed <-> Right handed.
-    - `URRGeneralUtils <doxygen_generated/html/d5/d98/class_u_r_r_general_utils.html>`_: Other utils which is not belongs to other utils.
+    - `URRGeneralUtils <doxygen_generated/html/d5/d98/class_u_r_r_general_utils.html>`_: Other utils which do not belongs to other utils.
 
 Tools
 -----

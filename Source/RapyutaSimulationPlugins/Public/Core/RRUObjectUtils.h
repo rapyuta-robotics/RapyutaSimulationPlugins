@@ -38,7 +38,7 @@ public:
     }
 
     /**
-     * @brief Use CreateDefaultSubobject or NewObject based on where this method called.
+     * @brief Use CreateDefaultSubobject or NewObject based on where this method is called.
      * Uses #URRThreadUtils::IsInsideConstructor.
      * @param InOuter 
      * @param InObjectClass 
@@ -64,7 +64,7 @@ public:
     }
 
     /**
-     * @brief Return true if InParentObj has subojects with InChildName.
+     * @brief Return true if InParentObj has subobjects with InChildName.
      * 
      * @tparam T 
      * @param InParentObj 
@@ -148,7 +148,7 @@ public:
     }
 
     /**
-     * @brief Use SetupAttachment or AttachToComponent based on where this method called.
+     * @brief Use SetupAttachment or AttachToComponent based on where this method is called.
      * Uses #URRThreadUtils::IsInsideConstructor.
      *
      * @param InChildComp 
@@ -327,7 +327,7 @@ public:
     static void SetupActorTick(AActor* InActor, bool bIsTickEnabled, float InTickInterval = 0.f);
 
     /**
-     * @brief Uses URRThreadUtils::IsInsideConstructor() to avoid crash by calling RegisterComponents() outside of constructr.
+     * @brief Uses URRThreadUtils::IsInsideConstructor() to avoid crash by calling RegisterComponents() outside of constructor.
      * 
      */
     UFUNCTION()
