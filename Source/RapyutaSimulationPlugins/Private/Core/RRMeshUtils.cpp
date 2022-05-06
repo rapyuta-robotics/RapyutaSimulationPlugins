@@ -112,28 +112,40 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
         outMeshNodeData.ProcTangents.Emplace(
             bHasTangents ? FProcMeshTangent(InMesh->mTangents[i].x, -InMesh->mTangents[i].y, InMesh->mTangents[i].z)
                          : FProcMeshTangent());
-
-        // [BoneInfluences] --
-        FRRBoneInfluenceList boneInfluences;
-        boneInfluences.BoneInfluenceList.SetNum(8);
-        for (auto& boneInf : boneInfluences.BoneInfluenceList)
-        {
-            boneInf.VertexIndex = i;
-        }
-        outMeshNodeData.BoneInfluences.Emplace(MoveTemp(boneInfluences));
     }
+
+    // [BoneInfluences] --
+    FRRBoneInfluenceList boneInfluences;
+    for (auto i = 0; i < InMesh->mNumBones; ++i)
+    {
+        const auto& bone = InMesh->mBones[i];
+        if (bone)
+        {
+            UE_LOG(LogRapyutaCore, Warning, TEXT("Bone %s mNumWeights: %u"), *FString(bone->mName.data), bone->mNumWeights);
+            for (auto j = 0; j < bone->mNumWeights; j++)
+            {
+                const auto& boneWeight = bone->mWeights[j];
+                FRRBoneInfluence boneInfluence;
+                boneInfluence.BoneIndex = i;
+                boneInfluence.Weight = boneWeight.mWeight;
+                boneInfluence.VertexIndex = boneWeight.mVertexId;
+                boneInfluences.BoneInfluenceList.Emplace(MoveTemp(boneInfluence));
+            }
+        }
+    }
+    outMeshNodeData.BoneInfluences.Emplace(MoveTemp(boneInfluences));
 
     // [Triangles/Faces' indices]
     if (bHasFaces)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("mNumFaces: %u at %d"), InMesh->mNumFaces, InMesh->mFaces);
+        UE_LOG(LogRapyutaCore, Warning, TEXT("mNumFaces: %u at %u"), InMesh->mNumFaces, InMesh->mFaces);
         for (auto f = 0; f < InMesh->mNumFaces; ++f)
         {
             const aiFace& face = InMesh->mFaces[f];
             if (nullptr != face.mIndices)
             {
 #if RAPYUTA_SIM_DEBUG
-                UE_LOG(LogRapyutaCore, Warning, TEXT("face[%d].mNumIndices: %u at %d"), f, face.mNumIndices, face.mIndices);
+                UE_LOG(LogRapyutaCore, Warning, TEXT("face[%d].mNumIndices: %u at %u"), f, face.mNumIndices, face.mIndices);
 #endif
                 for (auto i = 0; i < face.mNumIndices; ++i)
                 {
@@ -266,8 +278,8 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
         // http://assimp.sourceforge.net/lib_html/data.html
         // +X points to the right, -Z points away from the viewer into the screen and +Y points upwards
         // Assimp(right-handed) vs UE(left-handed),
-        // so [aiProcess_MakeLeftHanded] is supposed to be used here also, but not sure why it just distorts the output vertices,
-        // thus they will be converted manually later.
+        // so [aiProcess_MakeLeftHanded] is supposed to be used here also, but not sure why it just distorts the output
+        // vertices, thus they will be converted manually later.
         uint32 flags = aiProcess_TransformUVCoords | aiProcess_GenUVCoords | aiProcess_FlipUVs;
 
         // Assimp(m) -> UE(cm), scaled by x100, which necessitates [aiProcess_GlobalScale]
@@ -299,9 +311,8 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
         // which is required for populating [scene->mRootNode]'s mesh data
         // + [aiProcess_MakeLeftHanded] This is supposed to be applied since Assimp mesh data is in right-handed,
         // but not clear yet why this makes mesh position incorrect?
-        // + [aiProcess_FlipWindingOrder] makes CW while UE has CCW vertice winding order already, which makes a face' normal face
-        // outward.
-        // aiProcessPreset_TargetRealtime_Fast | aiProcessPreset_TargetRealtime_Quality
+        // + [aiProcess_FlipWindingOrder] makes CW while UE has CCW vertice winding order already, which makes a face' normal
+        // face outward. aiProcessPreset_TargetRealtime_Fast | aiProcessPreset_TargetRealtime_Quality
         scene =
             InMeshImporter.ReadFile(URRCoreUtils::FToStdString(InMeshFilePath).c_str(),
                                     flags | (aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_Triangulate |
