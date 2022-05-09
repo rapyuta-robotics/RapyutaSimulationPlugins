@@ -12,6 +12,15 @@
 // RapyutaSimulationPlugins
 #include "Tools/RRROS2ClockPublisher.h"
 #include "Tools/SimulationState.h"
+#include "Tools/SimulationStateData.h"
+#include "Tools/RRROS2PlayerController.h"
+
+ARRROS2GameMode::ARRROS2GameMode()
+{
+//    ASimulationStateData* SimulationStateData = currentWorld->SpawnActor<ASimulationStateData>();
+//    GameStateClass = ASimulationStateData::StaticClass();
+//    PlayerControllerClass = ARRROS2PlayerController::StaticClass();
+};
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
 {
@@ -35,9 +44,19 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
     InitSim();
 }
 
+
 void ARRROS2GameMode::InitSim()
 {
     InitROS2();
+}
+
+void ARRROS2GameMode::PostLogin(APlayerController* InPlayer) {
+    Super::PostLogin(InPlayer);
+
+    ClientControllerList.Add(InPlayer);
+    numPlayers += 1;
+
+    Cast<ARRROS2PlayerController>(InPlayer)->Init("amr" + FString::FromInt(numPlayers-1), SimulationStateData);
 }
 
 void ARRROS2GameMode::InitROS2()
@@ -60,5 +79,9 @@ void ARRROS2GameMode::InitROS2()
 
     // Simulation state
     SimulationState = currentWorld->SpawnActor<ASimulationState>();
-    SimulationState->Init(ROS2Node);
+//    ASimulationStateData* SimulationStateData = GetWorld() != NULL ? GetWorld()->GetGameState<ASimulationStateData>() : NULL;
+    SimulationStateData = currentWorld->SpawnActor<ASimulationStateData>();
+//    SimulationStateData->Init();
+    SimulationState->Init(ROS2Node, SimulationStateData);
+
 }
