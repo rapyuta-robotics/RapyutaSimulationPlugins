@@ -298,21 +298,21 @@ void ASimulationState::SpawnEntitiesSrv(UROS2GenericSrv* Service)
 
     int numEntitySpawned = 0;
     FString status_message = "";
-    for( uint i=0; i<Request.spawn_state_name.Num(); ++i ) 
+    for( uint i=0; i<Request.name.Num(); ++i ) 
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("Spawning Entity : %s (name: %s)"), *Request.spawn_state_xml[i], *Request.spawn_state_name[i] );
+        UE_LOG(LogRapyutaCore, Warning, TEXT("Spawning Entity : %s (name: %s)"), *Request.type[i], *Request.name[i] );
         FROSSpawnEntity_Request spawnEntityRequest;
-        spawnEntityRequest.xml = Request.spawn_state_xml[i];
+        spawnEntityRequest.xml = Request.type[i];
         spawnEntityRequest.robot_namespace = "";
-        spawnEntityRequest.state_name = Request.spawn_state_name[i];
-        spawnEntityRequest.state_pose_position_x = Request.spawn_state_pose_position[i].X;
-        spawnEntityRequest.state_pose_position_y = Request.spawn_state_pose_position[i].Y;
-        spawnEntityRequest.state_pose_position_z = Request.spawn_state_pose_position[i].Z;
-        spawnEntityRequest.state_pose_orientation = Request.spawn_state_pose_orientation[i];
-        spawnEntityRequest.state_twist_linear = Request.spawn_state_twist_linear[i];
-        spawnEntityRequest.state_twist_angular = Request.spawn_state_twist_angular[i];
-        spawnEntityRequest.state_reference_frame = Request.spawn_state_reference_frame[i];
-        spawnEntityRequest.tags.Add( Request.spawn_state_tags[i] );
+        spawnEntityRequest.state_name = Request.name[i];
+        spawnEntityRequest.state_pose_position_x = Request.position[i].X;
+        spawnEntityRequest.state_pose_position_y = Request.position[i].Y;
+        spawnEntityRequest.state_pose_position_z = Request.position[i].Z;
+        spawnEntityRequest.state_pose_orientation = Request.orientation[i];
+        spawnEntityRequest.state_twist_linear = Request.twist_linear[i];
+        spawnEntityRequest.state_twist_angular = Request.twist_angular[i];
+        spawnEntityRequest.state_reference_frame = Request.reference_frame[i];
+        spawnEntityRequest.tags.Add( Request.tags[i] );
 
         FROSSpawnEntity_Response Response;
         Response.success = CheckSpawnableEntity(spawnEntityRequest.xml, false) && CheckEntity(spawnEntityRequest.state_reference_frame, true);
@@ -354,13 +354,13 @@ void ASimulationState::SpawnEntitiesSrv(UROS2GenericSrv* Service)
         }
         else 
         {
-            status_message += "Error for spawning "+ Request.spawn_state_name[i] +" -> "+ Response.status_message +"; ";
+            status_message += "Error for spawning "+ Request.name[i] +" -> "+ Response.status_message +"; ";
         }
 
     }
 
     FROSSpawnEntities_Response Response;
-    if( numEntitySpawned == Request.spawn_state_name.Num() )
+    if( numEntitySpawned == Request.name.Num() )
     {
         Response.success = true;
         Response.status_message = "";
