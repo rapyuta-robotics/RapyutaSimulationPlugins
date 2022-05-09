@@ -272,8 +272,10 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
         AActor* NewEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[Request.xml], worldTransf);
         UROS2Spawnable* SpawnableComponent = NewObject<UROS2Spawnable>(NewEntity, FName("ROS2 Spawn Parameters"));
 
+
         SpawnableComponent->RegisterComponent();
         SpawnableComponent->InitializeParameters(Request);
+        SpawnableComponent->SetIsReplicated(true);
         NewEntity->AddInstanceComponent(SpawnableComponent);
 #if WITH_EDITOR
         NewEntity->SetActorLabel(*Request.state_name);
@@ -284,18 +286,18 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
         }
         NewEntity->Rename(*Request.state_name);
 
-        ARRROS2GameMode *ros2GameMode = Cast<ARRROS2GameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-
-        for (APlayerController* Player : ros2GameMode->ClientControllerList)
-        {
-            if(Cast<ARRROS2PlayerController>(Player)->PlayerName == *NewEntity->GetName()) {
-                Player->Possess(Cast<APawn>(NewEntity));
-            }
-        }
+//        ARRROS2GameMode *ros2GameMode = Cast<ARRROS2GameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+//
+//        for (APlayerController* Player : ros2GameMode->ClientControllerList)
+//        {
+//            if(Cast<ARRROS2PlayerController>(Player)->PlayerName == *NewEntity->GetName()) {
+//                Player->Possess(Cast<APawn>(NewEntity));
+//            }
+//        }
 
         UGameplayStatics::FinishSpawningActor(NewEntity, worldTransf);
         AddEntity(NewEntity);
-
+        SimulationStateData->AddSpawnedEntity(NewEntity);
         UE_LOG(LogRapyutaCore, Warning, TEXT("New Spawned Entity Name: %s"), *NewEntity->GetName());
     }
 

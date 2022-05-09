@@ -21,32 +21,43 @@ class RAPYUTASIMULATIONPLUGINS_API ARRROS2PlayerController : public APlayerContr
     GENERATED_BODY()
 
 public:
-    void Init(FString InName);
+    void Init(FString InName, ASimulationStateData* SimulationStateData);
 
     ARRROS2PlayerController();
 
-    UPROPERTY(BlueprintReadOnly)
+    virtual void Tick(float DeltaSeconds) override;
+
+    UFUNCTION(Server, Reliable)
+    void WaitForPawnToPossess();
+
+    UFUNCTION(Client, Reliable)
+    void CheckClientTiming();
+
+    UPROPERTY(BlueprintReadOnly, Replicated)
     AROS2Node* ROS2Node = nullptr;
 
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(BlueprintReadOnly, Replicated)
+    APawn* PossessedPawn = nullptr;
+
+    UPROPERTY(BlueprintReadOnly, Replicated)
     URRROS2ClockPublisher* ClockPublisher = nullptr;
 
-    UPROPERTY(BlueprintReadOnly)
-    ASimulationState* SimulationState = nullptr;
+    UPROPERTY(BlueprintReadOnly, Replicated)
+    ASimulationStateData* SimulationStateData = nullptr;
 
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString PlayerName = "";
 
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString Namespace = "";
 
 //protected:
 //    virtual void InitPlayer();
 
-    UPROPERTY(Transient)
+    UPROPERTY(Transient, Replicated)
     AROS2Node* RobotROS2Node = nullptr;
 
-//    UFUNCTION(Client, Reliable)
+
     void InitRobotROS2Node(APawn* InPawn);
 
     UPROPERTY()
@@ -61,13 +72,24 @@ public:
     virtual bool InitPublishers(APawn* InPawn);
 
     UFUNCTION()
+    void InitRobotPublisher(APawn* InPawn);
+
+    UFUNCTION()
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
 
     virtual void OnPossess(APawn* InPawn) override;
 
     virtual void OnUnPossess() override;
 
-    UFUNCTION(BlueprintCallable)
+    virtual void AcknowledgePossession(APawn* InPawn) override;
+
+    UFUNCTION(Client, Reliable)
+    virtual void GetClientPawn(APawn* InPawn);
+
+    UFUNCTION(Client, Reliable)
+    void InitPawn(APawn* InPawn);
+
+    UFUNCTION(BlueprintCallable, Client, Reliable)
     void SubscribeToMovementCommandTopic(const FString& InTopicName);
 
     UPROPERTY(BlueprintReadWrite)

@@ -30,36 +30,25 @@ class RAPYUTASIMULATIONPLUGINS_API ASimulationStateData : public AGameState
 //    ASimulationStateData();
 
 public:
-    void Init();
-
     UFUNCTION(BlueprintCallable)
     void AddEntity(AActor* Entity);
-//
-//    UFUNCTION(BlueprintCallable)
-//    void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
+
+    UFUNCTION(BlueprintCallable)
+    void AddSpawnedEntity(AActor* Entity);
 
     UFUNCTION(BlueprintCallable)
     TMap<FString, AActor*> GetEntity();
 
-//    UFUNCTION(BlueprintCallable)
-//    TMap<FString, TSubclassOf<AActor>> GetSpawnableEntities();
-//
-//    UFUNCTION(BlueprintCallable)
-//    bool RequestInSpawnableEntities(FString RequestName);
-
-//    UFUNCTION(BlueprintCallable)
-//    bool IsValidRequestSpawnableEntities(FString RequestName);
-//
-//    UFUNCTION(BlueprintCallable)
-//    TSubclassOf<AActor>* GetSpawnableEntity(FString RequestName);
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    TArray<AActor*>  EntityList;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    TArray<AActor*>  SpawnedEntityList;
+
     UPROPERTY()
     TMap<FName, FActors> EntitiesWithTag;
-//    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//    TMap<FString, TSubclassOf<AActor>> SpawnableEntities;
 
-    // need to keep track of "Entities"? or just use a search?
 };

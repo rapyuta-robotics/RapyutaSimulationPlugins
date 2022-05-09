@@ -5,24 +5,22 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
-void ASimulationStateData::Init() {
-// add all actors
-//#if WITH_EDITOR
-//    TArray<AActor*> AllActors;
-//        UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-//        UE_LOG(LogTemp, Warning, TEXT("Found %d actors in the scene"), AllActors.Num());
-//#endif
-//    for (TActorIterator <AActor> It(GetWorld(), AActor::StaticClass()); It; ++It) {
-//        AActor *actor = *It;
-//        AddEntity(actor);
-//    }
+
+void ASimulationStateData::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME( ASimulationStateData, EntityList );
+    DOREPLIFETIME( ASimulationStateData, SpawnedEntityList );
 }
+
 void ASimulationStateData::AddEntity(AActor* Entity)
 {
     if (IsValid(Entity))
     {
         Entities.Emplace(Entity->GetName(), Entity);
+        EntityList.Emplace(Entity);
         for (auto& tag : Entity->Tags)
         {
             if (EntitiesWithTag.Contains(tag))
@@ -36,6 +34,14 @@ void ASimulationStateData::AddEntity(AActor* Entity)
                 EntitiesWithTag.Emplace(tag, actors);
             }
         }
+    }
+}
+
+void ASimulationStateData::AddSpawnedEntity(AActor* Entity)
+{
+    if (IsValid(Entity))
+    {
+        SpawnedEntityList.Emplace(Entity);
     }
 }
 //void ASimulationStateData::AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities)

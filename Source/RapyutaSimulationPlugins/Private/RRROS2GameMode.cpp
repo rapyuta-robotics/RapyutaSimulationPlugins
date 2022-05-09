@@ -56,7 +56,7 @@ void ARRROS2GameMode::PostLogin(APlayerController* InPlayer) {
     ClientControllerList.Add(InPlayer);
     numPlayers += 1;
 
-    Cast<ARRROS2PlayerController>(InPlayer)->Init("amr" + FString::FromInt(numPlayers-1));
+    Cast<ARRROS2PlayerController>(InPlayer)->Init("amr" + FString::FromInt(numPlayers-1), SimulationStateData);
 }
 
 void ARRROS2GameMode::InitROS2()
