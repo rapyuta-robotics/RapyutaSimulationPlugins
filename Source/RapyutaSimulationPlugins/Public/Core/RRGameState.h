@@ -40,7 +40,7 @@ public:
     int8 SCENE_INSTANCES_NUM = 1;
 
     UPROPERTY(config)
-    int32 OPERATION_BATCHES_NUM = 10;
+    int32 OPERATION_BATCHES_NUM = 5;
 
     UPROPERTY()
     ARRGameMode* GameMode = nullptr;
@@ -88,6 +88,30 @@ public:
     }
 
     // ENTITIES
+    /* The vertex normals
+      7 -- 4      Z
+     /|   /|      |
+    2-1--5 6      | Y
+    |/   |/       |/
+    0 -- 3         -----X
+
+    4 -- 7         Z
+    |\   |\     Y  |
+    6 5--1 2     \ |
+     \|   \|      \|
+      3 -- 0  X----
+     */
+    UPROPERTY(config)
+    TArray<FVector> ENTITY_BOUNDING_BOX_VERTEX_NORMALS = {
+        {0.f, 0.f, 0.f},    //[0]
+        {0.f, 1.f, 0.f},    //[1]
+        {0.f, 0.f, 1.f},    //[2]
+        {1.f, 0.f, 0.f},    //[3]
+        {1.f, 1.f, 1.f},    //[4]
+        {1.f, 0.f, 1.f},    //[5]
+        {1.f, 1.f, 0.f},    //[6]
+        {0.f, 1.f, 1.f},    //[7]
+    };
     ARRMeshActor* FindEntityByModel(const FString& InEntityModelName, bool bToActivate, bool bToTakeAway);
     void SetAllEntitiesActivated(bool bIsActivated);
     FORCEINLINE void AddEntity(ARRMeshActor* InEntity)

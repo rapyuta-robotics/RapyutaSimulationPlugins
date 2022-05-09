@@ -1,8 +1,10 @@
 /**
  * @file RRConversionUtils.h
- * @brief Convertions between ROS and UE, i.e. 
- * m <-> cm 
- * Left handed <-> Right handed.
+ *
+ * @brief Convertions between ROS and UE, i.e.
+ * - m <-> cm
+ * - UE(Left-handed) <-> ROS(Right-handed)
+ *
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -19,10 +21,6 @@ class URRConversionUtils : public UBlueprintFunctionLibrary
     GENERATED_BODY()
 
 public:
-    // UE to ROS conversion
-    // cm -> m
-    // Left handed -> Right handed
-
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FVector ConvertHandedness(const FVector& InLocation)
     {
@@ -127,9 +125,9 @@ public:
                                           double& OutputY,
                                           double& OutputZ)
     {
-        OutputX = InputX * 100.0f;
-        OutputY = -InputY * 100.0f;
-        OutputZ = InputZ * 100.0f;
+        OutputX = InputX * 100.f;
+        OutputY = -InputY * 100.f;
+        OutputZ = InputZ * 100.f;
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
@@ -183,9 +181,4 @@ public:
 
         return Output;
     }
-/**
- * @brief Convertions between ROS and UE, i.e. 
- * - m <-> cm 
- * - Left handed <-> Right handed.
- */
 };

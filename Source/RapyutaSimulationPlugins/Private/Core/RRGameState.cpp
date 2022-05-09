@@ -29,7 +29,20 @@ void ARRGameState::PrintSimConfig() const
 {
     UE_LOG(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_NUM: %d"), SCENE_INSTANCES_NUM);
     UE_LOG(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_DISTANCE_INTERVAL: %f(cm)"), SCENE_INSTANCES_DISTANCE_INTERVAL);
+    UE_LOG(LogRapyutaCore,
+           Display,
+           TEXT("SIM_OUTPUTS_BASE_FOLDER_NAME: %s -> %s"),
+           *SIM_OUTPUTS_BASE_FOLDER_NAME,
+           *GetSimOutputsBaseFolderPath());
     UE_LOG(LogRapyutaCore, Display, TEXT("OPERATION_BATCHES_NUM: %d"), OPERATION_BATCHES_NUM);
+    UE_LOG(LogRapyutaCore, Display, TEXT("ENTITY_BOUNDING_BOX_VERTEX_NORMALS:"));
+    for (const auto& vertexNormal : ENTITY_BOUNDING_BOX_VERTEX_NORMALS)
+    {
+        UE_LOG(LogRapyutaCore,
+               Display,
+               TEXT("%s"),
+               *FString::Printf(TEXT("%f, %f, %f"), vertexNormal.X, vertexNormal.Y, vertexNormal.Z));
+    }
 }
 
 void ARRGameState::StartSim()

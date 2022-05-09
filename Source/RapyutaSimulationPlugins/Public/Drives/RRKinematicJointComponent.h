@@ -22,8 +22,7 @@
  * #Controltype:
  * - Joints moves with Max, Min velocity to target with #EJointControlType::POSITION
  * - Joints moves with given velocity with #EJointControlType::VELOCITY
- * @sa
- * [K2_SetWorldTransform](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/Components/USceneComponent/K2_SetWorldTransform/)
+ * @sa[K2_SetWorldTransform](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/Components/USceneComponent/K2_SetWorldTransform/)
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRKinematicJointComponent : public URRJointComponent
@@ -61,8 +60,7 @@ public:
 
     /**
      * @brief Update joints and #ChildLink pose by K2_SetWorldTransform with #PositionTarget and #OrientationTarget
-     * @sa
-     * [K2_SetWorldTransform](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/Components/USceneComponent/K2_SetWorldTransform/)
+     * @sa[K2_SetWorldTransform](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/Components/USceneComponent/K2_SetWorldTransform/)
      */
     virtual void UpdatePose();
 };

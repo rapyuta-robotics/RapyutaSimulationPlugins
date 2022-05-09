@@ -68,7 +68,7 @@ static const FRapyutaSimVersionInfo RAPYUTA_SIM_VERSION_INFO({0, 0, 1});
 
 /**
  * @brief todo
- * 
+ *
  */
 UENUM()
 enum class ERRFileType : uint8
@@ -81,6 +81,7 @@ enum class ERRFileType : uint8
     // Image
     IMAGE_JPG,
     IMAGE_PNG,
+    IMAGE_TGA,
     IMAGE_EXR,
     IMAGE_HDR,
 
@@ -103,7 +104,7 @@ enum class ERRFileType : uint8
 
 /**
  * @brief todo
- * 
+ *
  */
 UENUM()
 enum class ERRShapeType : uint8
@@ -119,7 +120,7 @@ enum class ERRShapeType : uint8
 };
 /**
  * @brief todo
- * 
+ *
  */
 // This struct contains TFuture, which has private ctor, thus is move-only and could not be a USTRUCT().
 // and also make itself by default non-copyable without custom copy ctor!
@@ -575,7 +576,6 @@ public:
 
 class ARRSceneDirector;
 class ARRPlayerController;
-
 
 /**
  * @brief Scene Instance

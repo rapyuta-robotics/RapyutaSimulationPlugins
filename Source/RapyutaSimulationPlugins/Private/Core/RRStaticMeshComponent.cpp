@@ -220,7 +220,9 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody()
     UStaticMesh::FBuildMeshDescriptionsParams meshDescParams;
     meshDescParams.bBuildSimpleCollision = true;
     UStaticMesh* staticMesh = NewObject<UStaticMesh>(this, FName(*MeshUniqueName));
+    staticMesh->SetLightMapCoordinateIndex(0);
 #if WITH_EDITOR
+    // Ref: FStaticMeshFactoryImpl::SetupMeshBuildSettings()
     // LOD
     ITargetPlatform* currentPlatform = GetTargetPlatformManagerRef().GetRunningTargetPlatform();
     check(currentPlatform);
@@ -232,7 +234,14 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody()
     }
     for (auto lodIndex = 0; lodIndex < lodsNum; ++lodIndex)
     {
-        staticMesh->GetSourceModel(lodIndex).ReductionSettings = lodGroup.GetDefaultSettings(lodIndex);
+        auto& sourceModel = staticMesh->GetSourceModel(lodIndex);
+        sourceModel.ReductionSettings = lodGroup.GetDefaultSettings(lodIndex);
+        sourceModel.BuildSettings.bGenerateLightmapUVs = true;
+        sourceModel.BuildSettings.SrcLightmapIndex = 0;
+        sourceModel.BuildSettings.DstLightmapIndex = 0;
+        sourceModel.BuildSettings.bRecomputeNormals = false;
+        sourceModel.BuildSettings.bRecomputeTangents = false;
+        sourceModel.BuildSettings.bBuildAdjacencyBuffer = false;
 
         // LOD Section
         auto& sectionInfoMap = staticMesh->GetSectionInfoMap();
@@ -253,6 +262,7 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody()
         staticMesh->AddMaterial(bodyMeshData.MaterialInstances[i]->GetBaseMaterial());
     }
     staticMesh->BuildFromMeshDescriptions({&meshDesc}, meshDescParams);
+    // staticMesh->PostLoad();
 
     // Add to the global resource store
     URRGameSingleton::Get()->AddDynamicResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, staticMesh, MeshUniqueName);

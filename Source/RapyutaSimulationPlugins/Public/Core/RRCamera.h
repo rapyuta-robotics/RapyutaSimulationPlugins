@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRCamera.h
+ * @brief Standalone camera actor formed by #UCameraComponent
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -12,6 +16,9 @@
 
 #include "RRCamera.generated.h"
 
+/**
+ * @brief Camera user properties
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRCameraProperties
 {
@@ -38,6 +45,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRCameraProperties
     }
 };
 
+/**
+ * @brief Standalone camera actor which can be placed in the level with #UCameraComponent.
+ */
 UCLASS(config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRCamera : public ARRBaseActor
 {

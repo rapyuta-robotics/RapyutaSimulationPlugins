@@ -127,17 +127,16 @@ public:
         }
     }
 
-
     /**
-     * @brief 
+     * @brief
      * Callback to handle an asynchronously loaded resource, which receives a [FSoftObjectPath] that references a valid [UObject]
      * Then put it into both [ResourceMap] & [ResourceStore].
-     * 
-     * @tparam TResource 
-     * @param InDataType 
-     * @param InResourcePath 
-     * @param InResourceUniqueName 
-     * @return bool 
+     *
+     * @tparam TResource
+     * @param InDataType
+     * @param InResourcePath
+     * @param InResourceUniqueName
+     * @return bool
      */
     template<typename TResource>
     FORCEINLINE bool ProcessAsyncLoadedResource(const ERRResourceDataType InDataType,
@@ -308,7 +307,6 @@ public:
     FString FOLDER_PATH_ASSET_MATERIALS = TEXT("Materials");
 
     // Here we only define specially used materials for some specific purpose!
-    static constexpr const TCHAR* MATERIAL_NAME_BASE = TEXT("M_Base");
     static constexpr const TCHAR* MATERIAL_NAME_ASSET_MASTER = TEXT("M_RapyutaAssetMaster");
     static constexpr const TCHAR* MATERIAL_NAME_PROP_MASTER = TEXT("M_RapyutaPropMaster");
 

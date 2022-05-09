@@ -2,6 +2,8 @@
 
 // UE
 #include "Components/ActorComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
 
 // RapyutaSimulationPlugins
@@ -146,51 +148,49 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
 
     return newActor;
 }
+
 void URRUObjectUtils::GetActorCenterAndBoundingBoxVertices(const AActor* InActor,
-                                                           TArray<FVector>& OutCenterAndVerticesWorld,
+                                                           const AActor* InBaseActor,
+                                                           TArray<FVector>& OutCenterAndVertices,
                                                            bool bInIncludeNonColliding)
 {
-    // [InActor]'s global Rotation
-    const FQuat& actorQuat = InActor->GetActorQuat();
+    ARRGameState* gameState = URRCoreUtils::GetGameState<ARRGameState>(InActor);
 
     // [InActor]'s Local bounding box
     FVector centerLocal, extentsLocal;
     FBox actorLocalBox = InActor->CalculateComponentsBoundingBoxInLocalSpace(bInIncludeNonColliding);
     actorLocalBox.GetCenterAndExtents(centerLocal, extentsLocal);
 
-    // [InActor]'s global bounding box with rotation
+    // [InActor]'s global bounding box with rotation (in BaseActor frame or World frame)
     // Reference : DrawDebugBox()
     // (snote) The exact order of points is important. Consult with Robot Research team before adjusting.
-    //
+
     // Transfom [centerLocal] to global
-    const FVector& centerWorld = InActor->GetTransform().TransformPosition(centerLocal);
-    OutCenterAndVerticesWorld.Emplace(centerWorld);
+    // UnrealEngine/Engine/Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteComponent.cpp:179
+    const FTransform baseTransform =
+        InBaseActor ? InActor->GetActorTransform().GetRelativeTransform(InBaseActor->GetTransform()) : InActor->GetTransform();
+    const FVector center = baseTransform.TransformPosition(centerLocal);
+    OutCenterAndVertices.Emplace(center);
 
-    // Calculate global vertices as : [centerWorld] + Rotated [ExtentsLocal]
-    OutCenterAndVerticesWorld.Emplace(centerWorld +
-                                      actorQuat.RotateVector(FVector(extentsLocal.X, extentsLocal.Y, extentsLocal.Z)));
-    OutCenterAndVerticesWorld.Emplace(centerWorld +
-                                      actorQuat.RotateVector(FVector(extentsLocal.X, -extentsLocal.Y, extentsLocal.Z)));
-    OutCenterAndVerticesWorld.Emplace(centerWorld +
-                                      actorQuat.RotateVector(FVector(-extentsLocal.X, -extentsLocal.Y, extentsLocal.Z)));
-    OutCenterAndVerticesWorld.Emplace(centerWorld +
-                                      actorQuat.RotateVector(FVector(-extentsLocal.X, extentsLocal.Y, extentsLocal.Z)));
-    OutCenterAndVerticesWorld.Emplace(centerWorld +
-                                      actorQuat.RotateVector(FVector(extentsLocal.X, extentsLocal.Y, -extentsLocal.Z)));
-    OutCenterAndVerticesWorld.Emplace(centerWorld +
-                                      actorQuat.RotateVector(FVector(extentsLocal.X, -extentsLocal.Y, -extentsLocal.Z)));
-    OutCenterAndVerticesWorld.Emplace(centerWorld +
-                                      actorQuat.RotateVector(FVector(-extentsLocal.X, -extentsLocal.Y, -extentsLocal.Z)));
-    OutCenterAndVerticesWorld.Emplace(centerWorld +
-                                      actorQuat.RotateVector(FVector(-extentsLocal.X, extentsLocal.Y, -extentsLocal.Z)));
+    // [InActor]'s global Rotation (in BaseActor frame or World frame)
+    const FQuat& actorQuat = InBaseActor ? URRUObjectUtils::GetRelativeQuatFrom(InActor, InBaseActor) : InActor->GetActorQuat();
 
+    // Calculate global vertices as : [center] + Rotated [ExtentsLocal]
+    for (auto i = 0; i < 8; ++i)
+    {
+        const FVector& vertexNormal = gameState->ENTITY_BOUNDING_BOX_VERTEX_NORMALS[i];
+        OutCenterAndVertices.Emplace(center +
+                                     actorQuat.RotateVector(FVector((0.f == vertexNormal.X) ? -extentsLocal.X : extentsLocal.X,
+                                                                    (0.f == vertexNormal.Y) ? -extentsLocal.Y : extentsLocal.Y,
+                                                                    (0.f == vertexNormal.Z) ? -extentsLocal.Z : extentsLocal.Z)));
+    }
 #if RAPYUTA_SIM_VISUAL_DEBUG
-    if (IsInGameThread())
+    if (IsInGameThread() && (nullptr == InBaseActor))
     {
         // Draw [InActor]'s bounding box before projecting it onto screen to get the 2D coordinates.
-        OutCenterAndVerticesWorld.RemoveAt(0);
-        URRFunctionLibrary::DrawActorBounds(InActor->GetWorld(), OutCenterAndVerticesWorld);
-        OutCenterAndVerticesWorld.Insert(centerWorld, 0);
+        OutCenterAndVertices.RemoveAt(0);
+        URRFunctionLibrary::DrawActorBounds(InActor->GetWorld(), OutCenterAndVertices);
+        OutCenterAndVertices.Insert(center, 0);
     }
 #endif
 }
@@ -257,36 +257,92 @@ UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshC
         InMaterialIndex, URRGameSingleton::Get()->GetMaterial(InMaterialInterfaceName), FName(*dynamicMaterialName));
 }
 
-bool URRUObjectUtils::ApplyMeshActorMaterialProps(ARRMeshActor* InMeshActor, const FRRMaterialProperty& InMaterialInfo)
+UMaterialInstanceDynamic* URRUObjectUtils::GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex)
 {
-    UMaterialInstanceDynamic* baseMaterial = Cast<UMaterialInstanceDynamic>(InMeshActor->BaseMeshComp->GetMaterial(0));
+    UMaterialInstanceDynamic* baseMaterial = nullptr;
+    if (auto* meshActor = Cast<ARRMeshActor>(InActor))
+    {
+        baseMaterial = Cast<UMaterialInstanceDynamic>(meshActor->GetBaseMeshMaterial(InMaterialIndex));
+    }
+    else if (auto* staticMeshActor = Cast<AStaticMeshActor>(InActor))
+    {
+        baseMaterial = Cast<UMaterialInstanceDynamic>(staticMeshActor->GetStaticMeshComponent()->GetMaterial(InMaterialIndex));
+    }
+    return baseMaterial;
+}
+
+bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo)
+{
+    UMaterialInstanceDynamic* baseMaterial = GetActorBaseMaterial(InActor);
     if (baseMaterial)
     {
         URRGameSingleton* gameSingleton = URRGameSingleton::Get();
-        if (false == InMaterialInfo.AlbedoTextureName.IsEmpty())
+        // Albedo texture
+        if (InMaterialInfo.AlbedoTextureNameList.Num() > 0)
         {
-            baseMaterial->SetTextureParameterValue(TEXT("AlbedoTexture"),
-                                                   gameSingleton->GetTexture(InMaterialInfo.AlbedoTextureName));
+            baseMaterial->SetTextureParameterValue(
+                FRRMaterialProperty::PROP_NAME_ALBEDO,
+                gameSingleton->GetTexture(URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoTextureNameList)));
         }
+
+        // Albedo color
+        baseMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO,
+                                              (InMaterialInfo.AlbedoColorList.Num() > 0)
+                                                  ? URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoColorList)
+                                                  : URRMathUtils::GetRandomColor());
+
+        // ORM Texture
         if (false == InMaterialInfo.ORMTextureName.IsEmpty())
         {
-            baseMaterial->SetTextureParameterValue(TEXT("MergeMapInput"), gameSingleton->GetTexture(InMaterialInfo.ORMTextureName));
+            baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_ORM,
+                                                   gameSingleton->GetTexture(InMaterialInfo.ORMTextureName));
         }
+
+        // Normal Texture
         if (false == InMaterialInfo.NormalTextureName.IsEmpty())
         {
-            baseMaterial->SetTextureParameterValue(TEXT("MainNormalInput"),
+            baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_NORMAL,
                                                    gameSingleton->GetTexture(InMaterialInfo.NormalTextureName));
         }
+
+        // Mask Texture
         if (false == InMaterialInfo.MaskTextureName.IsEmpty())
         {
-            baseMaterial->SetTextureParameterValue(TEXT("MaskSelection"),
+            baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
                                                    gameSingleton->GetTexture(InMaterialInfo.MaskTextureName));
-        }
-        if (FLinearColor::Transparent != InMaterialInfo.ColorAlbedo)
-        {
-            baseMaterial->SetVectorParameterValue(TEXT("ColorAlbedo"), InMaterialInfo.ColorAlbedo);
         }
         return true;
     }
     return false;
+}
+
+void URRUObjectUtils::RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData)
+{
+    UMeshComponent* baseMeshComp = nullptr;
+    if (auto* meshActor = Cast<ARRMeshActor>(InActor))
+    {
+        baseMeshComp = meshActor->BaseMeshComp;
+    }
+    else if (auto* staticMeshActor = Cast<AStaticMeshActor>(InActor))
+    {
+        baseMeshComp = staticMeshActor->GetStaticMeshComponent();
+    }
+    check(baseMeshComp);
+
+    for (auto i = 0; i < baseMeshComp->GetMaterials().Num(); ++i)
+    {
+        UMaterialInstanceDynamic* baseMaterial = Cast<UMaterialInstanceDynamic>(baseMeshComp->GetMaterial(i));
+        if (baseMaterial)
+        {
+#if 0    // Only required for MI_Floor material, which does not have texture randomization for now
+            baseMaterial->ClearParameterValues();
+#endif
+        }
+        else
+        {
+            baseMaterial = baseMeshComp->CreateAndSetMaterialInstanceDynamicFromMaterial(i, baseMeshComp->GetMaterial(i));
+        }
+        baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_ALBEDO, InTextureData.GetRandomTexture());
+        baseMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO, URRMathUtils::GetRandomColor());
+    }
 }

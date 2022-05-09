@@ -18,17 +18,16 @@
 #include "RRMeshActor.generated.h"
 /**
  * @brief Mesh actor.
- * 
+ *
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRMeshActor : public ARRBaseActor
 {
     GENERATED_BODY()
 public:
-
     /**
      * @brief Construct a new ARRMeshActor object
-     * 
+     *
      */
     ARRMeshActor();
 
@@ -56,9 +55,15 @@ public:
 
     UPROPERTY(VisibleAnywhere)
     UMeshComponent* BaseMeshComp = nullptr;
+    UMaterialInterface* GetBaseMeshMaterial(int32 InMaterialIndex = 0) const
+    {
+        return BaseMeshComp ? BaseMeshComp->GetMaterial(InMaterialIndex) : nullptr;
+    }
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY()
     TArray<ARRMeshActor*> PartnerList;
+    UPROPERTY()
+    FIntVector CellIdx = FIntVector::ZeroValue;
 
     virtual void DeclareFullCreation(bool bInCreationResult);
 
@@ -173,6 +178,7 @@ public:
         if (false == bInIsActivated)
         {
             AddActorWorldOffset(FVector(0.f, 0.f, -500.f));
+            CellIdx = FIntVector::ZeroValue;
         }
     }
 

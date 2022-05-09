@@ -32,6 +32,7 @@ const TMap<ERRFileType, const TCHAR*> URRCoreUtils::SimFileExts = {{ERRFileType:
                                                                    // Image
                                                                    {ERRFileType::IMAGE_JPG, TEXT(".jpg")},
                                                                    {ERRFileType::IMAGE_PNG, TEXT(".png")},
+                                                                   {ERRFileType::IMAGE_TGA, TEXT(".tga")},
                                                                    {ERRFileType::IMAGE_EXR, TEXT(".exr")},
                                                                    {ERRFileType::IMAGE_HDR, TEXT(".hdr")},
 
@@ -192,7 +193,7 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
                                      TArray<FString>& OutFilePaths,
                                      const TArray<ERRFileType>& InFileTypes)
 {
-    bool result = false;
+    bool bResult = false;
 
     if (FPaths::DirectoryExists(InFolderPath))
     {
@@ -205,8 +206,8 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
             OutFilePaths.Append(filePaths);
         }
 
-        result = (OutFilePaths.Num() > 0);
-        if (!result)
+        bResult = (OutFilePaths.Num() > 0);
+        if (!bResult)
         {
             const FString& fileTypesStr = FString::JoinBy(
                 InFileTypes, TEXT(","), [](const ERRFileType& InFileType) { return URRCoreUtils::SimFileExts[InFileType]; });
@@ -221,7 +222,7 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
     {
         UE_LOG(LogRapyutaCore, Error, TEXT("[%s] Directory NOT exist!"), *FPaths::ConvertRelativePathToFull(InFolderPath));
     }
-    return result;
+    return bResult;
 }
 
 // -------------------------------------------------------------------------------------------------------------------------
@@ -271,4 +272,43 @@ bool URRCoreUtils::CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
         InAction();
     }
     return false;
+}
+
+// -------------------------------------------------------------------------------------------------------------------------
+// IMAGE UTILS --
+//
+bool URRCoreUtils::LoadImagesFromFolder(const FString& InImageFolderPath,
+                                        const TArray<ERRFileType>& InImageFileTypes,
+                                        TArray<UTexture*>& OutImageTextureList,
+                                        bool bIsLogged)
+{
+    TArray<FString> imageFilePaths;
+    bool bResult = LoadFullFilePaths(InImageFolderPath, imageFilePaths, InImageFileTypes);
+
+    if (bResult)
+    {
+        for (const auto& imagePath : imageFilePaths)
+        {
+            // FPaths::GetCleanFilename() could be used but rather not due to being more expensive.
+            // Also, imageFolderPath could be single or compound relative path, which must be unique to be texture name.
+            FString&& textureName = imagePath.RightChop(InImageFolderPath.Len());
+            if (UTexture2D* texture = LoadImageToTexture(imagePath, textureName))
+            {
+                OutImageTextureList.Add(texture);
+            }
+            else
+            {
+                // Continue the loading regardless of some being failed.
+                bResult = false;
+                UE_LOG(LogRapyutaCore, Error, TEXT("Failed to load image to texture: [%s]"), *imagePath);
+            }
+        }
+    }
+
+    if (!bResult && bIsLogged)
+    {
+        UE_LOG(LogRapyutaCore, Error, TEXT("Failed to load all images from [%s] into textures!"), *InImageFolderPath);
+    }
+
+    return bResult;
 }

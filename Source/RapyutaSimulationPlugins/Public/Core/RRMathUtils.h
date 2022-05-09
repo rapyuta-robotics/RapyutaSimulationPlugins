@@ -45,14 +45,25 @@ public:
     }
 
     // Return an almost uniformly distributed float random number in [0, 1]
-    FORCEINLINE static float GetRandomFloat()
+    FORCEINLINE static float GetRandomBias()
     {
         return RandomStream.GetFraction();
     }
 
+    FORCEINLINE static bool IsBiased(float InBias)
+    {
+        const float bias = GetRandomBias();
+        return (bias > 0.f) && (bias <= InBias);
+    }
+
+    FORCEINLINE static bool IsBiased(float InMinBias, float InMaxBias)
+    {
+        return FMath::IsWithin(GetRandomBias(), InMinBias, InMaxBias);
+    }
+
     FORCEINLINE static bool GetRandomBool()
     {
-        return (GetRandomFloat() >= 0.5f);
+        return (GetRandomBias() >= 0.5f);
     }
 
     // Return an almost uniformly distributed float random number between 2 float values [Min, Max]
@@ -69,6 +80,10 @@ public:
     FORCEINLINE static int32 GetRandomIntegerInRange(int32 InValueA, int32 InValueB)
     {
         return RandomStream.RandRange(InValueA, InValueB);
+    }
+    FORCEINLINE static int32 GetRandomIntegerInRange(int32 InValueMax)
+    {
+        return RandomStream.RandRange(0, InValueMax);
     }
 
     FORCEINLINE static int32 GetRandomIntegerInRange(const FIntPoint& InValueRange)
@@ -92,7 +107,7 @@ public:
         // https://github.com/KieranWynn/pyquaternion/blob/master/pyquaternion/quaternion.py#L261
         static constexpr float C2PI = 2.f * PI;
 
-        const float u1 = GetRandomFloat();
+        const float u1 = GetRandomBias();
         const float u2 = GetRandomFloatInRange(0.f, C2PI);
         const float u3 = GetRandomFloatInRange(0.f, C2PI);
         const float sqrt_u1 = FMath::Sqrt(u1);
@@ -106,9 +121,33 @@ public:
         return FQuat(x, y, z, w);
     }
 
+    FORCEINLINE static float GetRandomYawInDegrees()
+    {
+        return GetRandomFloatInRange(0.f, 360.f);
+    }
+
+    FORCEINLINE static float GetRandomExtent(float InMaxExtent)
+    {
+        return GetRandomFloatInRange(-InMaxExtent, InMaxExtent);
+    }
+
     static FVector GetRandomSphericalPosition(const FVector& InCenter,
                                               const FVector2D& InDistanceRange,
                                               const FVector2D& InHeightRange);
+
+    FORCEINLINE static FLinearColor GetRandomColorFromHSV()
+    {
+        FLinearColor color(GetRandomYawInDegrees(),              // Hue
+                           GetRandomBias(),                      // Saturation
+                           GetRandomFloatInRange(0.6f, 1.f));    // Value
+
+        return color.HSVToLinearRGB();
+    }
+
+    FORCEINLINE static FLinearColor GetRandomColor()
+    {
+        return FLinearColor(GetRandomBias(), GetRandomBias(), GetRandomBias(), GetRandomBias());
+    }
 
 private:
     static FRandomStream RandomStream;

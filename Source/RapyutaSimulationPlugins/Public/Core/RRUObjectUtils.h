@@ -14,6 +14,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
+#include "Core/RRTextureData.h"
 #include "Core/RRThreadUtils.h"
 
 #include "RRUObjectUtils.generated.h"
@@ -41,15 +42,13 @@ public:
     /**
      * @brief Use CreateDefaultSubobject or NewObject based on where this method is called.
      * Uses #URRThreadUtils::IsInsideConstructor.
-     * @param InOuter
+     * @param InOuter test
      * @param InObjectClass
      * @param InObjectUniqueName
      * @return static UObject*
      *
-     * @sa
-     * [CreateDefaultSubobject](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
-     * @sa
-     * [NewObject](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
+     * @sa[CreateDefaultSubobject](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
+     * @sa[NewObject](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
      */
     FORCEINLINE static UObject* CreateSelfSubobject(UObject* InOuter, UClass* InObjectClass, const FString& InObjectUniqueName)
     {
@@ -160,10 +159,8 @@ public:
      * @param InAttachmentRules
      * @param InSocketName
      *
-     * @sa
-     * [SetupAttachment](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
-     * @sa
-     * [AttachToComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
+     * @sa[SetupAttachment](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
+     * @sa[AttachToComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
      */
     static void AttachComponentToComponent(
         USceneComponent* InChildComp,
@@ -337,7 +334,6 @@ public:
      * @param InCaseType
      * @return T*
      *
-     * @sa
      */
     template<typename T>
     static T* FindActorByName(UWorld* InWorld, const FString& InName, const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
@@ -402,14 +398,12 @@ public:
     UFUNCTION()
     static AActor* FindFloorActor(UWorld* InWorld)
     {
-        // There is only one common [Environment] actor of all Scene instances!
         return FindActorBySubname<AActor>(InWorld, TEXT("MainFloor"));
     }
 
     UFUNCTION()
     static AActor* FindWallActor(UWorld* InWorld)
     {
-        // There is only one common [Environment] actor of all Scene instances!
         return FindActorBySubname<AActor>(InWorld, TEXT("MainWall"));
     }
 
@@ -522,8 +516,24 @@ public:
         const FTransform& InActorTransform = FTransform::Identity,
         const ESpawnActorCollisionHandlingMethod InCollisionHandlingType = ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
+    FORCEINLINE static FVector GetRelativeLocFrom(const AActor* InActor, const AActor* InBaseActor)
+    {
+        return InBaseActor->GetTransform().InverseTransformPosition(InActor->GetActorLocation());
+    }
+
+    FORCEINLINE static FQuat GetRelativeQuatFrom(const AActor* InActor, const AActor* InBaseActor)
+    {
+        return InBaseActor->GetTransform().InverseTransformRotation(InActor->GetActorQuat());
+    }
+
+    FORCEINLINE static FRotator GetRelativeRotFrom(const AActor* InActor, const AActor* InBaseActor)
+    {
+        return GetRelativeQuatFrom(InActor, InBaseActor).Rotator();
+    }
+
     static void GetActorCenterAndBoundingBoxVertices(const AActor* InActor,
-                                                     TArray<FVector>& OutCenterAndVerticesWorld,
+                                                     const AActor* InBaseActor,
+                                                     TArray<FVector>& OutCenterAndVertices,
                                                      bool bInIncludeNonColliding = true);
     static FVector GetActorExtent(AActor* InActor, bool bOnlyCollidingComponents = true, bool bIncludeFromChildActors = false)
     {
@@ -581,5 +591,7 @@ public:
     static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                     int32 InMaterialIndex,
                                                                     const FString& InMaterialInterfaceName);
-    static bool ApplyMeshActorMaterialProps(ARRMeshActor* InActor, const FRRMaterialProperty& InMaterialInfo);
+    static UMaterialInstanceDynamic* GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex = 0);
+    static bool ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo);
+    static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);
 };

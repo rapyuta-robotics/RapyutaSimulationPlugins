@@ -75,6 +75,9 @@ void ARRSceneDirector::TryInitializeOperation()
 
 bool ARRSceneDirector::InitializeOperation()
 {
+    OperationBatchLoopLeft = GameState->OPERATION_BATCHES_NUM;
+    OperationBatchId = 1;
+
     // Plugin common objects (which should be valid only after Sim has initialized) --
     ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
 
@@ -93,10 +96,7 @@ bool ARRSceneDirector::InitializeOperation()
 
 void ARRSceneDirector::RunOperation()
 {
-    OperationBatchLoopLeft = GameState->OPERATION_BATCHES_NUM;
-    OperationBatchId = 1;
     bIsOperating = true;
-
     SpawnActors();
 }
 

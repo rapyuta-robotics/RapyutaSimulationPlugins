@@ -107,6 +107,8 @@ public:
     static constexpr const TCHAR* CMD_AO_USE_HISTORY_DISABLE = TEXT("r.AOUseHistory 0");
     static constexpr const TCHAR* CMD_OCCLUDED_PRIMITIVES_VISUALIZE = TEXT("r.VisualizeOccludedPrimitives 1");
     static constexpr const TCHAR* CMD_CUSTOM_DEPTH_STENCIL_ENABLE = TEXT("r.CustomDepth 3");
+    // https://docs.unrealengine.com/4.26/en-US/TestingAndOptimization/PerformanceAndProfiling/ForwardRenderer
+    static constexpr const TCHAR* CMD_FORWARD_SHADING_ENABLE = TEXT("r.ForwardShading 1");
 
     // SIM FILE EXTENSIONS --
     static const TMap<ERRFileType, const TCHAR*> SimFileExts;
@@ -414,7 +416,7 @@ public:
     static TMap<ERRFileType, TSharedPtr<IImageWrapper>> SImageWrappers;
     static void LoadImageWrapperModule();
 
-    static UTexture2D* LoadImageToTexture(const FString& InFullFilePath, const FString& InTextureName)
+    FORCEINLINE static UTexture2D* LoadImageToTexture(const FString& InFullFilePath, const FString& InTextureName)
     {
         UTexture2D* loadedTexture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
         if (loadedTexture)
@@ -424,6 +426,11 @@ public:
 
         return loadedTexture;
     }
+
+    static bool LoadImagesFromFolder(const FString& InImageFolderPath,
+                                     const TArray<ERRFileType>& InImageFileTypes,
+                                     TArray<UTexture*>& OutImageTextureList,
+                                     bool bIsLogged = false);
 
     static bool IsValidBitDepth(int32 InBitDepth)
     {

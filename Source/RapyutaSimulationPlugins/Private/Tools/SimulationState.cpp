@@ -257,6 +257,7 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
         verify(false == entityName.IsEmpty());
         if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
+            // Calculate to-be-spawned entity's [world transf]
             FVector relLocation(Request.StatePosePositionX, Request.StatePosePositionY, Request.StatePosePositionZ);
             FTransform relativeTransf = URRConversionUtils::TransformROSToUE(FTransform(Request.StatePoseOrientation, relLocation));
             FTransform worldTransf;
@@ -265,13 +266,20 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
                 Entities.Contains(Request.StateReferenceFrame) ? Entities[Request.StateReferenceFrame] : nullptr,
                 relativeTransf,
                 worldTransf);
-            UE_LOG(LogRapyutaCore, Warning, TEXT("Spawning Entity of model [%s] as [%s]"), *entityModelName, *entityName);
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("Spawning Entity of model [%s] as [%s] to pose: %s"),
+                   *entityModelName,
+                   *entityName,
+                   *worldTransf.ToString());
+
+            // Spawn entity
             // TODO: details rationale to justify using SpawnActorDeferred
             AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[entityModelName], worldTransf);
-            UROS2Spawnable* SpawnableComponent = NewObject<UROS2Spawnable>(newEntity, TEXT("ROS2 Spawn Parameters"));
-            SpawnableComponent->RegisterComponent();
-            SpawnableComponent->InitializeParameters(Request);
-            newEntity->AddInstanceComponent(SpawnableComponent);
+            UROS2Spawnable* spawnableComponent = NewObject<UROS2Spawnable>(newEntity, TEXT("ROS2 Spawn Parameters"));
+            spawnableComponent->RegisterComponent();
+            spawnableComponent->InitializeParameters(Request);
+            newEntity->AddInstanceComponent(spawnableComponent);
             newEntity->Rename(*entityName);
 #if WITH_EDITOR
             newEntity->SetActorLabel(*entityName);

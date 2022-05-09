@@ -44,19 +44,52 @@ public:
     static constexpr int32 SIM_START_TIMEOUT_SECS = 60 * SIM_START_TIMEOUT_MINS;
 
     UPROPERTY()
-    ERRSimType SimType = ERRSimType::ROBOT_SIM;
+    uint8 SimType = static_cast<uint8>(ERRSimType::ROBOT_SIM);
+
+    bool IsSimType(const ERRSimType InSimType) const
+    {
+        return (static_cast<uint8>(InSimType) & static_cast<uint8>(SimType));
+    }
+
+    bool IsDataSynthSimType() const
+    {
+        return IsSimType(ERRSimType::DATA_SYNTH);
+    }
+
+    void SetSimType(const ERRSimType InSimType)
+    {
+        SimType |= static_cast<uint8>(InSimType);
+    }
 
     FString GetSimTypeName() const
     {
-        return URRTypeUtils::GetEnumValueAsString(TEXT("ERRSimType"), SimType);
-    }
-    bool IsDataSynthSimType() const
-    {
-        return (static_cast<uint8>(ERRSimType::DATA_SYNTH) & static_cast<uint8>(SimType));
+        // SimType is not changed during Sim run
+        static FString simTypeName = [this]()
+        {
+            FString resultName;
+            auto fAppendIfOfType = [this, &resultName](const ERRSimType InSimType)
+            {
+                if (IsSimType(InSimType))
+                {
+                    const FString typeName = URRTypeUtils::GetEnumValueAsString(TEXT("ERRSimType"), InSimType);
+                    if (resultName.IsEmpty())
+                    {
+                        resultName = typeName;
+                    }
+                    else
+                    {
+                        resultName.Append(FString::Printf(TEXT(",%s"), *typeName));
+                    }
+                }
+            };
+            fAppendIfOfType(ERRSimType::ROBOT_SIM);
+            fAppendIfOfType(ERRSimType::DATA_SYNTH);
+            return resultName;
+        }();
+        return simTypeName;
     }
 
-    UPROPERTY()
-    URRGameInstance* GameInstance = nullptr;
+    UPROPERTY() URRGameInstance* GameInstance = nullptr;
 
     virtual void PreInitializeComponents() override;
     virtual void InitGameState() override;
@@ -81,8 +114,7 @@ public:
      *  The reason for this scheduled delegate is some essential operation, which facilitates sim startup activities like
      *  asynchronous resource loading, could only run after this [ARRGameState::BeginPlay()] ends!
      */ 
-    void StartSim();
-
+    virtual void StartSim();
     UPROPERTY(config)
     bool bBenchmark = true;
 

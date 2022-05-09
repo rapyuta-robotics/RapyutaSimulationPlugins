@@ -67,7 +67,7 @@ protected:
     // Start (Initialize + Run) Operation
     virtual bool InitializeOperation();
     virtual void RunOperation();
-    virtual void ContinueOperation(bool bIsLastOperationSuccessful, bool bContinueRandomizing)
+    virtual void ContinueOperation(bool bIsLastOperationSuccessful, bool bContinueRGBRandomizing)
     {
     }
 

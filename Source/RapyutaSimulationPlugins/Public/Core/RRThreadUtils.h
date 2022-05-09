@@ -65,6 +65,18 @@ public:
         }
     }
 
+    template<typename TFunc, typename... TArgs>
+    static void DoTaskInGameThreadLater(TFunc&& InTaskInGameThread, float InWaitingTime, TArgs&&... Args)
+    {
+        DoAsyncTaskInThread<void>(
+            [InWaitingTime]()
+            {
+                // Wait for the physics to complete the computation given earlier vel cmds
+                FPlatformProcess::Sleep(InWaitingTime);
+            },
+            [InTaskInGameThread = Forward<TFunc>(InTaskInGameThread)]() { DoTaskInGameThread(InTaskInGameThread); });
+    }
+
     template<typename TResult>
     static auto DoAsyncTaskInThread(TFunction<TResult()> InTask,
                                     TFunction<void()> InCompletionCallback,

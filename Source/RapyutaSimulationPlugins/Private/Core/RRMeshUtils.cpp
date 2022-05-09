@@ -214,7 +214,7 @@ void URRMeshUtils::ProcessMaterial(aiMaterial* InMaterial, const FString& InMesh
 
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
     UMaterialInstanceDynamic* ueMaterial =
-        UMaterialInstanceDynamic::Create(gameSingleton->GetMaterial(URRGameSingleton::MATERIAL_NAME_BASE), gameSingleton);
+        UMaterialInstanceDynamic::Create(gameSingleton->GetMaterial(URRGameSingleton::MATERIAL_NAME_PROP_MASTER), gameSingleton);
 
 #if RAPYUTA_SIM_DEBUG
     const FString fullMeshPath = FPaths::GetPath(InMeshFilePath);
