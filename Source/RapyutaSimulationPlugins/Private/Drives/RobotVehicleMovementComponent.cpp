@@ -25,7 +25,6 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 
     DesiredRotation = oldRotation * deltaRotation;
     DesiredMovement = (oldRotation * position);
-    //UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement -> DesiredMovement : %s"), DesiredMovement.ToString());
 
     // if Robot is on a moving platform, add the platform motion
     if (MovingPlatform != nullptr && bFollowPlatform)
@@ -43,37 +42,6 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
     // should test once with the desired motion, to check for blocking collisions, and once again after motion by contact points
     // modification (if some modifications!) if collision detected, need to check actions possible : stop motion (if static object
     // or object mass >> vehicle mass), reduce motion (if movable object and object mass ~ vehicle mass), ignore ?
-    /*
-    bool GetWorld()->ComponentOverlapMultiByChannel(
-                                                    TArray< struct FOverlapResult >& O...,
-                                                    const UPrimitiveComponent* Pri...,
-                                                    const FVector& Pos,
-                                                    const FQuat& Rot,
-                                                    ECollisionChannel TraceChannel,
-                                                    const FComponentQueryParams& Param...,
-                                                    const FCollisionObjectQueryParams&...
-                                                    );
-
-    bool GetWorld()->ComponentSweepMulti(
-                                        TArray< struct FHitResult >& OutHi...,
-                                        UPrimitiveComponent* PrimComp,
-                                        const FVector& Start,
-                                        const FVector& End,
-                                        const FQuat& Rot,
-                                        const FComponentQueryParams& Param...
-                                    );
-
-    bool GetWorld()->SweepSingleByChannel(
-                                        FHitResult& OutHit,
-                                        const FVector& Start,
-                                        const FVector& End,
-                                        const FQuat& Rot,
-                                        ECollisionChannel TraceChannel,
-                                        const FCollisionShape& CollisionSh...,
-                                        const FCollisionQueryParams& Param...,
-                                        const FCollisionResponseParams& Re...
-                                    );
-    */
 
     FHitResult Hit;
     SafeMoveUpdatedComponent(DesiredMovement, DesiredRotation, true, Hit);
@@ -117,15 +85,12 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
                 {
                     FVector HeightVariation = {0., 0., MinDistanceToFloor - Hit.Distance};
                     PawnOwner->AddActorWorldOffset(HeightVariation, true, &Hit, ETeleportType::TeleportPhysics);
-                    // UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Distance Modification = %f"),
-                    // HeightVariation.Z );
                 }
             }
             else
             {
                 // very basic robot falling
-                PawnOwner->AddActorWorldOffset(
-                    FVector(0., 0., -FallingSpeed * InDeltaTime), true, &Hit, ETeleportType::TeleportPhysics);
+                PawnOwner->AddActorWorldOffset(FVector(0., 0., -FallingSpeed * InDeltaTime), true, &Hit, ETeleportType::TeleportPhysics);
             }
         }
         else
@@ -139,8 +104,6 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             for (USceneComponent* Contact : ContactPoints)
             {
                 // get the contact points
-                //UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Contact Point = %f %f %f"),
-                //  Contact->GetComponentLocation().X, Contact->GetComponentLocation().Y, Contact->GetComponentLocation().Z );
                 FVector startPos = Contact->GetComponentLocation() + FVector(0., 0., RayOffsetUp);
                 FVector endPos = Contact->GetComponentLocation() - FVector(0., 0., RayOffsetDown);
                 bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(Hit,
@@ -183,8 +146,6 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             PlaneNormal.Normalize(0.01);
             if (PlaneNormal.Z < 0.)
                 PlaneNormal = -PlaneNormal;
-            //UE_LOG( LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - PlaneNormal = %f %f %f"),
-            //  PlaneNormal.X, PlaneNormal.Y, PlaneNormal.Z );
 
             FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), PlaneNormal);
             PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, PlaneNormal));
@@ -205,7 +166,6 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 
                 FVector HeightVariation = {0., 0., -MinDistance};
                 PawnOwner->AddActorWorldOffset(HeightVariation, true, &Hit, ETeleportType::TeleportPhysics);
-                //UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::UpdateMovement - Distance Modification = %f"), MinDistance );
             }
         }
     }
