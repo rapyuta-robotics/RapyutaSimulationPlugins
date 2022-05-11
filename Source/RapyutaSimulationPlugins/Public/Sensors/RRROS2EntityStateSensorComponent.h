@@ -12,7 +12,7 @@
 #include <Msgs/ROS2EntityStateMsg.h>
 
 // RapyutaSimulationPlugins
-#include "Tools/RRGeneralUtils.h"
+#include "Core/RRGeneralUtils.h"
 #include "Tools/RRROS2EntityStatePublisher.h"
 
 #include "RRROS2EntityStateSensorComponent.generated.h"

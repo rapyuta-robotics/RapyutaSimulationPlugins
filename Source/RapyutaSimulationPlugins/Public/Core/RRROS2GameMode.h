@@ -7,12 +7,12 @@
 #include "GameFramework/GameMode.h"
 
 // RapyutaSimulationPlugins
+#include "Tools/SimulationState.h"
 
 #include "RRROS2GameMode.generated.h"
 
 class AROS2Node;
 class URRROS2ClockPublisher;
-class ASimulationState;
 UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 {
     GENERATED_BODY()
@@ -26,6 +26,9 @@ public:
 
     UPROPERTY(BlueprintReadOnly)
     ASimulationState* SimulationState = nullptr;
+
+    UPROPERTY(BlueprintReadOnly)
+    TSubclassOf<ASimulationState> SimulationStateClass = ASimulationState::StaticClass();
 
     UPROPERTY(BlueprintReadWrite)
     FString UENodeName = TEXT("UENode");

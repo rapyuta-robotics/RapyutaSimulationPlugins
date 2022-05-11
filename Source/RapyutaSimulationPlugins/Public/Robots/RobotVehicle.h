@@ -9,6 +9,7 @@
 #include "GameFramework/Pawn.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRBaseActor.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
 
@@ -19,7 +20,7 @@
 
 class URobotVehicleMovementComponent;
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public APawn
+class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARRBaseActor
 {
     GENERATED_BODY()
 

@@ -2,6 +2,9 @@
 
 #include "Tools/RRROS2ActorTFPublisher.h"
 
+// RapyutaSimulationPlugins
+#include "Core/RRUObjectUtils.h"
+
 void URRROS2ActorTFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
@@ -32,7 +35,7 @@ void URRROS2ActorTFPublisher::BeginPlay()
 
 void URRROS2ActorTFPublisher::SetReferenceActorByName(const FString& InName)
 {
-    ReferenceActor = URRGeneralUtils::GetActorByName(GetWorld(), InName);
+    ReferenceActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
     ReferenceActorName = InName;
 }
 
@@ -44,7 +47,7 @@ void URRROS2ActorTFPublisher::SetReferenceActorByActor(AActor* InActor)
 
 void URRROS2ActorTFPublisher::SetTargetActorByName(const FString& InName)
 {
-    TargetActor = URRGeneralUtils::GetActorByName(GetWorld(), InName);
+    TargetActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
     TargetActorName = InName;
 }
 

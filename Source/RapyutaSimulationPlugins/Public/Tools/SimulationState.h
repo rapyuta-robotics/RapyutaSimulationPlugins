@@ -10,8 +10,8 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
-#include "Tools/RRGeneralUtils.h"
-#include "Tools/UEUtilities.h"
+#include "Core/RRGeneralUtils.h"
+#include "Core/RRConversionUtils.h"
 
 #include "SimulationState.generated.h"
 
@@ -37,7 +37,7 @@ public:
 
 public:
     UFUNCTION(BlueprintCallable)
-    void Init(AROS2Node* InROS2Node);
+    virtual void Init(AROS2Node* InROS2Node);
 
     UFUNCTION(BlueprintCallable)
     void GetEntityStateSrv(UROS2GenericSrv* Service);
@@ -60,6 +60,7 @@ public:
     UFUNCTION(BlueprintCallable)
     void AddEntity(AActor* Entity);
 
+    // BP callable thus the param could not be const&
     UFUNCTION(BlueprintCallable)
     void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
 

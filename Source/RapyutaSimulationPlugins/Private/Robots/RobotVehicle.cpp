@@ -38,6 +38,7 @@ void ARobotVehicle::SetupDefault()
     RootComponent = SkeletalMeshComp;
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
+    AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 bool ARobotVehicle::InitSensors(AROS2Node* InROS2Node)

@@ -6,8 +6,8 @@
 #include "AssetRegistryModule.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-// RapyutaSim
-#include "RRObjectCommon.h"
+// RapyutaSimulationPlugins
+#include "Core/RRObjectCommon.h"
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRTypeUtils.generated.h"
