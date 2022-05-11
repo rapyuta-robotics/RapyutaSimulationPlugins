@@ -7,6 +7,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Algo/MinElement.h"
 
 void URobotVehicleMovementComponent::Initialize()
 {
@@ -153,7 +154,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             if (MovingPlatform == nullptr)
             {
                 // Moves the robot up or down, depending on impact position
-                float minDistance = Algo::MinElement(ContactsDistance);
+                float minDistance = *Algo::MinElement(ContactsDistance);
                 minDistance -= RayOffsetUp;
 
                 minDistance = FMath::Min(minDistance, FallingSpeed * InDeltaTime);
