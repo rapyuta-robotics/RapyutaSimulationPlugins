@@ -4,13 +4,16 @@
 #include "CoreMinimal.h"
 
 // UE
+#include "Engine/SkeletalMesh.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StreamableManager.h"
 #include "Materials/Material.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include "PhysicsEngine/BodySetup.h"
 #include "Templates/UniquePtr.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRActorCommon.h"
 #include "Core/RRAssetUtils.h"
 #include "Core/RRObjectCommon.h"
 #include "Core/RRTypeUtils.h"
@@ -31,9 +34,7 @@ public:
 
     // SIM RESOURCES ==
     //
-    UFUNCTION()
     bool InitializeResources();
-    UFUNCTION()
     void FinalizeResources();
 
     template<typename T>
@@ -51,13 +52,15 @@ public:
 
         for (const auto& asset : totalAssetDataList)
         {
+#if RAPYUTA_SIM_DEBUG
             UE_LOG(LogTemp,
-                   VeryVerbose,
+                   Warning,
                    TEXT("[%s] ASSET [%s] [%s]"),
                    *asset.AssetName.ToString(),
                    *asset.PackagePath.ToString(),
                    *asset.GetFullName(),
                    *asset.ToSoftObjectPath().ToString());
+#endif
             outResourceInfo.AddResource(asset.AssetName.ToString(), asset.ToSoftObjectPath().ToString(), nullptr);
         }
         return (totalAssetDataList.Num() > 0);
@@ -91,10 +94,7 @@ public:
 
     //  RESOURCE STORE --
     //
-    UFUNCTION()
-    bool HaveAllResourcesBeenLoaded(bool bIsLogged = false);
-
-    UFUNCTION()
+    bool HaveAllResourcesBeenLoaded(bool bIsLogged = false) const;
     bool RequestResourcesLoading(const ERRResourceDataType InDataType);
 
     // This is used as param to [FStreamableDelegate::CreateUObject()] thus its params could not be constref-ized
@@ -138,14 +138,16 @@ public:
             FRRResourceInfo& resourceInfo = GetSimResourceInfo(InDataType);
             resourceInfo.AddResource(InResourceUniqueName, InResourcePath, resource);
             resourceInfo.ToBeAsyncLoadedResourceNum--;
+#if RAPYUTA_SIM_DEBUG
             UE_LOG(LogTemp,
-                   VeryVerbose,
+                   Warning,
                    TEXT("%d [%s] [%s:%s] RESOURCE LOADED %d"),
                    resourceInfo.ToBeAsyncLoadedResourceNum,
                    *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
                    *InResourceUniqueName,
                    *InResourcePath.ToString(),
                    resource);
+#endif
             if (resourceInfo.ToBeAsyncLoadedResourceNum == 0)
             {
                 resourceInfo.HasBeenAllLoaded = true;
@@ -172,23 +174,28 @@ public:
         resourceInfo.AddResource(InResourceUniqueName, FSoftObjectPath(InResourceObject), InResourceObject);
         resourceInfo.HasBeenAllLoaded = true;
 
+#if RAPYUTA_SIM_DEBUG
         UE_LOG(LogTemp,
-               VeryVerbose,
+               Warning,
                TEXT("[%s] [%s] DYNAMIC RUNTIME RESOURCE ADDED %s"),
                *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
                *InResourceUniqueName,
                *InResourceObject->GetName());
+#endif
 
         // Resource Data
         // Still need to store resource handle in a direct UPROPERTY() child TArray of this GameSingleton to bypass
         // early GC
-        ResourceStore.AddUnique(Cast<UObject>(InResourceObject));
+        if (IsValid(InResourceObject))
+        {
+            ResourceStore.AddUnique(Cast<UObject>(InResourceObject));
+        }
     }
 
     template<typename TResource>
     TResource* GetSimResource(const ERRResourceDataType InDataType,
                               const FString& InResourceUniqueName,
-                              bool bIsStaticResource = true)
+                              bool bIsStaticResource = true) const
     {
         TResource* resourceAsset = Cast<TResource>(GetSimResourceInfo(InDataType).Data.FindRef(InResourceUniqueName).AssetData);
 
@@ -217,7 +224,12 @@ public:
         return resourceAsset;
     }
 
-    TMap<FString, FRRResource>& GetSimResourceList(const ERRResourceDataType InDataType)
+    bool HasSimResource(const ERRResourceDataType InDataType, const FString& InResourceUniqueName) const
+    {
+        return GetSimResourceInfo(InDataType).Data.Contains(InResourceUniqueName);
+    }
+
+    const TMap<FString, FRRResource>& GetSimResourceList(const ERRResourceDataType InDataType) const
     {
         verifyf(ResourceMap.Contains(InDataType),
                 TEXT("It seems [ResourceMap][%s] not yet fully initialized!"),
@@ -226,6 +238,14 @@ public:
     }
 
     FRRResourceInfo& GetSimResourceInfo(const ERRResourceDataType InDataType)
+    {
+        verifyf(ResourceMap.Contains(InDataType),
+                TEXT("It seems [ResourceMap][%s] has not yet been fully initialized!"),
+                *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
+        return ResourceMap[InDataType];
+    }
+
+    const FRRResourceInfo& GetSimResourceInfo(const ERRResourceDataType InDataType) const
     {
         verifyf(ResourceMap.Contains(InDataType),
                 TEXT("It seems [ResourceMap][%s] has not yet been fully initialized!"),
@@ -245,10 +265,25 @@ public:
     static constexpr const TCHAR* SHAPE_NAME_SPHERE = TEXT("Sphere");
     static constexpr const TCHAR* SHAPE_NAME_CAPSULE = TEXT("Capsule");
 
-    UFUNCTION()
-    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName)
+    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName) const
     {
         return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, InStaticMeshName);
+    }
+
+    // SKELETAL ASSETS --
+    FORCEINLINE USkeletalMesh* GetSkeletalMesh(const FString& InSkeletalMeshName)
+    {
+        return GetSimResource<USkeletalMesh>(ERRResourceDataType::UE_SKELETAL_MESH, InSkeletalMeshName);
+    }
+
+    FORCEINLINE USkeleton* GetSkeleton(const FString& InSkeletonName)
+    {
+        return GetSimResource<USkeleton>(ERRResourceDataType::UE_SKELETON, InSkeletonName);
+    }
+
+    FORCEINLINE UPhysicsAsset* GetPhysicsAsset(const FString& InPhysicsAssetName)
+    {
+        return GetSimResource<UPhysicsAsset>(ERRResourceDataType::UE_PHYSICS_ASSET, InPhysicsAssetName);
     }
 
     // MATERIALS --
@@ -258,12 +293,24 @@ public:
 
     // Here we only define specially used materials for some specific purpose!
     static constexpr const TCHAR* MATERIAL_NAME_FLOOR = TEXT("M_FloorMat");
-    static constexpr const TCHAR* MATERIAL_NAME_BASE = TEXT("M_Base");
+    static constexpr const TCHAR* MATERIAL_NAME_MASTER = TEXT("M_Base");
 
-    UFUNCTION()
     FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName)
     {
         return GetSimResource<UMaterialInterface>(ERRResourceDataType::UE_MATERIAL, InMaterialName);
+    }
+
+    // TEXTURES --
+    FORCEINLINE UTexture* GetTexture(const FString& InTextureName) const
+    {
+        return GetSimResource<UTexture>(ERRResourceDataType::UE_TEXTURE, InTextureName);
+    }
+
+    // BODY SETUPS --
+    FORCEINLINE UBodySetup* GetBodySetup(const FString& InBodySetupName) const
+    {
+        // Body setups are dynamically created, thus not static resources
+        return GetSimResource<UBodySetup>(ERRResourceDataType::UE_BODY_SETUP, InBodySetupName, false);
     }
 
 private:

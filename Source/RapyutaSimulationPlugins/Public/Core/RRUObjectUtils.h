@@ -2,12 +2,12 @@
 #pragma once
 
 // Unreal
+#include "Components/MeshComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
-#include "Core/RRBaseActor.h"
 #include "Core/RRCoreUtils.h"
 #include "Core/RRThreadUtils.h"
 
@@ -66,6 +66,11 @@ public:
         }
 
         return (index >= 0);
+    }
+
+    FORCEINLINE static FString ComposeDynamicResourceName(const FString& InPrefix, const FString& InResourceUniqueName)
+    {
+        return FString::Printf(TEXT("%s%s"), *InPrefix, *InResourceUniqueName);
     }
 
     // -------------------------------------------------------------------------------------------------------------------------
@@ -193,13 +198,15 @@ public:
             CreateAndAttachChildComponent<TMeshComponent>(InActor, InMeshCompUniqueName, InRelativeTransf, InParentComp);
         meshComp->MeshUniqueName = InObjMeshUniqueName;
 
-        UE_LOG(LogRapyutaCore,
+#if RAPYUTA_SIM_VISUAL_DEBUG
+        UE_LOG(LogTemp,
                Display,
                TEXT("[%s] MESH COMP [%s] ATTACHED TO %s|%s"),
                *InActor->GetName(),
                *meshComp->GetName(),
                *meshComp->GetAttachParent()->GetName(),
                *InRelativeTransf.ToString());
+#endif
 
         // 2 - Initialize --
         // Collision --
@@ -288,23 +295,30 @@ public:
     }
 
     UFUNCTION()
+    static AActor* FindEnvironmentActor(UWorld* InWorld)
+    {
+        // There is only one common [Environment] actor of all Scene instances!
+        return FindActorBySubname<AActor>(InWorld, TEXT("RapyutaEnvironment"));
+    }
+
+    UFUNCTION()
     static AActor* FindSkyActor(UWorld* InWorld)
     {
-        // There is only one common [Sky] actor of all sim mode instances!
+        // There is only one common [Sky] actor of all Scene instances!
         return FindActorBySubname<AActor>(InWorld, TEXT("RapyutaSky"));
     }
 
     UFUNCTION()
     static ASkyLight* FindSkyLight(UWorld* InWorld)
     {
-        // There is only one common [SkyLight] actor of all sim mode instances!
+        // There is only one common [SkyLight] actor of all Scene instances!
         return FindActorBySubname<ASkyLight>(InWorld, TEXT("SkyLight"));
     }
 
     UFUNCTION()
     static APostProcessVolume* FindPostProcessVolume(UWorld* InWorld)
     {
-        // There is only one common [PostProcessVolume] actor of all sim mode instances!
+        // There is only one common [PostProcessVolume] actor of all Scene instances!
         return FindActorBySubname<APostProcessVolume>(InWorld, TEXT("PostProcessVolume"));
     }
 
@@ -339,7 +353,7 @@ public:
         spawnInfo.SpawnCollisionHandlingOverride = CollisionHandlingType;
         T* newSimActor = InWorld->SpawnActor<T>(
             InActorSpawnInfo.TypeClass ? static_cast<UClass*>(InActorSpawnInfo.TypeClass) : static_cast<UClass*>(T::StaticClass()),
-            InActorSpawnInfo.Transform,
+            InActorSpawnInfo.ActorTransform,
             spawnInfo);
 
         if (newSimActor)
@@ -352,15 +366,18 @@ public:
             // In Editor, Use the id itself for actor's label as well, just for sake of verification.
             newSimActor->SetActorLabel(InActorSpawnInfo.UniqueName);
 #endif
+
+#if RAPYUTA_SIM_DEBUG
             UE_LOG(LogTemp,
-                   VeryVerbose,
+                   Warning,
                    TEXT("[%s:%d] SIM ACTOR SPAWNED: [%s] => [%s]\nat %s -> %s"),
                    *InActorSpawnInfo.UniqueName,
                    newSimActor,
                    *spawnInfo.Name.ToString(),
                    *newSimActor->GetName(),
-                   *InActorSpawnInfo.Transform.ToString(),
+                   *InActorSpawnInfo.ActorTransform.ToString(),
                    *newSimActor->GetActorTransform().ToString());
+#endif
         }
         else
         {
@@ -375,7 +392,42 @@ public:
         UWorld* InWorld,
         int8 InSceneInstanceId,
         UClass* InActorClass,
+        const FString& InEntityModelName,
         const FString& InActorName = EMPTY_STR,
         const FTransform& InActorTransform = FTransform::Identity,
         const ESpawnActorCollisionHandlingMethod InCollisionHandlingType = ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+
+    template<typename T>
+    static FVector GetActorGroupCenter(const TArray<T*>& InActors)
+    {
+        FVector sumLocation = FVector::ZeroVector;
+        for (const auto& actor : InActors)
+        {
+            sumLocation += actor->GetActorLocation();
+        }
+        return sumLocation / InActors.Num();
+    }
+
+    template<typename T>
+    static void HuddleActors(const TArray<T*>& InActors)
+    {
+        // (NOTE) Actors should be not touching the floor so they could sweep
+        const FVector center = URRUObjectUtils::GetActorGroupCenter(InActors);
+        const auto actorsNum = InActors.Num();
+        const auto actorsNumHalf = FMath::CeilToInt(0.5f * actorsNum);
+        for (auto i = actorsNumHalf; i < actorsNum; ++i)
+        {
+            auto& actor = InActors[i];
+            actor->AddActorWorldOffset(center - actor->GetActorLocation(), true);
+        }
+        for (auto i = actorsNumHalf - 1; i >= 0; --i)
+        {
+            auto& actor = InActors[i];
+            actor->AddActorWorldOffset(center - actor->GetActorLocation(), true);
+        }
+    }
+
+    static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
+                                                                    int32 InMaterialIndex,
+                                                                    const FString& InMaterialInterfaceName);
 };

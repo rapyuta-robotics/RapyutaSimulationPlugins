@@ -49,6 +49,7 @@ public:
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
 
     bool InitSensors(AROS2Node* InROS2Node);
+    virtual bool InitMoveComponent();
     void SetupDefault();
 
     UFUNCTION(BlueprintCallable)

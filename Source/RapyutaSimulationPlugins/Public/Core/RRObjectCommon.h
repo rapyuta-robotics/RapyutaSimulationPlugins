@@ -3,6 +3,7 @@
 #pragma once
 
 // UE
+#include "PhysicsEngine/BodySetup.h"
 #include "UObject/Object.h"
 
 // RapyutaSim
@@ -20,8 +21,15 @@ enum class ERRResourceDataType : uint8
     NONE,
     // UASSET --
     UE_STATIC_MESH,
-    UE_RUNTIME_MESH,
+    UE_SKELETAL_MESH,
+    UE_SKELETON,
+    UE_PHYSICS_ASSET,
     UE_MATERIAL,
+    UE_TEXTURE,
+
+    // UOBJECT --
+    // Cooked collision data
+    UE_BODY_SETUP,
 
     TOTAL
 };
@@ -84,6 +92,22 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
         DataType = ERRResourceDataType::NONE;
         ToBeAsyncLoadedResourceNum = 0;
         HasBeenAllLoaded = false;
-        Data.Empty();
+
+        // BodySetup's collision mesh data are manually created from the underlying Physics engine,
+        // thus needs manual flush
+        // Besides, body setup data is shared among proc mesh comps, thus could not be destroyed in a dtor or
+        // OnComponentDestroyed()
+        if (ERRResourceDataType::UE_BODY_SETUP == DataType)
+        {
+            for (auto& data : Data)
+            {
+                UBodySetup* bodySetup = Cast<UBodySetup>(data.Value.AssetData);
+                if (IsValid(bodySetup))
+                {
+                    bodySetup->ClearPhysicsMeshes();
+                }
+            }
+        }
+        Data.Reset();
     }
 };

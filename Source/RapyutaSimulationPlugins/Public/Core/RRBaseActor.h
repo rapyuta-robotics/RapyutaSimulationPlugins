@@ -15,12 +15,13 @@
 
 class ARRGameMode;
 class ARRGameState;
+class URRGameSingleton;
 class ARRPlayerController;
 
 /* Base actor class for all Rapyuta Sim actors:
- * - Be assigned a sim mode instance id
+ * - Be assigned a Scene instance id
  * - Provide accessible handles to the common Game framework objects (GameInstance, GameMode, GameState) and
- * the corresponding [ActorCommon] of the Sim Mode instance it belongs to.
+ * the corresponding [ActorCommon] of the Scene instance it belongs to.
  * - Does not necessarily have a USceneComponent, which is only required for spatially wise or mesh-based actors, as Root!
  */
 UCLASS()
@@ -50,17 +51,19 @@ public:
     ARRGameState* GameState = nullptr;
 
     UPROPERTY()
+    URRGameSingleton* GameSingleton = nullptr;
+
+    UPROPERTY()
     ARRPlayerController* PlayerController = nullptr;
 
     UPROPERTY()
     URRActorCommon* ActorCommon = nullptr;
 
+    UPROPERTY(VisibleAnywhere)
+    FString EntityModelName;
+
     UPROPERTY()
     FTimerHandle GenericTimerHandle;
-
-    virtual void OnBodyComponentMeshCreationDone(UObject* /*InMeshAttachParentComponent or InMeshBodyComponent*/)
-    {
-    }
 
 public:
     virtual bool Initialize();

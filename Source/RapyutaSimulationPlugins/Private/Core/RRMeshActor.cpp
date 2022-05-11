@@ -4,15 +4,22 @@
 // RapyutaSimulationPlugins
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameMode.h"
+#include "Core/RRGameState.h"
 #include "Core/RRMathUtils.h"
 #include "Core/RRStaticMeshComponent.h"
 #include "Core/RRUObjectUtils.h"
+
+using URRMeshComponent =
+    typename TChooseClass<RAPYUTA_DATA_SYNTH_USE_ENTITY_STATIC_MESH, URRStaticMeshComponent, URRProceduralMeshComponent>::Result;
 
 ARRMeshActor::ARRMeshActor()
 {
     // CREATE & SETUP A SCENE COMPONENT AS ROOT
     // -> THIS IS REQUIRED TO ALLOW ACTOR BEING SPAWNED WITH A USER TRANSFORM, WHICH IS APPLIED TO THE SCENE-COMPONENT ROOT
     URRUObjectUtils::SetupDefaultRootComponent(this);
+
+    bLastMeshCreationResult = false;
+    bFullyCreated = false;
 }
 
 bool ARRMeshActor::Initialize()
@@ -22,19 +29,21 @@ bool ARRMeshActor::Initialize()
         return false;
     }
 
-    // 1- Create child mesh comnponents
+    // 1- Create child mesh components
     if (ActorInfo.IsValid())
     {
-        CreateMeshComponentList(GetRootComponent(), ActorInfo->MeshUniqueNameList);
+        ToBeCreatedMeshesNum = ActorInfo->MeshUniqueNameList.Num();
+        CreateMeshComponentList<URRMeshComponent>(
+            GetRootComponent(), ActorInfo->MeshUniqueNameList, ActorInfo->MeshRelTransformList, ActorInfo->MaterialNameList);
     }
 
-    // 2- By default, a block object has its CustomDepthRender enabled, which is cheap, for segmask capturing.
+    // 2- By default, a mesh actor has its CustomDepthRender enabled, which is cheap, for segmask capturing.
     // This requires MeshCompList having been created
     SetCustomDepthEnabled(true);
 
     // 3- This will take effect on all child mesh components
-    GetRootComponent()->SetMobility((ActorInfo.IsValid() && ActorInfo->IsStationary) ? EComponentMobility::Stationary
-                                                                                     : EComponentMobility::Movable);
+    GetRootComponent()->SetMobility((ActorInfo.IsValid() && ActorInfo->bIsStationary) ? EComponentMobility::Stationary
+                                                                                      : EComponentMobility::Movable);
     return true;
 }
 
@@ -81,72 +90,10 @@ void ARRMeshActor::Reset()
 {
     Super::Reset();
     MeshCompList.Reset();
+    CreatedMeshesNum = 0;
 }
 
-TArray<URRStaticMeshComponent*> ARRMeshActor::CreateMeshComponentList(USceneComponent* InParentComp,
-                                                                      const TArray<FString>& InMeshUniqueNameList,
-                                                                      const TArray<FTransform>& InMeshRelTransf)
-{
-    // (Note) This method could be invoked multiple times
-    TArray<URRStaticMeshComponent*> addedMeshCompList;
-    if (InMeshRelTransf.Num() > 0)
-    {
-        verify(InMeshUniqueNameList.Num() == InMeshRelTransf.Num());
-    }
-
-    URRStaticMeshComponent* meshComp = nullptr;
-    for (auto i = 0; i < InMeshUniqueNameList.Num(); ++i)
-    {
-        const FString& meshUniqueName = InMeshUniqueNameList[i];
-        static int64 count = 0;
-        // [OBJECT MESH COMP] --
-        //
-        meshComp = URRUObjectUtils::CreateMeshComponent<URRStaticMeshComponent>(
-            this,
-            meshUniqueName,
-            FString::Printf(TEXT("%s_MeshComp_%ld"), *ActorInfo->UniqueName, count++),
-            InMeshRelTransf.IsValidIndex(i) ? InMeshRelTransf[i] : FTransform::Identity,
-            ActorInfo->IsStationary,
-            ActorInfo->IsPhysicsEnabled,
-            ActorInfo->IsCollisionEnabled,
-            InParentComp);
-        if (meshComp)
-        {
-            addedMeshCompList.AddUnique(meshComp);
-        }
-        else
-        {
-            UE_LOG(LogRapyutaCore,
-                   Error,
-                   TEXT("[%s:%d] - Failed creating child Mesh Component [%s]!"),
-                   *ActorInfo->UniqueName,
-                   this,
-                   *meshUniqueName);
-        }
-    }
-    MeshCompList.Append(addedMeshCompList);
-
-#if 0    // To be confirmed
-    // Base Mesh Component Configs
-    if (MeshCompList.Num() > 0)
-    {
-        BaseMeshComp = MeshCompList[0];
-
-        // Set as Root Component
-        // Set the main mesh comp as the root
-        // (Not clear why using the default scene component as the root just disrupts actor-children relative movement,
-        // and thus also compromise the actor transform itself)!
-        if (MeshCompList.Num() == 1)
-        {
-            BaseMeshComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-            SetRootComponent(BaseMeshComp);
-        }
-    }
-#endif
-    return addedMeshCompList;
-}
-
-URRStaticMeshComponent* ARRMeshActor::GetMeshComponent(int32 Index) const
+UMeshComponent* ARRMeshActor::GetMeshComponent(int32 Index) const
 {
     return MeshCompList.IsValidIndex(Index) ? MeshCompList[Index] : nullptr;
 }
@@ -171,4 +118,52 @@ bool ARRMeshActor::IsCustomDepthEnabled() const
         }
     }
     return true;
+}
+
+void ARRMeshActor::OnBodyComponentMeshCreationDone(bool bInCreationResult, UObject* InMeshBodyComponent)
+{
+    // Accumulatively result marking
+    bLastMeshCreationResult = (0 == CreatedMeshesNum) ? bInCreationResult : (bLastMeshCreationResult && bInCreationResult);
+    if (ToBeCreatedMeshesNum == (++CreatedMeshesNum))
+    {
+        DeclareFullCreation(bLastMeshCreationResult);
+    }
+}
+
+void ARRMeshActor::DeclareFullCreation(bool bInCreationResult)
+{
+    bFullyCreated = bInCreationResult;
+    if (bInCreationResult)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] MESH ACTOR CREATED!"), *GetName());
+#endif
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] MESH ACTOR CREATION FAILED!"), *GetName());
+    }
+
+    // (NOTE) Since [ProcMeshComp] also created a default material instance once mesh section is built,
+    // [ActorInfo]'s Override materials could only be set here once the full creation is done.
+    if (ActorInfo.IsValid())
+    {
+        for (auto i = 0; i < ActorInfo->MeshUniqueNameList.Num(); ++i)
+        {
+            if (ActorInfo->MaterialNameList.IsValidIndex(i))
+            {
+                URRUObjectUtils::CreateMeshCompMaterialInstance(MeshCompList[i], 0, ActorInfo->MaterialNameList[i]);
+            }
+        }
+    }
+
+    // SIGNAL [MESH ACTOR]
+    ActorCommon->OnMeshActorFullyCreated.ExecuteIfBound(
+        bInCreationResult, this, ActorInfo.IsValid() ? ActorInfo->EntityModelName : FString());
+
+#if RAPYUTA_SIM_VISUAL_DEBUG
+    FVector actorCenter, actorExtent;
+    GetActorBounds(false, actorCenter, actorExtent);
+    DrawDebugBox(GetWorld(), actorCenter, actorExtent, FColor::Yellow, false, 2.f, 0, 2.f);
+#endif
 }

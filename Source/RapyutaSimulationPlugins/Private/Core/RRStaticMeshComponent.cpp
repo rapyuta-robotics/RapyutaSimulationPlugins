@@ -20,6 +20,8 @@ URRStaticMeshComponent::URRStaticMeshComponent()
     PrimaryComponentTick.bStartWithTickEnabled = false;
     bTickInEditor = false;
     bUseDefaultCollision = true;
+
+    OnMeshCreationDone.BindUObject(Cast<ARRMeshActor>(GetOwner()), &ARRMeshActor::OnBodyComponentMeshCreationDone);
 }
 
 void URRStaticMeshComponent::BeginPlay()
@@ -36,9 +38,9 @@ void URRStaticMeshComponent::BeginPlay()
 
 void URRStaticMeshComponent::Initialize(bool bInIsStationary, bool bInIsPhysicsEnabled)
 {
-#if 0
+#if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore,
-           Verbose,
+           Warning,
            TEXT("[%s] STATIC MESH COMP INITIALIZED - Stationary: %d Physics Enabled: %d!"),
            *GetName(),
            bInIsStationary,
@@ -56,14 +58,14 @@ void URRStaticMeshComponent::Initialize(bool bInIsStationary, bool bInIsPhysicsE
     SetCustomDepthStencilValue(URRActorCommon::GenerateUniqueDepthStencilValue());
 }
 
-void URRStaticMeshComponent::SetMesh(UStaticMesh* Mesh)
+void URRStaticMeshComponent::SetMesh(UStaticMesh* InStaticMesh)
 {
-    verify(Mesh);
+    verify(IsValid(InStaticMesh));
 
     const ECollisionEnabled::Type collisionType = BodyInstance.GetCollisionEnabled();
     if ((ECollisionEnabled::PhysicsOnly == collisionType) || (ECollisionEnabled::QueryAndPhysics == collisionType))
     {
-        UBodySetup* bodySetup = Mesh->GetBodySetup();
+        UBodySetup* bodySetup = InStaticMesh->GetBodySetup();
         verify(bodySetup);
         verify(EBodyCollisionResponse::BodyCollision_Enabled == bodySetup->CollisionReponse);
         verify(bodySetup->bCreatedPhysicsMeshes);
@@ -71,7 +73,8 @@ void URRStaticMeshComponent::SetMesh(UStaticMesh* Mesh)
         verify(bodySetup->bHasCookedCollisionData);
     }
 
-    SetStaticMesh(Mesh);
+    SetStaticMesh(InStaticMesh);
+    OnMeshCreationDone.ExecuteIfBound(true, this);
 }
 
 FVector URRStaticMeshComponent::GetSize() const
