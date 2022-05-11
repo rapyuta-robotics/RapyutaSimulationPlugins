@@ -34,10 +34,10 @@ private:
     AActor* MovingPlatform = nullptr;    // The platform below the robot
 
     UPROPERTY(VisibleAnywhere)
-    FVector LastPlatformLocation;
+    FVector LastPlatformLocation = FVector::ZeroVector;
 
     UPROPERTY(VisibleAnywhere)
-    FQuat LastPlatformRotation;
+    FQuat LastPlatformRotation = FQuat::Identity;
 
     UPROPERTY(VisibleAnywhere)
     TArray<USceneComponent*> ContactPoints;    // List all scene components on the pawn. that have the tag "ContactPoint"
@@ -66,10 +66,10 @@ public:
 
     // For slopes, complex floors, free fall
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float RayOffsetUp = 10.;    // Ray start Z offset. Value must be > possible penetration of objects in contact point, in one tick
+    float RayOffsetUp = 10.f;    // Ray start Z offset. Value must be > possible penetration of objects in contact point, in one tick
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float RayOffsetDown = 20.;    // Ray end Z offset
+    float RayOffsetDown = 20.f;    // Ray end Z offset
     // Rays go from ContactPoint+RayOffsetUp to ContactPoint-RayOffsetDown
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -108,7 +108,7 @@ public:
         0.f;    // Z distance between the robot root location and the floor, used when less than 3 contact points are defined
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float FallingSpeed = 100.;    // How much the robot falls if no floor beneath ( FallingSpeed * DeltaTime )
+    float FallingSpeed = 100.f;    // How much the robot falls if no floor beneath ( FallingSpeed * DeltaTime )
 
 protected:
     virtual void UpdateMovement(float InDeltaTime);

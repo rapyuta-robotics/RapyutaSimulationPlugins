@@ -29,13 +29,13 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
     // if Robot is on a moving platform, add the platform motion
     if (MovingPlatform != nullptr && bFollowPlatform)
     {
-        FVector CurrentPlatformLocation = FVector(MovingPlatform->GetActorLocation());
-        FVector PlatformTranslation = CurrentPlatformLocation - LastPlatformLocation;
-        DesiredMovement += PlatformTranslation;
+        FVector currentPlatformLocation = MovingPlatform->GetActorLocation();
+        FVector platformTranslation = currentPlatformLocation - LastPlatformLocation;
+        DesiredMovement += platformTranslation;
 
         // TODO : add platform rotation in DesiredRotation
 
-        LastPlatformLocation = FVector(CurrentPlatformLocation);
+        LastPlatformLocation = currentPlatformLocation;
     }
 
     // if testing collisions :
@@ -104,8 +104,8 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             for (USceneComponent* Contact : ContactPoints)
             {
                 // get the contact points
-                FVector startPos = Contact->GetComponentLocation() + FVector(0., 0., RayOffsetUp);
-                FVector endPos = Contact->GetComponentLocation() - FVector(0., 0., RayOffsetDown);
+                FVector startPos = Contact->GetComponentLocation() + FVector(0.f, 0.f, RayOffsetUp);
+                FVector endPos = Contact->GetComponentLocation() - FVector(0.f, 0.f, RayOffsetDown);
                 bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(Hit,
                                                                        startPos,
                                                                        endPos,
@@ -115,7 +115,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
                 if (!IsFloorHit)
                 {
                     // if no impact below, just consider this contact point is falling
-                    Hit.ImpactPoint = Contact->GetComponentLocation() - FVector(0., 0., FallingSpeed * InDeltaTime);
+                    Hit.ImpactPoint = Contact->GetComponentLocation() - FVector(0.f, 0.f, FallingSpeed * InDeltaTime);
                     Hit.Distance = RayOffsetUp + FallingSpeed * InDeltaTime;
                 }
 
@@ -143,8 +143,8 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 
             // get the normal vector of the plane going through these 3 points
             FVector PlaneNormal = FVector::CrossProduct(Contacts[1] - Contacts[0], Contacts[2] - Contacts[0]);
-            PlaneNormal.Normalize(0.01);
-            if (PlaneNormal.Z < 0.)
+            PlaneNormal.Normalize(0.01f);
+            if (PlaneNormal.Z < 0.f)
                 PlaneNormal = -PlaneNormal;
 
             FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), PlaneNormal);
@@ -153,19 +153,13 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             if (MovingPlatform == nullptr)
             {
                 // Moves the robot up or down, depending on impact position
-                float MinDistance = ContactsDistance[0];
-                if (ContactsDistance[1] < MinDistance)
-                    MinDistance = ContactsDistance[1];
-                if (ContactsDistance[2] < MinDistance)
-                    MinDistance = ContactsDistance[2];
+                float minDistance = Algo::MinElement(ContactsDistance);
+                minDistance -= RayOffsetUp;
 
-                MinDistance -= RayOffsetUp;
+                minDistance = FMath::Min(minDistance, FallingSpeed * InDeltaTime);
 
-                if (MinDistance > FallingSpeed * InDeltaTime)
-                    MinDistance = FallingSpeed * InDeltaTime;
-
-                FVector HeightVariation = {0., 0., -MinDistance};
-                PawnOwner->AddActorWorldOffset(HeightVariation, true, &Hit, ETeleportType::TeleportPhysics);
+                FVector heightVariation = {0., 0., -minDistance};
+                PawnOwner->AddActorWorldOffset(heightVariation, true, &Hit, ETeleportType::TeleportPhysics);
             }
         }
     }
@@ -313,8 +307,8 @@ void URobotVehicleMovementComponent::InitMovementComponent()
     TraceParams.bReturnFaceIndex = true;
     TraceParams.AddIgnoredActor(PawnOwner);
 
-    FVector startPos = PawnOwner->GetActorLocation() + FVector(0., 0., 10.);
-    FVector endPos = PawnOwner->GetActorLocation() - FVector(0., 0., 50.);
+    FVector startPos = PawnOwner->GetActorLocation() + FVector(0.f, 0.f, 10.f);
+    FVector endPos = PawnOwner->GetActorLocation() - FVector(0.f, 0.f, 50.f);
     FHitResult HitResult;
     bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(HitResult,
                                                            startPos,
@@ -336,8 +330,8 @@ void URobotVehicleMovementComponent::SetMovingPlatform(AActor* InPlatform)
 {
     // UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::SetMovingPlatform..."));
     MovingPlatform = InPlatform;
-    LastPlatformLocation = FVector(InPlatform->GetActorLocation());
-    LastPlatformRotation = FQuat(InPlatform->GetActorQuat());
+    LastPlatformLocation = InPlatform->GetActorLocation();
+    LastPlatformRotation = InPlatform->GetActorQuat();
 }
 
 bool URobotVehicleMovementComponent::IsOnMovingPlatform()
