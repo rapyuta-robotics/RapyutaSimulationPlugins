@@ -55,6 +55,9 @@ public:
     void SpawnEntitySrv(UROS2GenericSrv* Service);
 
     UFUNCTION(BlueprintCallable)
+    void SpawnEntitiesSrv(UROS2GenericSrv* Service);
+
+    UFUNCTION(BlueprintCallable)
     void DeleteEntitySrv(UROS2GenericSrv* Service);
 
     UFUNCTION(BlueprintCallable)

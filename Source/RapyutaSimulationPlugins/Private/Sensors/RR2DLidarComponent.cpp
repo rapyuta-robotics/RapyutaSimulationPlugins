@@ -138,7 +138,8 @@ void URR2DLidarComponent::SensorUpdate()
     // GetROS2Data needs to get all data since the last Get? or the last within the last time interval?
 
     ULineBatchComponent* const LineBatcher = GetWorld()->PersistentLineBatcher;
-    if (LineBatcher != nullptr && ShowLidarRays)
+    if (LineBatcher != nullptr && bShowLidarRays &&
+        IsVisible())    //  && GetParentActor()->GetRootComponent()->IsVisible() ) => compilation error
     {
         for (auto& h : RecordedHits)
         {
