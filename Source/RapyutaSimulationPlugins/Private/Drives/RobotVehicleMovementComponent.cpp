@@ -3,11 +3,11 @@
 #include "Drives/RobotVehicleMovementComponent.h"
 
 // UE
+#include "Algo/MinElement.h"
 #include "CollisionQueryParams.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Algo/MinElement.h"
 
 void URobotVehicleMovementComponent::Initialize()
 {
@@ -44,27 +44,27 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
     // modification (if some modifications!) if collision detected, need to check actions possible : stop motion (if static object
     // or object mass >> vehicle mass), reduce motion (if movable object and object mass ~ vehicle mass), ignore ?
 
-    FHitResult Hit;
-    SafeMoveUpdatedComponent(DesiredMovement, DesiredRotation, true, Hit);
+    FHitResult hit;
+    SafeMoveUpdatedComponent(DesiredMovement, DesiredRotation, true, hit);
 
     // If we bumped into something, try to slide along it
-    if (Hit.IsValidBlockingHit())
+    if (hit.IsValidBlockingHit())
     {
         UE_LOG(LogTemp,
                Warning,
-               TEXT("URobotVehicleMovementComponent::UpdateMovement -> BlockingHit - Hit.normal : %s"),
-               *Hit.Normal.ToString());
-        SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
+               TEXT("URobotVehicleMovementComponent::UpdateMovement -> BlockingHit - hit.normal : %s"),
+               *hit.Normal.ToString());
+        SlideAlongSurface(DesiredMovement, 1.0f - hit.Time, hit.Normal, hit);
     }
 
     if (bFollowPlatform)
     {
         // check for floor configuration beneath the robot : slopes, etc
-        FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
-        TraceParams.bReturnPhysicalMaterial = true;
-        TraceParams.bTraceComplex = true;
-        TraceParams.bReturnFaceIndex = true;
-        TraceParams.AddIgnoredActor(PawnOwner);
+        FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
+        traceParams.bReturnPhysicalMaterial = true;
+        traceParams.bTraceComplex = true;
+        traceParams.bReturnFaceIndex = true;
+        traceParams.AddIgnoredActor(PawnOwner);
 
         // If few contact points defined, cast a single ray beneath the robot to get the floor orientation
         if (ContactPoints.Num() < 3)
@@ -72,95 +72,96 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             // robot will be oriented as the normal vector in floor plane
             FVector startPos = PawnOwner->GetActorLocation() + FVector(0., 0., RayOffsetUp);
             FVector endPos = PawnOwner->GetActorLocation() - FVector(0., 0., RayOffsetDown);
-            bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(Hit,
-                                                                   startPos,
-                                                                   endPos,
-                                                                   ECollisionChannel::ECC_Visibility,
-                                                                   TraceParams,
-                                                                   FCollisionResponseParams::DefaultResponseParam);
-            if (IsFloorHit)
+            bool bIsFloorHit = GetWorld()->LineTraceSingleByChannel(hit,
+                                                                    startPos,
+                                                                    endPos,
+                                                                    ECollisionChannel::ECC_Visibility,
+                                                                    traceParams,
+                                                                    FCollisionResponseParams::DefaultResponseParam);
+            if (bIsFloorHit)
             {
-                FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), Hit.ImpactNormal);
-                PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, Hit.ImpactNormal));
+                FVector forwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), hit.ImpactNormal);
+                PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(forwardProjection, hit.ImpactNormal));
                 if (MovingPlatform == nullptr)
                 {
-                    FVector HeightVariation = {0., 0., MinDistanceToFloor - Hit.Distance};
-                    PawnOwner->AddActorWorldOffset(HeightVariation, true, &Hit, ETeleportType::TeleportPhysics);
+                    FVector heightVariation = {0., 0., MinDistanceToFloor - hit.Distance};
+                    PawnOwner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::TeleportPhysics);
                 }
             }
             else
             {
                 // very basic robot falling
-                PawnOwner->AddActorWorldOffset(FVector(0., 0., -FallingSpeed * InDeltaTime), true, &Hit, ETeleportType::TeleportPhysics);
+                PawnOwner->AddActorWorldOffset(
+                    FVector(0., 0., -FallingSpeed * InDeltaTime), true, &hit, ETeleportType::TeleportPhysics);
             }
         }
         else
         {
             // compute all impact points and keep the 3 closest
             // get the normal vector of the plane formed by these 3 points
-            FVector Contacts[3];
-            float ContactsDistance[3];
-            uint8 NbContact = 0;
+            FVector contacts[3];
+            float contactsDistance[3];
+            uint8 nbContact = 0;
 
-            for (USceneComponent* Contact : ContactPoints)
+            for (USceneComponent* contact : ContactPoints)
             {
                 // get the contact points
-                FVector startPos = Contact->GetComponentLocation() + FVector(0.f, 0.f, RayOffsetUp);
-                FVector endPos = Contact->GetComponentLocation() - FVector(0.f, 0.f, RayOffsetDown);
-                bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(Hit,
-                                                                       startPos,
-                                                                       endPos,
-                                                                       ECollisionChannel::ECC_Visibility,
-                                                                       TraceParams,
-                                                                       FCollisionResponseParams::DefaultResponseParam);
-                if (!IsFloorHit)
+                FVector startPos = contact->GetComponentLocation() + FVector(0.f, 0.f, RayOffsetUp);
+                FVector endPos = contact->GetComponentLocation() - FVector(0.f, 0.f, RayOffsetDown);
+                bool bIsFloorHit = GetWorld()->LineTraceSingleByChannel(hit,
+                                                                        startPos,
+                                                                        endPos,
+                                                                        ECollisionChannel::ECC_Visibility,
+                                                                        traceParams,
+                                                                        FCollisionResponseParams::DefaultResponseParam);
+                if (!bIsFloorHit)
                 {
                     // if no impact below, just consider this contact point is falling
-                    Hit.ImpactPoint = Contact->GetComponentLocation() - FVector(0.f, 0.f, FallingSpeed * InDeltaTime);
-                    Hit.Distance = RayOffsetUp + FallingSpeed * InDeltaTime;
+                    hit.ImpactPoint = contact->GetComponentLocation() - FVector(0.f, 0.f, FallingSpeed * InDeltaTime);
+                    hit.Distance = RayOffsetUp + FallingSpeed * InDeltaTime;
                 }
 
                 // keep only the 3 contacts with shortest distances
-                if (NbContact < 3)
+                if (nbContact < 3)
                 {
-                    Contacts[NbContact] = Hit.ImpactPoint;
-                    ContactsDistance[NbContact] = Hit.Distance;
-                    NbContact++;
+                    contacts[nbContact] = hit.ImpactPoint;
+                    contactsDistance[nbContact] = hit.Distance;
+                    nbContact++;
                 }
                 else
                 {
-                    uint8 MaxContactDistanceIndex = 0;
-                    if (ContactsDistance[1] > ContactsDistance[0])
-                        MaxContactDistanceIndex = 1;
-                    if (ContactsDistance[2] > ContactsDistance[MaxContactDistanceIndex])
-                        MaxContactDistanceIndex = 2;
-                    if (Hit.Distance < ContactsDistance[MaxContactDistanceIndex])
+                    uint8 maxContactDistanceIndex = 0;
+                    if (contactsDistance[1] > contactsDistance[0])
+                        maxContactDistanceIndex = 1;
+                    if (contactsDistance[2] > contactsDistance[maxContactDistanceIndex])
+                        maxContactDistanceIndex = 2;
+                    if (hit.Distance < contactsDistance[maxContactDistanceIndex])
                     {
-                        ContactsDistance[MaxContactDistanceIndex] = Hit.Distance;
-                        Contacts[MaxContactDistanceIndex] = Hit.ImpactPoint;
+                        contactsDistance[maxContactDistanceIndex] = hit.Distance;
+                        contacts[maxContactDistanceIndex] = hit.ImpactPoint;
                     }
                 }
             }
 
             // get the normal vector of the plane going through these 3 points
-            FVector PlaneNormal = FVector::CrossProduct(Contacts[1] - Contacts[0], Contacts[2] - Contacts[0]);
-            PlaneNormal.Normalize(0.01f);
-            if (PlaneNormal.Z < 0.f)
-                PlaneNormal = -PlaneNormal;
+            FVector planeNormal = FVector::CrossProduct(contacts[1] - contacts[0], contacts[2] - contacts[0]);
+            planeNormal.Normalize(0.01f);
+            if (planeNormal.Z < 0.f)
+                planeNormal = -planeNormal;
 
-            FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), PlaneNormal);
-            PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, PlaneNormal));
+            FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), planeNormal);
+            PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, planeNormal));
 
             if (MovingPlatform == nullptr)
             {
                 // Moves the robot up or down, depending on impact position
-                float minDistance = *Algo::MinElement(ContactsDistance);
+                float minDistance = *Algo::MinElement(contactsDistance);
                 minDistance -= RayOffsetUp;
 
                 minDistance = FMath::Min(minDistance, FallingSpeed * InDeltaTime);
 
                 FVector heightVariation = {0., 0., -minDistance};
-                PawnOwner->AddActorWorldOffset(heightVariation, true, &Hit, ETeleportType::TeleportPhysics);
+                PawnOwner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::TeleportPhysics);
             }
         }
     }
@@ -225,39 +226,39 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     }
 
     // time
-    float TimeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
-    OdomData.header_stamp_sec = static_cast<int32>(TimeNow);
-    uint64 ns = (uint64)(TimeNow * 1e+09f);
+    float timeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
+    OdomData.header_stamp_sec = static_cast<int32>(timeNow);
+    uint64 ns = (uint64)(timeNow * 1e+09f);
     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
     // previous estimated data
-    FVector PreviousEstimatedPos =
+    FVector previousEstimatedPos =
         FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
-    FQuat PreviousEstimatedRot = OdomData.pose_pose_orientation;
+    FQuat previousEstimatedRot = OdomData.pose_pose_orientation;
 
     AActor* owner = GetOwner();
 
     // position
-    FVector Pos = InitialTransform.GetRotation().UnrotateVector(owner->GetActorLocation() - InitialTransform.GetTranslation());
-    FVector PreviousPos = PreviousTransform.GetTranslation();    // prev pos without noise
-    PreviousTransform.SetTranslation(Pos);
-    Pos += PreviousEstimatedPos - PreviousPos + WithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
+    FVector pos = InitialTransform.GetRotation().UnrotateVector(owner->GetActorLocation() - InitialTransform.GetTranslation());
+    FVector previousPos = PreviousTransform.GetTranslation();    // prev pos without noise
+    PreviousTransform.SetTranslation(pos);
+    pos += previousEstimatedPos - previousPos + WithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
 
-    FRotator NoiseRot = FRotator(0, 0, WithNoise * GaussianRNGRotation(Gen));
-    FQuat Rot = owner->GetActorQuat() * InitialTransform.GetRotation().Inverse();
-    FQuat PreviousRot = PreviousTransform.GetRotation();
-    PreviousTransform.SetRotation(Rot);
-    Rot = NoiseRot.Quaternion() * PreviousEstimatedRot * PreviousRot.Inverse() * Rot;
-    Rot.Normalize();
+    FRotator noiseRot = FRotator(0, 0, WithNoise * GaussianRNGRotation(Gen));
+    FQuat rot = owner->GetActorQuat() * InitialTransform.GetRotation().Inverse();
+    FQuat previousRot = PreviousTransform.GetRotation();
+    PreviousTransform.SetRotation(rot);
+    rot = noiseRot.Quaternion() * previousEstimatedRot * previousRot.Inverse() * rot;
+    rot.Normalize();
 
-    OdomData.pose_pose_position_x = Pos.X;
-    OdomData.pose_pose_position_y = Pos.Y;
-    OdomData.pose_pose_position_z = Pos.Z;
-    OdomData.pose_pose_orientation = Rot;
+    OdomData.pose_pose_position_x = pos.X;
+    OdomData.pose_pose_position_y = pos.Y;
+    OdomData.pose_pose_position_z = pos.Z;
+    OdomData.pose_pose_orientation = rot;
 
-    OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector(Pos - PreviousEstimatedPos) / InDeltaTime;
+    OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector(pos - previousEstimatedPos) / InDeltaTime;
     OdomData.twist_twist_angular =
-        FMath::DegreesToRadians((Rot * PreviousEstimatedRot.Inverse()).GetNormalized().Euler()) / InDeltaTime;
+        FMath::DegreesToRadians((rot * previousEstimatedRot.Inverse()).GetNormalized().Euler()) / InDeltaTime;
 }
 
 void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
@@ -289,11 +290,11 @@ void URobotVehicleMovementComponent::InitMovementComponent()
 {
     InitOdom();
 
-    TArray<UActorComponent*> ActorContactPoints = PawnOwner->GetComponentsByTag(USceneComponent::StaticClass(), "ContactPoint");
-    for (auto ACP : ActorContactPoints)
+    TArray<UActorComponent*> actorContactPoints = PawnOwner->GetComponentsByTag(USceneComponent::StaticClass(), "ContactPoint");
+    for (auto acp : actorContactPoints)
     {
-        USceneComponent* SCP = Cast<USceneComponent>(ACP);
-        ContactPoints.Add(SCP);
+        USceneComponent* scp = Cast<USceneComponent>(acp);
+        ContactPoints.Add(scp);
     }
     UE_LOG(LogTemp,
            Warning,
@@ -302,24 +303,24 @@ void URobotVehicleMovementComponent::InitMovementComponent()
 
     // Compute the starting distance between the robot root and the floor
     // We consider that the robot is on a horizontal floor at the beginning
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
-    TraceParams.bReturnPhysicalMaterial = true;
-    TraceParams.bTraceComplex = true;
-    TraceParams.bReturnFaceIndex = true;
-    TraceParams.AddIgnoredActor(PawnOwner);
+    FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
+    traceParams.bReturnPhysicalMaterial = true;
+    traceParams.bTraceComplex = true;
+    traceParams.bReturnFaceIndex = true;
+    traceParams.AddIgnoredActor(PawnOwner);
 
     FVector startPos = PawnOwner->GetActorLocation() + FVector(0.f, 0.f, 10.f);
     FVector endPos = PawnOwner->GetActorLocation() - FVector(0.f, 0.f, 50.f);
-    FHitResult HitResult;
-    bool IsFloorHit = GetWorld()->LineTraceSingleByChannel(HitResult,
-                                                           startPos,
-                                                           endPos,
-                                                           ECollisionChannel::ECC_Visibility,
-                                                           TraceParams,
-                                                           FCollisionResponseParams::DefaultResponseParam);
-    if (IsFloorHit)
+    FHitResult hitResult;
+    bool bIsFloorHit = GetWorld()->LineTraceSingleByChannel(hitResult,
+                                                            startPos,
+                                                            endPos,
+                                                            ECollisionChannel::ECC_Visibility,
+                                                            traceParams,
+                                                            FCollisionResponseParams::DefaultResponseParam);
+    if (bIsFloorHit)
     {
-        MinDistanceToFloor = HitResult.Distance;
+        MinDistanceToFloor = hitResult.Distance;
         UE_LOG(LogTemp,
                Warning,
                TEXT("URobotVehicleMovementComponent::InitMovementComponent - Min Distance To Floor = %f"),

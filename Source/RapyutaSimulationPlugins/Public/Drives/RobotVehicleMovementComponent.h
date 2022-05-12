@@ -66,10 +66,12 @@ public:
 
     // For slopes, complex floors, free fall
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float RayOffsetUp = 10.f;    // Ray start Z offset. Value must be > possible penetration of objects in contact point, in one tick
+    float RayOffsetUp = 10.f;
+    // Ray start Z offset. Value must be > possible penetration of objects in contact point, in one tick
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float RayOffsetDown = 20.f;    // Ray end Z offset
+    float RayOffsetDown = 20.f;
+    // Ray end Z offset
     // Rays go from ContactPoint+RayOffsetUp to ContactPoint-RayOffsetDown
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
