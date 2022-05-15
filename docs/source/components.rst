@@ -15,7 +15,7 @@ Drives
 
 **main C++ classes**
 
-- `URobotVehicleMovementComponent <doxygen_generated/html/d7/d01/class_u_robot_vehicle_movement_component.html>`_:  Base Robot vehicle movement class which is used as part of #ARobotVehicle. Move robot without considering physics and publish odometry. 
+- `URobotVehicleMovementComponent <doxygen_generated/html/d7/d01/class_u_robot_vehicle_movement_component.html>`_:  Base Robot vehicle movement class which is used as part of #ARobotVehicle. Move robot without considering physics and publish odometry. This supports following platform such as elevator.
 - `UDifferentialDriveComponent <doxygen_generated/html/db/df5/class_u_differential_drive_component.html>`_: Simulate differential drive with 2 wheels considering physics.
 
 Sensors
@@ -90,7 +90,7 @@ Core
 - Utils
     - `URRCoreUtils <doxygen_generated/html/de/db6/class_u_r_r_core_utils.html>`_: todo
     - `URRConversionUtils <doxygen_generated/html/d4/dc1/class_u_r_r_conversion_utils.html>`_: Data Conversion between ROS and UE. m <-> cm and Left handed <-> Right handed.
-    - `URRGeneralUtils <doxygen_generated/html/d5/d98/class_u_r_r_general_utils.html>`_: Other utils which do not belongs to other utils.
+    - `URRGeneralUtils <doxygen_generated/html/d5/d98/class_u_r_r_general_utils.html>`_: Other utils which do not belong to other utils.
 
 Tools
 -----
