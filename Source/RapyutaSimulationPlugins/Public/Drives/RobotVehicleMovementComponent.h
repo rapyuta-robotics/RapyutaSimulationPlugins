@@ -63,7 +63,8 @@ private:
     UPROPERTY(VisibleAnywhere)
     FQuat LastPlatformRotation = FQuat::Identity;
 
-    //! List all scene components on the pawn. that have the tag "ContactPoint". This is used to search the moving platform.
+    //! List all scene components on the pawn. that have the tag "ContactPoint". This is used to adapt the robot pose based on the floor surface configuration.
+
     UPROPERTY(VisibleAnywhere)
     TArray<USceneComponent*> ContactPoints;    
 
