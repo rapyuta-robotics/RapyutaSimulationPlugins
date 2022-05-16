@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRGameSingleton.h
+ * @brief GameSingleton
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 #include "CoreMinimal.h"
@@ -122,8 +127,18 @@ public:
         }
     }
 
-    // Callback to handle an asynchronously loaded resource, which receives a [FSoftObjectPath] that references a valid [UObject]
-    // Then put it into both [ResourceMap] & [ResourceStore].
+
+    /**
+     * @brief 
+     * Callback to handle an asynchronously loaded resource, which receives a [FSoftObjectPath] that references a valid [UObject]
+     * Then put it into both [ResourceMap] & [ResourceStore].
+     * 
+     * @tparam TResource 
+     * @param InDataType 
+     * @param InResourcePath 
+     * @param InResourceUniqueName 
+     * @return bool 
+     */
     template<typename TResource>
     FORCEINLINE bool ProcessAsyncLoadedResource(const ERRResourceDataType InDataType,
                                                 const FSoftObjectPath& InResourcePath,

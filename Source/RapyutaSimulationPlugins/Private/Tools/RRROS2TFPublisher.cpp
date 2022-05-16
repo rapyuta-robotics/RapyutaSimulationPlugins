@@ -5,11 +5,16 @@
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
 
+URRROS2TFPublisher::URRROS2TFPublisher()
+{
+    PublicationFrequencyHz = 50;
+    MsgClass = UROS2TFMsg::StaticClass();
+}
+
 void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
 
-    MsgClass = UROS2TFMsg::StaticClass();
     TEnumAsByte<UROS2QoS> QoS;
     // (NOTE) [/tf, /tf_static] has its [tf_prefix] only for frame ids, not topics
     if (IsStatic)
@@ -22,7 +27,6 @@ void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
         TopicName = TEXT("/tf");
         QoS = UROS2QoS::DynamicBroadcaster;
     }
-    PublicationFrequencyHz = 50;
     Init(QoS);
 }
 

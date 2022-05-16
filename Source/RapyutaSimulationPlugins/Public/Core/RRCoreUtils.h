@@ -1,4 +1,10 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRCoreUtils.h
+ * @brief Core utils.
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 #pragma once
 
 // Native
@@ -31,6 +37,10 @@ class URRStaticMeshComponent;
 class ARRBaseActor;
 class UCameraComponent;
 
+/**
+ * @brief Core utils
+ * @todo add documentation
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRCoreUtils : public UBlueprintFunctionLibrary
 {

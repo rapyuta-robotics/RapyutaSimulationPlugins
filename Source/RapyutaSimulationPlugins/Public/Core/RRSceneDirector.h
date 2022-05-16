@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRSceneDirector.h
+ * @brief SceneDirector
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -20,6 +25,10 @@
 
 class ARRPlayerController;
 
+/**
+ * @brief SceneDirector
+ * @todo add documentation
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRSceneDirector : public ARRBaseActor
 {

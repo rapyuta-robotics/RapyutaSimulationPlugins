@@ -1,4 +1,11 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRMeshUtils.h
+ * @brief MeshUtils
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
+
 #pragma once
 
 // UE
@@ -18,6 +25,10 @@
 
 #include "RRMeshUtils.generated.h"
 
+/**
+ * @brief MeshUtils
+ * @todo add documentation
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRMeshUtils : public UBlueprintFunctionLibrary
 {

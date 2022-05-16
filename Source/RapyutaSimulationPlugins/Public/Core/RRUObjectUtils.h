@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRUObjectUtils.h
+ * @brief UObject general utils
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 #pragma once
 
 // Unreal
@@ -15,20 +20,34 @@
 
 class URRStaticMeshComponent;
 
+/**
+ * @brief UObject general utils.
+ * 
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRUObjectUtils : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 
 public:
-    // UOBJECT GENERAL UTILS --
-    //
+
     template<typename T>
     FORCEINLINE static T* CreateSelfSubobject(UObject* InOuter, const FString& InObjectUniqueName)
     {
         return Cast<T>(CreateSelfSubobject(InOuter, T::StaticClass(), InObjectUniqueName));
     }
 
+    /**
+     * @brief Use CreateDefaultSubobject or NewObject based on where this method is called.
+     * Uses #URRThreadUtils::IsInsideConstructor.
+     * @param InOuter 
+     * @param InObjectClass 
+     * @param InObjectUniqueName 
+     * @return static UObject*
+     *
+     * @sa [CreateDefaultSubobject](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
+     * @sa [NewObject](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
+     */
     FORCEINLINE static UObject* CreateSelfSubobject(UObject* InOuter, UClass* InObjectClass, const FString& InObjectUniqueName)
     {
         if (URRThreadUtils::IsInsideConstructor())
@@ -44,6 +63,14 @@ public:
         }
     }
 
+    /**
+     * @brief Return true if InParentObj has subobjects with InChildName.
+     * 
+     * @tparam T 
+     * @param InParentObj 
+     * @param InChildName 
+     * @return static bool 
+     */
     template<typename T>
     FORCEINLINE static bool HasSubobject(UObject* InParentObj, const FString& InChildName)
     {
@@ -78,6 +105,7 @@ public:
     //
     UFUNCTION()
     static void SetupComponentTick(UActorComponent* InComponent, bool bIsTickEnabled);
+
     UFUNCTION()
     static void SetupDefaultRootComponent(AActor* InActor);
 
@@ -119,6 +147,19 @@ public:
         primComp->SetSimulatePhysics(bIsPhysicsEnabled);
     }
 
+    /**
+     * @brief Use SetupAttachment or AttachToComponent based on where this method is called.
+     * Uses #URRThreadUtils::IsInsideConstructor.
+     *
+     * @param InChildComp 
+     * @param InParentComp 
+     * @param InRelativeTransf 
+     * @param InAttachmentRules 
+     * @param InSocketName 
+     *
+     * @sa [SetupAttachment](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
+     * @sa [AttachToComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
+     */
     static void AttachComponentToComponent(
         USceneComponent* InChildComp,
         USceneComponent* InParentComp,
@@ -126,6 +167,17 @@ public:
         const FAttachmentTransformRules& InAttachmentRules = FAttachmentTransformRules::KeepRelativeTransform,
         const TCHAR* InSocketName = nullptr);
 
+    /**
+     * @brief Create a Child Component object and attach to InActor and calls #ConfigureComponentPhysics.
+     * 
+     * @tparam T 
+     * @param InActor 
+     * @param InUniqueName 
+     * @param bIsPhysicsEnabled 
+     * @param bIsCollisionEnabled 
+     * @param bIsOverlapEventEnabled 
+     * @return T* 
+     */
     template<typename T>
     static T* CreateChildComponent(AActor* InActor,
                                    const FString& InUniqueName,
@@ -182,6 +234,20 @@ public:
         return newChildComp;
     }
 
+    /**
+     * @brief Create a Mesh Component, attach to InActor, set parameters.
+     * 
+     * @tparam TMeshComponent 
+     * @param InActor 
+     * @param InObjMeshUniqueName 
+     * @param InMeshCompUniqueName 
+     * @param InRelativeTransf 
+     * @param bInIsOwningActorStationary 
+     * @param bInIsPhysicsEnabled 
+     * @param bInIsCollisionEnabled 
+     * @param InParentComp 
+     * @return static TMeshComponent*
+     */
     template<typename TMeshComponent>
     FORCEINLINE static TMeshComponent* CreateMeshComponent(AActor* InActor,
                                                            const FString& InObjMeshUniqueName,
@@ -259,11 +325,25 @@ public:
     //
     UFUNCTION()
     static void SetupActorTick(AActor* InActor, bool bIsTickEnabled, float InTickInterval = 0.f);
+
+    /**
+     * @brief Uses URRThreadUtils::IsInsideConstructor() to avoid crash by calling RegisterComponents() outside of constructor.
+     * 
+     */
     UFUNCTION()
     static void RegisterActorComponent(UActorComponent* Comp);
 
-    // [FIND ACTOR BY NAME/SUBNAME] --
-    // GetAllActors() is expensive
+    /**
+     * @brief Find actor by name. GetAllActors() is expensive.
+     * 
+     * @tparam T 
+     * @param InWorld 
+     * @param InName 
+     * @param InCaseType 
+     * @return T* 
+     *
+     * @sa 
+     */
     template<typename T>
     static T* FindActorByName(UWorld* InWorld, const FString& InName, const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
     {
@@ -278,6 +358,15 @@ public:
         return nullptr;
     }
 
+    /**
+     * @brief Find actor by subname. search actor whose name contains InSubname.
+     * 
+     * @tparam T 
+     * @param InWorld 
+     * @param InSubname 
+     * @param InCaseType 
+     * @return T* 
+     */
     template<typename T>
     static T* FindActorBySubname(UWorld* InWorld,
                                  const FString& InSubname,
@@ -323,6 +412,19 @@ public:
     }
 
     // TActorSpawnInfo: [FRRActorSpawnInfo], etc.
+    /**
+     * @brief 
+     * @tparam T 
+     * @tparam TActorSpawnInfo 
+     * @param InWorld 
+     * @param InSceneInstanceId 
+     * @param InActorSpawnInfo 
+     * @param CollisionHandlingType 
+     * @return T* 
+     *
+     * @todo add documentation
+     *
+     */
     template<typename T, typename TActorSpawnInfo>
     static T* SpawnSimActor(
         UWorld* InWorld,
@@ -388,6 +490,20 @@ public:
         return newSimActor;
     }
 
+    /**
+     * @brief 
+     * 
+     * @param InWorld 
+     * @param InSceneInstanceId 
+     * @param InActorClass 
+     * @param InActorName 
+     * @param InActorTransform 
+     * @param InCollisionHandlingType 
+     * @return ARRBaseActor* 
+     *
+     * @todo add documentation
+     *
+     */
     static ARRBaseActor* SpawnSimActor(
         UWorld* InWorld,
         int8 InSceneInstanceId,

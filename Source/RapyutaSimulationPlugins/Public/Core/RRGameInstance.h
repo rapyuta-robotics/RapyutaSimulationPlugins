@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRGameInstance.h
+ * @brief GameInstance
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -12,8 +16,12 @@
 
 #include "RRGameInstance.generated.h"
 
-// This is a globally accessible instanced UObject that can store run-time data to be commonly accessed between levels and Scene
-// instances. (Not to keep data persistent out of PIE)
+/**
+ * @brief 
+ * This is a globally accessible instanced UObject that can store run-time data to be commonly accessed between levels and Scene instances. (Not to keep data persistent out of PIE)
+ * Add logs to original UGameInstance.
+ * @sa [UGameInstance](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UGameInstance/)
+ */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API URRGameInstance : public UGameInstance
 {

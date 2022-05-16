@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRROS2CameraActor.h
+ * @brief Standalone Camera actor.
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -11,7 +15,7 @@
 #include "RRROS2CameraActor.generated.h"
 
 /**
- * 
+ * @brief Standalone camera actor which can be placed in the level with #URRROS2CameraComponent.
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRROS2CameraActor : public AActor
@@ -19,7 +23,10 @@ class RAPYUTASIMULATIONPLUGINS_API ARRROS2CameraActor : public AActor
 	GENERATED_BODY()
 	
 public:
-
+	/**
+	 * @brief Construct a new ARRROS2CameraActor object
+	 * 
+	 */
 	ARRROS2CameraActor();
 
     UPROPERTY(Transient)
@@ -32,10 +39,13 @@ public:
     FString NodeNamespace;
 
 protected:
-	// Called when the game starts or when spawned
+	/**
+	 * @brief Initialize ROS2 Node and #CameraComponent
+	 * If NodeName is empty, node name become This actor name + _RRROS2CameraNode
+	 */
 	virtual void BeginPlay() override;
 	
-	/** The camera component for this camera */
+	//! ROS2 camera component for this camera
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	URRROS2CameraComponent* CameraComponent;
 };

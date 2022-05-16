@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRMeshActor.h
+ * @brief Mesh Actor
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -12,11 +17,20 @@
 
 #include "RRMeshActor.generated.h"
 
+/**
+ * @brief Mesh actor.
+ * 
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRMeshActor : public ARRBaseActor
 {
     GENERATED_BODY()
 public:
+
+    /**
+     * @brief Construct a new ARRMeshActor object
+     * 
+     */
     ARRMeshActor();
 
 public:

@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRTypeUtils.h
+ * @brief UE type related utils
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -12,6 +16,10 @@
 
 #include "RRTypeUtils.generated.h"
 
+/**
+ * @brief UE type related utils
+ * 
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRTypeUtils : public UBlueprintFunctionLibrary
 {

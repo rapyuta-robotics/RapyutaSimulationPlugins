@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRThreadUtils.h
+ * @brief UE type related utils
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 #pragma once
 
 // UE
@@ -21,6 +26,13 @@ class RAPYUTASIMULATIONPLUGINS_API URRThreadUtils : public UBlueprintFunctionLib
     GENERATED_BODY()
 
 public:
+
+    /**
+     * @brief return true if called inside constructor.
+     * 
+     * @return true 
+     * @return false 
+     */
     static bool IsInsideConstructor()
     {
         auto& ThreadContext = FUObjectThreadContext::Get();
@@ -30,9 +42,12 @@ public:
     // ----------------------------------------------------------------------------------------------------------
     // [ASYNC TASK SERVICES] --
     //
-    // https://stackoverflow.com/questions/47496358/c-lambdas-how-to-capture-variadic-parameter-pack-from-the-upper-scope
-    // UE has equivalent ones of [std::forward] as Forward, [std::make_tuple] as MakeTuple,
-    // but does not have one for [std::apply] :(
+    /**
+     * @brief Used in #URRProceduralMeshComponent
+     * UE has equivalent ones of [std::forward] as Forward, [std::make_tuple] as MakeTuple,
+     * but does not have one for [std::apply] :(
+     * @sa https://stackoverflow.com/questions/47496358/c-lambdas-how-to-capture-variadic-parameter-pack-from-the-upper-scope
+     */
     template<typename TFunc, typename... TArgs>
     static void DoTaskInGameThread(TFunc&& InTaskInGameThread, TArgs&&... InArgs)
     {

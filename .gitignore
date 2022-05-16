@@ -50,3 +50,7 @@ Intermediate/*
 ExternalTest/RapyutaSimulationPlugins_TESTS
 ExternalTest/rr_sim_tests/rr_sim_tests/__pycache__
 ExternalTest/rr_sim_tests/rr_sim_tests/utils/__pycache__
+
+# Docs
+docs/source/_build
+docs/source/README.md
