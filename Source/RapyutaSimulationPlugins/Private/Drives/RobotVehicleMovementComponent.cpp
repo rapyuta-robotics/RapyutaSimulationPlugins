@@ -28,7 +28,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
     DesiredMovement = (oldRotation * position);
 
     // if Robot is on a moving platform, add the platform motion
-    if (MovingPlatform != nullptr && bFollowPlatform)
+    if (MovingPlatform != nullptr && bAdaptToSurfaceBelow)
     {
         FVector currentPlatformLocation = MovingPlatform->GetActorLocation();
         FVector platformTranslation = currentPlatformLocation - LastPlatformLocation;
@@ -57,7 +57,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
         SlideAlongSurface(DesiredMovement, 1.0f - hit.Time, hit.Normal, hit);
     }
 
-    if (bFollowPlatform)
+    if (bAdaptToSurfaceBelow)
     {
         // check for floor configuration beneath the robot : slopes, etc
         FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);

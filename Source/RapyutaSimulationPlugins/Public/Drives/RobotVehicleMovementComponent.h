@@ -36,7 +36,7 @@ enum class EOdomSource : uint8
  * Robot moves based on the Velocity(member of UMovementComponent) and #AngularVelocity without considering physics.
  * If Robot bumped into something, try to slide along it.
  * 
- * If #bFollowPlatform is true, robot will follow the pawn movement under the robot which has been defined as the #MovingPlatform (e.g. elevators), it will also adapt its pose to the floor surface configuration (e.g. slopes)
+ * If #bAdaptToSurfaceBelow is true, robot will follow the pawn movement under the robot which has been defined as the #MovingPlatform (e.g. elevators), it will also adapt its pose to the floor surface configuration (e.g. slopes)
 
  * 
  * Publish odometry from world origin or initial pose.
@@ -117,7 +117,7 @@ public:
 
     //! to activate/deactivate floor checks to stick the robot on its surface below
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bFollowPlatform = true;   
+    bool bAdaptToSurfaceBelow = true;   
 
     UFUNCTION(BlueprintCallable)
     FTransform GetOdomTF() const;
@@ -171,7 +171,7 @@ protected:
      * @brief Move actor by using SafeMoveUpdatedComponent and SlideAlongSurface.
      * Calculate #DesiredMovement and #DesiredRotation from deltatime, UpdatedComponent and #AngularVelocity.
      * 
-     * If #bFollowPlatform is true, robot will follow the pawn movement under the robot with tag "ContactPoints".
+     * If #bAdaptToSurfaceBelow is true, robot will follow the pawn movement under the robot with tag "ContactPoints".
      * Please check the .cpp file for detailed implementation to follow platform.
      * 
      *
