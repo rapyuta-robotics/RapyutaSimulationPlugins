@@ -36,7 +36,8 @@ enum class EOdomSource : uint8
  * Robot moves based on the Velocity(member of UMovementComponent) and #AngularVelocity without considering physics.
  * If Robot bumped into something, try to slide along it.
  * 
- * If #bFollowPlatform is true, robot will follow the pawn movement under the robot with tag "ContactPoints", which is useful for elevator and etc.
+ * If #bFollowPlatform is true, robot will follow the pawn movement under the robot which has been defined as the #MovingPlatform (e.g. elevators), it will also adapt its pose to the floor surface configuration (e.g. slopes)
+
  * 
  * Publish odometry from world origin or initial pose.
  *
