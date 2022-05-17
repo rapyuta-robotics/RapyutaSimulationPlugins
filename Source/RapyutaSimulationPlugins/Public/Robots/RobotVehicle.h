@@ -14,6 +14,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRBaseActor.h"
+#include "Drives/JointComponent.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
 
@@ -77,6 +78,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TMap<FString, URRRobotLink*> Links;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TMap<FString, UJointComponent*> Joints;
+
     /**
      * @brief Initialize sensors components which are child class of #URRROS2BaseSensorComponent.
      *
@@ -117,6 +124,9 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetAngularVel(const FVector& InAngularVelocity);
+
+    // UFUNCTION(BlueprintCallable)
+    virtual void SetJointState(const TMap<FString, TArray<float>>& InJointState, EJointControlType InJointControlType);
 
 protected:
     /**

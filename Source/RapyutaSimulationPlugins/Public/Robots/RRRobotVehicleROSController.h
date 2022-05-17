@@ -20,7 +20,6 @@
 
 #include "RRRobotVehicleROSController.generated.h"
 
-
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class. 
  * This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
@@ -72,6 +71,9 @@ protected:
     UFUNCTION()
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
 
+    UFUNCTION()
+    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
+
     /**
      * @brief Initialize by calling #InitRobotROS2Node, #ARobotVehicle's InitSensors and #InitPublishers.
      * 
@@ -89,6 +91,9 @@ protected:
      */
     UFUNCTION(BlueprintCallable)
     void SubscribeToMovementCommandTopic(const FString& InTopicName);
+
+    UFUNCTION(BlueprintCallable)
+    void SubscribeToJointsCommandTopic(const FString& InTopicName);
 
     UPROPERTY(BlueprintReadWrite)
     bool bPublishOdom = true;

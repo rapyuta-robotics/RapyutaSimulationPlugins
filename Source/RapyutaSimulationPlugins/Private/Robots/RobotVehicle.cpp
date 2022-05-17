@@ -96,6 +96,43 @@ void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
     RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
 }
 
+void ARobotVehicle::SetJointState(const TMap<FString, TArray<float>>& InJointState, EJointControlType InJointControlType)
+{
+    // SetAngularVelocityTarget
+    for (auto& joint : InJointState)
+    {
+        if (Joints.Contains(joint.Key))
+        {
+            // switch for types
+            switch (InJointControlType)
+            {
+                case EJointControlType::POSITION:
+                    Joints[joint.Key]->SetPoseWithArray(joint.Value);
+                    // Joints[joint.Key].SetAngularOrientationTarget(joint.Value);
+                    break;
+                case EJointControlType::VELOCITY:
+                    Joints[joint.Key]->SetVelocityWithArray(joint.Value);
+                    // Joints[joint.Key].SetAngularVelocityTarget(joint.Value, 0, 0);
+                    break;
+                case EJointControlType::EFFORT:
+                    UE_LOG(LogRapyutaCore,
+                           Warning,
+                           TEXT("[%s] [RobotVehicle] [SetJointState] Effort control is not supported."),
+                           *GetName());
+                    break;
+            }
+        }
+        else
+        {
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("[%s] [RobotVehicle] [SetJointState] do not have joint named %s "),
+                   *GetName(),
+                   *joint.Key);
+        }
+    }
+}
+
 void ARobotVehicle::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
