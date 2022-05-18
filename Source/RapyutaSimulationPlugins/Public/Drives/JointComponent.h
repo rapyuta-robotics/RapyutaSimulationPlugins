@@ -17,38 +17,6 @@ enum class EJointControlType : uint8
 };
 
 //! temporary impl. should be merged with RobotImporter later.
-// UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-// class RAPYUTASIMULATIONPLUGINS_API URRRobotLink : public USceneComponent
-// {
-//     GENERATED_BODY()
-// public:
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//     URRStaticMeshComponent* MeshComponent = nullptr;
-
-//     // UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//     // FString Name;
-
-//     // UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//     // FString ParentFrameName;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//     FVector PositionOffset = FVector::ZeroVector;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//     FQuat RotationOffset = FQuat::Identity;
-
-//     URRRobotLink()
-//     {
-//         MeshComponent = CreateDefaultSubobject<URRStaticMeshComponent>(TEXT("Link"));
-//         MeshComponent->SetupAttachment(this);
-//     }
-
-//     FTransform GetRelativeTransfomToParent() const
-//     {
-//         return FTransform(RotationOffset, PositionOffset);
-//     }
-// };
-
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API UJointComponent : public USceneComponent
 {
@@ -73,36 +41,28 @@ public:
     virtual void SetVelocityWithArray(const TArray<float>& InVelocity);
 
     UFUNCTION(BlueprintCallable)
-    virtual void SetPose(const FVector& InPosition, const FRotator& InOrientation);
+    virtual void SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation);
 
     UFUNCTION(BlueprintCallable)
-    virtual void SetPoseWithArray(const TArray<float>& InPose);
+    virtual void SetPoseTargetWithArray(const TArray<float>& InPose);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector LinearVelocity;
+    FVector LinearVelocity = FVector::ZeroVector;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector AngularVelocity;
+    FVector AngularVelocity = FVector::ZeroVector;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector Position;
+    FVector PositionTarget = FVector::ZeroVector;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FRotator Orientation;
+    FRotator OrientationTarget = FRotator::ZeroRotator;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    URRRobotLink* ParentLink;
+    UStaticMeshComponent* ParentLink;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    URRRobotLink* ChildLink;
-
-    //! Joint Position Offset from parent link
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector PositionOffset = FVector::ZeroVector;
-
-    //! Joint Rotational Offset from parent link
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FQuat RotationOffset = FQuat::Identity;
+    UStaticMeshComponent* ChildLink;
 
     //! Linear Degrees Of Freedom
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

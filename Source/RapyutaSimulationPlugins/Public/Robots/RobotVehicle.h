@@ -79,7 +79,7 @@ public:
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TMap<FString, URRRobotLink*> Links;
+    TMap<FString, UStaticMeshComponent*> Links;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, UJointComponent*> Joints;

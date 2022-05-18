@@ -59,14 +59,14 @@ void UJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
                 FVector(AngularInput[0], AngularInput[1], AngularInput[2]));
 };
 
-void UJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
+void UJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     //! todo add limitation
-    Position = InPosition;
-    Orientation = InOrientation;
+    PositionTarget = InPosition;
+    OrientationTarget = InOrientation;
 };
 
-void UJointComponent::SetPoseWithArray(const TArray<float>& InPose)
+void UJointComponent::SetPoseTargetWithArray(const TArray<float>& InPose)
 {
     if (InPose.Num() != LinearDOF + RotationalDOF)
     {
@@ -91,6 +91,6 @@ void UJointComponent::SetPoseWithArray(const TArray<float>& InPose)
         RotationalInput[i] = InPose[LinearDOF + i];
     }
 
-    SetPose(FVector(LinearInput[0], LinearInput[1], LinearInput[2]),
-            FRotator(RotationalInput[0], RotationalInput[1], RotationalInput[2]));
+    SetPoseTarget(FVector(LinearInput[0], LinearInput[1], LinearInput[2]),
+                  FRotator(RotationalInput[1], RotationalInput[2], RotationalInput[0]));    // pitch yaw roll
 };

@@ -11,8 +11,12 @@ UKinematicJointComponent::UKinematicJointComponent()
 // Called when the game starts
 void UKinematicJointComponent::BeginPlay()
 {
+    // set joints relations and save initial parent to joint transformation.
+    ParentLinkToJoint = GetRelativeTransform();
+    this->SetupAttachment(ParentLink);
+    ChildLink->SetupAttachment(this);
+
     Super::BeginPlay();
-    // todo add initialization
 }
 
 // Called every frame
@@ -20,29 +24,26 @@ void UKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    Position += LinearVelocity * DeltaTime;
-    Orientation += AngularVelocity.Rotation() * DeltaTime;
+    PositionTarget += LinearVelocity * DeltaTime;
+    OrientationTarget += FRotator(AngularVelocity[1], AngularVelocity[2], AngularVelocity[0]) * DeltaTime;
 
     UpdatePose();
 }
 
-void UKinematicJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
+void UKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
-    Super::SetPose(InPosition, InOrientation);
+    Super::SetPoseTarget(InPosition, InOrientation);
     UpdatePose();
 }
 
 void UKinematicJointComponent::UpdatePose()
 {
     FHitResult SweepHitResult;
-    ChildLink->MeshComponent->K2_SetWorldTransform(
-        ChildLink->GetRelativeTransfomToParent() *                 // joint to child link center
-            FTransform(Orientation, Position) *                    // joint changes
-            FTransform(RotationOffset, PositionOffset) *           // joint offset
-            ParentLink->GetRelativeTransfomToParent() *            // parent link center to joint
-            ParentLink->MeshComponent->GetComponentTransform(),    // world orogin to parent link center
-        true,                                                      // bSweep
-        SweepHitResult,
-        true    // bTeleport
+    K2_SetWorldTransform(FTransform(OrientationTarget, PositionTarget) *    // joint changes
+                             ParentLinkToJoint *                            // initial transform parentlink to joint
+                             ParentLink->GetComponentTransform(),           // world orogin to parent
+                         true,                                              // bSweep
+                         SweepHitResult,
+                         true    // bTeleport
     );
 }

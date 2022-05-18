@@ -29,9 +29,9 @@ void UPhysicsJointComponent::SetVelocity(const FVector& InLinearVelocity, const 
     Constraint->SetAngularVelocityTarget(InAngularVelocity);
 }
 
-void UPhysicsJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
+void UPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
-    Super::SetPose(InPosition, InOrientation);
+    Super::SetPoseTarget(InPosition, InOrientation);
     Constraint->SetLinearPositionTarget(InPosition);
     Constraint->SetAngularOrientationTarget(InOrientation);
 }

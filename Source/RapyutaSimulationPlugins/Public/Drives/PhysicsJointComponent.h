@@ -22,10 +22,9 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-
     virtual void SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity) override;
 
-    virtual void SetPose(const FVector& InPosition, const FRotator& InOrientation) override;
+    virtual void SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation) override;
 
     UFUNCTION(BlueprintCallable)
     virtual void SetJoint();

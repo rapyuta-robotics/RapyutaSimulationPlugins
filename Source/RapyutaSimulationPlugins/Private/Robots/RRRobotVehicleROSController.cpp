@@ -180,7 +180,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
         else if (jointState.name.Num() == jointState.effort.Num())
         {
             jointControlType = EJointControlType::EFFORT;
-            UE_LOG(LogRapyutaCore,
+            UE_LOG(LogTemp,
                    Warning,
                    TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] Effort control is not supported."),
                    *GetName());
@@ -188,7 +188,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
+            UE_LOG(LogTemp,
                    Warning,
                    TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] position, velocity or effort array must be same "
                         "size of name array"),
@@ -202,9 +202,10 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
         {
             if (!vehicle->Joints.Contains(jointState.name[i]))
             {
-                UE_LOG(LogRapyutaCore,
+                UE_LOG(LogTemp,
                        Warning,
                        TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] vehicle do not have joint named %s."),
+                       *GetName(),
                        *jointState.name[i]);
                 continue;
             }
@@ -221,7 +222,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
             else
             {
                 UE_LOG(
-                    LogRapyutaCore,
+                    LogTemp,
                     Warning,
                     TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] position, velocity or effort array must be same "
                          "size of name array"),
@@ -229,18 +230,18 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
                 continue;
             }
 
-            // UEToROS conversion
+            // ROS To UE conversion
             if (vehicle->Joints[jointState.name[i]]->LinearDOF == 1)
             {
-                input[0] *= 0.01;    // todo add conversion to conversion util
+                input[0] *= 100;    // todo add conversion to conversion util
             }
             else if (vehicle->Joints[jointState.name[i]]->RotationalDOF == 1)
             {
-                input[0] *= M_PI / 180;    // todo add conversion to conversion util
+                input[0] *= 180 / M_PI;    // todo add conversion to conversion util
             }
             else
             {
-                UE_LOG(LogRapyutaCore,
+                UE_LOG(LogTemp,
                        Warning,
                        TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] Supports only single DOF joint. %s has %d "
                             "linear DOF and %d rotational DOF"),

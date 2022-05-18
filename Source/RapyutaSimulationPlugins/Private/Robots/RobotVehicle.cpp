@@ -107,12 +107,10 @@ void ARobotVehicle::SetJointState(const TMap<FString, TArray<float>>& InJointSta
             switch (InJointControlType)
             {
                 case EJointControlType::POSITION:
-                    Joints[joint.Key]->SetPoseWithArray(joint.Value);
-                    // Joints[joint.Key].SetAngularOrientationTarget(joint.Value);
+                    Joints[joint.Key]->SetPoseTargetWithArray(joint.Value);
                     break;
                 case EJointControlType::VELOCITY:
                     Joints[joint.Key]->SetVelocityWithArray(joint.Value);
-                    // Joints[joint.Key].SetAngularVelocityTarget(joint.Value, 0, 0);
                     break;
                 case EJointControlType::EFFORT:
                     UE_LOG(LogRapyutaCore,
@@ -124,11 +122,8 @@ void ARobotVehicle::SetJointState(const TMap<FString, TArray<float>>& InJointSta
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] [RobotVehicle] [SetJointState] do not have joint named %s "),
-                   *GetName(),
-                   *joint.Key);
+            UE_LOG(
+                LogTemp, Warning, TEXT("[%s] [RobotVehicle] [SetJointState] do not have joint named %s "), *GetName(), *joint.Key);
         }
     }
 }

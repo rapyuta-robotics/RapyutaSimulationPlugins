@@ -23,11 +23,13 @@ protected:
     // Called when the game starts
     virtual void BeginPlay() override;
 
+    FTransform ParentLinkToJoint;
+
 public:
     // Called every frame
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-    
-    virtual void SetPose(const FVector& InPosition, const FRotator& InOrientation) override;
-    
+
+    virtual void SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation) override;
+
     virtual void UpdatePose();
 };
