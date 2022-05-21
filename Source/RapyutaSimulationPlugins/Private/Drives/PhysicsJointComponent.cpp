@@ -19,8 +19,8 @@ void UPhysicsJointComponent::BeginPlay()
 
 void UPhysicsJointComponent::SetJoint()
 {
-    Constraint->ComponentName2.ComponentName = ChildLink->GetName();
-    Constraint->ComponentName1.ComponentName = ParentLink->GetName();
+    Constraint->ComponentName2.ComponentName = *ChildLink->GetName();
+    Constraint->ComponentName1.ComponentName = *ParentLink->GetName();
 
     // todo add param to constraints, pose
 }

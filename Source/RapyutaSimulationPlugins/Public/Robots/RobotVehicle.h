@@ -128,8 +128,8 @@ public:
     /**
      * @brief Set Joints state to #Joints
      *
-     * /
-    UFUNCTION(BlueprintCallable)
+     */
+    // UFUNCTION(BlueprintCallable)
     virtual void SetJointState(const TMap<FString, TArray<float>>& InJointState, EJointControlType InJointControlType);
 
 protected:

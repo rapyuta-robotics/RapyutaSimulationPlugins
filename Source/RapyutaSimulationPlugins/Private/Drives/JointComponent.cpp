@@ -1,6 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Drives/JointComponent.h"
+#include <algorithm>
 
 // Sets default values for this component's properties
 UJointComponent::UJointComponent()
@@ -16,9 +17,16 @@ void UJointComponent::BeginPlay()
 
 void UJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
-    //! todo add limitation
-    LinearVelocity = InLinearVelocity;
-    AngularVelocity = InAngularVelocity;
+    LinearVelocity = FVector(
+        std::clamp(InLinearVelocity.X, LinearVelMin.X, LinearVelMax.X),
+        std::clamp(InLinearVelocity.Y, LinearVelMin.Y, LinearVelMax.Y),
+        std::clamp(InLinearVelocity.Z, LinearVelMin.Z, LinearVelMax.Z)
+    );
+    AngularVelocity = FVector(
+        std::clamp(InAngularVelocity.X, AngularVelMin.X, AngularVelMax.X),
+        std::clamp(InAngularVelocity.Y, AngularVelMin.Y, AngularVelMax.Y),
+        std::clamp(InAngularVelocity.Z, AngularVelMin.Z, AngularVelMax.Z)
+    );
 };
 
 void UJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
@@ -52,9 +60,16 @@ void UJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
 
 void UJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
-    //! todo add limitation
-    PositionTarget = InPosition;
-    OrientationTarget = InOrientation;
+    PositionTarget = FVector(
+        std::clamp(InPosition.X, PositionMin.X, PositionMax.X),
+        std::clamp(InPosition.Y, PositionMin.Y, PositionMax.Y),
+        std::clamp(InPosition.Z, PositionMin.Z, PositionMax.Z)
+    );
+    OrientationTarget = FRotator(
+        std::clamp(InOrientation.Pitch, OrientationMin.Pitch, OrientationMax.Pitch),
+        std::clamp(InOrientation.Yaw,   OrientationMin.Yaw,   OrientationMax.Yaw),
+        std::clamp(InOrientation.Roll,  OrientationMin.Roll,  OrientationMax.Roll)
+    );
 };
 
 void UJointComponent::SetPoseTargetWithArray(const TArray<float>& InPose)

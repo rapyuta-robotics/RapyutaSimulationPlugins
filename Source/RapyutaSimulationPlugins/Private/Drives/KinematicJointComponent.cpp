@@ -24,10 +24,10 @@ void UKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    PositionTarget += LinearVelocity * DeltaTime;
-    OrientationTarget += FRotator(AngularVelocity[1], AngularVelocity[2], AngularVelocity[0]) * DeltaTime;
-
-    UpdatePose();
+    SetPoseTarget(
+        PositionTarget + LinearVelocity * DeltaTime,
+        OrientationTarget + FRotator(AngularVelocity[1], AngularVelocity[2], AngularVelocity[0]) * DeltaTime
+    );
 }
 
 void UKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)

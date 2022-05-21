@@ -77,4 +77,39 @@ public:
     //! Rotational Degrees Of Freedom
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     uint8 RotationalDOF = 1;
+
+    //! Pose Limitations[cm]
+    //! @todo is it possible to set inf?
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector PositionMax = FVector(1000, 1000, 1000);
+
+    //! Pose Limitations[cm]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector PositionMin = FVector(-1000, -1000, -1000);
+
+    //! Orientation Limitations[deg]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FRotator OrientationMax = FRotator(180, 180, 180);
+
+    //! Orientation Limitations[deg]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FRotator OrientationMin = FRotator(-180, -180, -180);
+
+    //! Linear Velocity Limitations[cm/s]
+    //! @todo is it possible to set inf?
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector LinearVelMax = FVector(1000, 1000, 1000);
+
+    //! Linear Velocity Limitations[cm/s]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector LinearVelMin = FVector(-1000, -1000, -1000);
+
+    //! Angular Velocity Limitations[deg/s]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector AngularVelMax = FVector(180, 180, 180);
+
+    //! Angular Velocity Limitations[deg/s]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector AngularVelMin = FVector(-180, -180, -180);
+
 };
