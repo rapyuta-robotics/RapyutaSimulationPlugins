@@ -14,15 +14,6 @@ void UJointComponent::BeginPlay()
     Super::BeginPlay();
 }
 
-// Called every frame
-void UJointComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-    // if (!ShouldSkipUpdate(DeltaTime))
-    // {
-    //     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-    // }
-}
-
 void UJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
     //! todo add limitation

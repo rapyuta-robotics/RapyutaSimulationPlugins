@@ -148,9 +148,6 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
     const UROS2JointStateMsg* jointStateMsg = Cast<UROS2JointStateMsg>(Msg);
     if (IsValid(jointStateMsg))
     {
-        // Support only 1 DOF joints
-        // todo split logics
-
         // TODO refactoring will be needed to put units and system of reference conversions in a consistent location
         // probably should not stay in msg though
         FROSJointState jointState;
@@ -158,16 +155,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
 
         auto vehicle = CastChecked<ARobotVehicle>(GetPawn());
 
-        // if (jointState.name.Num() != vehicle->Joints.Num())
-        // {
-        //     UE_LOG(LogRapyutaCore,
-        //            Warning,
-        //            TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] name array is not same size of vehicle
-        //            Joints."), *GetName());
-        //     return;
-        // }
-
-        // Check Joint type
+        // Check Joint type. should be different function?
         EJointControlType jointControlType;
         if (jointState.name.Num() == jointState.position.Num())
         {

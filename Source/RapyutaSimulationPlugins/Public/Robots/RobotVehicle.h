@@ -125,7 +125,11 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetAngularVel(const FVector& InAngularVelocity);
 
-    // UFUNCTION(BlueprintCallable)
+    /**
+     * @brief Set Joints state to #Joints
+     *
+     * /
+    UFUNCTION(BlueprintCallable)
     virtual void SetJointState(const TMap<FString, TArray<float>>& InJointState, EJointControlType InJointControlType);
 
 protected:

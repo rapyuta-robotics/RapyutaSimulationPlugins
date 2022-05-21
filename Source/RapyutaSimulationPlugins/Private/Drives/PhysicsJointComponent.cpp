@@ -19,7 +19,10 @@ void UPhysicsJointComponent::BeginPlay()
 
 void UPhysicsJointComponent::SetJoint()
 {
-    // add param to constraints, pose
+    Constraint->ComponentName2.ComponentName = ChildLink->GetName();
+    Constraint->ComponentName1.ComponentName = ParentLink->GetName();
+
+    // todo add param to constraints, pose
 }
 
 void UPhysicsJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)

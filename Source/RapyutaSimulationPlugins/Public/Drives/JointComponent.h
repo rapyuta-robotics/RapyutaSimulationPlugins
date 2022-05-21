@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file JointComponent.h
+ * @brief Base Joint component class which is used as part of #ARobotVehicle.
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -16,7 +20,11 @@ enum class EJointControlType : uint8
     EFFORT UMETA(DisplayName = "Effort")
 };
 
-//! temporary impl. should be merged with RobotImporter later.
+/**
+ * @brief Base Joints class. Other sensors class should inherit from this class.
+ * temporary implementation of joints. should be merged with RobotImporter later.
+ *
+ */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API UJointComponent : public USceneComponent
 {
@@ -31,8 +39,6 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    // Called every frame
-    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
     UFUNCTION(BlueprintCallable)
     virtual void SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity);
