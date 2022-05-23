@@ -14,6 +14,7 @@
 #include "Srvs/ROS2GetEntityStateSrv.h"
 #include "Srvs/ROS2SetEntityStateSrv.h"
 #include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Tools/SimulationStateData.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
@@ -28,6 +29,7 @@ ASimulationState::ASimulationState()
 void ASimulationState::Init(AROS2Node* InROS2Node)
 {
     ROSServiceNode = InROS2Node;
+    SimulationStateData = CastChecked<ASimulationStateData>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationStateData::StaticClass()));
 
     // register delegates to node
     FServiceCallback GetEntityStateSrvCallback;
@@ -61,27 +63,29 @@ void ASimulationState::Init(AROS2Node* InROS2Node)
 
 void ASimulationState::AddEntity(AActor* Entity)
 {
-    if (IsValid(Entity))
-    {
-        Entities.Emplace(Entity->GetName(), Entity);
-        for (auto& tag : Entity->Tags)
-        {
-            if (EntitiesWithTag.Contains(tag))
-            {
-                EntitiesWithTag[tag].Actors.Emplace(Entity);
-            }
-            else
-            {
-                FActors actors;
-                actors.Actors.Emplace(Entity);
-                EntitiesWithTag.Emplace(tag, actors);
-            }
-        }
-    }
+    SimulationStateData->AddEntity(Entity);
+//    if (IsValid(Entity))
+//    {
+//        Entities.Emplace(Entity->GetName(), Entity);
+//        for (auto& tag : Entity->Tags)
+//        {
+//            if (EntitiesWithTag.Contains(tag))
+//            {
+//                EntitiesWithTag[tag].Actors.Emplace(Entity);
+//            }
+//            else
+//            {
+//                FActors actors;
+//                actors.Actors.Emplace(Entity);
+//                EntitiesWithTag.Emplace(tag, actors);
+//            }
+//        }
+//    }
 }
 
 void ASimulationState::AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities)
 {
+    SimulationStateData->AddSpawnableEntities(InSpawnableEntities);
     for (auto& Elem : InSpawnableEntities)
     {
         SpawnableEntities.Emplace(Elem.Key, Elem.Value);
@@ -130,12 +134,12 @@ template bool ASimulationState::CheckEntity<TSubclassOf<AActor>>(TMap<FString, T
 
 bool ASimulationState::CheckEntity(const FString& InEntityName, const bool bAllowEmpty)
 {
-    return CheckEntity<AActor*>(Entities, InEntityName, bAllowEmpty);
+    return CheckEntity<AActor*>(SimulationStateData->Entities, InEntityName, bAllowEmpty);
 }
 
 bool ASimulationState::CheckSpawnableEntity(const FString& InEntityName, const bool bAllowEmpty)
 {
-    return CheckEntity<TSubclassOf<AActor>>(SpawnableEntities, InEntityName, bAllowEmpty);
+    return CheckEntity<TSubclassOf<AActor>>(SimulationStateData->SpawnableEntities, InEntityName, bAllowEmpty);
 }
 
 void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
@@ -154,10 +158,10 @@ void ASimulationState::GetEntityStateSrv(UROS2GenericSrv* Service)
     if (Response.success)
     {
         FTransform relativeTransf;
-        FTransform worldTransf = Entities[Request.name]->GetTransform();
+        FTransform worldTransf = SimulationStateData->Entities[Request.name]->GetTransform();
         URRGeneralUtils::GetRelativeTransform(
             Request.reference_frame,
-            Entities.Contains(Request.reference_frame) ? Entities[Request.reference_frame] : nullptr,
+            SimulationStateData->Entities.Contains(Request.reference_frame) ? SimulationStateData->Entities[Request.reference_frame] : nullptr,
             worldTransf,
             relativeTransf);
         relativeTransf = ConversionUtils::TransformUEToROS(relativeTransf);
@@ -194,10 +198,10 @@ void ASimulationState::SetEntityStateSrv(UROS2GenericSrv* Service)
         FTransform worldTransf;
         URRGeneralUtils::GetWorldTransform(
             Request.state_reference_frame,
-            Entities.Contains(Request.state_reference_frame) ? Entities[Request.state_reference_frame] : nullptr,
+            SimulationStateData->Entities.Contains(Request.state_reference_frame) ? SimulationStateData->Entities[Request.state_reference_frame] : nullptr,
             relativeTransf,
             worldTransf);
-        Entities[Request.state_name]->SetActorTransform(worldTransf);
+        SimulationStateData->Entities[Request.state_name]->SetActorTransform(worldTransf);
     }
 
     SetEntityStateService->SetResponse(Response);
@@ -214,8 +218,8 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* Service)
     Response.success = CheckEntity(Request.name1, false) && CheckEntity(Request.name2, false);
     if (Response.success)
     {
-        AActor* Entity1 = Entities[Request.name1];
-        AActor* Entity2 = Entities[Request.name2];
+        AActor* Entity1 = SimulationStateData->Entities[Request.name1];
+        AActor* Entity2 = SimulationStateData->Entities[Request.name2];
 
         if (!Entity2->IsAttachedTo(Entity1))
         {
@@ -263,17 +267,18 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
             FTransform worldTransf;
             URRGeneralUtils::GetWorldTransform(
                 Request.StateReferenceFrame,
-                Entities.Contains(Request.StateReferenceFrame) ? Entities[Request.StateReferenceFrame] : nullptr,
+                SimulationStateData->Entities.Contains(Request.StateReferenceFrame) ? SimulationStateData->Entities[Request.StateReferenceFrame] : nullptr,
                 relativeTransf,
                 worldTransf);
             UE_LOG(LogRapyutaCore, Warning, TEXT("Spawning Entity of model [%s] as [%s]"), *entityModelName, *entityName);
 
             // TODO: details rationale to justify using SpawnActorDeferred
-            AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(SpawnableEntities[entityModelName], worldTransf);
+            AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(SimulationStateData->SpawnableEntities[entityModelName], worldTransf);
             UROS2Spawnable* SpawnableComponent = NewObject<UROS2Spawnable>(newEntity, TEXT("ROS2 Spawn Parameters"));
 
             SpawnableComponent->RegisterComponent();
             SpawnableComponent->InitializeParameters(Request);
+            SpawnableComponent->SetIsReplicated(true);
             newEntity->AddInstanceComponent(SpawnableComponent);
             newEntity->Rename(*entityName);
 #if WITH_EDITOR
@@ -314,9 +319,9 @@ void ASimulationState::DeleteEntitySrv(UROS2GenericSrv* Service)
 
     FROSDeleteEntity_Response Response;
     Response.success = false;
-    if (Entities.Contains(Request.name))
+    if (SimulationStateData->Entities.Contains(Request.name))
     {
-        AActor* Removed = Entities.FindAndRemoveChecked(Request.name);
+        AActor* Removed = SimulationStateData->Entities.FindAndRemoveChecked(Request.name);
         Removed->Destroy();
     }
     else

@@ -12,17 +12,18 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
+#include "Tools/SimulationStateData.h"
 
 #include "SimulationState.generated.h"
 
-USTRUCT()
-struct RAPYUTASIMULATIONPLUGINS_API FActors
-{
-    GENERATED_BODY()
-
-    UPROPERTY()
-    TArray<AActor*> Actors;
-};
+//USTRUCT()
+//struct RAPYUTASIMULATIONPLUGINS_API FActors
+//{
+//    GENERATED_BODY()
+//
+//    UPROPERTY()
+//    TArray<AActor*> Actors;
+//};
 
 class UROS2GenericSrv;
 
@@ -73,11 +74,14 @@ public:
     UPROPERTY(BlueprintReadOnly)
     AROS2Node* ROSServiceNode = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TMap<FString, AActor*> Entities;
+    UPROPERTY(BlueprintReadOnly)
+    ASimulationStateData* SimulationStateData = nullptr;
 
-    UPROPERTY()
-    TMap<FName, FActors> EntitiesWithTag;
+//    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+//    TMap<FString, AActor*> Entities;
+//
+//    UPROPERTY()
+//    TMap<FName, FActors> EntitiesWithTag;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntities;

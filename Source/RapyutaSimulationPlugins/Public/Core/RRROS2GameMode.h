@@ -8,6 +8,7 @@
 
 // RapyutaSimulationPlugins
 #include "Tools/SimulationState.h"
+#include "Tools/SimulationStateData.h"
 
 #include "RRROS2GameMode.generated.h"
 
@@ -28,15 +29,22 @@ public:
     ASimulationState* SimulationState = nullptr;
 
     UPROPERTY(BlueprintReadOnly)
+    ASimulationStateData* SimulationStateData = nullptr;
+
+    UPROPERTY(BlueprintReadOnly)
     TSubclassOf<ASimulationState> SimulationStateClass = ASimulationState::StaticClass();
 
     UPROPERTY(BlueprintReadWrite)
     FString UENodeName = TEXT("UENode");
 
+    TArray<class APlayerController*> ClientControllerList;
+
 protected:
     virtual void InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage) override;
     virtual void InitSim();
+    virtual void PostLogin(APlayerController* InPlayer) override;
 
 private:
+    int numPlayers = 0;
     void InitROS2();
 };

@@ -33,29 +33,29 @@ public:
     // Reasons:
     // + An Actor's Name could get updated as its Label is updated
     // + In pending-kill state, GetName() goes to [None]
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString RobotUniqueName;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     AActor* Map = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     USkeletalMeshComponent* SkeletalMeshComp = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
 
     bool InitSensors(AROS2Node* InROS2Node);
     virtual bool InitMoveComponent();
     void SetupDefault();
 
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, Server, Reliable)
     virtual void SetLinearVel(const FVector& InLinearVelocity);
 
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, Server, Reliable)
     virtual void SetAngularVel(const FVector& InAngularVelocity);
 
 protected:

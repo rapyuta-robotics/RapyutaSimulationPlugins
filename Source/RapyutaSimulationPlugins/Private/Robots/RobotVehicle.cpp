@@ -2,6 +2,8 @@
 
 #include "Robots/RobotVehicle.h"
 
+#include "Net/UnrealNetwork.h"
+
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
@@ -15,6 +17,23 @@
 ARobotVehicle::ARobotVehicle()
 {
     SetupDefault();
+    bReplicates = true;
+}
+
+void ARobotVehicle::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    UBlueprintGeneratedClass * bpClass = Cast<UBlueprintGeneratedClass>(this->GetClass());
+    if (bpClass != nullptr)
+    {
+        bpClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
+    }
+    DOREPLIFETIME( ARobotVehicle, RobotUniqueName );
+    DOREPLIFETIME( ARobotVehicle, Map );
+    DOREPLIFETIME( ARobotVehicle, SkeletalMeshComp );
+    DOREPLIFETIME( ARobotVehicle, RobotVehicleMoveComponent );
+    DOREPLIFETIME( ARobotVehicle, VehicleMoveComponentClass );
+
 }
 
 ARobotVehicle::ARobotVehicle(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -86,12 +105,12 @@ bool ARobotVehicle::InitMoveComponent()
     }
 }
 
-void ARobotVehicle::SetLinearVel(const FVector& InLinearVelocity)
+void ARobotVehicle::SetLinearVel_Implementation(const FVector& InLinearVelocity)
 {
     RobotVehicleMoveComponent->Velocity = InLinearVelocity;
 }
 
-void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
+void ARobotVehicle::SetAngularVel_Implementation(const FVector& InAngularVelocity)
 {
     RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
 }

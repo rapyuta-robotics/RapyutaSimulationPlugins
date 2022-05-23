@@ -11,8 +11,9 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRGameState.h"
-#include "Core/RRPlayerController.h"
+#include "Core/RRNetworkPlayerController.h"
 #include "Tools/RRROS2ClockPublisher.h"
+#include "Tools/SimulationStateData.h"
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
 {
@@ -34,6 +35,25 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
 
     // Init Sim main components
     InitSim();
+}
+
+void ARRROS2GameMode::PostLogin(APlayerController* InPlayer) {
+    Super::PostLogin(InPlayer);
+
+    ClientControllerList.Add(InPlayer);
+
+#if WITH_EDITOR
+    numPlayers += 1;
+    if(numPlayers == 1) {
+        InPlayer->SetName("pixelstreamer");
+    } else {
+        InPlayer->SetName("amr" + FString::FromInt(numPlayers-1));
+    }
+
+#endif
+
+//    Cast<ARRNetworkPlayerController>(InPlayer)->SimulationStateData = SimulationStateData;
+
 }
 
 void ARRROS2GameMode::InitSim()
@@ -61,5 +81,6 @@ void ARRROS2GameMode::InitROS2()
 
     // Simulation state
     SimulationState = currentWorld->SpawnActor<ASimulationState>(SimulationStateClass);
+    SimulationStateData = currentWorld->SpawnActor<ASimulationStateData>();
     SimulationState->Init(ROS2Node);
 }
