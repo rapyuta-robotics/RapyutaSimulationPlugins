@@ -9,6 +9,12 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 
+void URobotVehicleMovementComponent::BeginPlay()
+{
+    Super::BeginPlay();
+    InitMovementComponent();
+}
+
 void URobotVehicleMovementComponent::Initialize()
 {
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};

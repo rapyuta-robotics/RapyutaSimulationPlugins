@@ -167,6 +167,9 @@ public:
     float FallingSpeed = 100.f;    
 
 protected:
+    
+    virtual void BeginPlay() override;
+    
     /**
      * @brief Move actor by using SafeMoveUpdatedComponent and SlideAlongSurface.
      * Calculate #DesiredMovement and #DesiredRotation from deltatime, UpdatedComponent and #AngularVelocity.
