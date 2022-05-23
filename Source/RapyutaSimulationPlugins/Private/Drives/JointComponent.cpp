@@ -1,6 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Drives/JointComponent.h"
+
 #include <algorithm>
 
 // Sets default values for this component's properties
@@ -9,24 +10,10 @@ UJointComponent::UJointComponent()
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-// Called when the game starts
-void UJointComponent::BeginPlay()
-{
-    Super::BeginPlay();
-}
-
 void UJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
-    LinearVelocity = FVector(
-        std::clamp(InLinearVelocity.X, LinearVelMin.X, LinearVelMax.X),
-        std::clamp(InLinearVelocity.Y, LinearVelMin.Y, LinearVelMax.Y),
-        std::clamp(InLinearVelocity.Z, LinearVelMin.Z, LinearVelMax.Z)
-    );
-    AngularVelocity = FVector(
-        std::clamp(InAngularVelocity.X, AngularVelMin.X, AngularVelMax.X),
-        std::clamp(InAngularVelocity.Y, AngularVelMin.Y, AngularVelMax.Y),
-        std::clamp(InAngularVelocity.Z, AngularVelMin.Z, AngularVelMax.Z)
-    );
+    LinearVelocity = InLinearVelocity.BoundToBox(LinearVelMin, LinearVelMax);
+    AngularVelocity = InAngularVelocity.BoundToBox(AngularVelMin, AngularVelMax);
 };
 
 void UJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
@@ -42,37 +29,36 @@ void UJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
     }
 
     uint8 i;
-    float LinearInput[3] = {0, 0, 0};
+    FVector LinearInput = FVector(0, 0, 0);
     for (i = 0; i < LinearDOF; i++)
     {
         LinearInput[i] = InVelocity[i];
     }
 
-    float AngularInput[3] = {0, 0, 0};
+    FVector AngularInput = FVector(0, 0, 0);
     for (i = 0; i < RotationalDOF; i++)
     {
         AngularInput[i] = InVelocity[LinearDOF + i];
     }
 
-    SetVelocity(FVector(LinearInput[0], LinearInput[1], LinearInput[2]),
-                FVector(AngularInput[0], AngularInput[1], AngularInput[2]));
+    SetVelocity(LinearInput, AngularInput);
 };
 
 void UJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
-    PositionTarget = FVector(
-        std::clamp(InPosition.X, PositionMin.X, PositionMax.X),
-        std::clamp(InPosition.Y, PositionMin.Y, PositionMax.Y),
-        std::clamp(InPosition.Z, PositionMin.Z, PositionMax.Z)
-    );
-    OrientationTarget = FRotator(
-        std::clamp(InOrientation.Pitch, OrientationMin.Pitch, OrientationMax.Pitch),
-        std::clamp(InOrientation.Yaw,   OrientationMin.Yaw,   OrientationMax.Yaw),
-        std::clamp(InOrientation.Roll,  OrientationMin.Roll,  OrientationMax.Roll)
-    );
+    PositionTarget = InPosition;
+    OrientationTarget = InOrientation;
 };
 
-void UJointComponent::SetPoseTargetWithArray(const TArray<float>& InPose)
+void UJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
+{
+    Position = InPosition.BoundToBox(PositionMin, PositionMax);
+    Orientation = FRotator(FMath::Clamp(InOrientation.Pitch, OrientationMin.Pitch, OrientationMax.Pitch),
+                           FMath::Clamp(InOrientation.Yaw, OrientationMin.Yaw, OrientationMax.Yaw),
+                           FMath::Clamp(InOrientation.Roll, OrientationMin.Roll, OrientationMax.Roll));
+};
+
+void UJointComponent::PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation)
 {
     if (InPose.Num() != LinearDOF + RotationalDOF)
     {
@@ -85,18 +71,34 @@ void UJointComponent::SetPoseTargetWithArray(const TArray<float>& InPose)
     }
 
     uint8 i;
-    float LinearInput[3] = {0, 0, 0};
+    FVector LinearInput = FVector(0, 0, 0);
     for (i = 0; i < LinearDOF; i++)
     {
         LinearInput[i] = InPose[i];
     }
 
-    float RotationalInput[3] = {0, 0, 0};
+    FVector RotationalInput = FVector(0, 0, 0);
     for (i = 0; i < RotationalDOF; i++)
     {
         RotationalInput[i] = InPose[LinearDOF + i];
     }
 
-    SetPoseTarget(FVector(LinearInput[0], LinearInput[1], LinearInput[2]),
-                  FRotator(RotationalInput[1], RotationalInput[2], RotationalInput[0]));    // pitch yaw roll
+    OutPosition = LinearInput;
+    OutOrientation = FRotator::MakeFromEuler(RotationalInput);
 };
+
+void UJointComponent::SetPoseTargetWithArray(const TArray<float>& InPose)
+{
+    FVector OutPosition;
+    FRotator OutOrientation;
+    PoseFromArray(InPose, OutPosition, OutOrientation);
+    SetPoseTarget(OutPosition, OutOrientation);
+}
+
+void UJointComponent::SetPoseWithArray(const TArray<float>& InPose)
+{
+    FVector OutPosition;
+    FRotator OutOrientation;
+    PoseFromArray(InPose, OutPosition, OutOrientation);
+    SetPose(OutPosition, OutOrientation);
+}

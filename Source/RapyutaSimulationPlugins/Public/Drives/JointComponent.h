@@ -21,7 +21,8 @@ enum class EJointControlType : uint8
 };
 
 /**
- * @brief Base Joints class. Other sensors class should inherit from this class.
+ * @brief Base Joints class. Other joint class should inherit from this class.
+ * 6 DOF joints class with velocity or position control.
  * temporary implementation of joints. should be merged with RobotImporter later.
  *
  */
@@ -35,20 +36,60 @@ public:
     UJointComponent();
 
 protected:
-    // Called when the game starts
-    virtual void BeginPlay() override;
+    virtual void PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation);
 
 public:
-
+    /**
+     * @brief Directly set velocity.
+     * Control to move joint with this velocity should be implemented in child class.
+     * @param InLinearVelocity
+     * @param InAngularVelocity
+     */
     UFUNCTION(BlueprintCallable)
     virtual void SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity);
 
+    /**
+     * @brief Set the Velocity With TArray.
+     * Control to move joint with this velocity should be implemented in child class.
+     * TArray size should be #LinearDOF +  #RotationalDOF
+     * @param InVelocity
+     */
     UFUNCTION(BlueprintCallable)
     virtual void SetVelocityWithArray(const TArray<float>& InVelocity);
 
+    /**
+     * @brief Directly set pose.
+     * Control to teleport joint to this pose should be implemented in child class.
+     * @param InPosition
+     * @param InOrientation
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetPose(const FVector& InPosition, const FRotator& InOrientation);
+
+    /**
+     * @brief Set Pose Target.
+     * Control to move joint to pose target should be implemented in child class.
+     * @param InPosition
+     * @param InOrientation
+     */
     UFUNCTION(BlueprintCallable)
     virtual void SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation);
 
+    /**
+     * @brief Directly set pose.
+     * Control to teleport joint to pose should be implemented in child class.
+     * TArray size should be #LinearDOF +  #RotationalDOF
+     * @param InPose
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetPoseWithArray(const TArray<float>& InPose);
+
+    /**
+     * @brief Set Pose Target.
+     * Control to move joint to pose target should be implemented in child class.
+     * TArray size should be #LinearDOF +  #RotationalDOF
+     * @param InPose
+     */
     UFUNCTION(BlueprintCallable)
     virtual void SetPoseTargetWithArray(const TArray<float>& InPose);
 
@@ -65,10 +106,19 @@ public:
     FRotator OrientationTarget = FRotator::ZeroRotator;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector Position = FVector::ZeroVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FRotator Orientation = FRotator::ZeroRotator;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UStaticMeshComponent* ParentLink;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UStaticMeshComponent* ChildLink;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    EJointControlType ControlType = EJointControlType::POSITION;
 
     //! Linear Degrees Of Freedom
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -111,5 +161,4 @@ public:
     //! Angular Velocity Limitations[deg/s]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector AngularVelMin = FVector(-180, -180, -180);
-
 };
