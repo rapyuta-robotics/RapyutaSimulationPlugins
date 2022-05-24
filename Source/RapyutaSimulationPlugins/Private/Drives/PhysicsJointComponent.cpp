@@ -6,7 +6,7 @@
 UPhysicsJointComponent::UPhysicsJointComponent()
 {
     // todo add initialization
-    Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_LidarSensor"));
+    Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(FString::Printf(TEXT("%sPhysicsConstraint"), *GetName()));
 }
 
 // Called when the game starts
