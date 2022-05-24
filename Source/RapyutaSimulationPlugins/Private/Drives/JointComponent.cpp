@@ -62,9 +62,10 @@ void UJointComponent::PoseFromArray(const TArray<float>& InPose, FVector& OutPos
 {
     if (InPose.Num() != LinearDOF + RotationalDOF)
     {
-        UE_LOG(LogTemp,
+        UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("Given joint command num is not much with joint DOF. Linear DOF %i and Rotational DOF %i"),
+               TEXT("Given joint pose values num (%u) does not match joint total DOF (Linear DOF %i & Rotational DOF %i)"),
+               InPose.Num(),
                LinearDOF,
                RotationalDOF);
         return;
