@@ -10,7 +10,7 @@
 #include "Core/RRStaticMeshComponent.h"
 #include "CoreMinimal.h"
 
-#include "JointComponent.generated.h"
+#include "RRJointComponent.generated.h"
 
 UENUM(BlueprintType)
 enum class EJointControlType : uint8
@@ -27,13 +27,13 @@ enum class EJointControlType : uint8
  *
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UJointComponent : public USceneComponent
+class RAPYUTASIMULATIONPLUGINS_API URRJointComponent : public USceneComponent
 {
     GENERATED_BODY()
 
 public:
     // Sets default values for this component's properties
-    UJointComponent();
+    URRJointComponent();
 
 protected:
     virtual void PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation);

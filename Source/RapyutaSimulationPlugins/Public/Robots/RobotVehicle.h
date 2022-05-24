@@ -14,7 +14,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRBaseActor.h"
-#include "Drives/JointComponent.h"
+#include "Drives/RRJointComponent.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
 
@@ -82,7 +82,7 @@ public:
     TMap<FString, UStaticMeshComponent*> Links;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TMap<FString, UJointComponent*> Joints;
+    TMap<FString, URRJointComponent*> Joints;
 
     /**
      * @brief Initialize sensors components which are child class of #URRROS2BaseSensorComponent.

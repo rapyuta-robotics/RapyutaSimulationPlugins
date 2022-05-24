@@ -10,9 +10,9 @@
 #include "CoreMinimal.h"
 
 // RapyutaSimulationPlugins
-#include "Drives/JointComponent.h"
+#include "Drives/RRJointComponent.h"
 
-#include "KinematicJointComponent.generated.h"
+#include "RRKinematicJointComponent.generated.h"
 
 /**
  * @brief Kinematic Joint component. Uses K2_SetWorldTransform to move joint.
@@ -26,13 +26,13 @@
  * [K2_SetWorldTransform](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/Components/USceneComponent/K2_SetWorldTransform/)
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UKinematicJointComponent : public UJointComponent
+class RAPYUTASIMULATIONPLUGINS_API URRKinematicJointComponent : public URRJointComponent
 {
     GENERATED_BODY()
 
 public:
     // Sets default values for this component's properties
-    UKinematicJointComponent();
+    URRKinematicJointComponent();
 
 protected:
     virtual void BeginPlay() override;

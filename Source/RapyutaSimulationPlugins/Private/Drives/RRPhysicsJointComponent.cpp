@@ -1,23 +1,23 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Drives/PhysicsJointComponent.h"
+#include "Drives/RRPhysicsJointComponent.h"
 
 // Sets default values for this component's properties
-UPhysicsJointComponent::UPhysicsJointComponent()
+URRPhysicsJointComponent::URRPhysicsJointComponent()
 {
     // todo add initialization
     Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("%sPhysicsConstraint"), *GetName());
 }
 
 // Called when the game starts
-void UPhysicsJointComponent::BeginPlay()
+void URRPhysicsJointComponent::BeginPlay()
 {
     SetJoint();
     Super::BeginPlay();
     // todo add initialization
 }
 
-void UPhysicsJointComponent::SetJoint()
+void URRPhysicsJointComponent::SetJoint()
 {
     Constraint->ComponentName2.ComponentName = *ChildLink->GetName();
     Constraint->ComponentName1.ComponentName = *ParentLink->GetName();
@@ -25,14 +25,14 @@ void UPhysicsJointComponent::SetJoint()
     // todo add param to constraints, pose
 }
 
-void UPhysicsJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
+void URRPhysicsJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
     Super::SetVelocity(InLinearVelocity, InAngularVelocity);
     Constraint->SetLinearVelocityTarget(InLinearVelocity);
     Constraint->SetAngularVelocityTarget(InAngularVelocity);
 }
 
-void UPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
+void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     Super::SetPoseTarget(InPosition, InOrientation);
     Constraint->SetLinearPositionTarget(InPosition);

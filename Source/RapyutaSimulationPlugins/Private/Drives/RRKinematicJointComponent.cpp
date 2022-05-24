@@ -1,15 +1,15 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Drives/KinematicJointComponent.h"
+#include "Drives/RRKinematicJointComponent.h"
 
 // Sets default values for this component's properties
-UKinematicJointComponent::UKinematicJointComponent()
+URRKinematicJointComponent::URRKinematicJointComponent()
 {
     // todo add initialization
 }
 
 // Called when the game starts
-void UKinematicJointComponent::BeginPlay()
+void URRKinematicJointComponent::BeginPlay()
 {
     // set joints relations and save initial parent to joint transformation.
     ParentLinkToJoint = GetRelativeTransform();
@@ -18,7 +18,7 @@ void UKinematicJointComponent::BeginPlay()
 }
 
 // Called every frame
-void UKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void URRKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
     if (LinearVelocity != FVector::ZeroVector || AngularVelocity != FVector::ZeroVector)
@@ -69,13 +69,13 @@ void UKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
     }
 }
 
-void UKinematicJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
+void URRKinematicJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
 {
     Super::SetPose(InPosition, InOrientation);
     UpdatePose();
 }
 
-void UKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
+void URRKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     Super::SetPoseTarget(InPosition, InOrientation);
 
@@ -92,7 +92,7 @@ void UKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const FR
     }
 }
 
-void UKinematicJointComponent::UpdatePose()
+void URRKinematicJointComponent::UpdatePose()
 {
     FHitResult SweepHitResult;
     K2_SetWorldTransform(FTransform(Orientation, Position) *         // joint changes

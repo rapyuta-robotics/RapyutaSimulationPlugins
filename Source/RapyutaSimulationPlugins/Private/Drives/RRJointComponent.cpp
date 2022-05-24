@@ -1,20 +1,20 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Drives/JointComponent.h"
+#include "Drives/RRJointComponent.h"
 
 // Sets default values for this component's properties
-UJointComponent::UJointComponent()
+URRJointComponent::URRJointComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
+void URRJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
     LinearVelocity = InLinearVelocity.BoundToBox(LinearVelMin, LinearVelMax);
     AngularVelocity = InAngularVelocity.BoundToBox(AngularVelMin, AngularVelMax);
 };
 
-void UJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
+void URRJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
 {
     if (InVelocity.Num() != LinearDOF + RotationalDOF)
     {
@@ -42,13 +42,13 @@ void UJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
     SetVelocity(LinearInput, AngularInput);
 };
 
-void UJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
+void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     PositionTarget = InPosition;
     OrientationTarget = InOrientation;
 };
 
-void UJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
+void URRJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
 {
     Position = InPosition.BoundToBox(PositionMin, PositionMax);
     Orientation = FRotator(FMath::Clamp(InOrientation.Pitch, OrientationMin.Pitch, OrientationMax.Pitch),
@@ -56,7 +56,7 @@ void UJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrien
                            FMath::Clamp(InOrientation.Roll, OrientationMin.Roll, OrientationMax.Roll));
 };
 
-void UJointComponent::PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation)
+void URRJointComponent::PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation)
 {
     if (InPose.Num() != LinearDOF + RotationalDOF)
     {
@@ -86,7 +86,7 @@ void UJointComponent::PoseFromArray(const TArray<float>& InPose, FVector& OutPos
     OutOrientation = FRotator::MakeFromEuler(RotationalInput);
 };
 
-void UJointComponent::SetPoseTargetWithArray(const TArray<float>& InPose)
+void URRJointComponent::SetPoseTargetWithArray(const TArray<float>& InPose)
 {
     FVector OutPosition;
     FRotator OutOrientation;
@@ -94,7 +94,7 @@ void UJointComponent::SetPoseTargetWithArray(const TArray<float>& InPose)
     SetPoseTarget(OutPosition, OutOrientation);
 }
 
-void UJointComponent::SetPoseWithArray(const TArray<float>& InPose)
+void URRJointComponent::SetPoseWithArray(const TArray<float>& InPose)
 {
     FVector OutPosition;
     FRotator OutOrientation;
