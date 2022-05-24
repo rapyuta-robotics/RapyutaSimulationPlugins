@@ -2,8 +2,6 @@
 
 #include "Drives/JointComponent.h"
 
-#include <algorithm>
-
 // Sets default values for this component's properties
 UJointComponent::UJointComponent()
 {
@@ -29,13 +27,13 @@ void UJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
     }
 
     uint8 i;
-    FVector LinearInput = FVector(0, 0, 0);
+    FVector LinearInput = FVector::ZeroVector;
     for (i = 0; i < LinearDOF; i++)
     {
         LinearInput[i] = InVelocity[i];
     }
 
-    FVector AngularInput = FVector(0, 0, 0);
+    FVector AngularInput = FVector::ZeroVector;
     for (i = 0; i < RotationalDOF; i++)
     {
         AngularInput[i] = InVelocity[LinearDOF + i];
