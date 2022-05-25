@@ -21,6 +21,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString ActorNamespace;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    TArray<FString> ActorTags;
+
 public:
     UFUNCTION(BlueprintCallable)
     virtual void InitializeParameters(const FROSSpawnEntityRequest& InRequest);
@@ -32,8 +35,12 @@ public:
     virtual void SetNamespace(const FString& InNamespace);
 
     UFUNCTION(BlueprintCallable)
+    virtual void AddTag(const FString& InTag);
+
+    UFUNCTION(BlueprintCallable)
     virtual FString GetName();
 
     UFUNCTION(BlueprintCallable)
     virtual FString GetNamespace();
+
 };

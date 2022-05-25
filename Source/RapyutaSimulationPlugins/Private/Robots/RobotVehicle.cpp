@@ -13,6 +13,7 @@
 #include "Robots/RRRobotVehicleROSController.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/SimulationState.h"
+#include "Tools/SimulationStateData.h"
 
 ARobotVehicle::ARobotVehicle()
 {
@@ -58,6 +59,7 @@ void ARobotVehicle::SetupDefault()
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
 }
 
 bool ARobotVehicle::InitSensors(AROS2Node* InROS2Node)
@@ -105,12 +107,36 @@ bool ARobotVehicle::InitMoveComponent()
     }
 }
 
-void ARobotVehicle::SetLinearVel_Implementation(const FVector& InLinearVelocity)
+void ARobotVehicle::SetLinearVel(const FVector& InLinearVelocity)
+{
+    SetServerLinearVel(InLinearVelocity);
+    SetClientLinearVel(InLinearVelocity);
+}
+
+void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
+{
+    SetServerAngularVel(InAngularVelocity);
+    SetClientAngularVel(InAngularVelocity);
+}
+
+void ARobotVehicle::SetServerLinearVel_Implementation(const FVector& InLinearVelocity)
 {
     RobotVehicleMoveComponent->Velocity = InLinearVelocity;
 }
 
-void ARobotVehicle::SetAngularVel_Implementation(const FVector& InAngularVelocity)
+void ARobotVehicle::SetServerAngularVel_Implementation(const FVector& InAngularVelocity)
+{
+    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
+}
+
+void ARobotVehicle::SetClientLinearVel_Implementation(const FVector& InLinearVelocity)
+{
+    APlayerController* Player = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    UE_LOG(LogTemp, Warning, TEXT("PLAYER [%s]"), *Player->PlayerState->GetPlayerName());
+    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+}
+
+void ARobotVehicle::SetClientAngularVel_Implementation(const FVector& InAngularVelocity)
 {
     RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
 }

@@ -37,6 +37,9 @@ public:
     UFUNCTION(Server, Reliable)
     void ServerPossessPawn(AActor* InActor);
 
+    UFUNCTION(Client, Reliable)
+    void ClientInitMoveComp(AActor* InActor);
+
     UPROPERTY(BlueprintReadOnly, Replicated)
     AROS2Node* ROS2Node = nullptr;
 
@@ -87,6 +90,9 @@ public:
 
     UFUNCTION(Server, Reliable)
     void SetServerPlayerName(const FString& InPlayerName);
+
+//    UFUNCTION(BlueprintCallable, Client, Reliable)
+//    void ReplicateTag();
 
 //    UFUNCTION(Client, Reliable)
 //    void InitPawn(APawn* InPawn);

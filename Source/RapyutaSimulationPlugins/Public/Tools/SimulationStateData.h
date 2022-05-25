@@ -41,6 +41,9 @@ public:
     void OnRep_Entity();
 
     UFUNCTION(BlueprintCallable)
+    void AddTaggedEntities(AActor* Entity, const FName& InTag);
+
+    UFUNCTION(BlueprintCallable)
     void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

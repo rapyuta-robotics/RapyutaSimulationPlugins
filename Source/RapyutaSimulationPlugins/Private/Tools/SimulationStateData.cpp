@@ -44,6 +44,9 @@ void ASimulationStateData::AddEntity(AActor* Entity)
     }
 }
 
+//void ASimulationStateData::OnRep_Entity() {
+//
+//}
 //Work around to replicating Entities and EntitiesWithTag since TMaps cannot be replicated
 void ASimulationStateData::OnRep_Entity()
 {
@@ -52,22 +55,16 @@ void ASimulationStateData::OnRep_Entity()
             if (!Entities.Contains(Entity->GetName())) {
                 Entities.Emplace(Entity->GetName(), Entity);
             }
+
             for (auto &tag: Entity->Tags) {
-                if (EntitiesWithTag.Contains(tag)) {
-                    // Check if Actor in EntitiesWithTag
-                    bool ToEmplace = true;
-                    for (AActor *TaggedActor: EntitiesWithTag[tag].Actors) {
-                        if (TaggedActor->GetName() == Entity->GetName()) {
-                            ToEmplace = false;
-                        }
-                    }
-                    if (ToEmplace) {
-                        EntitiesWithTag[tag].Actors.Emplace(Entity);
-                    }
-                } else {
-                    FActors actors;
-                    actors.Actors.Emplace(Entity);
-                    EntitiesWithTag.Emplace(tag, actors);
+                AddTaggedEntities(Entity, tag);
+            }
+
+            UROS2Spawnable* EntitySpawnParam = Entity->FindComponentByClass<UROS2Spawnable>();
+            if (EntitySpawnParam) {
+                Entity->Rename(*EntitySpawnParam->GetName());
+                for (auto &tag: EntitySpawnParam->ActorTags) {
+                    AddTaggedEntities(Entity, FName(tag));
                 }
             }
         }
@@ -75,6 +72,27 @@ void ASimulationStateData::OnRep_Entity()
 
 
 }
+void ASimulationStateData::AddTaggedEntities(AActor* Entity, const FName& InTag){
+
+    if (EntitiesWithTag.Contains(InTag)) {
+        // Check if Actor in EntitiesWithTag
+
+        bool ToEmplace = true;
+        for (AActor *TaggedActor: EntitiesWithTag[InTag].Actors) {
+            if (TaggedActor->GetName() == Entity->GetName()) {
+                ToEmplace = false;
+            }
+        }
+        if (ToEmplace) {
+            EntitiesWithTag[InTag].Actors.Emplace(Entity);
+        }
+    } else {
+        FActors actors;
+        actors.Actors.Emplace(Entity);
+        EntitiesWithTag.Emplace(InTag, actors);
+    }
+}
+
 
 void ASimulationStateData::AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities)
 {

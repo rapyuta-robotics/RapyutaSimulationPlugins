@@ -39,7 +39,6 @@ ARRNetworkPlayerController::ARRNetworkPlayerController()
 void ARRNetworkPlayerController::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-//    APlayerState* PlayerState = this->PlayerState;
 #if WITH_EDITOR
     if(PlayerName == "pixelstreamer") {
         FRotator InitRot = FRotator(-50, -90, 0);
@@ -79,6 +78,7 @@ void ARRNetworkPlayerController::WaitForPawnToPossess()
         }
         if (SimulationStateData) {
             AActor *MatchingEntity = nullptr;
+            UROS2Spawnable *MatchingEntitySpawnParams = nullptr;
 
             for (AActor *Entity: SimulationStateData->EntityList) {
                 if(Entity) {
@@ -86,6 +86,7 @@ void ARRNetworkPlayerController::WaitForPawnToPossess()
                     if (rosSpawnParameters) {
                         if (rosSpawnParameters->GetName() == PlayerName) {
                             MatchingEntity = Entity;
+                            MatchingEntitySpawnParams=rosSpawnParameters;
                         }
                     }
                 }
@@ -94,6 +95,7 @@ void ARRNetworkPlayerController::WaitForPawnToPossess()
                 UE_LOG(LogTemp, Warning, TEXT("Player [%s] Possessing Robot"), *PlayerName);
                 ServerPossessPawn(MatchingEntity);
                 PossessedPawn = Cast<APawn>(MatchingEntity);
+                ClientInitMoveComp(MatchingEntity);
             } else {
                 UE_LOG(LogTemp, Warning, TEXT("Player [%s] has not found a Robot to possess yet"), *PlayerName);
             }
@@ -105,7 +107,10 @@ void ARRNetworkPlayerController::ServerPossessPawn_Implementation(AActor* InActo
 {
     this->Possess(Cast<APawn>(InActor));
 }
-
+void ARRNetworkPlayerController::ClientInitMoveComp_Implementation(AActor* InActor)
+{
+    Cast<ARobotVehicle>(InActor)->InitMoveComponent();
+}
 void ARRNetworkPlayerController::InitRobotROS2Node(APawn* InPawn)
 {
     if (nullptr == RobotROS2Node) {
@@ -190,6 +195,7 @@ void ARRNetworkPlayerController::BeginPlay()
         FRotator InitRot = FRotator(-50, -90, 0);
         SetControlRotation(InitRot);
     }
+
 }
 
 void ARRNetworkPlayerController::OnPossess(APawn* InPawn)

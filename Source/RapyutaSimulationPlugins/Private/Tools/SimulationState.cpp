@@ -279,14 +279,20 @@ void ASimulationState::SpawnEntitySrv(UROS2GenericSrv* Service)
             SpawnableComponent->RegisterComponent();
             SpawnableComponent->InitializeParameters(Request);
             SpawnableComponent->SetIsReplicated(true);
+
             newEntity->AddInstanceComponent(SpawnableComponent);
             newEntity->Rename(*entityName);
+            newEntity->SetReplicates(true);
+            newEntity->bAlwaysRelevant=true; //Needs to be set to relevant otherwise it won't consistantly replicate
 #if WITH_EDITOR
             newEntity->SetActorLabel(*entityName);
 #endif
+//            UE_LOG(LogRapyutaCore, Warning, TEXT("request %s"), *Request.Tags);
             for (auto& tag : Request.Tags)
             {
+                UE_LOG(LogRapyutaCore, Warning, TEXT("tag from request %s"), *tag);
                 newEntity->Tags.Emplace(MoveTemp(tag));
+                SpawnableComponent->AddTag(tag);
             }
 
             UGameplayStatics::FinishSpawningActor(newEntity, worldTransf);

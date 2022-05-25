@@ -52,11 +52,23 @@ public:
     virtual bool InitMoveComponent();
     void SetupDefault();
 
-    UFUNCTION(BlueprintCallable, Server, Reliable)
+    UFUNCTION(BlueprintCallable)
     virtual void SetLinearVel(const FVector& InLinearVelocity);
 
-    UFUNCTION(BlueprintCallable, Server, Reliable)
+    UFUNCTION(BlueprintCallable)
     virtual void SetAngularVel(const FVector& InAngularVelocity);
+
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    virtual void SetServerLinearVel(const FVector& InLinearVelocity);
+
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    virtual void SetServerAngularVel(const FVector& InAngularVelocity);
+
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    virtual void SetClientLinearVel(const FVector& InLinearVelocity);
+
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    virtual void SetClientAngularVel(const FVector& InAngularVelocity);
 
 protected:
     virtual void PostInitializeComponents() override;
