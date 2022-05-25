@@ -296,6 +296,7 @@ void URobotVehicleMovementComponent::InitMovementComponent()
 {
     InitOdom();
 
+    ContactPoints.Empty();
     TArray<UActorComponent*> actorContactPoints = PawnOwner->GetComponentsByTag(USceneComponent::StaticClass(), "ContactPoint");
     for (auto acp : actorContactPoints)
     {
