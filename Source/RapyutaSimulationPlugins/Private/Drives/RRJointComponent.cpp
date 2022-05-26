@@ -51,9 +51,10 @@ void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator&
 void URRJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
 {
     Position = InPosition.BoundToBox(PositionMin, PositionMax);
-    Orientation = FRotator(FMath::Clamp(InOrientation.Pitch, OrientationMin.Pitch, OrientationMax.Pitch),
-                           FMath::Clamp(InOrientation.Yaw, OrientationMin.Yaw, OrientationMax.Yaw),
-                           FMath::Clamp(InOrientation.Roll, OrientationMin.Roll, OrientationMax.Roll));
+    Orientation =
+        FRotator(IsLimitPitch ? FMath::Clamp(InOrientation.Pitch, OrientationMin.Pitch, OrientationMax.Pitch) : InOrientation.Pitch,
+                 IsLimitYaw ? FMath::Clamp(InOrientation.Yaw, OrientationMin.Yaw, OrientationMax.Yaw) : InOrientation.Yaw,
+                 IsLimitRoll ? FMath::Clamp(InOrientation.Roll, OrientationMin.Roll, OrientationMax.Roll) : InOrientation.Roll);
 };
 
 void URRJointComponent::PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation)

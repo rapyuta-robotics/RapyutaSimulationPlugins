@@ -137,6 +137,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector PositionMin = FVector(-1000, -1000, -1000);
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool IsLimitRoll = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool IsLimitPitch = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool IsLimitYaw = true;
+
     //! Orientation Limitations[deg]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRotator OrientationMax = FRotator(180, 180, 180);
