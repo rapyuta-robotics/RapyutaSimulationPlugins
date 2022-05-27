@@ -112,4 +112,13 @@ protected:
 
     UPROPERTY(BlueprintReadWrite)
     bool bPublishOdomTf = false;
+
+    //! Movement command topic. If empty is given, subscriber will not be initiated.
+    UPROPERTY(BlueprintReadWrite)
+	FString CmdVelTopicName = "cmd_vel";
+
+    //! Joint control command topic. If empty is given, subscriber will not be initiated.
+	UPROPERTY(BlueprintReadWrite)
+	FString JointsCmdTopicName = "joint_states";
+
 };

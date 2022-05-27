@@ -80,6 +80,9 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 
     // Refresh TF, Odom publishers
     verify(InitPublishers(InPawn));
+
+    SubscribeToMovementCommandTopic(CmdVelTopicName);
+    SubscribeToJointsCommandTopic(JointsCmdTopicName);
 }
 
 void ARRRobotVehicleROSController::OnUnPossess()
@@ -95,6 +98,17 @@ void ARRRobotVehicleROSController::OnUnPossess()
 // movement command topic
 void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString& InTopicName)
 {
+    if (InTopicName.IsEmpty())
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT(
+                "[%s] [RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName is empty. Do not subscribe topic."),
+            *GetName());
+        return;
+    }
+
     // Subscription with callback to enqueue vehicle spawn info.
     if (ensure(IsValid(RobotROS2Node)))
     {
@@ -134,6 +148,17 @@ void ARRRobotVehicleROSController::MovementCallback(const UROS2GenericMsg* Msg)
 // joint state command
 void ARRRobotVehicleROSController::SubscribeToJointsCommandTopic(const FString& InTopicName)
 {
+    if (InTopicName.IsEmpty())
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT(
+                "[%s] [RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName is empty. Do not subscribe topic."),
+            *GetName());
+        return;
+    }
+
     // Subscription with callback to enqueue vehicle spawn info.
     if (ensure(IsValid(RobotROS2Node)))
     {

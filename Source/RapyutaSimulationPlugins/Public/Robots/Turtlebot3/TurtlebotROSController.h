@@ -33,11 +33,4 @@ protected:
      * @return false 
      */
     bool InitPublishers(APawn* InPawn) override;
-
-    /**
-     * @brief Subscribe cmd_vel as command topic.
-     * 
-     * @param InPawn 
-     */
-    void OnPossess(APawn* InPawn) override;
 };

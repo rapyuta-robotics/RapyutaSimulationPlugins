@@ -24,10 +24,3 @@ bool ATurtlebotROSController::InitPublishers(APawn* InPawn)
     return true;
 }
 
-void ATurtlebotROSController::OnPossess(APawn* InPawn)
-{
-    Super::OnPossess(InPawn);
-
-    // Subscribe to [cmd_vel]
-    SubscribeToMovementCommandTopic(TEXT("cmd_vel"));
-}
