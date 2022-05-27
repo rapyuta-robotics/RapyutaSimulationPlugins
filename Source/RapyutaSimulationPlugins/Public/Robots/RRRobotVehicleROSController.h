@@ -1,6 +1,7 @@
 /**
  * @file RRRobotVehicleROSController.h
- * @brief Base Robot ROS controller class. Other robot controller class should inherit from this class. Example is #ATurtlebotROSController.
+ * @brief Base Robot ROS controller class. Other robot controller class should inherit from this class. Example is
+ * #ATurtlebotROSController.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -20,12 +21,11 @@
 
 #include "RRRobotVehicleROSController.generated.h"
 
-
 /**
- * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class. 
+ * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
  * This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
  * You can find example at #ATurtlebotROSController.
- * 
+ *
  * @sa [AAIController](https://docs.unrealengine.com/4.27/en-US/API/Runtime/AIModule/AAIController/)
  * @sa https://answers.unrealengine.com/questions/871116/view.html
  * @sa https://answers.unrealengine.com/questions/239159/how-many-ai-controllers-should-i-have.html
@@ -41,8 +41,8 @@ protected:
 
     /**
      * @brief Spawn ROS2Node and initialize it. This method is mainly used by #ASimulationState to spawn from ROS2 service.
-     * 
-     * @param InPawn 
+     *
+     * @param InPawn
      */
     void InitRobotROS2Node(APawn* InPawn);
 
@@ -59,24 +59,33 @@ protected:
 
     /**
      * @brief Initialize non sensor publishes such as odometry.
-     * 
+     *
      */
     UFUNCTION()
     virtual bool InitPublishers(APawn* InPawn);
 
     /**
-     * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg. 
+     * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.
      * Typically this receive Twist msg to move robot.
-     * 
+     *
      */
     UFUNCTION()
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
 
     /**
+     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS2 msg.
+     * Supports only 1 DOF joints.
+     * Effort control is not supported.
+     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
+     */
+    UFUNCTION()
+    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
+
+    /**
      * @brief Initialize by calling #InitRobotROS2Node, #ARobotVehicle's InitSensors and #InitPublishers.
-     * 
+     *
      * @sa [OnPossess](https://docs.unrealengine.com/4.27/en-US/API/Runtime/AIModule/AAIController/OnPossess/)
-     * @param InPawn 
+     * @param InPawn
      */
     virtual void OnPossess(APawn* InPawn) override;
 
@@ -84,11 +93,19 @@ protected:
 
     /**
      * @brief Setup ROS2 subscriber by binding #MovementCallback.
-     * 
-     * @param InTopicName 
+     *
+     * @param InTopicName
      */
     UFUNCTION(BlueprintCallable)
     void SubscribeToMovementCommandTopic(const FString& InTopicName);
+
+    /**
+     * @brief Setup ROS2 subscriber by binding #JointStateCallback.
+     *
+     * @param InTopicName
+     */
+    UFUNCTION(BlueprintCallable)
+    void SubscribeToJointsCommandTopic(const FString& InTopicName);
 
     UPROPERTY(BlueprintReadWrite)
     bool bPublishOdom = true;

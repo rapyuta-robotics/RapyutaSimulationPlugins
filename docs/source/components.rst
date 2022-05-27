@@ -7,7 +7,8 @@ Drives
 ------
 
 | Drives provides feature to control robot. 
-| Custom drive class should be created as child class of *RobotVehicleMovementComponent*
+| Custom robot movment class should be created as child class of *RobotVehicleMovementComponent*
+| Custom joint class should be created as child class of *RRJointComponent*
 
 **example of class relations**
 
@@ -17,6 +18,9 @@ Drives
 
 - `URobotVehicleMovementComponent <doxygen_generated/html/d7/d01/class_u_robot_vehicle_movement_component.html>`_:  Base Robot vehicle movement class which is used as part of #ARobotVehicle. Move robot without considering physics and publish odometry. This supports adapting the robot pose to floor complex surfaces, and following moving platforms such as elevators.
 - `UDifferentialDriveComponent <doxygen_generated/html/db/df5/class_u_differential_drive_component.html>`_: Simulate differential drive with 2 wheels considering physics.
+- `URRJointComponent <doxygen_generated/html/de/dfa/class_u_r_r_joint_component.html>`_: Base Joint class which is used as part of #ARobotVehicle.
+- `URRKinematicJointComponent <doxygen_generated/html/d2/d69/class_u_r_r_kinematic_joint_component.html>`_: Kinematics Joint Component which has pose and velocity control interface.
+
 
 Sensors
 -------
@@ -56,7 +60,7 @@ Robots
 
 **main Blueprint classes classes**
 
-- Turtlebot3: example of robots.
+- Turtlebot3: example of mobile robot.
     - BP_TurtlebotROSController.uasset: inherit from C++ ARRRobotVehicleROSController. Example of construct robot controller with Blueprint.  
     - Models: Static and skeletal meshes and materials.
     - Physics: physics model with UDifferentialDriveComponent
@@ -65,6 +69,13 @@ Robots
     - Kinematics: kinematic model with URobotVehicleMovementComponent 
         - BP_TurtlebotBurgerVehicle: inherit from C++ ARobotVehicle and set static meshes and parameters.
         - BP_TurtlebotWaffleVehicle: inherit from C++ ARobotVehicle. Example of construct robot with Blueprint. 
+- SimpleArm: example of robot arm with joint.
+    - BP_KinematicSimpleArm: inherit from C++ ARobotVehicle and have joint and link setting. Please check construction script for joints settings. You can control arm by 
+    .. code-block:: bash
+
+       $ ros2 topic pub /arm/joint_state sensor_msgs/msg/JointState  "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, name: ['joint12', 'joint23', 'joint34'], position: [1.57,1.57,1.57], velocity: [], effort: []}"
+    
+    - BP_SampleArmROSController: inherit from C++ ARRRobotVehicleROSController. Subscribes 'joint_state' topic and control robot joints. 
 
 Core
 ----

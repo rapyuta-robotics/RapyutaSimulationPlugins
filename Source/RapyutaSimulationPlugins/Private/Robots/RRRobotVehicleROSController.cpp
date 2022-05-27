@@ -6,16 +6,17 @@
 #include "Kismet/GameplayStatics.h"
 
 // rclUE
+#include "Msgs/ROS2JointStateMsg.h"
 #include "Msgs/ROS2TwistMsg.h"
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
 #include "Robots/RobotVehicle.h"
 #include "Sensors/RR2DLidarComponent.h"
 #include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
-#include "Core/RRConversionUtils.h"
 
 void ARRRobotVehicleROSController::InitRobotROS2Node(APawn* InPawn)
 {
@@ -91,6 +92,7 @@ void ARRRobotVehicleROSController::OnUnPossess()
     Super::OnUnPossess();
 }
 
+// movement command topic
 void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString& InTopicName)
 {
     // Subscription with callback to enqueue vehicle spawn info.
@@ -124,6 +126,130 @@ void ARRRobotVehicleROSController::MovementCallback(const UROS2GenericMsg* Msg)
                       {
                           vehicle->SetLinearVel(linear);
                           vehicle->SetAngularVel(angular);
+                      }
+                  });
+    }
+}
+
+// joint state command
+void ARRRobotVehicleROSController::SubscribeToJointsCommandTopic(const FString& InTopicName)
+{
+    // Subscription with callback to enqueue vehicle spawn info.
+    if (ensure(IsValid(RobotROS2Node)))
+    {
+        FSubscriptionCallback cb;
+        cb.BindDynamic(this, &ARRRobotVehicleROSController::JointStateCallback);
+        RobotROS2Node->AddSubscription(InTopicName, UROS2JointStateMsg::StaticClass(), cb);
+    }
+}
+
+void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg)
+{
+    const UROS2JointStateMsg* jointStateMsg = Cast<UROS2JointStateMsg>(Msg);
+    if (IsValid(jointStateMsg))
+    {
+        // TODO refactoring will be needed to put units and system of reference conversions in a consistent location
+        // probably should not stay in msg though
+        FROSJointState jointState;
+        jointStateMsg->GetMsg(jointState);
+
+        auto vehicle = CastChecked<ARobotVehicle>(GetPawn());
+
+        // Check Joint type. should be different function?
+        EJointControlType jointControlType;
+        if (jointState.name.Num() == jointState.position.Num())
+        {
+            jointControlType = EJointControlType::POSITION;
+        }
+        else if (jointState.name.Num() == jointState.velocity.Num())
+        {
+            jointControlType = EJointControlType::VELOCITY;
+        }
+        else if (jointState.name.Num() == jointState.effort.Num())
+        {
+            jointControlType = EJointControlType::EFFORT;
+            UE_LOG(LogTemp,
+                   Warning,
+                   TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] Effort control is not supported."),
+                   *GetName());
+            return;
+        }
+        else
+        {
+            UE_LOG(LogTemp,
+                   Warning,
+                   TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] position, velocity or effort array must be same "
+                        "size of name array"),
+                   *GetName());
+            return;
+        }
+
+        // Calculate input, ROS to UE conversion.
+        TMap<FString, TArray<float>> joints;
+        for (unsigned int i = 0; i < jointState.name.Num(); i++)
+        {
+            if (!vehicle->Joints.Contains(jointState.name[i]))
+            {
+                UE_LOG(LogTemp,
+                       Warning,
+                       TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] vehicle do not have joint named %s."),
+                       *GetName(),
+                       *jointState.name[i]);
+                continue;
+            }
+
+            TArray<float> input;
+            if (jointControlType == EJointControlType::POSITION)
+            {
+                input.Add(jointState.position[i]);
+            }
+            else if (jointControlType == EJointControlType::VELOCITY)
+            {
+                input.Add(jointState.velocity[i]);
+            }
+            else
+            {
+                UE_LOG(
+                    LogTemp,
+                    Warning,
+                    TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] position, velocity or effort array must be same "
+                         "size of name array"),
+                    *GetName());
+                continue;
+            }
+
+            // ROS To UE conversion
+            if (vehicle->Joints[jointState.name[i]]->LinearDOF == 1)
+            {
+                input[0] *= 100;    // todo add conversion to conversion util
+            }
+            else if (vehicle->Joints[jointState.name[i]]->RotationalDOF == 1)
+            {
+                input[0] *= 180 / M_PI;    // todo add conversion to conversion util
+            }
+            else
+            {
+                UE_LOG(LogTemp,
+                       Warning,
+                       TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] Supports only single DOF joint. %s has %d "
+                            "linear DOF and %d rotational DOF"),
+                       *jointState.name[i],
+                       vehicle->Joints[jointState.name[i]]->LinearDOF,
+                       vehicle->Joints[jointState.name[i]]->RotationalDOF);
+            }
+
+            joints.Emplace(jointState.name[i], input);
+        }
+
+        // (Note) In this callback, which could be invoked from a ROS working thread,
+        // the ROSController itself (this) could have been garbage collected,
+        // thus any direct referencing to its member in this GameThread lambda needs to be verified.
+        AsyncTask(ENamedThreads::GameThread,
+                  [joints, jointControlType, vehicle]
+                  {
+                      if (IsValid(vehicle))
+                      {
+                          vehicle->SetJointState(joints, jointControlType);
                       }
                   });
     }
