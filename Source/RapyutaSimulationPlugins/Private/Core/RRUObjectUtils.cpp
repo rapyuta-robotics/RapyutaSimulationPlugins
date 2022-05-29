@@ -145,6 +145,51 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
     return newActor;
 }
 
+// Ref: ConstraintInstance.cpp - GetActorRefs()
+bool URRUObjectUtils::GetPhysicsActorHandles(FBodyInstance* InBody1,
+                                             FBodyInstance* InBody2,
+                                             FPhysicsActorHandle& OutActorRef1,
+                                             FPhysicsActorHandle& OutActorRef2)
+{
+    FPhysicsActorHandle actorRef1 = InBody1 ? InBody1->ActorHandle : FPhysicsActorHandle();
+    FPhysicsActorHandle actorRef2 = InBody2 ? InBody2->ActorHandle : FPhysicsActorHandle();
+
+    // Do not create joint unless we have two actors or one of them is dynamic
+    if ((!FPhysicsInterface::IsValid(actorRef1) || !FPhysicsInterface::IsRigidBody(actorRef1)) &&
+        (!FPhysicsInterface::IsValid(actorRef2) || !FPhysicsInterface::IsRigidBody(actorRef2)))
+    {
+        return false;
+    }
+
+    if (FPhysicsInterface::IsValid(actorRef1) && FPhysicsInterface::IsValid(actorRef2) && (actorRef1 == actorRef2))
+    {
+        return false;
+    }
+
+    // Ensure that actors are either invalid (ie 'world') or valid to simulate.
+    bool bActor1Valid = false;
+    bool bActor2Valid = false;
+    FPhysicsCommand::ExecuteRead(
+        actorRef1,
+        actorRef2,
+        [&bActor1Valid, &bActor2Valid](const FPhysicsActorHandle& InActor1, const FPhysicsActorHandle& InActor2)
+        {
+            bActor1Valid = !FPhysicsInterface::IsValid(InActor1) || FPhysicsInterface::CanSimulate_AssumesLocked(InActor1);
+            bActor2Valid = !FPhysicsInterface::IsValid(InActor2) || FPhysicsInterface::CanSimulate_AssumesLocked(InActor2);
+        });
+
+    if (false == (bActor1Valid && bActor2Valid))
+    {
+        OutActorRef1 = FPhysicsActorHandle();
+        OutActorRef2 = FPhysicsActorHandle();
+        return false;
+    }
+
+    OutActorRef1 = actorRef1;
+    OutActorRef2 = actorRef2;
+    return true;
+}
+
 UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                           int32 InMaterialIndex,
                                                                           const FString& InMaterialInterfaceName)
