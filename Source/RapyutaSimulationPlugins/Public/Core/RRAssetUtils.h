@@ -4,7 +4,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 
 // UE
@@ -22,7 +21,7 @@
 
 /**
  * @brief Asset utils.
- * 
+ *
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRAssetUtils : public UBlueprintFunctionLibrary
@@ -51,7 +50,7 @@ public:
 
         // Package's validity
         FString packageFileName;
-        if (false == FPackageName::DoesPackageExist(assetPackage->GetName(), nullptr, &packageFileName))
+        if (false == FPackageName::DoesPackageExist(assetPackage->GetName(), &packageFileName))
         {
             if (bIsLogged)
             {
@@ -78,10 +77,10 @@ public:
         *packageReader << packageSummary;
 
         // Package file UE version
-        const int32 packageFileVersionUE4 = packageSummary.GetFileVersionUE4();
+        const FPackageFileVersion packageFileVersionUE = packageSummary.GetFileVersionUE();
 
         // Check TOO OLD
-        if (packageFileVersionUE4 < VER_UE4_OLDEST_LOADABLE_PACKAGE)
+        if (packageFileVersionUE.ToValue() < static_cast<int32>(VER_UE4_OLDEST_LOADABLE_PACKAGE))
         {
             if (bIsLogged)
             {
@@ -91,13 +90,13 @@ public:
                             "Min Required version: [%d] vs Package version: [%d]"),
                        *InAssetData.AssetName.ToString(),
                        static_cast<int32>(VER_UE4_OLDEST_LOADABLE_PACKAGE),
-                       packageFileVersionUE4);
+                       packageFileVersionUE.ToValue());
             }
             return false;
         }
 
         // Check TOO NEW
-        if (packageFileVersionUE4 > GPackageFileUE4Version)
+        if (packageFileVersionUE.ToValue() > GPackageFileUEVersion.ToValue())
         {
             if (bIsLogged)
             {
@@ -106,8 +105,8 @@ public:
                        TEXT("[%s] asset was saved by a newer UE version [%d], which is not forward compatible "
                             "with the current one[%d]"),
                        *InAssetData.AssetName.ToString(),
-                       packageFileVersionUE4,
-                       GPackageFileUE4Version);
+                       packageFileVersionUE.ToValue(),
+                       GPackageFileUEVersion.ToValue());
             }
             return false;
         }
@@ -171,12 +170,12 @@ public:
 
     /**
      * @brief Load asset with UObjectLibrary.
-     * 
-     * @tparam T 
-     * @param InAssetsPath 
-     * @param OutAssetDataList 
-     * @param bHasBPAsset 
-     * @param bIsFullLoad 
+     *
+     * @tparam T
+     * @param InAssetsPath
+     * @param OutAssetDataList
+     * @param bHasBPAsset
+     * @param bIsFullLoad
      * @sa [UObjectLibrary](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UObjectLibrary/)
      * @sa [AsyncLoading](https://docs.unrealengine.com/en-US/Programming/Assets/AsyncLoading/index.html)
      */

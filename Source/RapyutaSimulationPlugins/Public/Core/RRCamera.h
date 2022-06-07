@@ -37,11 +37,11 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRCameraProperties
     {
         UE_LOG(LogRapyutaCore, Display, TEXT("CameraProperties:"));
         UE_LOG(LogRapyutaCore, Display, TEXT("- DistanceRangeInCm: %s"), *DistanceRangeInCm.ToString());
-        verify(FMath::IsWithinInclusive(DistanceRangeInCm.X, 0.f, DistanceRangeInCm.Y));
+        verify(FMath::IsWithinInclusive(DistanceRangeInCm.X, double(0), DistanceRangeInCm.Y));
         UE_LOG(LogRapyutaCore, Display, TEXT("- HeightRangeInCm: %s"), *HeightRangeInCm.ToString());
-        verify(FMath::IsWithinInclusive(HeightRangeInCm.X, 0.f, HeightRangeInCm.Y));
+        verify(FMath::IsWithinInclusive(HeightRangeInCm.X, double(0), HeightRangeInCm.Y));
         UE_LOG(LogRapyutaCore, Display, TEXT("- HFoVRangeInDegree: %s"), *HFoVRangeInDegree.ToString());
-        verify(FMath::IsWithinInclusive(HFoVRangeInDegree.X, 0.f, HFoVRangeInDegree.Y));
+        verify(FMath::IsWithinInclusive(HFoVRangeInDegree.X, double(0), HFoVRangeInDegree.Y));
     }
 };
 

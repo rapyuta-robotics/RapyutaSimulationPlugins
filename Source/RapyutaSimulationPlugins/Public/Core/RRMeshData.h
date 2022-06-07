@@ -92,9 +92,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
 
     // These must be of same length!
     UPROPERTY()
-    TArray<FVector> Positions;
+    TArray<FVector3f> Positions;
     UPROPERTY()
-    TArray<FVector> Normals;
+    TArray<FVector3f> Normals;
 };
 
 /**

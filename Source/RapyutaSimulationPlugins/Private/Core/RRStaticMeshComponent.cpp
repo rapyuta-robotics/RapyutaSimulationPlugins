@@ -238,7 +238,6 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody()
         sourceModel.BuildSettings.DstLightmapIndex = 0;
         sourceModel.BuildSettings.bRecomputeNormals = false;
         sourceModel.BuildSettings.bRecomputeTangents = false;
-        sourceModel.BuildSettings.bBuildAdjacencyBuffer = false;
 
         // LOD Section
         auto& sectionInfoMap = staticMesh->GetSectionInfoMap();
@@ -316,7 +315,7 @@ void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& In
             const FVertexInstanceID instanceID = OutMeshDescBuilder.AppendInstance(vertexIDs[vIdx]);
             OutMeshDescBuilder.SetInstanceNormal(instanceID, mesh.Normals[vIdx]);
             OutMeshDescBuilder.SetInstanceUV(instanceID, mesh.UVs[vIdx], 0);
-            OutMeshDescBuilder.SetInstanceColor(instanceID, FVector4(FLinearColor(mesh.VertexColors[vIdx])));
+            OutMeshDescBuilder.SetInstanceColor(instanceID, FVector4f(FLinearColor(mesh.VertexColors[vIdx])));
             vertexInsts.Emplace(instanceID);
         }
 
