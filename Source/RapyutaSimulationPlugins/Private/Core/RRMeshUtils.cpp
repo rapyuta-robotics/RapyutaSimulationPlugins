@@ -19,6 +19,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGameSingleton.h"
+#include "Core/RRThreadUtils.h"
 #include "RapyutaSimulationPlugins.h"
 
 void URRMeshUtils::ProcessMeshNode(aiNode* InNode,
@@ -183,7 +184,8 @@ bool URRMeshUtils::ProcessTexture(aiMaterial* InMaterial,
             fullTexturePath, FString::Printf(TEXT("%d%s"), ++sTextureNameCount, InTextureTypeName));
         if (ueTexture != nullptr)
         {
-            OutUEMaterial->SetTextureParameterValue(InTextureTypeName, ueTexture);
+            URRThreadUtils::DoTaskInGameThread([OutUEMaterial, InTextureTypeName, ueTexture]()
+                                               { OutUEMaterial->SetTextureParameterValue(InTextureTypeName, ueTexture); });
             return true;
         }
         else
@@ -227,33 +229,38 @@ void URRMeshUtils::ProcessMaterial(aiMaterial* InMaterial, const FString& InMesh
     ProcessTexture(InMaterial, aiTextureType_DIFFUSE_ROUGHNESS, MATERIAL_PARAM_NAME_ROUGHNESS, fullMeshPath, ueMaterial);
 #endif
 
-    aiColor4D color;
     auto fToLinearColor = [](const aiColor4D& InColor)
     {
         // https://stackoverflow.com/questions/12524623/what-are-the-practical-differences-when-working-with-colors-in-a-linear-vs-a-no
         // [aiColor4D] is already in [0, 1]
         return FLinearColor(InColor.r, InColor.g, InColor.b, InColor.a);
     };
-
+    aiColor4D color;
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_BASE_COLOR, fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread([ueMaterial, linearColor = fToLinearColor(color)]()
+                                           { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_BASE_COLOR, linearColor); });
     }
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_SPECULAR, fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread([ueMaterial, linearColor = fToLinearColor(color)]()
+                                           { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_SPECULAR, linearColor); });
     }
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_EMISSIVE, fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread([ueMaterial, linearColor = fToLinearColor(color)]()
+                                           { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_EMISSIVE, linearColor); });
     }
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_REFLECTIVE, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_ROUGHNESS, FLinearColor::White - fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread(
+            [ueMaterial, linearColor = fToLinearColor(color)]()
+            { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_ROUGHNESS, FLinearColor::White - linearColor); });
     }
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_AMBIENT, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_AMBIENT, fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread([ueMaterial, linearColor = fToLinearColor(color)]()
+                                           { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_AMBIENT, linearColor); });
     }
 
     // Add into [MaterialInstances]

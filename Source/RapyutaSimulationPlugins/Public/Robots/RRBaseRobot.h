@@ -21,6 +21,8 @@
 class ARRNetworkGameState;
 class URRRobotROS2Interface;
 
+DECLARE_DELEGATE_OneParam(FOnRobotCreationDone, bool /* bCreationResult */);
+
 /**
  * @brief Base Robot class. Other robot class should inherit from this class. This actor:
  * - Use #URRRobotROS2Interface as the main ROS2 communication tool
@@ -49,6 +51,9 @@ public:
      * Could only be called in constructor.
      */
     void SetupDefault();
+
+    //! Robot creation done delegate
+    FOnRobotCreationDone OnRobotCreationDone;
 
     //! Default class to use when ROS2 Interface is setup for robot
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS2 Interface Class"), Replicated)
