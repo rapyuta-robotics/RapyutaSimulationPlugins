@@ -56,10 +56,6 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
     // If we bumped into something, try to slide along it
     if (hit.IsValidBlockingHit())
     {
-        UE_LOG(LogTemp,
-               Warning,
-               TEXT("URobotVehicleMovementComponent::UpdateMovement -> BlockingHit - hit.normal : %s"),
-               *hit.Normal.ToString());
         SlideAlongSurface(DesiredMovement, 1.0f - hit.Time, hit.Normal, hit);
     }
 
