@@ -63,6 +63,11 @@ bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
     return true;
 }
 
+bool ARRRobotVehicleROSController::InitSubscriptions()
+{
+    return SubscribeToMovementCommandTopic(CmdVelTopicName) && SubscribeToJointsCommandTopic(JointsCmdTopicName);
+}
+
 void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
@@ -80,9 +85,7 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 
     // Refresh TF, Odom publishers
     verify(InitPublishers(InPawn));
-
-    SubscribeToMovementCommandTopic(CmdVelTopicName);
-    SubscribeToJointsCommandTopic(JointsCmdTopicName);
+    verify(InitSubscriptions());
 }
 
 void ARRRobotVehicleROSController::OnUnPossess()
@@ -96,7 +99,7 @@ void ARRRobotVehicleROSController::OnUnPossess()
 }
 
 // movement command topic
-void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString& InTopicName)
+bool ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString& InTopicName)
 {
     if (InTopicName.IsEmpty())
     {
@@ -106,7 +109,7 @@ void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString
             TEXT(
                 "[%s] [RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName is empty. Do not subscribe topic."),
             *GetName());
-        return;
+        return false;
     }
 
     // Subscription with callback to enqueue vehicle spawn info.
@@ -122,6 +125,7 @@ void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString
             *InTopicName );
         RobotROS2Node->AddSubscription(InTopicName, UROS2TwistMsg::StaticClass(), cb);
     }
+    return true;
 }
 
 void ARRRobotVehicleROSController::MovementCallback(const UROS2GenericMsg* Msg)
@@ -152,7 +156,7 @@ void ARRRobotVehicleROSController::MovementCallback(const UROS2GenericMsg* Msg)
 }
 
 // joint state command
-void ARRRobotVehicleROSController::SubscribeToJointsCommandTopic(const FString& InTopicName)
+bool ARRRobotVehicleROSController::SubscribeToJointsCommandTopic(const FString& InTopicName)
 {
     if (InTopicName.IsEmpty())
     {
@@ -162,7 +166,7 @@ void ARRRobotVehicleROSController::SubscribeToJointsCommandTopic(const FString& 
             TEXT(
                 "[%s] [RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName is empty. Do not subscribe topic."),
             *GetName());
-        return;
+        return false;
     }
 
     // Subscription with callback to enqueue vehicle spawn info.
@@ -172,6 +176,7 @@ void ARRRobotVehicleROSController::SubscribeToJointsCommandTopic(const FString& 
         cb.BindDynamic(this, &ARRRobotVehicleROSController::JointStateCallback);
         RobotROS2Node->AddSubscription(InTopicName, UROS2JointStateMsg::StaticClass(), cb);
     }
+    return true;
 }
 
 void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg)

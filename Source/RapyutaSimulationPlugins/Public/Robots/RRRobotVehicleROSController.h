@@ -21,6 +21,8 @@
 
 #include "RRRobotVehicleROSController.generated.h"
 
+DECLARE_DELEGATE_OneParam(FOnROS2MessagePublished, const UROS2GenericMsg*);
+
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
  * This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
@@ -65,6 +67,13 @@ protected:
     virtual bool InitPublishers(APawn* InPawn);
 
     /**
+     * @brief Initialize subscribers
+     *
+     */
+    UFUNCTION()
+    virtual bool InitSubscriptions();
+
+    /**
      * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.
      * Typically this receive Twist msg to move robot.
      *
@@ -97,7 +106,7 @@ protected:
      * @param InTopicName
      */
     UFUNCTION(BlueprintCallable)
-    void SubscribeToMovementCommandTopic(const FString& InTopicName);
+    bool SubscribeToMovementCommandTopic(const FString& InTopicName);
 
     /**
      * @brief Setup ROS2 subscriber by binding #JointStateCallback.
@@ -105,7 +114,7 @@ protected:
      * @param InTopicName
      */
     UFUNCTION(BlueprintCallable)
-    void SubscribeToJointsCommandTopic(const FString& InTopicName);
+    bool SubscribeToJointsCommandTopic(const FString& InTopicName);
 
     UPROPERTY(BlueprintReadWrite)
     bool bPublishOdom = true;
@@ -115,10 +124,9 @@ protected:
 
     //! Movement command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(BlueprintReadWrite)
-	FString CmdVelTopicName = TEXT("cmd_vel");
+    FString CmdVelTopicName = TEXT("cmd_vel");
 
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
-	UPROPERTY(BlueprintReadWrite)
-	FString JointsCmdTopicName = TEXT("joint_states");
-
+    UPROPERTY(BlueprintReadWrite)
+    FString JointsCmdTopicName = TEXT("joint_states");
 };
