@@ -21,8 +21,6 @@
 
 #include "RRRobotVehicleROSController.generated.h"
 
-DECLARE_DELEGATE_OneParam(FOnROS2MessagePublished, const UROS2GenericMsg*);
-
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
  * This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
