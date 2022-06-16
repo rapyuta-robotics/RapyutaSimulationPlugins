@@ -19,10 +19,10 @@
 #include "RRROS2OdomPublisher.generated.h"
 
 class UROS2GenericMsg;
-class ARobotVehicle;
+class ARobotEmptyVehicle;
 
 /**
- * @brief Odometry Topic and TF publisher of #ARobotVehicle
+ * @brief Odometry Topic and TF publisher of #ARobotEmptyVehicle
  * @sa [UROS2Publisher](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dd4/class_u_r_o_s2_publisher.html)
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
@@ -38,7 +38,7 @@ public:
     URRROS2OdomPublisher();
 
     UPROPERTY(BlueprintReadWrite)
-    TWeakObjectPtr<ARobotVehicle> RobotVehicle = nullptr;
+    TWeakObjectPtr<ARobotEmptyVehicle> RobotVehicle = nullptr;
 
     UPROPERTY(BlueprintReadWrite)
     URRROS2TFPublisher* TFPublisher = nullptr;
