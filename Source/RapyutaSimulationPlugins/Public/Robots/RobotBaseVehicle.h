@@ -1,6 +1,6 @@
 /**
- * @file RobotVehicle.h
- * @brief Base RobotVehicle class. Other robot class should inherit from this class. Example is #ATurtlebotBurger.
+ * @file RobotBaseVehicle.h
+ * @brief Base RobotBaseVehicle class. Other robot class can inherit from this class.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -21,35 +21,35 @@
 // rclUE
 #include "ROS2Node.h"
 
-#include "RobotEmptyVehicle.generated.h"
+#include "RobotBaseVehicle.generated.h"
 
 class URobotVehicleMovementComponent;
 
 /**
- * @brief Base RobotEmptyVehicle class. Other robot class should inherit from this class.
+ * @brief Base RobotBaseVehicle class. Other robot class should inherit from this class.
  * This actor moves with #URobotVehicleMovementComponent.
  * This actor is possessed by #ARRRobotVehicleROSController to be control from ROS2.
  * You can find example at #ATurtlebotBurger.
  *
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARobotEmptyVehicle : public ARRBaseActor
+class RAPYUTASIMULATIONPLUGINS_API ARobotBaseVehicle : public ARRBaseActor
 {
     GENERATED_BODY()
 
 public:
     /**
-     * @brief Construct a new ARobotEmptyVehicle object
+     * @brief Construct a new ARobotBaseVehicle object
      *
      */
-    ARobotEmptyVehicle();
+    ARobotBaseVehicle();
 
     /**
-     * @brief Construct a new ARobotEmptyVehicle object
+     * @brief Construct a new ARobotBaseVehicle object
      *
      * @param ObjectInitializer
      */
-    ARobotEmptyVehicle(const FObjectInitializer& ObjectInitializer);
+    ARobotBaseVehicle(const FObjectInitializer& ObjectInitializer);
 
     /**
      * @brief
