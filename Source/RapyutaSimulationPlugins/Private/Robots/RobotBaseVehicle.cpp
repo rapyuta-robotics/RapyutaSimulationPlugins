@@ -1,6 +1,6 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Robots/RobotEmptyVehicle.h"
+#include "Robots/RobotBaseVehicle.h"
 
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
@@ -12,17 +12,17 @@
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/SimulationState.h"
 
-ARobotEmptyVehicle::ARobotEmptyVehicle()
+ARobotBaseVehicle::ARobotBaseVehicle()
 {
     SetupDefault();
 }
 
-ARobotEmptyVehicle::ARobotEmptyVehicle(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+ARobotBaseVehicle::ARobotBaseVehicle(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
     SetupDefault();
 }
 
-void ARobotEmptyVehicle::SetupDefault()
+void ARobotBaseVehicle::SetupDefault()
 {
     // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
@@ -34,7 +34,7 @@ void ARobotEmptyVehicle::SetupDefault()
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
-bool ARobotEmptyVehicle::InitSensors(AROS2Node* InROS2Node)
+bool ARobotBaseVehicle::InitSensors(AROS2Node* InROS2Node)
 {
     if (false == IsValid(InROS2Node))
     {
@@ -52,7 +52,7 @@ bool ARobotEmptyVehicle::InitSensors(AROS2Node* InROS2Node)
     return true;
 }
 
-bool ARobotEmptyVehicle::InitMoveComponent()
+bool ARobotBaseVehicle::InitMoveComponent()
 {
     if (VehicleMoveComponentClass)
     {
@@ -79,17 +79,17 @@ bool ARobotEmptyVehicle::InitMoveComponent()
     }
 }
 
-void ARobotEmptyVehicle::SetLinearVel(const FVector& InLinearVelocity)
+void ARobotBaseVehicle::SetLinearVel(const FVector& InLinearVelocity)
 {
     RobotVehicleMoveComponent->Velocity = InLinearVelocity;
 }
 
-void ARobotEmptyVehicle::SetAngularVel(const FVector& InAngularVelocity)
+void ARobotBaseVehicle::SetAngularVel(const FVector& InAngularVelocity)
 {
     RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
 }
 
-void ARobotEmptyVehicle::SetJointState(const TMap<FString, TArray<float>>& InJointState, EJointControlType InJointControlType)
+void ARobotBaseVehicle::SetJointState(const TMap<FString, TArray<float>>& InJointState, EJointControlType InJointControlType)
 {
     // SetAngularVelocityTarget
     for (auto& joint : InJointState)
@@ -108,7 +108,7 @@ void ARobotEmptyVehicle::SetJointState(const TMap<FString, TArray<float>>& InJoi
                 case EJointControlType::EFFORT:
                     UE_LOG(LogRapyutaCore,
                            Warning,
-                           TEXT("[%s] [RobotVehicle] [SetJointState] Effort control is not supported."),
+                           TEXT("[%s] [RobotBaseVehicle] [SetJointState] Effort control is not supported."),
                            *GetName());
                     break;
             }
@@ -116,12 +116,12 @@ void ARobotEmptyVehicle::SetJointState(const TMap<FString, TArray<float>>& InJoi
         else
         {
             UE_LOG(
-                LogTemp, Warning, TEXT("[%s] [RobotVehicle] [SetJointState] do not have joint named %s "), *GetName(), *joint.Key);
+                LogTemp, Warning, TEXT("[%s] [RobotBaseVehicle] [SetJointState] do not have joint named %s "), *GetName(), *joint.Key);
         }
     }
 }
 
-void ARobotEmptyVehicle::PostInitializeComponents()
+void ARobotBaseVehicle::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
     InitMoveComponent();

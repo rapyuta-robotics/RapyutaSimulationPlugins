@@ -14,15 +14,15 @@
 
 ARobotVehicle::ARobotVehicle()
 {
-    SetupRootSkeletal();
+    SetupDefaultRootSkeletal();
 }
 
 ARobotVehicle::ARobotVehicle(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-    SetupRootSkeletal();
+    SetupDefaultRootSkeletal();
 }
 
-void ARobotVehicle::SetupRootSkeletal()
+void ARobotVehicle::SetupDefaultRootSkeletal()
 {
     // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor

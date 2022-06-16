@@ -1,6 +1,6 @@
 /**
  * @file RobotVehicle.h
- * @brief Base RobotVehicle class. Other robot class should inherit from this class. Example is #ATurtlebotBurger.
+ * @brief Base RobotVehicle class. Other robot class that need a Skeletal Mesh as root component should inherit from this class. Example is #ATurtlebotBurger.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -17,7 +17,7 @@
 #include "Drives/RRJointComponent.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
-#include "Robots/RobotEmptyVehicle.h"
+#include "Robots/RobotBaseVehicle.h"
 
 // rclUE
 #include "ROS2Node.h"
@@ -34,7 +34,7 @@ class URobotVehicleMovementComponent;
  *
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARobotEmptyVehicle
+class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARobotBaseVehicle
 {
     GENERATED_BODY()
 
@@ -60,6 +60,6 @@ public:
      * @brief Initialize #SkeletalMeshComp.
      *
      */
-    void SetupRootSkeletal();
+    void SetupDefaultRootSkeletal();
 
 };

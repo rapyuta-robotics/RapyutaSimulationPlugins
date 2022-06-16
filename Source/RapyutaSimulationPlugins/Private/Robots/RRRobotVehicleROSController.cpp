@@ -13,7 +13,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
-#include "Robots/RobotEmptyVehicle.h"
+#include "Robots/RobotBaseVehicle.h"
 #include "Sensors/RR2DLidarComponent.h"
 #include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
@@ -36,7 +36,7 @@ void ARRRobotVehicleROSController::InitRobotROS2Node(APawn* InPawn)
     }
     else
     {
-        RobotROS2Node->Namespace = CastChecked<ARobotEmptyVehicle>(InPawn)->RobotUniqueName;
+        RobotROS2Node->Namespace = CastChecked<ARobotBaseVehicle>(InPawn)->RobotUniqueName;
     }
     RobotROS2Node->Init();
 }
@@ -58,7 +58,7 @@ bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
-        OdomPublisher->RobotVehicle = CastChecked<ARobotEmptyVehicle>(InPawn);
+        OdomPublisher->RobotVehicle = CastChecked<ARobotBaseVehicle>(InPawn);
     }
     return true;
 }
@@ -76,7 +76,7 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
     InitRobotROS2Node(InPawn);
 
     // Initialize Pawn's sensors (lidar, etc.)
-    verify(CastChecked<ARobotEmptyVehicle>(InPawn)->InitSensors(RobotROS2Node));
+    verify(CastChecked<ARobotBaseVehicle>(InPawn)->InitSensors(RobotROS2Node));
 
     // Refresh TF, Odom publishers
     verify(InitPublishers(InPawn));
@@ -140,7 +140,7 @@ void ARRRobotVehicleROSController::MovementCallback(const UROS2GenericMsg* Msg)
         // the ROSController itself (this) could have been garbage collected,
         // thus any direct referencing to its member in this GameThread lambda needs to be verified.
         AsyncTask(ENamedThreads::GameThread,
-                  [linear, angular, vehicle = CastChecked<ARobotEmptyVehicle>(GetPawn())]
+                  [linear, angular, vehicle = CastChecked<ARobotBaseVehicle>(GetPawn())]
                   {
                       if (IsValid(vehicle))
                       {
@@ -184,7 +184,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
         FROSJointState jointState;
         jointStateMsg->GetMsg(jointState);
 
-        auto vehicle = CastChecked<ARobotEmptyVehicle>(GetPawn());
+        auto vehicle = CastChecked<ARobotBaseVehicle>(GetPawn());
 
         // Check Joint type. should be different function?
         EJointControlType jointControlType;
