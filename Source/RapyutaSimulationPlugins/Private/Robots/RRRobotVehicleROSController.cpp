@@ -13,7 +13,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
-#include "Robots/RobotVehicle.h"
+#include "Robots/RobotEmptyVehicle.h"
 #include "Sensors/RR2DLidarComponent.h"
 #include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
@@ -36,7 +36,7 @@ void ARRRobotVehicleROSController::InitRobotROS2Node(APawn* InPawn)
     }
     else
     {
-        RobotROS2Node->Namespace = CastChecked<ARobotVehicle>(InPawn)->RobotUniqueName;
+        RobotROS2Node->Namespace = CastChecked<ARobotEmptyVehicle>(InPawn)->RobotUniqueName;
     }
     RobotROS2Node->Init();
 }
@@ -58,7 +58,7 @@ bool ARRRobotVehicleROSController::InitPublishers(APawn* InPawn)
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
-        OdomPublisher->RobotVehicle = CastChecked<ARobotVehicle>(InPawn);
+        OdomPublisher->RobotVehicle = CastChecked<ARobotEmptyVehicle>(InPawn);
     }
     return true;
 }
@@ -76,7 +76,7 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
     InitRobotROS2Node(InPawn);
 
     // Initialize Pawn's sensors (lidar, etc.)
-    verify(CastChecked<ARobotVehicle>(InPawn)->InitSensors(RobotROS2Node));
+    verify(CastChecked<ARobotEmptyVehicle>(InPawn)->InitSensors(RobotROS2Node));
 
     // Refresh TF, Odom publishers
     verify(InitPublishers(InPawn));
@@ -114,6 +114,12 @@ void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString
     {
         FSubscriptionCallback cb;
         cb.BindDynamic(this, &ARRRobotVehicleROSController::MovementCallback);
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT(
+                "[RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName  = %s"),
+            *InTopicName );
         RobotROS2Node->AddSubscription(InTopicName, UROS2TwistMsg::StaticClass(), cb);
     }
 }
@@ -134,7 +140,7 @@ void ARRRobotVehicleROSController::MovementCallback(const UROS2GenericMsg* Msg)
         // the ROSController itself (this) could have been garbage collected,
         // thus any direct referencing to its member in this GameThread lambda needs to be verified.
         AsyncTask(ENamedThreads::GameThread,
-                  [linear, angular, vehicle = CastChecked<ARobotVehicle>(GetPawn())]
+                  [linear, angular, vehicle = CastChecked<ARobotEmptyVehicle>(GetPawn())]
                   {
                       if (IsValid(vehicle))
                       {
@@ -178,7 +184,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
         FROSJointState jointState;
         jointStateMsg->GetMsg(jointState);
 
-        auto vehicle = CastChecked<ARobotVehicle>(GetPawn());
+        auto vehicle = CastChecked<ARobotEmptyVehicle>(GetPawn());
 
         // Check Joint type. should be different function?
         EJointControlType jointControlType;
