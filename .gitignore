@@ -37,7 +37,7 @@
 *.workspace
 *.code-workspace
 *.kdev4
-Makefile
+
 CMakeLists.txt
 SimulaTOR/SimulaTORCode*.txt
 
