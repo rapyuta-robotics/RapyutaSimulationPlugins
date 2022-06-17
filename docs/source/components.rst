@@ -53,7 +53,8 @@ Robots
 
 **main C++ classes**
 
-- `ARobotVehicle <doxygen_generated/html/d7/d80/class_a_robot_vehicle.html>`_: Base RobotVehicle class. Other robot class should inherit from this class. Has URobotVehicleMovementComponent and initialize sensors.
+- `ARobotBaseVehicle <doxygen_generated/html/d7/d80/class_a_robot_base_vehicle.html>`_: Base RobotBaseVehicle class. Most robot classes should inherit from this class. Has URobotVehicleMovementComponent and initializes sensors.
+- `ARobotVehicle <doxygen_generated/html/d7/d80/class_a_robot_vehicle.html>`_: RobotVehicle class that inherits from RobotBaseVehicle and uses a Skeletal Mesh as root component. Other robot class can inherit from this class.
 - `ARRRobotVehicleROSController <doxygen_generated/html/d6/d83/class_a_r_r_robot_vehicle_r_o_s_controller.html>`_: Base Robot ROS controller class. Other robot controller class should inherit from this class. This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
 - `ATurtlebotBurger <doxygen_generated/html/de/d76/class_a_turtlebot_burger.html>`_: Example of ARobotVehicle
 - `ATurtlebotROSController <doxygen_generated/html/dd/d8f/class_a_turtlebot_r_o_s_controller.html>`_: Example of ARRRobotVehicleROSController
