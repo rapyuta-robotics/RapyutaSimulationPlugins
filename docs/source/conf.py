@@ -35,7 +35,7 @@ version = '0.1.0'
 # -- General configuration
 
 extensions = [
-    #'sphinx.ext.duration',
+    'sphinx.ext.duration',
     'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -44,7 +44,7 @@ extensions = [
     'sphinx.ext.todo', 
     'breathe', 
     'sphinx.ext.graphviz',
-    #'myst_parser'
+    'myst_parser'
 ]
 
 intersphinx_mapping = {
