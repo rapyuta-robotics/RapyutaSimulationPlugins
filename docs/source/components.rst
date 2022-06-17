@@ -48,12 +48,12 @@ Robots
 ------
 
 | Robots has robot vehicle class and controller class.
-| Custom robot class should be created as child class of *RobotVehicle* class. 
+| Custom robot class should be created as child class of *RobotVehicle* or *RobotBaseVehicle* class. 
 | *RRRobotVehicleROSController* create ROS2Node and control all drive and sensor components in the *RobotVehicle* class.
 
 **main C++ classes**
 
-- `ARobotBaseVehicle <doxygen_generated/html/d7/d80/class_a_robot_base_vehicle.html>`_: Base RobotBaseVehicle class. Most robot classes should inherit from this class. Has URobotVehicleMovementComponent and initializes sensors.
+- `ARobotBaseVehicle <doxygen_generated/html/df/dbc/class_a_robot_base_vehicle.html>`_: Base RobotBaseVehicle class. Most robot classes should inherit from this class. Has URobotVehicleMovementComponent and initializes sensors.
 - `ARobotVehicle <doxygen_generated/html/d7/d80/class_a_robot_vehicle.html>`_: RobotVehicle class that inherits from RobotBaseVehicle and uses a Skeletal Mesh as root component. Other robot class can inherit from this class.
 - `ARRRobotVehicleROSController <doxygen_generated/html/d6/d83/class_a_r_r_robot_vehicle_r_o_s_controller.html>`_: Base Robot ROS controller class. Other robot controller class should inherit from this class. This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
 - `ATurtlebotBurger <doxygen_generated/html/de/d76/class_a_turtlebot_burger.html>`_: Example of ARobotVehicle
