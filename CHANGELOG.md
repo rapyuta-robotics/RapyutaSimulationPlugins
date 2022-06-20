@@ -1,5 +1,8 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.4 ##
+* Add the class `ARobotBaseVehicle` without skeletal mesh as root component. Class `ARobotVehicle` inherits from it.
+
 ## 0.0.3 ##
 * Add Assimp as 3rd dependency (release sources + lib)
 * Add URRProceduralMeshComponent & mesh util classes: `FRRMeshData, URRMeshUtils`
