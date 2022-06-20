@@ -11,15 +11,9 @@
 #include "AIController.h"
 #include "CoreMinimal.h"
 
-// RapyutaSimulationPlugins
-#include "Sensors/RRBaseLidarComponent.h"
-
-// rclUE
-#include "ROS2Node.h"
-#include "Tools/RRROS2OdomPublisher.h"
-#include "Tools/RRROS2TFPublisher.h"
-
 #include "RRRobotVehicleROSController.generated.h"
+
+class URRRobotROS2Interface;
 
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
@@ -36,57 +30,9 @@ class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public AAICont
     GENERATED_BODY()
 
 protected:
-    UPROPERTY(Transient)
-    AROS2Node* RobotROS2Node = nullptr;
-
-    /**
-     * @brief Spawn ROS2Node and initialize it. This method is mainly used by #ASimulationState to spawn from ROS2 service.
-     *
-     * @param InPawn
-     */
-    void InitRobotROS2Node(APawn* InPawn);
-
-    //! @todo is this used?
-    UPROPERTY()
-    FVector InitialPosition = FVector::ZeroVector;
-
-    //! @todo is this used?
-    UPROPERTY()
-    FRotator InitialOrientation = FRotator::ZeroRotator;
-
-    UPROPERTY(Transient, BlueprintReadWrite)
-    URRROS2OdomPublisher* OdomPublisher = nullptr;
-
-    /**
-     * @brief Initialize non sensor publishes such as odometry.
-     *
-     */
-    UFUNCTION()
-    virtual bool InitPublishers(APawn* InPawn);
-
-    /**
-     * @brief Initialize subscribers
-     *
-     */
-    UFUNCTION()
-    virtual bool InitSubscriptions();
-
-    /**
-     * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.
-     * Typically this receive Twist msg to move robot.
-     *
-     */
-    UFUNCTION()
-    virtual void MovementCallback(const UROS2GenericMsg* Msg);
-
-    /**
-     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS2 msg.
-     * Supports only 1 DOF joints.
-     * Effort control is not supported.
-     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
-     */
-    UFUNCTION()
-    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
+    //! ROS2 Interface handle, which must be null as ROS Controller is created
+    UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite)
+    URRRobotROS2Interface* ROS2Interface = nullptr;
 
     /**
      * @brief Initialize by calling #InitRobotROS2Node, #ARobotVehicle's InitSensors and #InitPublishers.
@@ -97,34 +43,4 @@ protected:
     virtual void OnPossess(APawn* InPawn) override;
 
     virtual void OnUnPossess() override;
-
-    /**
-     * @brief Setup ROS2 subscriber by binding #MovementCallback.
-     *
-     * @param InTopicName
-     */
-    UFUNCTION(BlueprintCallable)
-    bool SubscribeToMovementCommandTopic(const FString& InTopicName);
-
-    /**
-     * @brief Setup ROS2 subscriber by binding #JointStateCallback.
-     *
-     * @param InTopicName
-     */
-    UFUNCTION(BlueprintCallable)
-    bool SubscribeToJointsCommandTopic(const FString& InTopicName);
-
-    UPROPERTY(BlueprintReadWrite)
-    bool bPublishOdom = true;
-
-    UPROPERTY(BlueprintReadWrite)
-    bool bPublishOdomTf = false;
-
-    //! Movement command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite)
-    FString CmdVelTopicName = TEXT("cmd_vel");
-
-    //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite)
-    FString JointsCmdTopicName = TEXT("joint_states");
 };

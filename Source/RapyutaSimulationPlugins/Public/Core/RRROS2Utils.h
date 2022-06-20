@@ -1,6 +1,6 @@
 /**
  * @file RRROS2Utils.h
- * @brief ROS2 Utils
+ * @brief ROS2 high-level utils
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -16,8 +16,23 @@
 
 #include "RRROS2Utils.generated.h"
 
-DECLARE_DELEGATE_OneParam(FOnROS2MessagePublished, const UROS2GenericMsg*);
+/**
+ * @brief RR_ROS2_SUBSCRIBE_TO_TOPIC
+ * FSubscriptionCallback is of dynamic delegate type to be serializable for BP use
+ * FSubscriptionCallback::BindDynamic is a macro, instead of a function.
+ * Thus InCallback can only be a direct UFUNCTION() method & cannot be used as typed param!
+ */
+#define RR_ROS2_SUBSCRIBE_TO_TOPIC(InROS2Node, InUserObject, InTopicName, InMsgClass, InCallback) \
+    if (ensure(IsValid(InROS2Node)))                                                              \
+    {                                                                                             \
+        FSubscriptionCallback cb;                                                                 \
+        cb.BindDynamic(InUserObject, InCallback);                                                 \
+        InROS2Node->AddSubscription(InTopicName, InMsgClass, cb);                                 \
+    }
 
+/**
+ * @brief ROS2 high-level utils
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRROS2Utils : public UBlueprintFunctionLibrary
 {
@@ -30,16 +45,4 @@ public:
                                            const TSubclassOf<UROS2Publisher>& InPublisherClass,
                                            const TSubclassOf<UROS2GenericMsg>& InMsgClass,
                                            int32 InPubFrequency);
-
-    template<typename T>
-    static void SubscribeToTopic(AROS2Node* InROS2Node,
-                                 T* InUserObject,
-                                 const FString& InTopicName,
-                                 const TSubclassOf<UROS2GenericMsg>& InMsgClass,
-                                 typename FOnROS2MessagePublished::TUObjectMethodDelegate<T>::FMethodPtr InCallback)
-    {
-        FSubscriptionCallback cb;
-        cb.BindDynamic(InUserObject, InCallback);
-        InROS2Node->AddSubscription(InTopicName, InMsgClass, cb);
-    }
 };

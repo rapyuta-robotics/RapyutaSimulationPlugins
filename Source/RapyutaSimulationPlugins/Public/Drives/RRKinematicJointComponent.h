@@ -20,8 +20,8 @@
  * relations among parent link, joint and child link to calculate joint movement.
  *
  * #Controltype:
- * - Joints moves with Max, Min velocity to target with #EJointControlType::POSITION
- * - Joints moves with given velocity with #EJointControlType::VELOCITY
+ * - Joints moves with Max, Min velocity to target with #ERRJointControlType::POSITION
+ * - Joints moves with given velocity with #ERRJointControlType::VELOCITY
  * @sa[K2_SetWorldTransform](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/Components/USceneComponent/K2_SetWorldTransform/)
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
