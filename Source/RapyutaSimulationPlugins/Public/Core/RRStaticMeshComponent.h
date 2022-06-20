@@ -24,7 +24,7 @@
  * @brief Component of #ARRMeshActor. UStaticMeshComponent with utils.
  * @todo documentation.
  */
-UCLASS()
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRStaticMeshComponent : public UStaticMeshComponent
 {
     GENERATED_BODY()
@@ -67,7 +67,7 @@ public:
 
     /**
      * @brief  This function is used proprietarily for Generic Link/Joint (Non-Articulation) structure.
-     * 
+     *
      */
     UFUNCTION()
     void LockSelf();

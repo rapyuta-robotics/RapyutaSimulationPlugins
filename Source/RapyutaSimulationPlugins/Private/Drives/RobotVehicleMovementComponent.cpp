@@ -56,10 +56,6 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
     // If we bumped into something, try to slide along it
     if (hit.IsValidBlockingHit())
     {
-        UE_LOG(LogTemp,
-               Warning,
-               TEXT("URobotVehicleMovementComponent::UpdateMovement -> BlockingHit - hit.normal : %s"),
-               *hit.Normal.ToString());
         SlideAlongSurface(DesiredMovement, 1.0f - hit.Time, hit.Normal, hit);
     }
 
@@ -91,14 +87,14 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
                 if (MovingPlatform == nullptr)
                 {
                     FVector heightVariation = {0., 0., MinDistanceToFloor - hit.Distance};
-                    PawnOwner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::TeleportPhysics);
+                    PawnOwner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::None);
                 }
             }
             else
             {
                 // very basic robot falling
                 PawnOwner->AddActorWorldOffset(
-                    FVector(0., 0., -FallingSpeed * InDeltaTime), true, &hit, ETeleportType::TeleportPhysics);
+                    FVector(0., 0., -FallingSpeed * InDeltaTime), true, &hit, ETeleportType::None);
             }
         }
         else
@@ -167,7 +163,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
                 minDistance = FMath::Min(minDistance, FallingSpeed * InDeltaTime);
 
                 FVector heightVariation = {0., 0., -minDistance};
-                PawnOwner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::TeleportPhysics);
+                PawnOwner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::None);
             }
         }
     }
@@ -296,6 +292,7 @@ void URobotVehicleMovementComponent::InitMovementComponent()
 {
     InitOdom();
 
+    ContactPoints.Empty();
     TArray<UActorComponent*> actorContactPoints = PawnOwner->GetComponentsByTag(USceneComponent::StaticClass(), "ContactPoint");
     for (auto acp : actorContactPoints)
     {

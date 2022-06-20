@@ -7,7 +7,8 @@ Drives
 ------
 
 | Drives provides feature to control robot. 
-| Custom drive class should be created as child class of *RobotVehicleMovementComponent*
+| Custom robot movment class should be created as child class of *RobotVehicleMovementComponent*
+| Custom joint class should be created as child class of *RRJointComponent*
 
 **example of class relations**
 
@@ -17,6 +18,9 @@ Drives
 
 - `URobotVehicleMovementComponent <doxygen_generated/html/d7/d01/class_u_robot_vehicle_movement_component.html>`_:  Base Robot vehicle movement class which is used as part of #ARobotVehicle. Move robot without considering physics and publish odometry. This supports adapting the robot pose to floor complex surfaces, and following moving platforms such as elevators.
 - `UDifferentialDriveComponent <doxygen_generated/html/db/df5/class_u_differential_drive_component.html>`_: Simulate differential drive with 2 wheels considering physics.
+- `URRJointComponent <doxygen_generated/html/de/dfa/class_u_r_r_joint_component.html>`_: Base Joint class which is used as part of #ARobotVehicle.
+- `URRKinematicJointComponent <doxygen_generated/html/d2/d69/class_u_r_r_kinematic_joint_component.html>`_: Kinematics Joint Component which has pose and velocity control interface.
+
 
 Sensors
 -------
@@ -44,19 +48,20 @@ Robots
 ------
 
 | Robots has robot vehicle class and controller class.
-| Custom robot class should be created as child class of *RobotVehicle* class. 
+| Custom robot class should be created as child class of *RobotVehicle* or *RobotBaseVehicle* class. 
 | *RRRobotVehicleROSController* create ROS2Node and control all drive and sensor components in the *RobotVehicle* class.
 
 **main C++ classes**
 
-- `ARobotVehicle <doxygen_generated/html/d7/d80/class_a_robot_vehicle.html>`_: Base RobotVehicle class. Other robot class should inherit from this class. Has URobotVehicleMovementComponent and initialize sensors.
+- `ARobotBaseVehicle <doxygen_generated/html/df/dbc/class_a_robot_base_vehicle.html>`_: Base RobotBaseVehicle class. Most robot classes should inherit from this class. Has URobotVehicleMovementComponent and initializes sensors.
+- `ARobotVehicle <doxygen_generated/html/d7/d80/class_a_robot_vehicle.html>`_: RobotVehicle class that inherits from RobotBaseVehicle and uses a Skeletal Mesh as root component. Other robot class can inherit from this class.
 - `ARRRobotVehicleROSController <doxygen_generated/html/d6/d83/class_a_r_r_robot_vehicle_r_o_s_controller.html>`_: Base Robot ROS controller class. Other robot controller class should inherit from this class. This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
 - `ATurtlebotBurger <doxygen_generated/html/de/d76/class_a_turtlebot_burger.html>`_: Example of ARobotVehicle
 - `ATurtlebotROSController <doxygen_generated/html/dd/d8f/class_a_turtlebot_r_o_s_controller.html>`_: Example of ARRRobotVehicleROSController
 
 **main Blueprint classes classes**
 
-- Turtlebot3: example of robots.
+- Turtlebot3: example of mobile robot.
     - BP_TurtlebotROSController.uasset: inherit from C++ ARRRobotVehicleROSController. Example of construct robot controller with Blueprint.  
     - Models: Static and skeletal meshes and materials.
     - Physics: physics model with UDifferentialDriveComponent
@@ -65,6 +70,13 @@ Robots
     - Kinematics: kinematic model with URobotVehicleMovementComponent 
         - BP_TurtlebotBurgerVehicle: inherit from C++ ARobotVehicle and set static meshes and parameters.
         - BP_TurtlebotWaffleVehicle: inherit from C++ ARobotVehicle. Example of construct robot with Blueprint. 
+- SimpleArm: example of robot arm with joint.
+    - BP_KinematicSimpleArm: inherit from C++ ARobotVehicle and have joint and link setting. Please check construction script for joints settings. You can control arm by 
+    .. code-block:: bash
+
+       $ ros2 topic pub /arm/joint_state sensor_msgs/msg/JointState  "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, name: ['joint12', 'joint23', 'joint34'], position: [1.57,1.57,1.57], velocity: [], effort: []}"
+    
+    - BP_SampleArmROSController: inherit from C++ ARRRobotVehicleROSController. Subscribes 'joint_state' topic and control robot joints. 
 
 Core
 ----
