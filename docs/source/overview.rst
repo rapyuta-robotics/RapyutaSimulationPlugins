@@ -40,6 +40,9 @@ You can change spawnable entities in level BP, by overwriting game mode and etc.
    * - /SpawnEntity
      - `SpawnEntity.srv <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv>`_
      - spawn actor
+   * - /SpawnEntities
+     - `SpawnEntities.srv <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntities.srv>`_
+     - spawn many actors from a list
    * - /SpawnWorld
      - `SpawnWorld.srv <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnWorld.srv>`_
      - spawn world
