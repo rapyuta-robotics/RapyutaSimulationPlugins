@@ -12,6 +12,8 @@
 * Sphinx and doxygen documentation #56 #66
 * Add SpawnEntities and followFloor #57
 
+## 0.0.4 ##
+* Add the class `ARobotBaseVehicle` without skeletal mesh as root component. Class `ARobotVehicle` inherits from it.
 
 ## 0.0.3 ##
 * Add Assimp as 3rd dependency (release sources + lib)
