@@ -1,6 +1,6 @@
 # RapyutaSimulationPlugins
 
-Robot common assets used with rclUE
+Robot common assets/utils used with rclUE
 
 ## Online documentation
 
@@ -13,6 +13,17 @@ https://RapyutaSimulationPlugins.readthedocs.io/en/devel/
 ## Example repository
 
 - [turtlebot3-UE](https://github.com/rapyuta-robotics/turtlebot3-UE) : Package to simulate turtlebot3 with UE4.
+
+## Example BP robots
+- [SampleArm](https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/tree/devel/Content/Robots/SampleArm): Simple kinematics-based 4-link arm enabled with ROS controller.
+- [Turtlebot3](https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/tree/devel/Content/Robots/Turtlebot3): Kinematics & Physics-based turtlebot3 Burger & Waffle enabled with ROS controller.
+- [Skeletal Turtlebot3](https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/tree/devel/Content/SkeletalRobots/Turtlebot3): Physics-enabled skeletal mesh component-based turtlebot3 robots of types: 
+    - _BallCasterSphereWheeled_ : With ball caster sphere wheel
+    - _ConvexWheeled_ : Wheels have convex-hull collision
+    - _SphereWheeled_ : Wheels have sphere collision
+    - _StaticMeshConstrained_ : Built from separate static mesh components connected to one another by physics constraints
+    - _FullLockConstrained_ : All physics constraints are locked
+    - _WheeledVehicle_ : Utilize SimpleWheeledVehicleMovement
 
 ## Maintainer
 
