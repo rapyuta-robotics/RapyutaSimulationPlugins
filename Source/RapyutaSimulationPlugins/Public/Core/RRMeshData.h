@@ -32,7 +32,7 @@ DECLARE_DELEGATE_TwoParams(FOnMeshCreationDone, bool /* bCreationResult */, UObj
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneProperty
@@ -55,12 +55,15 @@ public:
     UPROPERTY(VisibleAnywhere)
     FVector MeshScale3D = FVector::OneVector;
 
+    UPROPERTY(VisibleAnywhere)
+    float Mass = 0.f;
+
     void PrintSelf() const;
 };
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluence
@@ -93,12 +96,12 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
 /**
  * @brief todo
- * 
+ *
  */
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
 {
@@ -139,7 +142,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNode
@@ -158,7 +161,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNode
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshData
