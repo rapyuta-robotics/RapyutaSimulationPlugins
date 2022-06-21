@@ -24,6 +24,7 @@ https://RapyutaSimulationPlugins.readthedocs.io/en/devel/
     - _StaticMeshConstrained_ : Built from separate static mesh components connected to one another by physics constraints
     - _FullLockConstrained_ : All physics constraints are locked
     - _WheeledVehicle_ : Utilize SimpleWheeledVehicleMovement
+- [SkeletalTurtlebot3Examples](https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/tree/devel/Content/SkeletalRobots/Turtlebot3/SkeletalTurtlebot3Examples.umap) level: Have all example skeletal robots being put to automatically move forward upon Play.
 
 ## Maintainer
 

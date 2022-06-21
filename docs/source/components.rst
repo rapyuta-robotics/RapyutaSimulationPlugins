@@ -70,7 +70,15 @@ Robots
     - Kinematics: kinematic model with URobotVehicleMovementComponent 
         - BP_TurtlebotBurgerVehicle: inherit from C++ ARobotVehicle and set static meshes and parameters.
         - BP_TurtlebotWaffleVehicle: inherit from C++ ARobotVehicle. Example of construct robot with Blueprint. 
-- SimpleArm: example of robot arm with joint.
+- Skeletal Turtlebot3: Physics-enabled skeletal mesh component-based turtlebot3 robots of types: 
+    - BallCasterSphereWheeled : With ball caster sphere wheel
+    - ConvexWheeled : Wheels have convex-hull collision
+    - SphereWheeled : Wheels have sphere collision
+    - StaticMeshConstrained : Built from separate static mesh components connected to one another by physics constraints
+    - FullLockConstrained : All physics constraints are locked
+    - WheeledVehicle : Utilize SimpleWheeledVehicleMovement
+    - SkeletalTurtlebot3Examples level: Have all example skeletal robots being put to automatically move forward upon Play
+- SampleArm: example of robot arm with joint.
     - BP_KinematicSimpleArm: inherit from C++ ARobotVehicle and have joint and link setting. Please check construction script for joints settings. You can control arm by 
     .. code-block:: bash
 
