@@ -32,7 +32,7 @@ DECLARE_DELEGATE_TwoParams(FOnMeshCreationDone, bool /* bCreationResult */, UObj
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneProperty
@@ -55,12 +55,15 @@ public:
     UPROPERTY(VisibleAnywhere)
     FVector MeshScale3D = FVector::OneVector;
 
+    UPROPERTY(VisibleAnywhere)
+    float Mass = 0.f;
+
     void PrintSelf() const;
 };
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluence
@@ -93,21 +96,13 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
-struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluenceList
-{
-    GENERATED_BODY()
-    UPROPERTY()
-    TArray<FRRBoneInfluence> BoneInfluenceList;
-};
-
 /**
  * @brief todo
- * 
+ *
  */
-USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
 {
     GENERATED_BODY()
@@ -130,7 +125,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
     TArray<FProcMeshTangent> ProcTangents;
 
     UPROPERTY()
-    TArray<FRRBoneInfluenceList> BoneInfluences;
+    TArray<FRRBoneInfluence> BoneInfluences;
 
     UPROPERTY()
     uint32 MaterialIndex = 0;
@@ -140,7 +135,6 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
         Vertices.SetNumZeroed(InNum);
         TriangleIndices.SetNumZeroed(InNum);
         ProcTangents.SetNumZeroed(InNum);
-        BoneInfluences.SetNumZeroed(InNum);
     }
 
     void PrintSelf() const;
@@ -148,7 +142,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNode
@@ -167,7 +161,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNode
 
 /**
  * @brief todo
- * 
+ *
  */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshData

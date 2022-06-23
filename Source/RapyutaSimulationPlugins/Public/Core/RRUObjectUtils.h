@@ -22,7 +22,7 @@ class URRStaticMeshComponent;
 
 /**
  * @brief UObject general utils.
- * 
+ *
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRUObjectUtils : public UBlueprintFunctionLibrary
@@ -30,7 +30,6 @@ class RAPYUTASIMULATIONPLUGINS_API URRUObjectUtils : public UBlueprintFunctionLi
     GENERATED_BODY()
 
 public:
-
     template<typename T>
     FORCEINLINE static T* CreateSelfSubobject(UObject* InOuter, const FString& InObjectUniqueName)
     {
@@ -40,13 +39,15 @@ public:
     /**
      * @brief Use CreateDefaultSubobject or NewObject based on where this method is called.
      * Uses #URRThreadUtils::IsInsideConstructor.
-     * @param InOuter 
-     * @param InObjectClass 
-     * @param InObjectUniqueName 
+     * @param InOuter
+     * @param InObjectClass
+     * @param InObjectUniqueName
      * @return static UObject*
      *
-     * @sa [CreateDefaultSubobject](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
-     * @sa [NewObject](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
+     * @sa
+     * [CreateDefaultSubobject](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
+     * @sa
+     * [NewObject](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
      */
     FORCEINLINE static UObject* CreateSelfSubobject(UObject* InOuter, UClass* InObjectClass, const FString& InObjectUniqueName)
     {
@@ -65,11 +66,11 @@ public:
 
     /**
      * @brief Return true if InParentObj has subobjects with InChildName.
-     * 
-     * @tparam T 
-     * @param InParentObj 
-     * @param InChildName 
-     * @return static bool 
+     *
+     * @tparam T
+     * @param InParentObj
+     * @param InChildName
+     * @return static bool
      */
     template<typename T>
     FORCEINLINE static bool HasSubobject(UObject* InParentObj, const FString& InChildName)
@@ -151,14 +152,16 @@ public:
      * @brief Use SetupAttachment or AttachToComponent based on where this method is called.
      * Uses #URRThreadUtils::IsInsideConstructor.
      *
-     * @param InChildComp 
-     * @param InParentComp 
-     * @param InRelativeTransf 
-     * @param InAttachmentRules 
-     * @param InSocketName 
+     * @param InChildComp
+     * @param InParentComp
+     * @param InRelativeTransf
+     * @param InAttachmentRules
+     * @param InSocketName
      *
-     * @sa [SetupAttachment](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
-     * @sa [AttachToComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
+     * @sa
+     * [SetupAttachment](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
+     * @sa
+     * [AttachToComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
      */
     static void AttachComponentToComponent(
         USceneComponent* InChildComp,
@@ -169,14 +172,14 @@ public:
 
     /**
      * @brief Create a Child Component object and attach to InActor and calls #ConfigureComponentPhysics.
-     * 
-     * @tparam T 
-     * @param InActor 
-     * @param InUniqueName 
-     * @param bIsPhysicsEnabled 
-     * @param bIsCollisionEnabled 
-     * @param bIsOverlapEventEnabled 
-     * @return T* 
+     *
+     * @tparam T
+     * @param InActor
+     * @param InUniqueName
+     * @param bIsPhysicsEnabled
+     * @param bIsCollisionEnabled
+     * @param bIsOverlapEventEnabled
+     * @return T*
      */
     template<typename T>
     static T* CreateChildComponent(AActor* InActor,
@@ -236,16 +239,16 @@ public:
 
     /**
      * @brief Create a Mesh Component, attach to InActor, set parameters.
-     * 
-     * @tparam TMeshComponent 
-     * @param InActor 
-     * @param InObjMeshUniqueName 
-     * @param InMeshCompUniqueName 
-     * @param InRelativeTransf 
-     * @param bInIsOwningActorStationary 
-     * @param bInIsPhysicsEnabled 
-     * @param bInIsCollisionEnabled 
-     * @param InParentComp 
+     *
+     * @tparam TMeshComponent
+     * @param InActor
+     * @param InObjMeshUniqueName
+     * @param InMeshCompUniqueName
+     * @param InRelativeTransf
+     * @param bInIsOwningActorStationary
+     * @param bInIsPhysicsEnabled
+     * @param bInIsCollisionEnabled
+     * @param InParentComp
      * @return static TMeshComponent*
      */
     template<typename TMeshComponent>
@@ -328,21 +331,21 @@ public:
 
     /**
      * @brief Uses URRThreadUtils::IsInsideConstructor() to avoid crash by calling RegisterComponents() outside of constructor.
-     * 
+     *
      */
     UFUNCTION()
     static void RegisterActorComponent(UActorComponent* Comp);
 
     /**
      * @brief Find actor by name. GetAllActors() is expensive.
-     * 
-     * @tparam T 
-     * @param InWorld 
-     * @param InName 
-     * @param InCaseType 
-     * @return T* 
      *
-     * @sa 
+     * @tparam T
+     * @param InWorld
+     * @param InName
+     * @param InCaseType
+     * @return T*
+     *
+     * @sa
      */
     template<typename T>
     static T* FindActorByName(UWorld* InWorld, const FString& InName, const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
@@ -360,12 +363,12 @@ public:
 
     /**
      * @brief Find actor by subname. search actor whose name contains InSubname.
-     * 
-     * @tparam T 
-     * @param InWorld 
-     * @param InSubname 
-     * @param InCaseType 
-     * @return T* 
+     *
+     * @tparam T
+     * @param InWorld
+     * @param InSubname
+     * @param InCaseType
+     * @return T*
      */
     template<typename T>
     static T* FindActorBySubname(UWorld* InWorld,
@@ -413,14 +416,14 @@ public:
 
     // TActorSpawnInfo: [FRRActorSpawnInfo], etc.
     /**
-     * @brief 
-     * @tparam T 
-     * @tparam TActorSpawnInfo 
-     * @param InWorld 
-     * @param InSceneInstanceId 
-     * @param InActorSpawnInfo 
-     * @param CollisionHandlingType 
-     * @return T* 
+     * @brief
+     * @tparam T
+     * @tparam TActorSpawnInfo
+     * @param InWorld
+     * @param InSceneInstanceId
+     * @param InActorSpawnInfo
+     * @param CollisionHandlingType
+     * @return T*
      *
      * @todo add documentation
      *
@@ -491,15 +494,15 @@ public:
     }
 
     /**
-     * @brief 
-     * 
-     * @param InWorld 
-     * @param InSceneInstanceId 
-     * @param InActorClass 
-     * @param InActorName 
-     * @param InActorTransform 
-     * @param InCollisionHandlingType 
-     * @return ARRBaseActor* 
+     * @brief
+     *
+     * @param InWorld
+     * @param InSceneInstanceId
+     * @param InActorClass
+     * @param InActorName
+     * @param InActorTransform
+     * @param InCollisionHandlingType
+     * @return ARRBaseActor*
      *
      * @todo add documentation
      *
@@ -542,6 +545,11 @@ public:
             actor->AddActorWorldOffset(center - actor->GetActorLocation(), true);
         }
     }
+
+    static bool GetPhysicsActorHandles(FBodyInstance* InBody1,
+                                       FBodyInstance* InBody2,
+                                       FPhysicsActorHandle& OutActorRef1,
+                                       FPhysicsActorHandle& OutActorRef2);
 
     static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                     int32 InMaterialIndex,
