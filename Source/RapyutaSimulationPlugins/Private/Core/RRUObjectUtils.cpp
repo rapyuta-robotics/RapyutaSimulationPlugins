@@ -184,15 +184,6 @@ void URRUObjectUtils::GetActorCenterAndBoundingBoxVertices(const AActor* InActor
                                                                     (0.f == vertexNormal.Y) ? -extentsLocal.Y : extentsLocal.Y,
                                                                     (0.f == vertexNormal.Z) ? -extentsLocal.Z : extentsLocal.Z)));
     }
-#if RAPYUTA_SIM_VISUAL_DEBUG
-    if (IsInGameThread() && (nullptr == InBaseActor))
-    {
-        // Draw [InActor]'s bounding box before projecting it onto screen to get the 2D coordinates.
-        OutCenterAndVertices.RemoveAt(0);
-        URRFunctionLibrary::DrawActorBounds(InActor->GetWorld(), OutCenterAndVertices);
-        OutCenterAndVertices.Insert(center, 0);
-    }
-#endif
 }
 
 // Ref: ConstraintInstance.cpp - GetActorRefs()

@@ -37,6 +37,7 @@ void URRProceduralMeshComponent::Initialize(bool bIsStaticBody, bool bInIsPhysic
     ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
     if (ownerActor->GameMode->IsDataSynthSimType() && ownerActor->IsDataSynthEntity())
     {
+        verify(IsValid(ownerActor->ActorCommon));
         SetCustomDepthStencilValue(ownerActor->ActorCommon->GenerateUniqueDepthStencilValue());
     }
 }

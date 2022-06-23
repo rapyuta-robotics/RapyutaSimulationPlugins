@@ -94,7 +94,7 @@ public:
             TUniqueFunction<void()>([InCompletionCallback = MoveTemp(InCompletionCallback)]() { InCompletionCallback(); }));
     }
     template<typename TResult>
-    static auto AddAsyncTaskInThreadPool(FRRAsyncJob& OutAsyncJob,
+    static void AddAsyncTaskInThreadPool(FRRAsyncJob& OutAsyncJob,
                                          const uint64& InCurrentCaptureBatchId,
                                          TFunction<TResult()> InTask,
                                          TFunction<void()> InCompletionCallback)
@@ -111,7 +111,7 @@ public:
     }
 
     template<typename TResult>
-    static auto AddAsyncTaskToJob(FRRAsyncJob& OutAsyncJob,
+    static void AddAsyncTaskToJob(FRRAsyncJob& OutAsyncJob,
                                   const uint64& InCurrentCaptureBatchId,
                                   TFunction<TResult()> InTask,
                                   TFunction<void()> InCompletionCallback,

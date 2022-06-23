@@ -60,6 +60,7 @@ void URRStaticMeshComponent::Initialize(bool bInIsStationary, bool bInIsPhysicsE
     ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
     if (ownerActor->GameMode->IsDataSynthSimType() && ownerActor->IsDataSynthEntity())
     {
+        verify(IsValid(ownerActor->ActorCommon));
         SetCustomDepthStencilValue(ownerActor->ActorCommon->GenerateUniqueDepthStencilValue());
     }
 }

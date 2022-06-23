@@ -153,14 +153,31 @@ bool URRCoreUtils::HasEnoughDiskSpace(const FString& InPath, uint64 InRequiredMe
 bool URRCoreUtils::ShutDownSim(const UObject* InContextObject, uint64 InSimCompletionTimeoutInSecs)
 {
     // END ALL SCENE INSTANCES' OPERATIONS --
-    auto* gameState = URRCoreUtils::GetGameState<ARRGameState>(InContextObject);
     Async(
         EAsyncExecution::Thread,
         // Wait for Sim's full completion
-        [gameState, InSimCompletionTimeoutInSecs]()
+        [InContextObject, InSimCompletionTimeoutInSecs]()
         {
             return URRCoreUtils::WaitUntilThenAct(
-                [gameState]() { return gameState->HaveAllSceneInstancesCompleted(); }, []() {}, InSimCompletionTimeoutInSecs, 5.f);
+                [InContextObject]()
+                {
+                    auto* gameState = URRCoreUtils::GetGameState<ARRGameState>(InContextObject);
+                    if (IsValid(gameState))
+                    {
+                        return gameState->HaveAllSceneInstancesCompleted();
+                    }
+                    else
+                    {
+                        UE_LOG(LogRapyutaCore,
+                               Warning,
+                               TEXT("[ShutDownSim failed] GameState has gone invalid. Please make sure no level transition was in "
+                                    "progress!"));
+                        return false;
+                    }
+                },
+                []() {},
+                InSimCompletionTimeoutInSecs,
+                5.f);
         },
         // Issue Sim Ending command
         [InContextObject]()
