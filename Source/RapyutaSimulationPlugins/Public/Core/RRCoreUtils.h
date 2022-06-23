@@ -111,7 +111,42 @@ public:
     static constexpr const TCHAR* CMD_FORWARD_SHADING_ENABLE = TEXT("r.ForwardShading 1");
 
     // SIM FILE EXTENSIONS --
-    static const TMap<ERRFileType, const TCHAR*> SimFileExts;
+    static constexpr const TCHAR* SimFileExts[] = {
+        TEXT(""),    // ERRFileType::NONE
+        // UE & General
+        TEXT(".uasset"),    // ERRFileType::UASSET
+        TEXT(".ini"),       // ERRFileType::INI
+        TEXT(".yaml"),      // ERRFileType::YAML
+
+        // Image
+        TEXT(".jpg"),    // ERRFileType::IMAGE_JPG
+        TEXT(".png"),    // ERRFileType::IMAGE_PNG
+        TEXT(".tga"),    // ERRFileType::IMAGE_TGA
+        TEXT(".exr"),    // ERRFileType::IMAGE_EXR
+        TEXT(".hdr"),    // ERRFileType::IMAGE_HDR
+
+        // Meta data
+        TEXT(".json"),    // ERRFileType::JSON
+
+        // 3D Description formats
+        TEXT(".urdf"),     // ERRFileType::URDF
+        TEXT(".sdf"),      // ERRFileType::SDF
+        TEXT(".world"),    // ERRFileType::GAZEBO_WORLD
+        TEXT(".mjcf"),     // ERRFileType::MJCF
+
+        // 3D CAD
+        TEXT(".fbx"),    // ERRFileType::CAD_FBX
+        TEXT(".obj"),    // ERRFileType::CAD_OBJ
+        TEXT(".stl"),    // ERRFileType::CAD_STL
+        TEXT(".dae"),    // ERRFileType::CAD_DAE
+    };
+
+    FORCEINLINE static const TCHAR* GetSimFileExt(const ERRFileType InFileType)
+    {
+        const uint8 fileTypeIdx = static_cast<uint8>(InFileType);
+        verify((fileTypeIdx >= static_cast<uint8>(ERRFileType::NONE)) && (fileTypeIdx < static_cast<uint8>(ERRFileType::TOTAL)));
+        return SimFileExts[fileTypeIdx];
+    }
     static FString GetFileTypeFilter(const ERRFileType InFileType);
 
     FORCEINLINE static ERRFileType GetFileType(const FString& InFilePath)
@@ -121,7 +156,7 @@ public:
         for (uint8 i = 0; i < static_cast<uint8>(ERRFileType::TOTAL); ++i)
         {
             const ERRFileType& fileType = static_cast<ERRFileType>(i);
-            if (InFilePath.EndsWith(URRCoreUtils::SimFileExts[fileType]))
+            if (InFilePath.EndsWith(URRCoreUtils::GetSimFileExt(fileType)))
             {
                 imageFileType = fileType;
             }
@@ -133,7 +168,7 @@ public:
     {
         for (const auto& fileType : InFileTypes)
         {
-            if (InFilePath.EndsWith(URRCoreUtils::SimFileExts[fileType]))
+            if (InFilePath.EndsWith(URRCoreUtils::GetSimFileExt(fileType)))
             {
                 return true;
             }

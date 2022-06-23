@@ -23,40 +23,12 @@
 IImageWrapperModule* URRCoreUtils::SImageWrapperModule = nullptr;
 TMap<ERRFileType, TSharedPtr<IImageWrapper>> URRCoreUtils::SImageWrappers;
 
-const TMap<ERRFileType, const TCHAR*> URRCoreUtils::SimFileExts = {{ERRFileType::NONE, EMPTY_STR},
-                                                                   // UE & General
-                                                                   {ERRFileType::UASSET, TEXT(".uasset")},
-                                                                   {ERRFileType::INI, TEXT(".ini")},
-                                                                   {ERRFileType::YAML, TEXT(".yaml")},
-
-                                                                   // Image
-                                                                   {ERRFileType::IMAGE_JPG, TEXT(".jpg")},
-                                                                   {ERRFileType::IMAGE_PNG, TEXT(".png")},
-                                                                   {ERRFileType::IMAGE_TGA, TEXT(".tga")},
-                                                                   {ERRFileType::IMAGE_EXR, TEXT(".exr")},
-                                                                   {ERRFileType::IMAGE_HDR, TEXT(".hdr")},
-
-                                                                   // Meta data
-                                                                   {ERRFileType::JSON, TEXT(".json")},
-
-                                                                   // 3D Description formats
-                                                                   {ERRFileType::URDF, TEXT(".urdf")},
-                                                                   {ERRFileType::SDF, TEXT(".sdf")},
-                                                                   {ERRFileType::GAZEBO_WORLD, TEXT(".world")},
-                                                                   {ERRFileType::MJCF, TEXT(".mjcf")},
-
-                                                                   // 3D CAD
-                                                                   {ERRFileType::CAD_FBX, TEXT(".fbx")},
-                                                                   {ERRFileType::CAD_OBJ, TEXT(".obj")},
-                                                                   {ERRFileType::CAD_STL, TEXT(".stl")},
-                                                                   {ERRFileType::CAD_DAE, TEXT(".dae")}};
-
 FString URRCoreUtils::GetFileTypeFilter(const ERRFileType InFileType)
 {
     return FString::Printf(TEXT("%s (*%s)|*%s"),
                            *URRTypeUtils::GetEnumValueAsString(TEXT("ERRFileType"), InFileType),
-                           SimFileExts[InFileType],
-                           SimFileExts[InFileType]);
+                           GetSimFileExt(InFileType),
+                           GetSimFileExt(InFileType));
 }
 
 void URRCoreUtils::LoadImageWrapperModule()
@@ -219,7 +191,7 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
         {
             TArray<FString> filePaths;
             fileManager.FindFilesRecursive(
-                filePaths, *InFolderPath, *FString::Printf(TEXT("*%s"), URRCoreUtils::SimFileExts[fileType]), true, false);
+                filePaths, *InFolderPath, *FString::Printf(TEXT("*%s"), URRCoreUtils::GetSimFileExt(fileType)), true, false);
             OutFilePaths.Append(filePaths);
         }
 
@@ -227,7 +199,7 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
         if (!bResult)
         {
             const FString& fileTypesStr = FString::JoinBy(
-                InFileTypes, TEXT(","), [](const ERRFileType& InFileType) { return URRCoreUtils::SimFileExts[InFileType]; });
+                InFileTypes, TEXT(","), [](const ERRFileType& InFileType) { return URRCoreUtils::GetSimFileExt(InFileType); });
             UE_LOG(LogRapyutaCore,
                    Error,
                    TEXT("Failed to find any files of extension [%s] inside [%s]"),
