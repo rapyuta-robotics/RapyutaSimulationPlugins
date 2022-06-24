@@ -14,10 +14,13 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
+#include "Core/RRTextureData.h"
 #include "Core/RRThreadUtils.h"
 
 #include "RRUObjectUtils.generated.h"
 
+class ARRBaseActor;
+class ARRMeshActor;
 class URRStaticMeshComponent;
 
 /**
@@ -39,15 +42,13 @@ public:
     /**
      * @brief Use CreateDefaultSubobject or NewObject based on where this method is called.
      * Uses #URRThreadUtils::IsInsideConstructor.
-     * @param InOuter
+     * @param InOuter test
      * @param InObjectClass
      * @param InObjectUniqueName
      * @return static UObject*
      *
-     * @sa
-     * [CreateDefaultSubobject](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
-     * @sa
-     * [NewObject](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
+     * @sa[CreateDefaultSubobject](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
+     * @sa[NewObject](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
      */
     FORCEINLINE static UObject* CreateSelfSubobject(UObject* InOuter, UClass* InObjectClass, const FString& InObjectUniqueName)
     {
@@ -158,10 +159,8 @@ public:
      * @param InAttachmentRules
      * @param InSocketName
      *
-     * @sa
-     * [SetupAttachment](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
-     * @sa
-     * [AttachToComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
+     * @sa[SetupAttachment](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
+     * @sa[AttachToComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
      */
     static void AttachComponentToComponent(
         USceneComponent* InChildComp,
@@ -304,16 +303,6 @@ public:
             meshComp->SetMobility(EComponentMobility::Movable);
         }
 
-        // Static mesh (if applicable) --
-        if constexpr (TIsDerivedFrom<TMeshComponent, URRStaticMeshComponent>::IsDerived)
-        {
-            // Mesh -- Must be after above configuration, based on which particular mesh properties are verified!
-            // Material instance created here-in, thus no need to create a default one like based on [CMAT_NAME_GENERIC]
-            meshComp->SetMesh(URRGameSingleton::Get()->GetStaticMesh(InObjMeshUniqueName));
-        }
-        // else Runtime mesh, if available, would be fetched on-the-fly later
-        // (due to their changeable content (by users either offline or online), thus Sim would never storing ones on disk)
-
         // Physics (last)--
         const bool bIsStationary = InObjMeshUniqueName.Equals(URRGameSingleton::SHAPE_NAME_PLANE);
         // If using Custom Physics Engine, also create [PhysicsComp] here-in!
@@ -345,7 +334,6 @@ public:
      * @param InCaseType
      * @return T*
      *
-     * @sa
      */
     template<typename T>
     static T* FindActorByName(UWorld* InWorld, const FString& InName, const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
@@ -390,7 +378,7 @@ public:
     static AActor* FindEnvironmentActor(UWorld* InWorld)
     {
         // There is only one common [Environment] actor of all Scene instances!
-        return FindActorBySubname<AActor>(InWorld, TEXT("RapyutaEnvironment"));
+        return FindActorBySubname<AActor>(InWorld, TEXT("MainEnvironment"));
     }
 
     UFUNCTION()
@@ -405,6 +393,18 @@ public:
     {
         // There is only one common [SkyLight] actor of all Scene instances!
         return FindActorBySubname<ASkyLight>(InWorld, TEXT("SkyLight"));
+    }
+
+    UFUNCTION()
+    static AActor* FindFloorActor(UWorld* InWorld)
+    {
+        return FindActorBySubname<AActor>(InWorld, TEXT("MainFloor"));
+    }
+
+    UFUNCTION()
+    static AActor* FindWallActor(UWorld* InWorld)
+    {
+        return FindActorBySubname<AActor>(InWorld, TEXT("MainWall"));
     }
 
     UFUNCTION()
@@ -516,8 +516,46 @@ public:
         const FTransform& InActorTransform = FTransform::Identity,
         const ESpawnActorCollisionHandlingMethod InCollisionHandlingType = ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
+    FORCEINLINE static FVector GetRelativeLocFrom(const AActor* InActor, const AActor* InBaseActor)
+    {
+        return InBaseActor->GetTransform().InverseTransformPosition(InActor->GetActorLocation());
+    }
+
+    FORCEINLINE static FQuat GetRelativeQuatFrom(const AActor* InActor, const AActor* InBaseActor)
+    {
+        return InBaseActor->GetTransform().InverseTransformRotation(InActor->GetActorQuat());
+    }
+
+    FORCEINLINE static FRotator GetRelativeRotFrom(const AActor* InActor, const AActor* InBaseActor)
+    {
+        return GetRelativeQuatFrom(InActor, InBaseActor).Rotator();
+    }
+
+    static void GetActorCenterAndBoundingBoxVertices(const AActor* InActor,
+                                                     const AActor* InBaseActor,
+                                                     TArray<FVector>& OutCenterAndVertices,
+                                                     bool bInIncludeNonColliding = true);
+    static FVector GetActorExtent(AActor* InActor, bool bOnlyCollidingComponents = true, bool bIncludeFromChildActors = false)
+    {
+        FVector actorOrigin, actorExtent;
+        InActor->GetActorBounds(bOnlyCollidingComponents, actorOrigin, actorExtent, bIncludeFromChildActors);
+        return actorExtent;
+    }
+
+    static FVector GetActorSize(AActor* InActor, bool bOnlyCollidingComponents = true, bool bIncludeFromChildActors = false)
+    {
+        return 2.f * GetActorExtent(InActor, bOnlyCollidingComponents, bIncludeFromChildActors);
+    }
+
+    static void DrawActorBoundingBox(AActor* InActor)
+    {
+        FVector actorCenter, actorExtent;
+        InActor->GetActorBounds(false, actorCenter, actorExtent);
+        DrawDebugBox(InActor->GetWorld(), actorCenter, actorExtent, FColor::Yellow, false, 2.f, 0, 2.f);
+    }
+
     template<typename T>
-    static FVector GetActorGroupCenter(const TArray<T*>& InActors)
+    static FVector GetActorsGroupCenter(const TArray<T*>& InActors)
     {
         FVector sumLocation = FVector::ZeroVector;
         for (const auto& actor : InActors)
@@ -531,7 +569,7 @@ public:
     static void HuddleActors(const TArray<T*>& InActors)
     {
         // (NOTE) Actors should be not touching the floor so they could sweep
-        const FVector center = URRUObjectUtils::GetActorGroupCenter(InActors);
+        const FVector center = URRUObjectUtils::GetActorsGroupCenter(InActors);
         const auto actorsNum = InActors.Num();
         const auto actorsNumHalf = FMath::CeilToInt(0.5f * actorsNum);
         for (auto i = actorsNumHalf; i < actorsNum; ++i)
@@ -545,13 +583,15 @@ public:
             actor->AddActorWorldOffset(center - actor->GetActorLocation(), true);
         }
     }
-
+    static FString GetSegMaskDepthStencilsAsText(ARRMeshActor* InActor);
     static bool GetPhysicsActorHandles(FBodyInstance* InBody1,
                                        FBodyInstance* InBody2,
                                        FPhysicsActorHandle& OutActorRef1,
                                        FPhysicsActorHandle& OutActorRef2);
-
     static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                     int32 InMaterialIndex,
                                                                     const FString& InMaterialInterfaceName);
+    static UMaterialInstanceDynamic* GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex = 0);
+    static bool ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo);
+    static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);
 };

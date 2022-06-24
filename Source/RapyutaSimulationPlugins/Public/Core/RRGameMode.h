@@ -24,7 +24,7 @@ class URRGameInstance;
 UENUM()
 enum class ERRSimType : uint8
 {
-    DEFAULT = 0x00,
+    NONE = 0x00,
     DATA_SYNTH = 0x01,
     ROBOT_SIM = 0x02
 };
@@ -43,17 +43,53 @@ public:
     static constexpr int32 SIM_START_TIMEOUT_MINS = 2;
     static constexpr int32 SIM_START_TIMEOUT_SECS = 60 * SIM_START_TIMEOUT_MINS;
 
-    UPROPERTY(config)
-    ERRSimType SimType = ERRSimType::ROBOT_SIM;
+    UPROPERTY()
+    uint8 SimType = static_cast<uint8>(ERRSimType::ROBOT_SIM);
 
-    UFUNCTION()
-    FString GetSimTypeName() const
+    bool IsSimType(const ERRSimType InSimType) const
     {
-        return URRTypeUtils::GetEnumValueAsString(TEXT("ERRSimType"), SimType);
+        return (static_cast<uint8>(InSimType) & static_cast<uint8>(SimType));
     }
 
-    UPROPERTY()
-    URRGameInstance* GameInstance = nullptr;
+    bool IsDataSynthSimType() const
+    {
+        return IsSimType(ERRSimType::DATA_SYNTH);
+    }
+
+    void SetSimType(const ERRSimType InSimType)
+    {
+        SimType |= static_cast<uint8>(InSimType);
+    }
+
+    FString GetSimTypeName() const
+    {
+        // SimType is not changed during Sim run
+        static FString simTypeName = [this]()
+        {
+            FString resultName;
+            auto fAppendIfOfType = [this, &resultName](const ERRSimType InSimType)
+            {
+                if (IsSimType(InSimType))
+                {
+                    const FString typeName = URRTypeUtils::GetEnumValueAsString(TEXT("ERRSimType"), InSimType);
+                    if (resultName.IsEmpty())
+                    {
+                        resultName = typeName;
+                    }
+                    else
+                    {
+                        resultName.Append(FString::Printf(TEXT(",%s"), *typeName));
+                    }
+                }
+            };
+            fAppendIfOfType(ERRSimType::ROBOT_SIM);
+            fAppendIfOfType(ERRSimType::DATA_SYNTH);
+            return resultName;
+        }();
+        return simTypeName;
+    }
+
+    UPROPERTY() URRGameInstance* GameInstance = nullptr;
 
     virtual void PreInitializeComponents() override;
     virtual void InitGameState() override;
@@ -65,10 +101,8 @@ public:
      */
     virtual void StartPlay() override;
 
-    UFUNCTION()
-    void PrintSimConfig() const;
-    UFUNCTION()
-    void PrintUEPreprocessors();
+    virtual void PrintSimConfig() const;
+    virtual void PrintUEPreprocessors() const;
 
     virtual void ConfigureSimInPlay();
 
@@ -80,11 +114,7 @@ public:
      *  The reason for this scheduled delegate is some essential operation, which facilitates sim startup activities like
      *  asynchronous resource loading, could only run after this [ARRGameState::BeginPlay()] ends!
      */ 
-    void StartSim();
-
-    UPROPERTY(Config)
-    FIntPoint CaptureResolution = FIntPoint(1024, 1024);
-
+    virtual void StartSim();
     UPROPERTY(config)
     bool bBenchmark = true;
 

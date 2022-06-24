@@ -1,5 +1,7 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.6 ##
+* Add data synth utils
 ## 0.0.5 ##
 * Add Content/SkeletalRobots/turtlebot3 BP actor classes for BallCasterSphereWheeled, ConvexWheeled, SphereWheeled, StaticMeshConstrained, FullLockConstrained, WheeledVehicle types
 * Add Content/Robots & SkeletalRobots to lfs

@@ -202,4 +202,20 @@ public:
         objectLibrary->GetAssetDataList(OutAssetDataList);
         verify(IsAssetDataListValid(OutAssetDataList, bIsFullLoad, true));
     }
+
+    //(NOTE) This must not be invoked at Sim initialization since it would flush Async loaders away!
+    // Besides, [ConstructorHelpers::FObjectFinder<T> asset(AssetPathName); will call [StaticFindObject()] instead
+    // and requires to be run inside a ctor.
+    // This loads synchronously, thus should be avoided if possible.
+    template<typename T>
+    FORCEINLINE static T* LoadObjFromAssetPath(UObject* Outer, const FString& InAssetPath)
+    {
+        if (InAssetPath.IsEmpty())
+        {
+            UE_LOG(LogTemp, Error, TEXT("[LoadObjFromAssetPath]::EMPTY PATH!"))
+            return nullptr;
+        }
+        // This invokes [StaticLoadObject()]
+        return LoadObject<T>(Outer, *InAssetPath);
+    }
 };

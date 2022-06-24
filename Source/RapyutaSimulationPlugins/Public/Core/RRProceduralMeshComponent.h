@@ -50,9 +50,7 @@ public:
     UPROPERTY()
     ERRShapeType ShapeType = ERRShapeType::INVALID;
 
-    void Initialize(bool bIsStaticBody, bool bInIsPhysicsEnabled)
-    {
-    }
+    void Initialize(bool bIsStaticBody, bool bInIsPhysicsEnabled);
 
     /**
      * @brief Initialize mesh. initialization is different based on mesh type.

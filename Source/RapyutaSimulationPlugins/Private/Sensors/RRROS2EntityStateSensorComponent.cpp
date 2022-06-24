@@ -46,7 +46,7 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
         return;
     }
 
-    relativeTransf = ConversionUtils::TransformUEToROS(relativeTransf);
+    relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
     Data.pose_position_x = relativeTransf.GetTranslation().X;
     Data.pose_position_y = relativeTransf.GetTranslation().Y;

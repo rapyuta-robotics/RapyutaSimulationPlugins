@@ -55,7 +55,7 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdometry& OutOdomData) const
     if (moveComponent && moveComponent->OdomData.IsValid())
     {
         
-        OutOdomData = ConversionUtils::OdomUEToROS(moveComponent->OdomData);
+        OutOdomData = URRConversionUtils::OdomUEToROS(moveComponent->OdomData);
         if (bAppendNodeNamespace)
         {
             OutOdomData.header_frame_id = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.header_frame_id);

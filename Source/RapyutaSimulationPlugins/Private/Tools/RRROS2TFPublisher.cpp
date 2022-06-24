@@ -49,7 +49,7 @@ void URRROS2TFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
     tfdata.frame_id = FrameId;
     tfdata.child_frame_id = ChildFrameId;
 
-    FTransform transfROS = ConversionUtils::TransformUEToROS(TF);
+    FTransform transfROS = URRConversionUtils::TransformUEToROS(TF);
 
     tfdata.translation = transfROS.GetTranslation();
     tfdata.rotation = transfROS.GetRotation();

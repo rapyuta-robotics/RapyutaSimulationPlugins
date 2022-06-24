@@ -15,8 +15,7 @@
 /**
  * @brief Physics Joint component. Uses PhysicsConstraints.
  * @todo this class is not tested yest.s
- * @sa
- * [PhysicsConstraints](https://docs.unrealengine.com/4.26/en-US/InteractiveExperiences/Physics/Constraints/ConstraintsBlueprints/)
+ * @sa[PhysicsConstraints](https://docs.unrealengine.com/4.26/en-US/InteractiveExperiences/Physics/Constraints/ConstraintsBlueprints/)
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRPhysicsJointComponent : public URRJointComponent
@@ -34,19 +33,15 @@ protected:
 public:
     /**
      * @brief Call SetLinearVelocityTarget and SetAngularVelocityTarget
-     * @sa
-     * [SetLinearVelocityTarget](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetLinearVelocit-_1/)
-     * @sa
-     * [SetAngularVelocityTarget](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVelocit-_1/)
+     * @sa[SetLinearVelocityTarget](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetLinearVelocit-_1/)
+     * @sa[SetAngularVelocityTarget](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVelocit-_1/)
      */
     virtual void SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity) override;
 
     /**
      * @brief Call SetLinearPositionTarget and SetAngularOrientationTarget
-     * @sa
-     * [SetLinearPositionTarget](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetLinearPositio-_1/)
-     * @sa
-     * [SetAngularVelocityTarget](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularOrient-_1/)
+     * @sa[SetLinearPositionTarget](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetLinearPositio-_1/)
+     * @sa[SetAngularVelocityTarget](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularOrient-_1/)
      */
     virtual void SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation) override;
 

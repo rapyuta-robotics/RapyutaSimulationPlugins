@@ -17,9 +17,27 @@
 #include "RRTypeUtils.generated.h"
 
 /**
- * @brief UE type related utils
+ * @brief UE/std type related utils
  * 
  */
+template<typename T>
+struct TIsBoolean
+{
+    enum
+    {
+        Value = false
+    };
+};
+
+template<>
+struct TIsBoolean<bool>
+{
+    enum
+    {
+        Value = true
+    };
+};
+
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRTypeUtils : public UBlueprintFunctionLibrary
 {

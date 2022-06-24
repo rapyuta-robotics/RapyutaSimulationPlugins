@@ -86,6 +86,15 @@ public:
 
     UPROPERTY(VisibleAnywhere)
     FString EntityModelName;
+    void SetEntityModelName(const FString& InEntityModelName)
+    {
+        EntityModelName = InEntityModelName;
+    }
+
+    bool IsDataSynthEntity() const
+    {
+        return ActorInfo.IsValid() ? ActorInfo->bIsDataSynthEntity : false;
+    }
 
     UPROPERTY()
     FTimerHandle GenericTimerHandle;

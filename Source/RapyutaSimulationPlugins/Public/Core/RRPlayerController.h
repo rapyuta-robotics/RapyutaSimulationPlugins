@@ -19,6 +19,7 @@ class ARRGameMode;
 class ARRGameState;
 class URRGameInstance;
 class ARRActorCommon;
+class ARRCamera;
 
 /**
  * @brief Player controller with ARRGameMode, ARRGameState, URRGameInstance and URRActorCommon
@@ -45,6 +46,9 @@ public:
 
     UPROPERTY()
     URRActorCommon* ActorCommon = nullptr;
+
+    UPROPERTY()
+    ARRCamera* MainCamera = nullptr;
 
     UPROPERTY()
     FPostProcessSettings PostProcessSettings;

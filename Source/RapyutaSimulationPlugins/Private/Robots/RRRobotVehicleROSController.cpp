@@ -133,8 +133,8 @@ void ARRRobotVehicleROSController::MovementCallback(const UROS2GenericMsg* Msg)
         // probably should not stay in msg though
         FROSTwist twist;
         twistMsg->GetMsg(twist);
-        const FVector linear(ConversionUtils::VectorROSToUE(twist.linear));
-        const FVector angular(ConversionUtils::RotationROSToUE(twist.angular));
+        const FVector linear(URRConversionUtils::VectorROSToUE(twist.linear));
+        const FVector angular(URRConversionUtils::RotationROSToUE(twist.angular));
 
         // (Note) In this callback, which could be invoked from a ROS working thread,
         // the ROSController itself (this) could have been garbage collected,

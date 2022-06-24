@@ -17,14 +17,15 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRBaseActor.h"
+#include "Core/RRCamera.h"
 #include "Core/RRGameSingleton.h"
+#include "Core/RRPlayerController.h"
 #include "Core/RRTypeUtils.h"
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRSceneDirector.generated.h"
 
-class ARRPlayerController;
-
+DECLARE_DELEGATE_OneParam(FOnSpawnedActorsSettled, bool /*bIsForNewOperationBatch*/);
 /**
  * @brief SceneDirector
  * @todo add documentation
@@ -35,11 +36,19 @@ class RAPYUTASIMULATIONPLUGINS_API ARRSceneDirector : public ARRBaseActor
     GENERATED_BODY()
 
 public:
+    ARRSceneDirector();
+
+    UPROPERTY()
+    int32 OperationBatchId = 0;
+
     UPROPERTY()
     FString SceneName;
 
     UPROPERTY()
     APostProcessVolume* MainPostProcessVolume = nullptr;
+
+    UPROPERTY()
+    ARRCamera* MainCamera = nullptr;
 
     UFUNCTION()
     bool HasSceneInitialized()
@@ -47,17 +56,9 @@ public:
         return bSceneInitialized;
     }
 
-    virtual bool HasOperationCompleted(bool bIsLogged = false)
-    {
-        if (bIsLogged)
-        {
-            if (IsOperating)
-            {
-                UE_LOG(LogRapyutaCore, Display, TEXT("SimModeInstance[%d] is still operating!"), SceneInstanceId);
-            }
-        }
-        return !IsOperating;
-    }
+    FOnSpawnedActorsSettled OnSpawnedActorsSettled;
+
+    virtual bool HasOperationCompleted(bool bIsLogged = false);
 
 protected:
     virtual bool Initialize() override;
@@ -66,10 +67,35 @@ protected:
     // Start (Initialize + Run) Operation
     virtual bool InitializeOperation();
     virtual void RunOperation();
+    virtual void ContinueOperation(bool bIsLastOperationSuccessful, bool bContinueRGBRandomizing)
+    {
+    }
+
+    virtual void OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhase);
     virtual void EndSceneInstance();
 
     UPROPERTY()
-    bool IsOperating = false;
+    FTimerHandle DataCollectionTimerHandle;
+    // Also use this if needed: FTimerDelegate DataCollectionTimerDelegate;
+
+    UPROPERTY()
+    uint8 bIsDataCollecting : 1;
+
+    virtual void DoDataCollecting()
+    {
+        bIsDataCollecting = true;
+    }
+
+    UPROPERTY()
+    uint8 bIsOperating : 1;
+
+    UPROPERTY()
+    int32 OperationBatchLoopLeft = 0;
+    virtual void SpawnActors()
+    {
+    }
+
+    virtual void ResetScene();
 
 private:
     UFUNCTION()
@@ -79,5 +105,5 @@ private:
     FDateTime LastTimeStamp;
 
     UPROPERTY()
-    bool bSceneInitialized = false;
+    uint8 bSceneInitialized : 1;
 };

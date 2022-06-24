@@ -26,12 +26,11 @@ class RAPYUTASIMULATIONPLUGINS_API URRThreadUtils : public UBlueprintFunctionLib
     GENERATED_BODY()
 
 public:
-
     /**
      * @brief return true if called inside constructor.
-     * 
-     * @return true 
-     * @return false 
+     *
+     * @return true
+     * @return false
      */
     static bool IsInsideConstructor()
     {
@@ -66,6 +65,18 @@ public:
         }
     }
 
+    template<typename TFunc, typename... TArgs>
+    static void DoTaskInGameThreadLater(TFunc&& InTaskInGameThread, float InWaitingTime, TArgs&&... Args)
+    {
+        DoAsyncTaskInThread<void>(
+            [InWaitingTime]()
+            {
+                // Wait for the physics to complete the computation given earlier vel cmds
+                FPlatformProcess::Sleep(InWaitingTime);
+            },
+            [InTaskInGameThread = Forward<TFunc>(InTaskInGameThread)]() { DoTaskInGameThread(InTaskInGameThread); });
+    }
+
     template<typename TResult>
     static auto DoAsyncTaskInThread(TFunction<TResult()> InTask,
                                     TFunction<void()> InCompletionCallback,
@@ -81,5 +92,52 @@ public:
             InExecutionThread,
             MoveTemp(InTask),
             TUniqueFunction<void()>([InCompletionCallback = MoveTemp(InCompletionCallback)]() { InCompletionCallback(); }));
+    }
+    template<typename TResult>
+    static void AddAsyncTaskInThreadPool(FRRAsyncJob& OutAsyncJob,
+                                         const uint64& InCurrentCaptureBatchId,
+                                         TFunction<TResult()> InTask,
+                                         TFunction<void()> InCompletionCallback)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogTemp,
+               Warning,
+               TEXT("[%ld:%s] ASYNC JOB NUM: %d"),
+               InCurrentCaptureBatchId,
+               *OutAsyncJob.JobName,
+               OutAsyncJob.GetTasksNum());
+#endif
+        OutAsyncJob.AddAsyncTask(InCurrentCaptureBatchId, DoAsyncTaskInThread(MoveTemp(InTask), MoveTemp(InCompletionCallback)));
+    }
+
+    template<typename TResult>
+    static void AddAsyncTaskToJob(FRRAsyncJob& OutAsyncJob,
+                                  const uint64& InCurrentCaptureBatchId,
+                                  TFunction<TResult()> InTask,
+                                  TFunction<void()> InCompletionCallback,
+                                  const EAsyncExecution InExecutionThread = EAsyncExecution::ThreadPool)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogTemp,
+               Warning,
+               TEXT("[%ld:%s] ASYNC JOB NUM: %d"),
+               InCurrentCaptureBatchId,
+               *OutAsyncJob.JobName,
+               OutAsyncJob.GetTasksNum());
+#endif
+        OutAsyncJob.AddAsyncTask(InCurrentCaptureBatchId,
+                                 DoAsyncTaskInThread(MoveTemp(InTask), MoveTemp(InCompletionCallback), InExecutionThread));
+    }
+
+    template<typename TAsyncTask>
+    static void EnsureAsyncTasksCompletion(const TArray<TUniquePtr<FAsyncTask<TAsyncTask>>>& InAsyncTasks)
+    {
+        for (auto& task : InAsyncTasks)
+        {
+            if (!task->Cancel())
+            {
+                task->EnsureCompletion();
+            }
+        }
     }
 };
