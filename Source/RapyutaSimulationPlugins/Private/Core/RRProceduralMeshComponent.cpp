@@ -45,27 +45,21 @@ void URRProceduralMeshComponent::Initialize(bool bIsStaticBody, bool bInIsPhysic
 bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
 {
     MeshUniqueName = FPaths::GetBaseFilename(InMeshFileName);
-    const bool bIsMeshAlreadyLoaded = FRRMeshData::IsMeshDataAvailable(MeshUniqueName);
-
-    ShapeType = InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_PLANE)    ? ERRShapeType::PLANE
-              : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CUBE)     ? ERRShapeType::BOX
-              : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CYLINDER) ? ERRShapeType::CYLINDER
-              : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_SPHERE)   ? ERRShapeType::SPHERE
-              : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CAPSULE)  ? ERRShapeType::CAPSULE
-                                                                             : ERRShapeType::MESH;
-
-#if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("URRProceduralMeshComponent::InitializeMesh: %s - %s - Already loaded %d"),
-           *GetName(),
-           *InMeshFileName,
-           bIsMeshAlreadyLoaded);
-#endif
+    ShapeType = URRGameSingleton::GetShapeTypeFromMeshName(InMeshFileName);
 
     switch (ShapeType)
     {
         case ERRShapeType::MESH:
+        {
+            const bool bIsMeshAlreadyLoaded = FRRMeshData::IsMeshDataAvailable(MeshUniqueName);
+#if RAPYUTA_SIM_DEBUG
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("URRProceduralMeshComponent::InitializeMesh: %s - %s - Already loaded %d"),
+                   *GetName(),
+                   *InMeshFileName,
+                   bIsMeshAlreadyLoaded);
+#endif
             if (bIsMeshAlreadyLoaded)
             {
                 CreateMeshBody();
@@ -96,7 +90,8 @@ bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
                             });
                     });
             }
-            break;
+        }
+        break;
 
         case ERRShapeType::PLANE:
         case ERRShapeType::CYLINDER:
@@ -104,6 +99,8 @@ bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
         case ERRShapeType::SPHERE:
         case ERRShapeType::CAPSULE:
             // Let the primitive-shape mesh be created on the fly in SetMeshSize()
+            // NOTE: Due to primitive mesh ranging in various size, its data that is also insignificant is not cached by
+            // [FRRMeshData::AddMeshData]
             // SIGNAL [Mesh Created]
             OnMeshCreationDone.ExecuteIfBound(true, this);
             break;

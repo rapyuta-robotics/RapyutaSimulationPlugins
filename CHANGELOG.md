@@ -1,7 +1,13 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.7 ##
+* URRGameSingleton Add meshName <-> shapeType conversion
+* Add Content/DynamicContents/Materials/M_RapyutaPropMaster
+* FRRMeshData add MeshSize for primitive type
+
 ## 0.0.6 ##
 * Add data synth utils
+
 ## 0.0.5 ##
 * Add Content/SkeletalRobots/turtlebot3 BP actor classes for BallCasterSphereWheeled, ConvexWheeled, SphereWheeled, StaticMeshConstrained, FullLockConstrained, WheeledVehicle types
 * Add Content/Robots & SkeletalRobots to lfs

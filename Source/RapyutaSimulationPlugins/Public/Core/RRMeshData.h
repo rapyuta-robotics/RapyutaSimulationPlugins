@@ -56,6 +56,9 @@ public:
     FVector MeshScale3D = FVector::OneVector;
 
     UPROPERTY(VisibleAnywhere)
+    FVector MeshSize = FVector::ZeroVector;
+
+    UPROPERTY(VisibleAnywhere)
     float Mass = 0.f;
 
     void PrintSelf() const;
