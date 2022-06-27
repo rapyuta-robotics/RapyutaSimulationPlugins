@@ -91,13 +91,7 @@ void URRStaticMeshComponent::SetMesh(UStaticMesh* InStaticMesh)
 bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
 {
     MeshUniqueName = FPaths::GetBaseFilename(InMeshFileName);
-
-    ShapeType = InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_PLANE)    ? ERRShapeType::PLANE
-              : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CUBE)     ? ERRShapeType::BOX
-              : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CYLINDER) ? ERRShapeType::CYLINDER
-              : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_SPHERE)   ? ERRShapeType::SPHERE
-              : InMeshFileName.Equals(URRGameSingleton::SHAPE_NAME_CAPSULE)  ? ERRShapeType::CAPSULE
-                                                                             : ERRShapeType::MESH;
+    ShapeType = URRGameSingleton::GetShapeTypeFromMeshName(InMeshFileName);
 
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("URRStaticMeshComponent::InitializeMesh: %s - %s"), *GetName(), *InMeshFileName);
@@ -170,6 +164,8 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
         case ERRShapeType::BOX:
         case ERRShapeType::SPHERE:
         case ERRShapeType::CAPSULE:
+            // (NOTE) Due to primitive mesh ranging in various size, its data that is also insignificant is not cached by
+            // [FRRMeshData::AddMeshData]
             SetMesh(URRGameSingleton::Get()->GetStaticMesh(MeshUniqueName));
             break;
     }

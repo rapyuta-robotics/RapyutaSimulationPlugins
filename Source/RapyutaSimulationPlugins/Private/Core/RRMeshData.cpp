@@ -8,6 +8,7 @@ void FRRBoneProperty::PrintSelf() const
     UE_LOG(LogRapyutaCore, Display, TEXT("Bone Name: %s"), *Name);
     UE_LOG(LogRapyutaCore, Display, TEXT("- Rel Transform (to owner component): %s"), *RelTransform.ToString());
     UE_LOG(LogRapyutaCore, Display, TEXT("- MeshScale3D: %s"), *MeshScale3D.ToString());
+    UE_LOG(LogRapyutaCore, Display, TEXT("- MeshSize (Primitive type only): %s"), *MeshSize.ToString());
     UE_LOG(LogRapyutaCore, Display, TEXT("- Index: %d ParentIndex: %d"), Index, ParentIndex);
 }
 
