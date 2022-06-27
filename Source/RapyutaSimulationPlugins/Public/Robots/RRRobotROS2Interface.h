@@ -25,6 +25,9 @@ class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
 {
     GENERATED_BODY()
 
+#define RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(InTopicName, InMsgClass, InCallback) \
+    RR_ROS2_SUBSCRIBE_TO_TOPIC(RobotROS2Node, this, InTopicName, InMsgClass, InCallback)
+
 public:
     //! Target robot
     UPROPERTY(Transient)

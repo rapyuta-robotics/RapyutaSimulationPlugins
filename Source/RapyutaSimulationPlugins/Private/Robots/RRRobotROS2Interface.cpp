@@ -5,11 +5,11 @@
 // rclUE
 #include "Msgs/ROS2JointStateMsg.h"
 #include "Msgs/ROS2TwistMsg.h"
+#include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
-#include "Core/RRROS2Utils.h"
 #include "Robots/RobotVehicle.h"
 
 void URRRobotROS2Interface::Initialize(ARobotVehicle* InRobot)
@@ -80,7 +80,7 @@ void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
 {
     if (nullptr == OutPublisher)
     {
-        OutPublisher = URRROS2Utils::CreatePublisher(this, InTopicName, InPublisherClass, InMsgClass, InPubFrequency);
+        OutPublisher = UROS2Publisher::CreatePublisher(this, InTopicName, InPublisherClass, InMsgClass, InPubFrequency);
     }
     OutPublisher->InitializeWithROS2(RobotROS2Node);
 }
