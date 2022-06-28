@@ -123,7 +123,7 @@ void ARobotBaseVehicle::SetJointState(const TMap<FString, TArray<float>>& InJoin
         }
         else
         {
-            UE_LOG(LogTemp,
+            UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("[%s] [RobotBaseVehicle] [SetJointState] do not have joint named %s "),
                    *GetName(),

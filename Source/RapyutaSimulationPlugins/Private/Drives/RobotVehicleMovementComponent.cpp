@@ -302,7 +302,7 @@ void URobotVehicleMovementComponent::InitMovementComponent()
         USceneComponent* scp = Cast<USceneComponent>(acp);
         ContactPoints.Add(scp);
     }
-    UE_LOG(LogTemp,
+    UE_LOG(LogRapyutaCore,
            Warning,
            TEXT("URobotVehicleMovementComponent::InitMovementComponent - Nb Contact Points : %d"),
            ContactPoints.Num());
@@ -328,7 +328,7 @@ void URobotVehicleMovementComponent::InitMovementComponent()
     {
         MinDistanceToFloor = hitResult.Distance;
     }
-    UE_LOG(LogTemp,
+    UE_LOG(LogRapyutaCore,
            Warning,
            TEXT("URobotVehicleMovementComponent::InitMovementComponent - Min Distance To Floor = %f"),
            MinDistanceToFloor);

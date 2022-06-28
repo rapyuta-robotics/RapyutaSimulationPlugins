@@ -101,7 +101,7 @@ void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString
     if (InTopicName.IsEmpty())
     {
         UE_LOG(
-            LogTemp,
+            LogRapyutaCore,
             Warning,
             TEXT(
                 "[%s] [RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName is empty. Do not subscribe topic."),
@@ -114,7 +114,7 @@ void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString
     {
         FSubscriptionCallback cb;
         cb.BindDynamic(this, &ARRRobotVehicleROSController::MovementCallback);
-        UE_LOG(LogTemp,
+        UE_LOG(LogRapyutaCore,
                Warning,
                TEXT("[RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName  = %s"),
                *InTopicName);
@@ -155,7 +155,7 @@ void ARRRobotVehicleROSController::SubscribeToJointsCommandTopic(const FString& 
     if (InTopicName.IsEmpty())
     {
         UE_LOG(
-            LogTemp,
+            LogRapyutaCore,
             Warning,
             TEXT(
                 "[%s] [RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName is empty. Do not subscribe topic."),
@@ -197,7 +197,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
         else if (jointState.name.Num() == jointState.effort.Num())
         {
             jointControlType = EJointControlType::EFFORT;
-            UE_LOG(LogTemp,
+            UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] Effort control is not supported."),
                    *GetName());
@@ -205,7 +205,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
         }
         else
         {
-            UE_LOG(LogTemp,
+            UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] position, velocity or effort array must be same "
                         "size of name array"),
@@ -221,7 +221,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
             {
                 if (bWarnAboutMissingLink)
                 {
-                    UE_LOG(LogTemp,
+                    UE_LOG(LogRapyutaCore,
                            Warning,
                            TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] vehicle do not have joint named %s."),
                            *GetName(),
@@ -242,7 +242,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
             else
             {
                 UE_LOG(
-                    LogTemp,
+                    LogRapyutaCore,
                     Warning,
                     TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] position, velocity or effort array must be same "
                          "size of name array"),
@@ -261,7 +261,7 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
             }
             else
             {
-                UE_LOG(LogTemp,
+                UE_LOG(LogRapyutaCore,
                        Warning,
                        TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] Supports only single DOF joint. %s has %d "
                             "linear DOF and %d rotational DOF"),
