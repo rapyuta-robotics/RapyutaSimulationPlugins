@@ -3,6 +3,7 @@
 #include "Sensors/RRROS2EntityStateSensorComponent.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRConversionUtils.h"
 #include "Core/RRUObjectUtils.h"
 
 URRROS2EntityStateSensorComponent::URRROS2EntityStateSensorComponent()
@@ -68,5 +69,5 @@ void URRROS2EntityStateSensorComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
 
 void URRROS2EntityStateSensorComponent::SetRootOffset(const FTransform& InRootOffset)
 {
-    RootOffset = ConversionUtils::TransformUEToROS(InRootOffset);
+    RootOffset = URRConversionUtils::TransformUEToROS(InRootOffset);
 }

@@ -29,10 +29,6 @@ class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public AAICont
 {
     GENERATED_BODY()
 
-public:
-    UPROPERTY(BlueprintReadWrite)
-    bool bWarnAboutMissingLink = true;
-
 protected:
     //! ROS2 Interface handle, which must be null as ROS Controller is created
     UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite)

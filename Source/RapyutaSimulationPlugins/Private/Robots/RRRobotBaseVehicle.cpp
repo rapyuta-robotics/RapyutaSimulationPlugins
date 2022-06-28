@@ -31,6 +31,14 @@ void ARRRobotBaseVehicle::SetupDefaultVehicle()
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
+void ARRRobotBaseVehicle::SetRootOffset(const FTransform& InRootOffset)
+{
+    if (RobotVehicleMoveComponent)
+    {
+        RobotVehicleMoveComponent->RootOffset = InRootOffset;
+    }
+}
+
 bool ARRRobotBaseVehicle::InitMoveComponent()
 {
     if (VehicleMoveComponentClass)

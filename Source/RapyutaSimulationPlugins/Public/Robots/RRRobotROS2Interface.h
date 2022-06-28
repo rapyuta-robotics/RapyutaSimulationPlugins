@@ -105,6 +105,9 @@ public:
     UPROPERTY(BlueprintReadWrite)
     FString JointsCmdTopicName = TEXT("joint_states");
 
+    UPROPERTY(BlueprintReadWrite)
+    bool bWarnAboutMissingLink = true;
+
 protected:
     /**
      * @brief Create a ROS2 publisher
