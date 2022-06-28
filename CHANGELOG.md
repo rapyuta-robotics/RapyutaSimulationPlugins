@@ -1,5 +1,12 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.8 ##
+* Add ARRBaseRobot, ARRRobotROS2Interface taking src from ARobotROSController
+* Robot vehicle Collision fix2 (#69)
+* URRGameSingleton Add meshName <-> shapeType conversion (#68)
+* Prefix RR->RobotBaseVehicle 
+* Rem ATurtleborROSController, use URRTurtlebotROS2Interface + Rem BP_TurlebotROSController, use BP_TurtlebotROS2Interface instead
+
 ## 0.0.7 ##
 * URRGameSingleton Add meshName <-> shapeType conversion
 * Add Content/DynamicContents/Materials/M_RapyutaPropMaster
