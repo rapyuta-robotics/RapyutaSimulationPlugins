@@ -114,12 +114,10 @@ void ARRRobotVehicleROSController::SubscribeToMovementCommandTopic(const FString
     {
         FSubscriptionCallback cb;
         cb.BindDynamic(this, &ARRRobotVehicleROSController::MovementCallback);
-        UE_LOG(
-            LogTemp,
-            Warning,
-            TEXT(
-                "[RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName  = %s"),
-            *InTopicName );
+        UE_LOG(LogTemp,
+               Warning,
+               TEXT("[RRRobotVehicleROSController] [SubscribeToMovementCommandTopic] TopicName  = %s"),
+               *InTopicName);
         RobotROS2Node->AddSubscription(InTopicName, UROS2TwistMsg::StaticClass(), cb);
     }
 }
@@ -224,10 +222,10 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
                 if (bWarnAboutMissingLink)
                 {
                     UE_LOG(LogTemp,
-                        Warning,
-                        TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] vehicle do not have joint named %s."),
-                        *GetName(),
-                        *jointState.name[i]);
+                           Warning,
+                           TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] vehicle do not have joint named %s."),
+                           *GetName(),
+                           *jointState.name[i]);
                 }
                 continue;
             }

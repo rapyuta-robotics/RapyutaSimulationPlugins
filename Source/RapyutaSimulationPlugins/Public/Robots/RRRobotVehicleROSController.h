@@ -119,10 +119,9 @@ protected:
 
     //! Movement command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(BlueprintReadWrite)
-	FString CmdVelTopicName = TEXT("cmd_vel");
+    FString CmdVelTopicName = TEXT("cmd_vel");
 
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
-	UPROPERTY(BlueprintReadWrite)
-	FString JointsCmdTopicName = TEXT("joint_states");
-
+    UPROPERTY(BlueprintReadWrite)
+    FString JointsCmdTopicName = TEXT("joint_states");
 };

@@ -36,8 +36,9 @@ void ARobotBaseVehicle::SetupDefault()
 
 void ARobotBaseVehicle::SetRootOffset(const FTransform& InRootOffset)
 {
-    if( RobotVehicleMoveComponent == nullptr ) return;
-    
+    if (RobotVehicleMoveComponent == nullptr)
+        return;
+
     RobotVehicleMoveComponent->RootOffset = InRootOffset;
 }
 
@@ -122,8 +123,11 @@ void ARobotBaseVehicle::SetJointState(const TMap<FString, TArray<float>>& InJoin
         }
         else
         {
-            UE_LOG(
-                LogTemp, Warning, TEXT("[%s] [RobotBaseVehicle] [SetJointState] do not have joint named %s "), *GetName(), *joint.Key);
+            UE_LOG(LogTemp,
+                   Warning,
+                   TEXT("[%s] [RobotBaseVehicle] [SetJointState] do not have joint named %s "),
+                   *GetName(),
+                   *joint.Key);
         }
     }
 }
