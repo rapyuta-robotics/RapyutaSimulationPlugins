@@ -28,10 +28,18 @@ void ARobotBaseVehicle::SetupDefault()
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
 
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComp"));
+    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+}
+
+void ARobotBaseVehicle::SetRootOffset(const FTransform& InRootOffset)
+{
+    if (RobotVehicleMoveComponent == nullptr)
+        return;
+
+    RobotVehicleMoveComponent->RootOffset = InRootOffset;
 }
 
 bool ARobotBaseVehicle::InitSensors(AROS2Node* InROS2Node)
@@ -115,8 +123,11 @@ void ARobotBaseVehicle::SetJointState(const TMap<FString, TArray<float>>& InJoin
         }
         else
         {
-            UE_LOG(
-                LogTemp, Warning, TEXT("[%s] [RobotBaseVehicle] [SetJointState] do not have joint named %s "), *GetName(), *joint.Key);
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("[%s] [RobotBaseVehicle] [SetJointState] do not have joint named %s "),
+                   *GetName(),
+                   *joint.Key);
         }
     }
 }
