@@ -169,6 +169,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float FallingSpeed = 100.f;
 
+    //! Offset transform between the skeletal mesh root component and the pose that will be published in /odom topic
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FTransform RootOffset = FTransform::Identity;
+
 protected:
     virtual void BeginPlay() override;
 
@@ -202,6 +206,9 @@ protected:
     UPROPERTY()
     FTransform PreviousTransform = FTransform::Identity;
 
+    UPROPERTY()
+    FTransform PreviousNoisyTransform = FTransform::Identity;
+    
     //! C++11 RNG for odometry noise
     std::random_device Rng;
 
