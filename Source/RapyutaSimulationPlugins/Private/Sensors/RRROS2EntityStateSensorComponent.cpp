@@ -65,3 +65,8 @@ void URRROS2EntityStateSensorComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
 {
     CastChecked<UROS2EntityStateMsg>(InMessage)->SetMsg(GetROS2Data());
 }
+
+void URRROS2EntityStateSensorComponent::SetRootOffset(const FTransform& InRootOffset)
+{
+    RootOffset = ConversionUtils::TransformUEToROS(InRootOffset);
+}
