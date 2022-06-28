@@ -18,13 +18,6 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 
     // Create ROS2 interface
     if (nullptr == ROS2Interface)
-    {
-        ARobotVehicle* robot = CastChecked<ARobotVehicle>(InPawn);
-        verify(robot->ROS2InterfaceClass);
-        ROS2Interface = CastChecked<URRRobotROS2Interface>(URRUObjectUtils::CreateSelfSubobject(
-            this, robot->ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
-    }
-    ROS2Interface->Initialize(CastChecked<ARobotVehicle>(InPawn));
 }
 
 void ARRRobotVehicleROSController::OnUnPossess()

@@ -1,6 +1,6 @@
 /**
  * @file RRROS2EntityStateSensorComponent.h
- * @brief EntityState sensor components which publish entitystate relative to a specific actor. 
+ * @brief EntityState sensor components which publish entitystate relative to a specific actor.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -22,7 +22,7 @@
 #include "RRROS2EntityStateSensorComponent.generated.h"
 
 /**
- * @brief EntityState sensor components which publish entitystate relative to a specific actor. 
+ * @brief EntityState sensor components which publish entitystate relative to a specific actor.
  * @todo Currently twist = ZeroVectors. Should be filled for physics actors.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
@@ -33,7 +33,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2EntityStateSensorComponent : public UR
 public:
     /**
      * @brief Construct a new URRROS2EntityStateSensorComponent object
-     * 
+     *
      */
     URRROS2EntityStateSensorComponent();
 
@@ -55,24 +55,31 @@ public:
     virtual void SetReferenceActorByName(const FString& InName);
 
     UFUNCTION(BlueprintCallable)
+    virtual void SetRootOffset(const FTransform& InRootOffset);
+
+    UFUNCTION(BlueprintCallable)
     virtual void SetReferenceActorByActor(AActor* InActor);
 
     // ROS
     /**
      * @brief return #Data
-     * 
-     * @return FROSEntityState 
+     *
+     * @return FROSEntityState
      */
     UFUNCTION(BlueprintCallable)
     virtual FROSEntityState GetROS2Data();
 
     /**
      * @brief Set result of #GetROS2Data to InMessage.
-     * 
-     * @param InMessage 
+     *
+     * @param InMessage
      */
     virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
 
     UPROPERTY(BlueprintReadWrite)
     FROSEntityState Data;
+
+private:
+    UPROPERTY()
+    FTransform RootOffset = FTransform::Identity;
 };
