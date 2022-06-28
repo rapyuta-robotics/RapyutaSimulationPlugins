@@ -93,8 +93,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             else
             {
                 // very basic robot falling
-                PawnOwner->AddActorWorldOffset(
-                    FVector(0., 0., -FallingSpeed * InDeltaTime), true, &hit, ETeleportType::None);
+                PawnOwner->AddActorWorldOffset(FVector(0., 0., -FallingSpeed * InDeltaTime), true, &hit, ETeleportType::None);
             }
         }
         else
@@ -159,11 +158,10 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
                 // Moves the robot up or down, depending on impact position
                 float minDistance = *Algo::MinElement(contactsDistance);
                 minDistance -= RayOffsetUp;
-
                 minDistance = FMath::Min(minDistance, FallingSpeed * InDeltaTime);
 
                 FVector heightVariation = {0., 0., -minDistance};
-                PawnOwner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::None);
+                PawnOwner->AddActorWorldOffset(heightVariation, false, &hit, ETeleportType::None);
             }
         }
     }
@@ -199,6 +197,7 @@ void URobotVehicleMovementComponent::InitOdom()
     OdomData.pose_pose_orientation = InitialTransform.GetRotation();
 
     PreviousTransform = InitialTransform;
+    PreviousNoisyTransform = InitialTransform;
 
     // todo temporary hardcoded
     OdomData.pose_covariance.Init(0, 36);
@@ -233,10 +232,9 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     uint64 ns = (uint64)(timeNow * 1e+09f);
     OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
 
-    // previous estimated data
-    FVector previousEstimatedPos =
-        FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z);
-    FQuat previousEstimatedRot = OdomData.pose_pose_orientation;
+    // previous estimated data (with noise)
+    FVector previousEstimatedPos = PreviousNoisyTransform.GetTranslation();
+    FQuat previousEstimatedRot = PreviousNoisyTransform.GetRotation();
 
     AActor* owner = GetOwner();
 
@@ -253,14 +251,19 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     rot = noiseRot.Quaternion() * previousEstimatedRot * previousRot.Inverse() * rot;
     rot.Normalize();
 
-    OdomData.pose_pose_position_x = pos.X;
-    OdomData.pose_pose_position_y = pos.Y;
-    OdomData.pose_pose_position_z = pos.Z;
+    PreviousNoisyTransform.SetTranslation(pos);
+    PreviousNoisyTransform.SetRotation(rot);
+
+    OdomData.pose_pose_position_x = pos.X + RootOffset.GetTranslation().X;
+    OdomData.pose_pose_position_y = pos.Y + RootOffset.GetTranslation().Y;
+    OdomData.pose_pose_position_z = pos.Z + RootOffset.GetTranslation().Z;
     OdomData.pose_pose_orientation = rot;
 
     OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector(pos - previousEstimatedPos) / InDeltaTime;
     OdomData.twist_twist_angular =
         FMath::DegreesToRadians((rot * previousEstimatedRot.Inverse()).GetNormalized().Euler()) / InDeltaTime;
+
+    OdomData.pose_pose_orientation *= RootOffset.GetRotation();
 }
 
 void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
@@ -324,16 +327,15 @@ void URobotVehicleMovementComponent::InitMovementComponent()
     if (bIsFloorHit)
     {
         MinDistanceToFloor = hitResult.Distance;
-        UE_LOG(LogTemp,
-               Warning,
-               TEXT("URobotVehicleMovementComponent::InitMovementComponent - Min Distance To Floor = %f"),
-               MinDistanceToFloor);
     }
+    UE_LOG(LogTemp,
+           Warning,
+           TEXT("URobotVehicleMovementComponent::InitMovementComponent - Min Distance To Floor = %f"),
+           MinDistanceToFloor);
 }
 
 void URobotVehicleMovementComponent::SetMovingPlatform(AActor* InPlatform)
 {
-    // UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::SetMovingPlatform..."));
     MovingPlatform = InPlatform;
     LastPlatformLocation = InPlatform->GetActorLocation();
     LastPlatformRotation = InPlatform->GetActorQuat();
@@ -346,6 +348,5 @@ bool URobotVehicleMovementComponent::IsOnMovingPlatform()
 
 void URobotVehicleMovementComponent::RemoveMovingPlatform()
 {
-    // UE_LOG(LogTemp, Warning, TEXT("URobotVehicleMovementComponent::RemoveMovingPlatform..."));
     MovingPlatform = nullptr;
 }

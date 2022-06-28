@@ -35,6 +35,10 @@ class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public AAICont
 {
     GENERATED_BODY()
 
+public:
+    UPROPERTY(BlueprintReadWrite)
+    bool bWarnAboutMissingLink = true;
+
 protected:
     UPROPERTY(Transient)
     AROS2Node* RobotROS2Node = nullptr;

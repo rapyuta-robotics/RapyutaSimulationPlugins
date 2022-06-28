@@ -107,6 +107,16 @@ public:
     void SetupDefault();
 
     /**
+     * @brief Set the root offset for #RobotVehicleMoveComponent
+     * This will be added to the odometry data published in ros topic /odom 
+     * It is used, for example, to allow the robot root pose to remain constant even if we move the skeletal mesh root component for collisions
+     *
+     * @param InRootOffset
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetRootOffset(const FTransform& InRootOffset);
+
+    /**
      * @brief Set velocity to #RobotVehicleMoveComponent
      *
      * @param InLinearVelocity

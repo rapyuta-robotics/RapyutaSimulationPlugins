@@ -32,17 +32,18 @@ enum class EOdomSource : uint8
 };
 
 /**
- * @brief Base Robot vehicle movement class which is used as part of #ARobotVehicle. 
+ * @brief Base Robot vehicle movement class which is used as part of #ARobotVehicle.
  * Robot moves based on the Velocity(member of UMovementComponent) and #AngularVelocity without considering physics.
  * If Robot bumped into something, try to slide along it.
- * 
- * If #bAdaptToSurfaceBelow is true, robot will follow the pawn movement under the robot which has been defined as the #MovingPlatform (e.g. elevators), it will also adapt its pose to the floor surface configuration (e.g. slopes)
+ *
+ * If #bAdaptToSurfaceBelow is true, robot will follow the pawn movement under the robot which has been defined as the
+ #MovingPlatform (e.g. elevators), it will also adapt its pose to the floor surface configuration (e.g. slopes)
 
- * 
+ *
  * Publish odometry from world origin or initial pose.
  *
  * @sa [UPawnMovementComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UPawnMovementComponent/)
- * 
+ *
  * @todo Support 3D movement.
  * @todo Expose odom covariance parameter.
  */
@@ -56,7 +57,7 @@ private:
 
     //! The platform below the robot, e.g. elevator.
     UPROPERTY(VisibleAnywhere)
-    AActor* MovingPlatform = nullptr;    
+    AActor* MovingPlatform = nullptr;
 
     UPROPERTY(VisibleAnywhere)
     FVector LastPlatformLocation = FVector::ZeroVector;
@@ -64,17 +65,19 @@ private:
     UPROPERTY(VisibleAnywhere)
     FQuat LastPlatformRotation = FQuat::Identity;
 
-    //! List all scene components on the pawn. that have the tag "ContactPoint". This is used to adapt the robot pose based on the floor surface configuration.
+    //! List all scene components on the pawn. that have the tag "ContactPoint". This is used to adapt the robot pose based on the
+    //! floor surface configuration.
 
     UPROPERTY(VisibleAnywhere)
-    TArray<USceneComponent*> ContactPoints;    
+    TArray<USceneComponent*> ContactPoints;
 
 public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
     FVector AngularVelocity = FVector::ZeroVector;
- 
+
     //! Desired position calculated from deltatime and UpdatedComponent::ComponentVelocity
-    //! @sa [UpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
+    //! @sa
+    //! [UpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
     UPROPERTY(Transient)
     FVector DesiredMovement = FVector::ZeroVector;
 
@@ -95,9 +98,9 @@ public:
 
     /**
      * @brief Set the Frame Id and child frame id of odometry
-     * 
-     * @param InFrameId 
-     * @param InChildFrameId 
+     *
+     * @param InFrameId
+     * @param InChildFrameId
      */
     void SetFrameIds(const FString& InFrameId, const FString& InChildFrameId);
 
@@ -109,7 +112,7 @@ public:
     //! Ray start Z offset. Value must be > possible penetration of objects in contact point, in one tick
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float RayOffsetUp = 10.f;
-    
+
     //! Ray end Z offset.
     //! Rays go from ContactPoint+RayOffsetUp to ContactPoint-RayOffsetDown
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -117,14 +120,14 @@ public:
 
     //! to activate/deactivate floor checks to stick the robot on its surface below
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bAdaptToSurfaceBelow = true;   
+    bool bAdaptToSurfaceBelow = true;
 
     UFUNCTION(BlueprintCallable)
     FTransform GetOdomTF() const;
 
     /**
      * @brief Initialize noise and odometry.
-     * 
+     *
      */
     UFUNCTION(BlueprintCallable)
     virtual void Initialize();
@@ -142,7 +145,7 @@ public:
     /**
      * @brief Call #InitOdom, Calculate #MinDistanceToFloor, and
      * Add all actors in PawnOwner which has tag "ContactPoints" to #ContactPoints
-     * 
+     *
      */
     UFUNCTION(BlueprintCallable)
     virtual void InitMovementComponent();
@@ -160,35 +163,37 @@ public:
 
     //! [cm] Z distance between the robot root location and the floor, used when less than 3 contact points are defined
     UPROPERTY(VisibleAnywhere)
-    float MinDistanceToFloor = 0.f;   
+    float MinDistanceToFloor = 0.f;
 
     //![cm/s] How much the robot falls if no floor beneath ( FallingSpeed * DeltaTime )
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float FallingSpeed = 100.f;    
+    float FallingSpeed = 100.f;
 
 protected:
-    
     virtual void BeginPlay() override;
-    
+
     /**
      * @brief Move actor by using SafeMoveUpdatedComponent and SlideAlongSurface.
      * Calculate #DesiredMovement and #DesiredRotation from deltatime, UpdatedComponent and #AngularVelocity.
-     * 
+     *
      * If #bAdaptToSurfaceBelow is true, robot will follow the pawn movement under the robot with tag "ContactPoints".
      * Please check the .cpp file for detailed implementation to follow platform.
-     * 
      *
-     * @param InDeltaTime 
-     * @sa [SafeMoveUpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/SafeMoveUpdatedComponent/1/)
-     * @sa [SlideAlongSurface](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/SlideAlongSurface/)
-     * @sa [UpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
+     *
+     * @param InDeltaTime
+     * @sa
+     * [SafeMoveUpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/SafeMoveUpdatedComponent/1/)
+     * @sa
+     * [SlideAlongSurface](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/SlideAlongSurface/)
+     * @sa
+     * [UpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
      */
     virtual void UpdateMovement(float InDeltaTime);
 
     /**
      * @brief Update odom.
      * Noise is integral of gaussian noise.
-     * @param InDeltaTime 
+     * @param InDeltaTime
      */
     virtual void UpdateOdom(float InDeltaTime);
 
@@ -202,7 +207,7 @@ protected:
 
     //! C++11 RNG for odometry noise
     std::mt19937 Gen = std::mt19937{Rng()};
-    
+
     std::normal_distribution<> GaussianRNGPosition;
     std::normal_distribution<> GaussianRNGRotation;
 
@@ -225,12 +230,13 @@ protected:
 public:
     /**
      * @brief Call #UpdateMovement, #UpdateOdom, and UpdateComponentVelocity
-     * 
-     * @param DeltaTime 
-     * @param TickType 
-     * @param ThisTickFunction 
      *
-     * @sa [UpdateComponentVelocity](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdateComponentVelocity/)
+     * @param DeltaTime
+     * @param TickType
+     * @param ThisTickFunction
+     *
+     * @sa
+     * [UpdateComponentVelocity](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdateComponentVelocity/)
      */
     virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

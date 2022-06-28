@@ -221,11 +221,14 @@ void ARRRobotVehicleROSController::JointStateCallback(const UROS2GenericMsg* Msg
         {
             if (!vehicle->Joints.Contains(jointState.name[i]))
             {
-                UE_LOG(LogTemp,
-                       Warning,
-                       TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] vehicle do not have joint named %s."),
-                       *GetName(),
-                       *jointState.name[i]);
+                if (bWarnAboutMissingLink)
+                {
+                    UE_LOG(LogTemp,
+                        Warning,
+                        TEXT("[%s] [RRRobotVehicleROSController] [JointStateCallback] vehicle do not have joint named %s."),
+                        *GetName(),
+                        *jointState.name[i]);
+                }
                 continue;
             }
 
