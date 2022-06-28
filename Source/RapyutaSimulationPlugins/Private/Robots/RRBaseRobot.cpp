@@ -29,7 +29,7 @@ void ARRBaseRobot::SetupDefault()
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
 
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComp"));
+    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
     ROS2InterfaceClass = URRRobotROS2Interface::StaticClass();
 }
 

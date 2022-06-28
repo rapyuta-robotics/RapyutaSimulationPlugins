@@ -73,10 +73,10 @@ bool URRRobotROS2Interface::InitPublishers()
 }
 
 void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
-                                            UROS2Publisher*& OutPublisher,
                                             const TSubclassOf<UROS2Publisher>& InPublisherClass,
                                             const TSubclassOf<UROS2GenericMsg>& InMsgClass,
-                                            int32 InPubFrequency)
+                                            int32 InPubFrequency,
+                                            UROS2Publisher*& OutPublisher)
 {
     if (nullptr == OutPublisher)
     {

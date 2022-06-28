@@ -55,8 +55,8 @@ public:
     URRROS2OdomPublisher* OdomPublisher = nullptr;
 
     /**
-     * @brief Initialize non sensor publishes such as odometry.
-     *
+     * @brief Initialize non sensor basic publishers such as odometry.
+     * Overidden in child robot ROS2 interface classes for specialized publishers.
      */
     UFUNCTION()
     virtual bool InitPublishers();
@@ -69,8 +69,8 @@ public:
     virtual void StopPublishers();
 
     /**
-     * @brief Initialize subscriptions
-     *
+     * @brief Initialize subscriptions for cmd_vel & joint_states topics
+     * Overidden in child robot ROS2 interface classes for specialized topic subscriptions.
      */
     UFUNCTION()
     virtual void InitSubscriptions();
@@ -116,8 +116,8 @@ protected:
      * @param InPubFrequency
      */
     void CreatePublisher(const FString& InTopicName,
-                         UROS2Publisher*& OutPublisher,
                          const TSubclassOf<UROS2Publisher>& InPublisherClass,
                          const TSubclassOf<UROS2GenericMsg>& InMsgClass,
-                         int32 InPubFrequency);
+                         int32 InPubFrequency,
+                         UROS2Publisher*& OutPublisher);
 };
