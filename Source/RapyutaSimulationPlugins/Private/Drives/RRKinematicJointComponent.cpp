@@ -27,7 +27,7 @@ void URRKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickT
         FVector dRot = AngularVelocity * DeltaTime;
 
         // Check reach goal in this step.
-        if (ControlType == EJointControlType::POSITION)
+        if (ControlType == ERRJointControlType::POSITION)
         {
             uint8 i;
             for (i = 0; i < 3; i++)

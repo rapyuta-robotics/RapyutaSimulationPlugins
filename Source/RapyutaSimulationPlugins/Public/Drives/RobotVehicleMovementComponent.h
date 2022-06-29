@@ -208,7 +208,7 @@ protected:
 
     UPROPERTY()
     FTransform PreviousNoisyTransform = FTransform::Identity;
-    
+
     //! C++11 RNG for odometry noise
     std::random_device Rng;
 

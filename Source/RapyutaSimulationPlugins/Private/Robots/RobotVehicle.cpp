@@ -1,16 +1,10 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
 
 #include "Robots/RobotVehicle.h"
 
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
-
-// RapyutaSimulationPlugins
-#include "Drives/RobotVehicleMovementComponent.h"
-#include "Robots/RRRobotVehicleROSController.h"
-#include "Tools/ROS2Spawnable.h"
-#include "Tools/SimulationState.h"
 
 ARobotVehicle::ARobotVehicle()
 {

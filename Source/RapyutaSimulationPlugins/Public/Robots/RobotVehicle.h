@@ -1,6 +1,7 @@
 /**
  * @file RobotVehicle.h
- * @brief Base RobotVehicle class. Other robot class that need a Skeletal Mesh as root component should inherit from this class. Example is #ATurtlebotBurger.
+ * @brief Base RobotVehicle class.
+ * Example is #ATurtlebotBurger.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -9,32 +10,21 @@
 // UE
 #include "Components/SkeletalMeshComponent.h"
 #include "CoreMinimal.h"
-#include "Engine/TargetPoint.h"
-#include "GameFramework/Pawn.h"
 
 // RapyutaSimulationPlugins
-#include "Core/RRBaseActor.h"
-#include "Drives/RRJointComponent.h"
-#include "Drives/RobotVehicleMovementComponent.h"
-#include "Sensors/RRROS2BaseSensorComponent.h"
-#include "Robots/RobotBaseVehicle.h"
+#include "Robots/RRRobotBaseVehicle.h"
 
 // rclUE
 #include "ROS2Node.h"
 
 #include "RobotVehicle.generated.h"
 
-class URobotVehicleMovementComponent;
-
 /**
- * @brief Base RobotVehicle class. Other robot class should inherit from this class.
- * This actor moves with #URobotVehicleMovementComponent.
- * This actor is possessed by #ARRRobotVehicleROSController to be control from ROS2.
- * You can find example at #ATurtlebotBurger.
- *
+ * @brief RobotVehicle class.
+ * This class represents robot vehicles built up from a Skeletal Mesh component that is also its Root.
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARobotBaseVehicle
+class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARRRobotBaseVehicle
 {
     GENERATED_BODY()
 
@@ -61,5 +51,4 @@ public:
      *
      */
     void SetupDefaultRootSkeletal();
-
 };

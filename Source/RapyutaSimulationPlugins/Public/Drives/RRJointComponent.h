@@ -13,7 +13,7 @@
 #include "RRJointComponent.generated.h"
 
 UENUM(BlueprintType)
-enum class EJointControlType : uint8
+enum class ERRJointControlType : uint8
 {
     POSITION UMETA(DisplayName = "Position"),
     VELOCITY UMETA(DisplayName = "Velocity"),
@@ -118,7 +118,7 @@ public:
     UStaticMeshComponent* ChildLink;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    EJointControlType ControlType = EJointControlType::POSITION;
+    ERRJointControlType ControlType = ERRJointControlType::POSITION;
 
     //! Linear Degrees Of Freedom
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
