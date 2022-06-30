@@ -9,8 +9,8 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Robots/RRRobotBaseVehicle.h"
 #include "Robots/RRRobotROS2Interface.h"
-#include "Robots/RobotVehicle.h"
 
 void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 {
@@ -19,12 +19,12 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
     // Create ROS2 interface
     if (nullptr == ROS2Interface)
     {
-        ARobotVehicle* robot = CastChecked<ARobotVehicle>(InPawn);
+        ARRRobotBaseVehicle* robot = CastChecked<ARRRobotBaseVehicle>(InPawn);
         verify(robot->ROS2InterfaceClass);
         ROS2Interface = CastChecked<URRRobotROS2Interface>(URRUObjectUtils::CreateSelfSubobject(
             this, robot->ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     }
-    ROS2Interface->Initialize(CastChecked<ARobotVehicle>(InPawn));
+    ROS2Interface->Initialize(CastChecked<ARRRobotBaseVehicle>(InPawn));
 }
 
 void ARRRobotVehicleROSController::OnUnPossess()

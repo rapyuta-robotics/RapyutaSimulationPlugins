@@ -10,9 +10,10 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
-#include "Robots/RobotVehicle.h"
+#include "Robots/RRBaseRobot.h"
+#include "Robots/RRRobotBaseVehicle.h"
 
-void URRRobotROS2Interface::Initialize(ARobotVehicle* InRobot)
+void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
     Robot = InRobot;
 
@@ -27,7 +28,7 @@ void URRRobotROS2Interface::Initialize(ARobotVehicle* InRobot)
     InitSubscriptions();
 }
 
-void URRRobotROS2Interface::InitRobotROS2Node(ARobotVehicle* InRobot)
+void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
 {
     if (nullptr == RobotROS2Node)
     {
@@ -67,7 +68,7 @@ bool URRRobotROS2Interface::InitPublishers()
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
-        OdomPublisher->RobotVehicle = Robot;
+        OdomPublisher->RobotVehicle = Cast<ARRRobotBaseVehicle>(Robot);
     }
     return true;
 }
@@ -122,9 +123,13 @@ void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)
         AsyncTask(ENamedThreads::GameThread,
                   [this, linear, angular]
                   {
-                      check(IsValid(Robot));
-                      Robot->SetLinearVel(linear);
-                      Robot->SetAngularVel(angular);
+                      ARRRobotBaseVehicle* robotVehicle = Cast<ARRRobotBaseVehicle>(Robot);
+                      if (robotVehicle)
+                      {
+                          check(IsValid(robotVehicle));
+                          robotVehicle->SetLinearVel(linear);
+                          robotVehicle->SetAngularVel(angular);
+                      }
                   });
     }
 }
