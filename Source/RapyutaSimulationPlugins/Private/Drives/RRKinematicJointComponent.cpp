@@ -100,6 +100,6 @@ void URRKinematicJointComponent::UpdatePose()
                              ParentLink->GetComponentTransform(),    // world orogin to parent
                          true,                                       // bSweep
                          SweepHitResult,
-                         true    // bTeleport
+                         false    // bTeleport
     );
 }

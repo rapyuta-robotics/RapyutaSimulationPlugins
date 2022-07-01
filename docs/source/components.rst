@@ -82,7 +82,7 @@ Robots
     - BP_KinematicSimpleArm: inherit from C++ ARobotVehicle and have joint and link setting. Please check construction script for joints settings. You can control arm by 
     .. code-block:: bash
 
-       $ ros2 topic pub /arm/joint_state sensor_msgs/msg/JointState  "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, name: ['joint12', 'joint23', 'joint34'], position: [1.57,1.57,1.57], velocity: [], effort: []}"
+       $ ros2 topic pub /arm/joint_states sensor_msgs/msg/JointState  "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, name: ['joint12', 'joint23', 'joint34'], position: [1.57,1.57,1.57], velocity: [], effort: []}"
     
     - BP_SampleArmROSController: inherit from C++ ARRRobotVehicleROSController. Subscribes 'joint_state' topic and control robot joints. 
 
