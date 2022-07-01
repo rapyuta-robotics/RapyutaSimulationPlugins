@@ -53,6 +53,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS2 Interface Class"))
     TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass;
 
+    //! Robot's ROS2 Interface
+    UPROPERTY()
+    URRRobotROS2Interface* ROS2Interface = nullptr;
+
     /**
      * @brief
      * Actually Object's Name is also unique as noted by UE, but we just do not want to rely on it.

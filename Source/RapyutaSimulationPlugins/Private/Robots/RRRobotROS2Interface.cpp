@@ -16,6 +16,7 @@
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
     Robot = InRobot;
+    Robot->ROS2Interface = this;
 
     // Instantiate a ROS2 node for each possessed [InPawn]
     InitRobotROS2Node(InRobot);
