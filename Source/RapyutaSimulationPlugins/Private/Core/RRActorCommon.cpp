@@ -199,23 +199,17 @@ void URRActorCommon::SetupEnvironment()
     checkf(currentWorld, TEXT("[URRActorCommon::SetupEnvironment] Failed fetching Game World"));
 
     // Fetch Main background environment
-    if (!MainEnvironment)
-    {
-        MainEnvironment = URRUObjectUtils::FindEnvironmentActor(currentWorld);
-        // Not all maps has MainEnvironment setup
-    }
+    MainEnvironment = URRUObjectUtils::FindEnvironmentActor(currentWorld);
+    // Not all maps has MainEnvironment setup
 
-    if (!MainFloor)
-    {
-        MainFloor = URRUObjectUtils::FindFloorActor(currentWorld);
-        // Not all maps has MainFloor setup
-    }
+    MainFloor = URRUObjectUtils::FindFloorActor(currentWorld);
+    // Not all maps has MainFloor setup
 
-    if (!MainWall)
-    {
-        MainWall = URRUObjectUtils::FindWallActor(currentWorld);
-        // Not all maps has MainWall setup
-    }
+    MainWall = URRUObjectUtils::FindWallActor(currentWorld);
+    // Not all maps has MainWall setup
+
+    MainLights = URRUObjectUtils::FindsActorByType<ALight>(currentWorld);
+    check(MainLights.Num() > 0);
 
     // Spawn MainCamera
     MainCamera =

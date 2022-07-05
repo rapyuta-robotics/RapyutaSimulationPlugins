@@ -71,7 +71,14 @@ public:
     }
     void RandomizeFoV();
     void RandomizePose(bool bIsRandomLocationOnly);
+
     float GetDistanceToFloor() const;
+    template<typename T>
+    float GetDistanceToActorsGroup(const TArray<T*>& InActors) const
+    {
+        return FVector::Dist(CameraComponent->GetComponentLocation(), URRUObjectUtils::GetActorsGroupCenter(InActors));
+    }
+
     float GetFocalLength() const
     {
         // HFOV = 2 * arctan( width / 2f )

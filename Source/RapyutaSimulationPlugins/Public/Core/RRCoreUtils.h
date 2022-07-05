@@ -484,13 +484,15 @@ public:
         TSharedPtr<IImageWrapper> imageWrapper = URRCoreUtils::SImageWrappers[InImageFileType];
         verify(imageWrapper.IsValid());
         const auto& bitmap = InImageData.GetImageData<InBitDepth>();
-        imageWrapper->SetRaw(bitmap.GetData(), bitmap.GetAllocatedSize(), ImageSize.X, ImageSize.Y, RGBFormat, BitDepth);
+        imageWrapper->SetRaw(
+            bitmap.GetData(), bitmap.Num() * sizeof(FRRColor<InBitDepth>), ImageSize.X, ImageSize.Y, RGBFormat, BitDepth);
 
         // Get compressed data because uncompressed is the same fidelity, but much larger
         // EImageCompressionQuality::Default will make the Quality as 85, which is not optimal
         // Besides, this Quality value only matters to JPG, PNG compression is always lossless
         // Please refer to FJpegImageWrapper, FPngImageWrapper for details
-        OutCompressedData = imageWrapper->GetCompressed(100);
+        OutCompressedData = imageWrapper->GetCompressed(
+            (ERRFileType::IMAGE_JPG == InImageFileType) ? 100 : static_cast<int32>(EImageCompressionQuality::Default));
     }
 
     // -------------------------------------------------------------------------------------------------------------------------

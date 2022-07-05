@@ -407,6 +407,17 @@ public:
         return FindActorBySubname<AActor>(InWorld, TEXT("MainWall"));
     }
 
+    template<typename T>
+    static TArray<T*> FindsActorByType(UWorld* InWorld)
+    {
+        TArray<T*> actors;
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            actors.Add(*actorItr);
+        }
+        return actors;
+    }
+
     UFUNCTION()
     static APostProcessVolume* FindPostProcessVolume(UWorld* InWorld)
     {
@@ -565,6 +576,22 @@ public:
         return sumLocation / InActors.Num();
     }
 
+    static bool IsActorOverlapping(AActor* InActor)
+    {
+        for (UActorComponent* ownedComp : InActor->GetComponents())
+        {
+            if (UPrimitiveComponent* primComp = Cast<UPrimitiveComponent>(ownedComp))
+            {
+                TSet<UPrimitiveComponent*> overlapSet;
+                primComp->GetOverlappingComponents(overlapSet);
+                if (overlapSet.Num() > 0)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     template<typename T>
     static void HuddleActors(const TArray<T*>& InActors)
     {

@@ -177,9 +177,22 @@ public:
         // so when it get activated back, it would not happen to appear at an unintended pose
         if (false == bInIsActivated)
         {
-            AddActorWorldOffset(FVector(0.f, 0.f, -500.f));
+            SetActorLocation(FVector(0.f, 0.f, -500.f));
+            CellIdx = FIntVector::NoneValue;
+            for (auto& partner : PartnerList)
+            {
+                partner->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+            }
+        }
+        else if (CellIdx == FIntVector::NoneValue)
+        {
             CellIdx = FIntVector::ZeroValue;
         }
+    }
+
+    bool IsActivated() const
+    {
+        return (CellIdx != FIntVector::NoneValue);
     }
 
 protected:

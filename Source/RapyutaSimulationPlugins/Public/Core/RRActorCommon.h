@@ -278,6 +278,7 @@ using FRRColor = typename TChooseClass<(8 == InBitDepth),
                                        FColor,
                                        typename TChooseClass<(16 == InBitDepth), FFloat16Color, FLinearColor>::Result>::Result;
 
+// (NOTE) TImagePixelData could be used instead
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRColorArray
 {
@@ -531,6 +532,9 @@ public:
 
     UPROPERTY()
     AActor* MainWall = nullptr;
+
+    UPROPERTY()
+    TArray<ALight*> MainLights;
 
     UPROPERTY()
     ARRCamera* MainCamera = nullptr;
