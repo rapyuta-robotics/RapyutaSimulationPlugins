@@ -13,7 +13,6 @@
 #include "Robots/RRRobotVehicleROSController.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/SimulationState.h"
-#include "Tools/SimulationStateData.h"
 
 ARobotVehicle::ARobotVehicle()
 {

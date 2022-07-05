@@ -13,7 +13,8 @@
 #include "Core/RRGameState.h"
 #include "Core/RRNetworkPlayerController.h"
 #include "Tools/RRROS2ClockPublisher.h"
-#include "Tools/SimulationStateData.h"
+#include "Tools/SimulationStateClient.h"
+
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
 {
@@ -41,6 +42,13 @@ void ARRROS2GameMode::PostLogin(APlayerController* InPlayer) {
     Super::PostLogin(InPlayer);
 
     ClientControllerList.Add(InPlayer);
+    USimulationStateClient* SimulationStateClient = NewObject<USimulationStateClient>(InPlayer, TEXT("Simulation State Client"));
+    SimulationStateClient->RegisterComponent();
+    SimulationStateClient->SetIsReplicated(true);
+    SimulationStateClient->SimulationState = SimulationState;
+    InPlayer->AddInstanceComponent(SimulationStateClient);
+    Cast<ARRNetworkPlayerController>(InPlayer)->SimulationState = SimulationState;
+
 
 #if WITH_EDITOR
     numPlayers += 1;
@@ -69,18 +77,18 @@ void ARRROS2GameMode::InitROS2()
     }
 
     UWorld* currentWorld = GetWorld();
-    ROS2Node = currentWorld->SpawnActor<AROS2Node>();
-    ROS2Node->Namespace.Reset();
-    ROS2Node->Name = UENodeName;
-    ROS2Node->Init();
-
-    // Create Clock publisher
-    ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
-    // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
-    ClockPublisher->InitializeWithROS2(ROS2Node);
+//    ROS2Node = currentWorld->SpawnActor<AROS2Node>();
+//    ROS2Node->Namespace.Reset();
+//    ROS2Node->Name = UENodeName;
+//    ROS2Node->Init();
+//
+//    // Create Clock publisher
+//    ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
+//    // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
+//    ClockPublisher->InitializeWithROS2(ROS2Node);
 
     // Simulation state
     SimulationState = currentWorld->SpawnActor<ASimulationState>(SimulationStateClass);
-    SimulationStateData = currentWorld->SpawnActor<ASimulationStateData>();
-    SimulationState->Init(ROS2Node);
+    SimulationState->InitEntities();
+
 }

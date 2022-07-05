@@ -20,7 +20,8 @@
 #include "Core/RRMathUtils.h"
 #include "Core/RRROS2GameMode.h"
 #include "Core/RRUObjectUtils.h"
-#include "Tools/SimulationStateData.h"
+#include "Tools/SimulationState.h"
+#include "Tools/SimulationStateClient.h"
 #include "Tools/RRROS2ClockPublisher.h"
 #include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
@@ -45,24 +46,56 @@ void ARRNetworkPlayerController::Tick(float DeltaSeconds)
         SetControlRotation(InitRot);
     }
 #endif
+    GetSimulationStateClient();
     WaitForPawnToPossess();
 }
 
 void ARRNetworkPlayerController::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME( ARRNetworkPlayerController, ROS2Node );
+    DOREPLIFETIME( ARRNetworkPlayerController, ROS2ServiceNode );
     DOREPLIFETIME( ARRNetworkPlayerController, ClockPublisher );
-    DOREPLIFETIME( ARRNetworkPlayerController, SimulationStateData );
+    DOREPLIFETIME( ARRNetworkPlayerController, SimulationState );
     DOREPLIFETIME( ARRNetworkPlayerController, PlayerName );
     DOREPLIFETIME( ARRNetworkPlayerController, Namespace );
     DOREPLIFETIME( ARRNetworkPlayerController, RobotROS2Node );
     DOREPLIFETIME( ARRNetworkPlayerController, PossessedPawn );
 }
+void ARRNetworkPlayerController::GetSimulationStateClient()
+{
+    if (!SimulationStateClient && GetNetMode() == NM_Client) {
+        TArray<USimulationStateClient*> SimulationStateClients;
+        this->GetComponents(SimulationStateClients);
+        if(SimulationStateClients.Num() > 0) {
+            SimulationStateClient = SimulationStateClients[0];
 
+#if WITH_EDITOR
+            this->AddInstanceComponent(SimulationStateClient);
+            //        for (auto& component : SimulationStateComponentClients) {
+//            this->AddInstanceComponent(component);
+//        }
+#endif
+        }
+
+
+    }
+//    if (GetNetMode() != NM_Client && SimulationState) {
+//        SimulationState = Cast<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
+//        SimulationStateClient->InitSimulationState();
+//    }
+}
 void ARRNetworkPlayerController::WaitForPawnToPossess()
 {
-    if(this->PlayerState && !PossessedPawn && GetNetMode() == NM_Client && PlayerName != "pixelstreamer") {
+    if( !ROS2ServiceNode && GetNetMode() == NM_Client && PlayerName != "" && PlayerName != "pixelstreamer" && SimulationStateClient) {
+        UWorld* currentWorld = GetWorld();
+        ROS2ServiceNode = currentWorld->SpawnActor<AROS2Node>();
+        ROS2ServiceNode->Namespace.Reset();
+        ROS2ServiceNode->Name = PlayerName+"_ROS2Node";
+        ROS2ServiceNode->Init();
+        SimulationStateClient->InitROS2Node(ROS2ServiceNode);
+    }
+
+    if(this->PlayerState && !PossessedPawn && GetNetMode() == NM_Client && PlayerName != "pixelstreamer" ) {
 
 #if WITH_EDITOR
         if(this->PlayerState) {
@@ -73,14 +106,15 @@ void ARRNetworkPlayerController::WaitForPawnToPossess()
         }
 #endif
 
-        if(!SimulationStateData) {
-            SimulationStateData = Cast<ASimulationStateData>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationStateData::StaticClass()));
-        }
-        if (SimulationStateData) {
+//        if(!SimulationState) {
+//            // Make sure Local Simulation State is spawned and link it
+//            SimulationState = Cast<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
+//        }
+        if (SimulationState) {
             AActor *MatchingEntity = nullptr;
             UROS2Spawnable *MatchingEntitySpawnParams = nullptr;
 
-            for (AActor *Entity: SimulationStateData->EntityList) {
+            for (AActor *Entity: SimulationState->EntityList) {
                 if(Entity) {
                     UROS2Spawnable *rosSpawnParameters = Entity->FindComponentByClass<UROS2Spawnable>();
                     if (rosSpawnParameters) {
@@ -97,11 +131,12 @@ void ARRNetworkPlayerController::WaitForPawnToPossess()
                 PossessedPawn = Cast<APawn>(MatchingEntity);
                 ClientInitMoveComp(MatchingEntity);
             } else {
-                UE_LOG(LogTemp, Warning, TEXT("Player [%s] has not found a Robot to possess yet"), *PlayerName);
+//                UE_LOG(LogTemp, Warning, TEXT("Player [%s] has not found a Robot to possess yet"), *PlayerName);
             }
         }
     }
 }
+
 
 void ARRNetworkPlayerController::ServerPossessPawn_Implementation(AActor* InActor)
 {

@@ -8,7 +8,7 @@
 
 // RapyutaSimulationPlugins
 #include "Tools/SimulationState.h"
-#include "Tools/SimulationStateData.h"
+#include "Tools/SimulationStateClient.h"
 
 #include "RRROS2GameMode.generated.h"
 
@@ -27,9 +27,6 @@ public:
 
     UPROPERTY(BlueprintReadOnly)
     ASimulationState* SimulationState = nullptr;
-
-    UPROPERTY(BlueprintReadOnly)
-    ASimulationStateData* SimulationStateData = nullptr;
 
     UPROPERTY(BlueprintReadOnly)
     TSubclassOf<ASimulationState> SimulationStateClass = ASimulationState::StaticClass();

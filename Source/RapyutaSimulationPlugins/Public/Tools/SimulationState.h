@@ -12,18 +12,24 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
-#include "Tools/SimulationStateData.h"
+#include "Core/RRConversionUtils.h"
+#include "Core/RRGeneralUtils.h"
 
+#include "Srvs/ROS2AttachSrv.h"
+#include "Srvs/ROS2DeleteEntitySrv.h"
+#include "Srvs/ROS2GetEntityStateSrv.h"
+#include "Srvs/ROS2SetEntityStateSrv.h"
+#include "Srvs/ROS2SpawnEntitySrv.h"
 #include "SimulationState.generated.h"
 
-//USTRUCT()
-//struct RAPYUTASIMULATIONPLUGINS_API FActors
-//{
-//    GENERATED_BODY()
-//
-//    UPROPERTY()
-//    TArray<AActor*> Actors;
-//};
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FActors
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    TArray<AActor*> Actors;
+};
 
 class UROS2GenericSrv;
 
@@ -44,26 +50,81 @@ public:
     virtual void Init(AROS2Node* InROS2Node);
 
     UFUNCTION(BlueprintCallable)
-    void GetEntityStateSrv(UROS2GenericSrv* Service);
+    virtual void InitEntities();
 
     UFUNCTION(BlueprintCallable)
-    void SetEntityStateSrv(UROS2GenericSrv* Service);
+    virtual void InitROS2Node(AROS2Node* InROS2Node);
+
+    //Get Entity Functions
+//    UFUNCTION(BlueprintCallable)
+//    bool ServerGetEntityStateCheckRequest(FROSGetEntityState_Request Request);
+//
+//    UFUNCTION(BlueprintCallable)
+//    void ServerGetEntityState(FROSGetEntityState_Request Request);
+
+    UPROPERTY(BlueprintReadOnly)
+    FROSGetEntityState_Request PreviousGetEntityStateRequest;
+
+    //Set Entity Functions
+    UFUNCTION(BlueprintCallable)
+    bool ServerSetEntityStateCheckRequest(FROSSetEntityState_Request Request);
 
     UFUNCTION(BlueprintCallable)
-    void AttachSrv(UROS2GenericSrv* Service);
+    void ServerSetEntityState(FROSSetEntityState_Request Request);
+
+    UPROPERTY(BlueprintReadOnly)
+    FROSSetEntityState_Request PreviousSetEntityStateRequest;
+
+
+    //Attach Functions
+    UFUNCTION(BlueprintCallable)
+    bool ServerAttachCheckRequest(FROSAttach_Request Request);
 
     UFUNCTION(BlueprintCallable)
-    void SpawnEntitySrv(UROS2GenericSrv* Service);
+    void ServerAttach(FROSAttach_Request Request);
+
+    UPROPERTY(BlueprintReadOnly)
+    FROSAttach_Request PreviousAttachRequest;
+
+    //Spawn Entity Functions
+    UFUNCTION(BlueprintCallable)
+    bool ServerSpawnCheckRequest(FROSSpawnEntityRequest Request);
 
     UFUNCTION(BlueprintCallable)
-    void DeleteEntitySrv(UROS2GenericSrv* Service);
+    void ServerSpawnEntity(FROSSpawnEntityRequest Request);
 
+    UPROPERTY(BlueprintReadOnly)
+    FROSSpawnEntityRequest PreviousSpawnRequest;
+
+    //Delete Entity Functions
+    UFUNCTION(BlueprintCallable)
+    bool ServerDeleteCheckRequest(FROSDeleteEntity_Request Request);
+
+    UFUNCTION(BlueprintCallable)
+    void ServerDeleteEntity(FROSDeleteEntity_Request Request);
+
+    UPROPERTY(BlueprintReadOnly)
+    FROSDeleteEntity_Request PreviousDeleteRequest;
+
+    //Simulation State Manipulation Functions
     UFUNCTION(BlueprintCallable)
     void AddEntity(AActor* Entity);
+
+    UFUNCTION(BlueprintCallable)
+    void OnRep_Entity();
+
+    UFUNCTION(BlueprintCallable)
+    void OnRep_SpawnableEntity();
+
+    UFUNCTION(BlueprintCallable)
+    void AddTaggedEntities(AActor* Entity, const FName& InTag);
 
     // BP callable thus the param could not be const&
     UFUNCTION(BlueprintCallable)
     void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
+
+    UFUNCTION(BlueprintCallable)
+    void GetSplitSpawnableEntities();
 
     template<typename T>
     bool CheckEntity(TMap<FString, T>& InEntities, const FString& InEntityName, const bool bAllowEmpty = false);
@@ -74,17 +135,25 @@ public:
     UPROPERTY(BlueprintReadOnly)
     AROS2Node* ROSServiceNode = nullptr;
 
-    UPROPERTY(BlueprintReadOnly)
-    ASimulationStateData* SimulationStateData = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TMap<FString, AActor*> Entities;
 
-//    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//    TMap<FString, AActor*> Entities;
-//
-//    UPROPERTY()
-//    TMap<FName, FActors> EntitiesWithTag;
+    UPROPERTY()
+    TMap<FName, FActors> EntitiesWithTag;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Entity)
+    TArray<AActor*> EntityList;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_SpawnableEntity)
+    TArray<TSubclassOf<AActor>> SpawnableEntityList;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_SpawnableEntity)
+    TArray<FString> SpawnableEntityNameList;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntities;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTimerHandle TimerHandle;
     // need to keep track of "Entities"? or just use a search?
 };

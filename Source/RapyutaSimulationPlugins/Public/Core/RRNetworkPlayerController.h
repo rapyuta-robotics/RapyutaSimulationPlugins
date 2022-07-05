@@ -9,7 +9,8 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
-#include "Tools/SimulationStateData.h"
+#include "Tools/SimulationState.h"
+#include "Tools/SimulationStateClient.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
@@ -37,6 +38,9 @@ public:
     UFUNCTION(Server, Reliable)
     void ServerPossessPawn(AActor* InActor);
 
+    UFUNCTION()
+    void GetSimulationStateClient();
+
     UFUNCTION(Client, Reliable)
     void ClientInitMoveComp(AActor* InActor);
 
@@ -50,7 +54,7 @@ public:
     URRROS2ClockPublisher* ClockPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    ASimulationStateData* SimulationStateData = nullptr;
+    ASimulationState* SimulationState = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString PlayerName = "";
@@ -60,6 +64,18 @@ public:
 
     UPROPERTY(Transient, Replicated)
     AROS2Node* RobotROS2Node = nullptr;
+
+    UPROPERTY(Transient, Replicated)
+    AROS2Node* ROS2ServiceNode = nullptr;
+
+    UPROPERTY(Transient, Replicated)
+    USimulationStateClient* SimulationStateClient = nullptr;
+//Services
+//    UFUNCTION(BlueprintCallable)
+//    void SpawnEntitySrv(UROS2GenericSrv* Service);
+//
+//    UFUNCTION(BlueprintCallable, Server, Reliable)
+//    void ServerSpawnEntity(FROSSpawnEntityRequest Request);
 
     void InitRobotROS2Node(APawn* InPawn);
 
