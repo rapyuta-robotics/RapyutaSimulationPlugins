@@ -18,7 +18,7 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     Robot = InRobot;
     Robot->ROS2Interface = this;
 
-    // Instantiate a ROS2 node for each possessed [InPawn]
+    // Instantiate a ROS2 node for InRobot
     InitRobotROS2Node(InRobot);
 
     // Initialize Robot's sensors (lidar, etc.)

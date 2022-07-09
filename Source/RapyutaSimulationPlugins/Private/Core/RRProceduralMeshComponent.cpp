@@ -27,6 +27,7 @@ URRProceduralMeshComponent::URRProceduralMeshComponent(const FObjectInitializer&
     // Thus we could only rely on [UBodySetup::bCreatedPhysicsMeshes]
     bUseAsyncCooking = true;
     bUseComplexAsSimpleCollision = false;
+    bCanEverAffectNavigation = true;
 
     OnMeshCreationDone.BindUObject(Cast<ARRMeshActor>(GetOwner()), &ARRMeshActor::OnBodyComponentMeshCreationDone);
 }

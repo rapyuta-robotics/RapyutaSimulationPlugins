@@ -16,15 +16,20 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
 
-    // Create ROS2 interface
-    if (nullptr == ROS2Interface)
+    // NOTE: Init InPawn's ROS2 interface here (not right after its creation in ARRBaseRobot) for:
+    // + Controller, upon posses/unpossess, acts as the pivot to start/stop robot's ROS2Interface
+    // + InPawn's ROS2Interface, due to requirements for also instantiatable in ARRBaseRobot's child BPs, may not have been
+    // instantiated yet
+    // + InPawn's child class' ros2-related accessories (ROS2 node, sensors, publishers/subscribers)
+    //  may have not been fully accessible until now
+    auto* robotVehicle = CastChecked<ARRRobotBaseVehicle>(InPawn);
+    if (nullptr == robotVehicle->ROS2Interface)
     {
-        ARRRobotBaseVehicle* robot = CastChecked<ARRRobotBaseVehicle>(InPawn);
-        verify(robot->ROS2InterfaceClass);
-        ROS2Interface = CastChecked<URRRobotROS2Interface>(URRUObjectUtils::CreateSelfSubobject(
-            this, robot->ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
+        robotVehicle->CreateROS2Interface();
     }
-    ROS2Interface->Initialize(CastChecked<ARRRobotBaseVehicle>(InPawn));
+    ROS2Interface = robotVehicle->ROS2Interface;
+    verify(ROS2Interface);
+    ROS2Interface->Initialize(robotVehicle);
 }
 
 void ARRRobotVehicleROSController::OnUnPossess()

@@ -56,6 +56,7 @@ public:
     //! Robot's ROS2 Interface
     UPROPERTY()
     URRRobotROS2Interface* ROS2Interface = nullptr;
+    void CreateROS2Interface();
 
     /**
      * @brief
@@ -148,4 +149,10 @@ public:
      */
     // UFUNCTION(BlueprintCallable)
     virtual void SetJointState(const TMap<FString, TArray<float>>& InJointState, const ERRJointControlType InJointControlType);
+
+protected:
+    /**
+     * @brief Instantiate default child components
+     */
+    virtual void PostInitializeComponents() override;
 };
