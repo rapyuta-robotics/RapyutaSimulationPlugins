@@ -66,8 +66,8 @@ public:
     /**
      * @brief Start ROSservices.
      *
-     * @param InROS2Node @sa
-     * [ROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
+     * @param InROS2Node
+     * @sa [ROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
      */
     UFUNCTION(BlueprintCallable)
     virtual void Init(AROS2Node* InROS2Node);
