@@ -121,4 +121,27 @@ public:
 
     UPROPERTY(BlueprintReadWrite)
     bool bPublishOdomTf = false;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTimerHandle SimulationStateTimerHandle;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTimerHandle PossessTimerHandle;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTimerHandle ClockRequestTimerHandle;
+
+    virtual float GetServerTime() { return ServerTime; }
+
+    void RequestServerTime();
+
+    UFUNCTION(Client, Reliable)
+    void ServerSendClock(float ClientRequestTime, float ServerCurrentTime);
+
+    UFUNCTION(Server, Reliable)
+    void ClientRequestClock(float ClientRequestTime);
+
+    void LocalClockUpdate(float DeltaSeconds);
+
+    float ServerTime = 0.0f;
 };

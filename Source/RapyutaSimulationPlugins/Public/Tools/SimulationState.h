@@ -55,13 +55,6 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void InitROS2Node(AROS2Node* InROS2Node);
 
-    //Get Entity Functions
-//    UFUNCTION(BlueprintCallable)
-//    bool ServerGetEntityStateCheckRequest(FROSGetEntityState_Request Request);
-//
-//    UFUNCTION(BlueprintCallable)
-//    void ServerGetEntityState(FROSGetEntityState_Request Request);
-
     UPROPERTY(BlueprintReadOnly)
     FROSGetEntityState_Request PreviousGetEntityStateRequest;
 

@@ -46,8 +46,8 @@ void ARRNetworkPlayerController::Tick(float DeltaSeconds)
         SetControlRotation(InitRot);
     }
 #endif
-    GetSimulationStateClient();
-    WaitForPawnToPossess();
+    LocalClockUpdate(DeltaSeconds);
+
 }
 
 void ARRNetworkPlayerController::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
@@ -71,18 +71,13 @@ void ARRNetworkPlayerController::GetSimulationStateClient()
 
 #if WITH_EDITOR
             this->AddInstanceComponent(SimulationStateClient);
-            //        for (auto& component : SimulationStateComponentClients) {
-//            this->AddInstanceComponent(component);
-//        }
 #endif
+            GetWorld()->GetTimerManager().ClearTimer(SimulationStateTimerHandle);
         }
 
 
     }
-//    if (GetNetMode() != NM_Client && SimulationState) {
-//        SimulationState = Cast<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
-//        SimulationStateClient->InitSimulationState();
-//    }
+
 }
 void ARRNetworkPlayerController::WaitForPawnToPossess()
 {
@@ -90,9 +85,15 @@ void ARRNetworkPlayerController::WaitForPawnToPossess()
         UWorld* currentWorld = GetWorld();
         ROS2ServiceNode = currentWorld->SpawnActor<AROS2Node>();
         ROS2ServiceNode->Namespace.Reset();
+//        ROS2ServiceNode->Namespace = PlayerName;
         ROS2ServiceNode->Name = PlayerName+"_ROS2Node";
         ROS2ServiceNode->Init();
         SimulationStateClient->InitROS2Node(ROS2ServiceNode);
+
+        // Create Clock publisher
+        ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
+        // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
+        ClockPublisher->InitializeWithROS2(ROS2ServiceNode);
     }
 
     if(this->PlayerState && !PossessedPawn && GetNetMode() == NM_Client && PlayerName != "pixelstreamer" ) {
@@ -106,10 +107,6 @@ void ARRNetworkPlayerController::WaitForPawnToPossess()
         }
 #endif
 
-//        if(!SimulationState) {
-//            // Make sure Local Simulation State is spawned and link it
-//            SimulationState = Cast<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
-//        }
         if (SimulationState) {
             AActor *MatchingEntity = nullptr;
             UROS2Spawnable *MatchingEntitySpawnParams = nullptr;
@@ -130,6 +127,7 @@ void ARRNetworkPlayerController::WaitForPawnToPossess()
                 ServerPossessPawn(MatchingEntity);
                 PossessedPawn = Cast<APawn>(MatchingEntity);
                 ClientInitMoveComp(MatchingEntity);
+                GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
             } else {
 //                UE_LOG(LogTemp, Warning, TEXT("Player [%s] has not found a Robot to possess yet"), *PlayerName);
             }
@@ -231,6 +229,15 @@ void ARRNetworkPlayerController::BeginPlay()
         SetControlRotation(InitRot);
     }
 
+    if(IsLocalController())
+    {
+        GetWorld()->GetTimerManager().SetTimer(SimulationStateTimerHandle, this,
+                                               &ARRNetworkPlayerController::GetSimulationStateClient, 1.0f, true);
+        GetWorld()->GetTimerManager().SetTimer(PossessTimerHandle, this,
+                                               &ARRNetworkPlayerController::WaitForPawnToPossess, 1.0f, true);
+        GetWorld()->GetTimerManager().SetTimer(ClockRequestTimerHandle, this,
+                                               &ARRNetworkPlayerController::RequestServerTime, 5.0f, true);
+    }
 }
 
 void ARRNetworkPlayerController::OnPossess(APawn* InPawn)
@@ -319,7 +326,33 @@ void ARRNetworkPlayerController::MovementCallback(const UROS2GenericMsg* Msg)
 }
 
 
+//Client Requesting Server to send time, Client Clock at time of request is sent as well
+void ARRNetworkPlayerController::ClientRequestClock_Implementation(float ClientRequestTime)
+{
+    float ServerCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+    ServerSendClock(ServerCurrentTime, ClientRequestTime);
+}
 
+void ARRNetworkPlayerController::ServerSendClock_Implementation(float ServerCurrentTime, float ClientRequestTime)
+{
+    float ClientRequestRoundTrip = ServerTime - ClientRequestTime;
+    float LatencyAdjustedTime = ServerCurrentTime + (ClientRequestRoundTrip * 0.5f);
+    ServerTime = LatencyAdjustedTime;
 
+}
 
+void ARRNetworkPlayerController::RequestServerTime()
+{
 
+    if(IsLocalController())
+    {
+        ClientRequestClock(ServerTime);
+    }
+}
+
+void ARRNetworkPlayerController::LocalClockUpdate(float DeltaSeconds)
+{
+    if(IsLocalController()) {
+        ServerTime = ServerTime + DeltaSeconds;
+    }
+}

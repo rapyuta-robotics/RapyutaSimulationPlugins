@@ -19,6 +19,8 @@ UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
     GENERATED_BODY()
 
 public:
+    ARRROS2GameMode();
+
     UPROPERTY(BlueprintReadOnly)
     AROS2Node* ROS2Node = nullptr;
 

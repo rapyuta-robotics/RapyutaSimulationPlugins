@@ -16,6 +16,13 @@
 #include "Tools/SimulationStateClient.h"
 
 
+ARRROS2GameMode::ARRROS2GameMode()
+{
+    GameStateClass = ARRNetworkGameState::StaticClass();
+    PlayerControllerClass = ARRNetworkPlayerController::StaticClass();
+}
+
+
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
 {
     Super::InitGame(InMapName, InOptions, OutErrorMessage);

@@ -243,50 +243,6 @@ bool ASimulationState::CheckSpawnableEntity(const FString& InEntityName, const b
     return CheckEntity<TSubclassOf<AActor>>(SpawnableEntities, InEntityName, bAllowEmpty);
 }
 
-
-//bool ASimulationState::ServerGetEntityStateCheckRequest(FROSGetEntityState_Request Request) {
-//    if (PreviousGetEntityStateRequest.name == Request.name &&
-//        PreviousGetEntityStateRequest.state_reference_frame == Request.state_reference_frame &&
-//        PreviousGetEntityStateRequest.state_pose_position_x == Request.state_pose_position_x &&
-//        PreviousGetEntityStateRequest.state_pose_position_y == Request.state_pose_position_y &&
-//        PreviousGetEntityStateRequest.state_pose_position_z == Request.state_pose_position_z &&
-//        PreviousGetEntityStateRequest.state_pose_orientation == Request.state_pose_orientation &&
-//        PreviousGetEntityStateRequest.state_twist_linear == Request.state_twist_linear &&
-//        PreviousGetEntityStateRequest.state_twist_angular == Request.state_twist_angular
-//            ){
-//        return false;
-//    }
-//    else {
-//        return true;
-//    }
-//}
-//
-//void ASimulationState::ServerGetEntityState(FROSGetEntityState_Request Request)
-//{
-//    if (ServerGetEntityStateCheckRequest(Request))
-//    {
-//        FTransform relativeTransf;
-//        FTransform worldTransf = Entities[Request.name]->GetTransform();
-//        URRGeneralUtils::GetRelativeTransform(
-//            Request.reference_frame,
-//            Entities.Contains(Request.reference_frame) ? Entities[Request.reference_frame] : nullptr,
-//            worldTransf,
-//            relativeTransf);
-//        relativeTransf = ConversionUtils::TransformUEToROS(relativeTransf);
-//
-//        Response.state_pose_position_x = relativeTransf.GetTranslation().X;
-//        Response.state_pose_position_y = relativeTransf.GetTranslation().Y;
-//        Response.state_pose_position_z = relativeTransf.GetTranslation().Z;
-//        Response.state_pose_orientation = relativeTransf.GetRotation();
-//
-//        Response.state_twist_linear = FVector::ZeroVector;
-//        Response.state_twist_angular = FVector::ZeroVector;
-//    }
-//
-//    PreviousGetEntityStateRequest = Request;
-//}
-
-
 bool ASimulationState::ServerSetEntityStateCheckRequest(FROSSetEntityState_Request Request) {
     if (PreviousSetEntityStateRequest.state_name == Request.state_name &&
         PreviousSetEntityStateRequest.state_reference_frame == Request.state_reference_frame &&
