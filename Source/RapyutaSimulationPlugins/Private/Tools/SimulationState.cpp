@@ -18,6 +18,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRConversionUtils.h"
+#include "Core/RRUObjectUtils.h"
 #include "Tools/ROS2Spawnable.h"
 
 // Sets default values
@@ -359,32 +360,39 @@ void ASimulationState::SpawnEntityListSrv(UROS2GenericSrv* Service)
         entityRequest.StateReferenceFrame = entityListRequest.ReferenceFrameList[i];
         entityRequest.Tags.Add(entityListRequest.TagsList[i]);
 
+        AActor* newEntity = nullptr;
         if (CheckSpawnableEntity(entityRequest.Xml, false) && CheckEntity(entityRequest.StateReferenceFrame, true))
         {
-            FVector pos(entityRequest.StatePosePositionX, entityRequest.StatePosePositionY, entityRequest.StatePosePositionZ);
-            FTransform relativeTransf(entityRequest.StatePoseOrientation, pos);
-            relativeTransf = URRConversionUtils::TransformROSToUE(relativeTransf);
-            FTransform worldTransf;
-            URRGeneralUtils::GetWorldTransform(entityRequest.StateReferenceFrame,
-                                               Entities.FindRef(entityRequest.StateReferenceFrame),
-                                               relativeTransf,
-                                               worldTransf);
-
-            AActor* newEntity = SpawnEntity(entityRequest, SpawnableEntities[entityRequest.Xml], worldTransf);
-            finalStatusMessage.Append(newEntity ? FString::Printf(TEXT("%s,"), *newEntity->GetName())
-                                                : FString::Printf(TEXT("%s,"), *entityRequest.StateName));
-
-            if (newEntity)
+            if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityRequest.StateName))
             {
-                // actor can get spawned at world origin and not the desired transform, so we enforce the desired transform:
-                newEntity->SetActorTransform(worldTransf, false);
-                spawnedEntitiesNum++;
+                FVector pos(entityRequest.StatePosePositionX, entityRequest.StatePosePositionY, entityRequest.StatePosePositionZ);
+                FTransform relativeTransf(entityRequest.StatePoseOrientation, pos);
+                relativeTransf = URRConversionUtils::TransformROSToUE(relativeTransf);
+                FTransform worldTransf;
+                URRGeneralUtils::GetWorldTransform(entityRequest.StateReferenceFrame,
+                                                   Entities.FindRef(entityRequest.StateReferenceFrame),
+                                                   relativeTransf,
+                                                   worldTransf);
+
+                newEntity = SpawnEntity(entityRequest, SpawnableEntities[entityRequest.Xml], worldTransf);
+                if (newEntity)
+                {
+                    // actor can get spawned at world origin and not the desired transform, so we enforce the desired transform:
+                    newEntity->SetActorTransform(worldTransf, false);
+                    spawnedEntitiesNum++;
+                }
+            }
+            else
+            {
+                UE_LOG(LogRapyutaCore,
+                       Error,
+                       TEXT("Entity spawning failed - Actor of [%s] name already exists"),
+                       *entityRequest.StateName);
             }
         }
-        else
-        {
-            finalStatusMessage.Append(FString::Printf(TEXT("%s,"), *entityRequest.StateName));
-        }
+
+        finalStatusMessage.Append(newEntity ? FString::Printf(TEXT("%s,"), *newEntity->GetName())
+                                            : FString::Printf(TEXT("%s,"), *entityRequest.StateName));
     }
 
     FROSSpawnEntitiesResponse entityListResponse;
