@@ -333,7 +333,7 @@ void ASimulationState::SpawnEntitiesSrv(UROS2GenericSrv* InService)
     spawnEntitiesService->GetRequest(entityListRequest);
 
     int32 numEntitySpawned = 0;
-    FString finalStatusMessage;
+    FString statusMessage;
     for (uint32 i = 0; i < entityListRequest.NameList.Num(); ++i)
     {
         UE_LOG(LogRapyutaCore,
@@ -385,15 +385,15 @@ void ASimulationState::SpawnEntitiesSrv(UROS2GenericSrv* InService)
             }
         }
 
-        finalStatusMessage.Append(newEntity ? FString::Printf(TEXT("%s,"), *newEntity->GetName())
-                                            : FString::Printf(TEXT("%s,"), *entityRequest.StateName));
+        statusMessage.Append(newEntity ? FString::Printf(TEXT("%s,"), *newEntity->GetName())
+                                       : FString::Printf(TEXT("%s,"), *entityRequest.StateName));
     }
 
     FROSSpawnEntitiesResponse entityListResponse;
     entityListResponse.bSuccess = (numEntitySpawned == entityListRequest.NameList.Num());
     entityListResponse.StatusMessage = entityListResponse.bSuccess
-                                         ? FString::Printf(TEXT("Newly spawned entities: [%s]"), *finalStatusMessage)
-                                         : FString::Printf(TEXT("Failed to be spawned entities: [%s]"), *finalStatusMessage);
+                                         ? FString::Printf(TEXT("Newly spawned entities: [%s]"), *statusMessage)
+                                         : FString::Printf(TEXT("Failed to be spawned entities: [%s]"), *statusMessage);
 
     spawnEntitiesService->SetResponse(entityListResponse);
 }
