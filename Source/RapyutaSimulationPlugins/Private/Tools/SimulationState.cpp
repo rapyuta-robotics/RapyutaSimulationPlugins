@@ -213,9 +213,9 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* InService)
     FROSAttach_Request request;
     attachService->GetRequest(request);
 
-    FROSAttach_Response Response;
-    Response.success = CheckEntity(request.name1, false) && CheckEntity(request.name2, false);
-    if (Response.success)
+    FROSAttach_Response response;
+    response.success = CheckEntity(request.name1, false) && CheckEntity(request.name2, false);
+    if (response.success)
     {
         AActor* Entity1 = Entities[request.name1];
         AActor* Entity2 = Entities[request.name2];
@@ -239,7 +239,7 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* InService)
                *request.name2);
     }
 
-    attachService->SetResponse(Response);
+    attachService->SetResponse(response);
 }
 
 AActor* ASimulationState::SpawnEntity(const FROSSpawnEntityRequest& InROSSpawnRequest,
