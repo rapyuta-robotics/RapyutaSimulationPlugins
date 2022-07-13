@@ -80,7 +80,7 @@ public:
      * @todo Twist is zero. Should return proper value for physics actors.
      */
     UFUNCTION(BlueprintCallable)
-    void GetEntityStateSrv(UROS2GenericSrv* Service);
+    void GetEntityStateSrv(UROS2GenericSrv* InService);
 
     /**
      * @brief Callback function of SetEntityState ROS2 service.
@@ -89,7 +89,7 @@ public:
      * @todo Twist is zero. Should able to set value for physics actors.
      */
     UFUNCTION(BlueprintCallable)
-    void SetEntityStateSrv(UROS2GenericSrv* Service);
+    void SetEntityStateSrv(UROS2GenericSrv* InService);
 
     /**
      * @brief Callback function of Attach ROS2 service.
@@ -98,7 +98,7 @@ public:
      * @sa [ue_mgs/Attach.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/Attach.srv)
      */
     UFUNCTION(BlueprintCallable)
-    void AttachSrv(UROS2GenericSrv* Service);
+    void AttachSrv(UROS2GenericSrv* InService);
 
     /**
      * @brief Callback function of SpawnEntity ROS2 service.
@@ -106,7 +106,7 @@ public:
      * @sa [ue_mgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
      */
     UFUNCTION(BlueprintCallable)
-    void SpawnEntitySrv(UROS2GenericSrv* Service);
+    void SpawnEntitySrv(UROS2GenericSrv* InService);
 
     /**
      * @brief Callback function of DeleteEntity ROS2 service.
@@ -114,10 +114,10 @@ public:
      * @sa [ue_mgs/DeleteEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/DeleteEntity.srv)
      */
     UFUNCTION(BlueprintCallable)
-    void SpawnEntityListSrv(UROS2GenericSrv* Service);
+    void SpawnEntitiesSrv(UROS2GenericSrv* InService);
 
     UFUNCTION(BlueprintCallable)
-    void DeleteEntitySrv(UROS2GenericSrv* Service);
+    void DeleteEntitySrv(UROS2GenericSrv* InService);
 
     UFUNCTION(BlueprintCallable)
     /**
@@ -125,7 +125,7 @@ public:
      * Entity become able to be manipulated by Simulationstate's ROS2 servs.
      * @param Entity
      */
-    void AddEntity(AActor* Entity);
+    void AddEntity(AActor* InEntity);
 
     UFUNCTION(BlueprintCallable)
     /**
