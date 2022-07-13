@@ -108,24 +108,33 @@ bool ARobotVehicle::InitMoveComponent()
 
 void ARobotVehicle::SetLinearVel(const FVector& InLinearVelocity)
 {
-    SetServerLinearVel(InLinearVelocity);
+    SetServerLinearVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), this->GetActorLocation(), InLinearVelocity);
+
     SetClientLinearVel(InLinearVelocity);
 }
 
 void ARobotVehicle::SetAngularVel(const FVector& InAngularVelocity)
 {
-    SetServerAngularVel(InAngularVelocity);
+    SetServerAngularVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), this->GetActorRotation(), InAngularVelocity);
     SetClientAngularVel(InAngularVelocity);
 }
 
-void ARobotVehicle::SetServerLinearVel_Implementation(const FVector& InLinearVelocity)
+void ARobotVehicle::SetServerLinearVel_Implementation(float TimeStamp, const FVector& InPosition, const FVector& InLinearVelocity)
 {
+    float ServerCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+    this->SetActorLocation(InPosition + InLinearVelocity*(ServerCurrentTime-TimeStamp), false, 0, ETeleportType::None);
+
     RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+
 }
 
-void ARobotVehicle::SetServerAngularVel_Implementation(const FVector& InAngularVelocity)
+void ARobotVehicle::SetServerAngularVel_Implementation(float TimeStamp,const FRotator& InRotation, const FVector& InAngularVelocity)
 {
+    float ServerCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+    this->SetActorRotation(InRotation + InAngularVelocity.Rotation()*(ServerCurrentTime-TimeStamp), ETeleportType::None);
+
     RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
+
 }
 
 void ARobotVehicle::SetClientLinearVel_Implementation(const FVector& InLinearVelocity)

@@ -59,10 +59,10 @@ public:
     virtual void SetAngularVel(const FVector& InAngularVelocity);
 
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void SetServerLinearVel(const FVector& InLinearVelocity);
+    virtual void SetServerLinearVel(float TimeStamp, const FVector& InPosition, const FVector& InLinearVelocity);
 
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void SetServerAngularVel(const FVector& InAngularVelocity);
+    virtual void SetServerAngularVel(float TimeStamp,const FRotator& InRotation, const FVector& InAngularVelocity);
 
     UFUNCTION(BlueprintCallable, Client, Reliable)
     virtual void SetClientLinearVel(const FVector& InLinearVelocity);
