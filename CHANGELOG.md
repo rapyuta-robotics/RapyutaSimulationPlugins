@@ -1,5 +1,8 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.9 ##
+* `SimulationState` Add `SpawnEntity()`, used by `SpawnEntitySrv + SpawnEntitiesSrv`
+
 ## 0.0.8 ##
 * Add ARRBaseRobot, ARRRobotROS2Interface taking src from ARobotROSController
 * Robot vehicle Collision fix2 (#69)
