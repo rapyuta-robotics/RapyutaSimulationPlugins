@@ -143,5 +143,7 @@ public:
 
     void LocalClockUpdate(float DeltaSeconds);
 
+    virtual void ReceivedPlayer() override;
+
     float ServerTime = 0.0f;
 };

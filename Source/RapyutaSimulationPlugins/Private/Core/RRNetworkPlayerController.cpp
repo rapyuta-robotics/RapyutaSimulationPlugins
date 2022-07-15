@@ -343,7 +343,6 @@ void ARRNetworkPlayerController::ServerSendClock_Implementation(float ServerCurr
 
 void ARRNetworkPlayerController::RequestServerTime()
 {
-
     if(IsLocalController())
     {
         ClientRequestClock(ServerTime);
@@ -354,5 +353,13 @@ void ARRNetworkPlayerController::LocalClockUpdate(float DeltaSeconds)
 {
     if(IsLocalController()) {
         ServerTime = ServerTime + DeltaSeconds;
+    }
+}
+
+void ARRNetworkPlayerController::ReceivedPlayer()
+{
+    if(IsLocalController())
+    {
+        ClientRequestClock(ServerTime);
     }
 }
