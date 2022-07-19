@@ -69,7 +69,8 @@ bool URRRobotROS2Interface::InitPublishers()
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
-        OdomPublisher->RobotVehicle = Cast<ARRRobotBaseVehicle>(Robot);
+        // If publishing odom, it must be an [ARRRobotBaseVehicle]
+        OdomPublisher->RobotVehicle = CastChecked<ARRRobotBaseVehicle>(Robot);
     }
     return true;
 }
@@ -124,13 +125,10 @@ void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)
         AsyncTask(ENamedThreads::GameThread,
                   [this, linear, angular]
                   {
-                      ARRRobotBaseVehicle* robotVehicle = Cast<ARRRobotBaseVehicle>(Robot);
-                      if (robotVehicle)
-                      {
-                          check(IsValid(robotVehicle));
-                          robotVehicle->SetLinearVel(linear);
-                          robotVehicle->SetAngularVel(angular);
-                      }
+                      ARRRobotBaseVehicle* robotVehicle = CastChecked<ARRRobotBaseVehicle>(Robot);
+                      check(IsValid(robotVehicle));
+                      robotVehicle->SetLinearVel(linear);
+                      robotVehicle->SetAngularVel(angular);
                   });
     }
 }
