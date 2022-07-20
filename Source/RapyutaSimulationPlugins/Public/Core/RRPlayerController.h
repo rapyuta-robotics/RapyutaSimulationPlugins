@@ -8,7 +8,6 @@
 #pragma once
 // UE
 #include "GameFramework/PlayerController.h"
-#include "UnrealClient.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
@@ -23,7 +22,7 @@ class ARRCamera;
 
 /**
  * @brief Player controller with ARRGameMode, ARRGameState, URRGameInstance and URRActorCommon
- * 
+ *
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRPlayerController : public APlayerController
@@ -62,7 +61,7 @@ protected:
 
     /**
      * @brief Get and initialize ARRGameMode, ARRGameState, URRGameInstance and URRActorCommon.
-     * 
+     *
      */
     virtual void BeginPlay() override;
 };

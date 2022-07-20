@@ -11,8 +11,8 @@
 #include "GameFramework/GameMode.h"
 
 // RapyutaSimulationPlugins
+#include "Tools/RRROS2SimulationStateClient.h"
 #include "Tools/SimulationState.h"
-#include "Tools/SimulationStateClient.h"
 
 #include "RRROS2GameMode.generated.h"
 
@@ -28,34 +28,33 @@ UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
     GENERATED_BODY()
 
 public:
-    ARRROS2GameMode();
-
+    //! Sim's Main ROS2 node
     UPROPERTY(BlueprintReadOnly)
-    AROS2Node* ROS2Node = nullptr;
+    AROS2Node* MainROS2Node = nullptr;
+
+    //! Sim's Main ROS2 node name
+    UPROPERTY(BlueprintReadWrite)
+    FString MainROS2NodeName = TEXT("UEROS2Node");
 
     //! Publish /clock
     UPROPERTY(BlueprintReadOnly)
     URRROS2ClockPublisher* ClockPublisher = nullptr;
 
-    //! Provide ROS2 interface to get/set actor state, spawn/delete actor, attach/detach actor.
+    //! Provide ROS2 interface for sim-wide operations like get/set actor state, spawn/delete actor, attach/detach actor.
     UPROPERTY(BlueprintReadOnly)
     ASimulationState* SimulationState = nullptr;
 
+    //! Custom type to instantiate #SimulationState, configurable in child classes
     UPROPERTY(BlueprintReadOnly)
     TSubclassOf<ASimulationState> SimulationStateClass = ASimulationState::StaticClass();
-
-    UPROPERTY(BlueprintReadWrite)
-    FString UENodeName = TEXT("UENode");
-
-    TArray<class APlayerController*> ClientControllerList;
 
 protected:
     /**
      * @brief Initialize Game and call #InitSim.
-     * 
-     * @param InMapName 
-     * @param InOptions 
-     * @param OutErrorMessage 
+     *
+     * @param InMapName
+     * @param InOptions
+     * @param OutErrorMessage
      *
      * @sa [InitGame](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameMode/InitGame/)
      */
@@ -63,17 +62,14 @@ protected:
 
     /**
      * @brief Call #InitROS
-     * 
+     *
      */
     virtual void InitSim();
-    virtual void PostLogin(APlayerController* InPlayer) override;
 
 private:
-   UPROPERTY()
-   int32 numPlayers = 0;
     /**
      * @brief Create and initialize #ROS2Node, #ClockPublisher and #SimulationState.
-     * 
+     *
      */
     void InitROS2();
 };

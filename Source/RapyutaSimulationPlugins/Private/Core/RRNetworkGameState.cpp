@@ -1,12 +1,10 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
 
 // UE
-#include "CoreMinimal.h"
-#include "GameFramework/GameStateBase.h"
-
-#include "Core/RRNetworkPlayerController.h"
-
 #include "Core/RRNetworkGameState.h"
+
+// RapyutaSimulationPlugins
+#include "Core/RRNetworkPlayerController.h"
 
 ARRNetworkGameState::ARRNetworkGameState()
 {
@@ -16,11 +14,11 @@ ARRNetworkGameState::ARRNetworkGameState()
 
 float ARRNetworkGameState::GetServerWorldTimeSeconds() const
 {
-    APlayerController* Player = GetGameInstance()->GetFirstLocalPlayerController(GetWorld());
-    if(Player && GetNetMode() == NM_Client)
+    APlayerController* pc = GetGameInstance()->GetFirstLocalPlayerController(GetWorld());
+    if (pc && IsNetMode(NM_Client))
     {
-        ARRNetworkPlayerController* NetworkPlayer = Cast<ARRNetworkPlayerController>(Player);
-        return NetworkPlayer->GetServerTime();
+        auto* networkPC = CastChecked<ARRNetworkPlayerController>(pc);
+        return networkPC->GetServerTime();
     }
     else
     {

@@ -1,22 +1,24 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRNetworkGameState.h
+ * @todo add doc
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+#pragma once
 
 // UE
 #include "CoreMinimal.h"
-#include "GameFramework/GameStateBase.h"
+#include "GameFramework/GameState.h"
 
 #include "RRNetworkGameState.generated.h"
 
-UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameState : public AGameState
+UCLASS()
+class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameState : public AGameState
 {
     GENERATED_BODY()
 
 public:
-    // Sets default values for this actor's properties
     ARRNetworkGameState();
 
 protected:
     virtual float GetServerWorldTimeSeconds() const override;
-
 };
-
-

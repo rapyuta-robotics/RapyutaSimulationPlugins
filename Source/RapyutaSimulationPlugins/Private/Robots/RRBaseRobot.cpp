@@ -2,6 +2,9 @@
 
 #include "Robots/RRBaseRobot.h"
 
+// UE
+#include "Net/UnrealNetwork.h"
+
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
@@ -30,6 +33,7 @@ void ARRBaseRobot::SetupDefault()
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
     URRUObjectUtils::SetupDefaultRootComponent(this);
+    bReplicates = true;
 
     // NOTE: Any custom object class (eg ROS2InterfaceClass) that is required to be configurable by this class' child BP ones
     // & IF its object needs to be created before BeginPlay(),
@@ -84,6 +88,21 @@ bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
     }
 
     return true;
+}
+
+void ARRBaseRobot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    UBlueprintGeneratedClass* bpClass = Cast<UBlueprintGeneratedClass>(this->GetClass());
+    if (bpClass)
+    {
+        bpClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
+    }
+    DOREPLIFETIME(ARRBaseRobot, RobotModelName);
+    DOREPLIFETIME(ARRBaseRobot, RobotID);
+    DOREPLIFETIME(ARRBaseRobot, RobotUniqueName);
+    DOREPLIFETIME(ARRBaseRobot, ROS2Interface);
+    DOREPLIFETIME(ARRBaseRobot, ROS2InterfaceClass);
 }
 
 void ARRBaseRobot::SetJointState(const TMap<FString, TArray<float>>& InJointState, const ERRJointControlType InJointControlType)

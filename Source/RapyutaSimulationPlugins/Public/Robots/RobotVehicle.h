@@ -43,7 +43,7 @@ public:
     ARobotVehicle(const FObjectInitializer& ObjectInitializer);
 
     //! Robot Mesh
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     USkeletalMeshComponent* SkeletalMeshComp = nullptr;
 
     /**
@@ -52,15 +52,11 @@ public:
      */
     void SetupDefaultRootSkeletal();
 
-    UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void SetServerLinearVel(float TimeStamp, const FVector& InPosition, const FVector& InLinearVelocity);
-
-    UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void SetServerAngularVel(float TimeStamp,const FRotator& InRotation, const FVector& InAngularVelocity);
-
-    UFUNCTION(BlueprintCallable, Client, Reliable)
-    virtual void SetClientLinearVel(const FVector& InLinearVelocity);
-
-    UFUNCTION(BlueprintCallable, Client, Reliable)
-    virtual void SetClientAngularVel(const FVector& InAngularVelocity);
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 };

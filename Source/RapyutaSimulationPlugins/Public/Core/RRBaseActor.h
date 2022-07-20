@@ -24,7 +24,8 @@ class ARRPlayerController;
 
 /**  @brief Base actor class for all Rapyuta Sim actors:
  * - Be assigned a Scene instance id
- * - Provide accessible handles to the common Game framework objects (GameInstance, GameMode, GameState) and the corresponding [ActorCommon] of the Scene instance it belongs to.
+ * - Provide accessible handles to the common Game framework objects (GameInstance, GameMode, GameState) and the corresponding
+ * [ActorCommon] of the Scene instance it belongs to.
  * - Does not necessarily have a USceneComponent, which is only required for spatially wise or mesh-based actors, as Root!
  */
 UCLASS()
@@ -33,7 +34,7 @@ class RAPYUTASIMULATIONPLUGINS_API ARRBaseActor : public APawn
     GENERATED_BODY()
 public:
     /**
-     * @brief 
+     * @brief
      * [std::once_flag] also applies even in case of consecutive PIE runs,
      * thus if running in PIE and the called function is required to run again each time (though still once per PIE) then,
      * another (context-specific) method (without using [static res]) should be considered!
@@ -43,7 +44,7 @@ public:
 
     //! Used for class having single-branch child classes (linear inheritance tree)
     static std::once_flag OnceFlag;
-    
+
     /**
      * @brief Construct a new ARRBaseActor object
      * UE HAS A VERY SPECIAL WAY OF HAVING [AActor] INSTANTIATED, IN WHICH
@@ -55,14 +56,14 @@ public:
      * Please put them in [Initialize()] instead!
      */
     ARRBaseActor();
-    
+
     /**
      * @brief Construct a new ARRBaseActor object
-     * 
-     * @param ObjectInitializer 
+     *
+     * @param ObjectInitializer
      */
     ARRBaseActor(const FObjectInitializer& ObjectInitializer);
-    
+
     TSharedPtr<FRRActorSpawnInfo> ActorInfo = nullptr;
 
     static int8 SSceneInstanceId;
@@ -100,31 +101,30 @@ public:
     FTimerHandle GenericTimerHandle;
 
 public:
-
     /**
-    * @brief 
-    * (NOTE) This method, if being called, could only go with a RRGameMode-inheriting game mode setup!
-    * Currently, ARRROS2GameMode & ARRGameMode are separate ones.
-    * & Maps of ARRROS2GameMode do NOT YET have actors invoking this method.
-    * It is up to the Child class, [Initialize()] could be run inside [BeginPlay()] or some place else in advance!
-    *
-    * @return true 
-    * @return false 
-    */
+     * @brief
+     * (NOTE) This method, if being called, could only go with a RRGameMode-inheriting game mode setup!
+     * Currently, ARRROS2GameMode & ARRGameMode are separate ones.
+     * & Maps of ARRROS2GameMode do NOT YET have actors invoking this method.
+     * It is up to the Child class, [Initialize()] could be run inside [BeginPlay()] or some place else in advance!
+     *
+     * @return true
+     * @return false
+     */
     virtual bool Initialize();
 
     virtual bool HasInitialized(bool bIsLogged = false) const;
 
     /**
      * @brief Rest. Calls #ActorInfo::ClearMeshInfo.
-     * 
+     *
      */
     virtual void Reset();
 
     /**
      * @brief Use #URRUObjectUtils::SetupActorTick
-     * 
-     * @param bInIsTickEnabled 
+     *
+     * @param bInIsTickEnabled
      */
     void SetTickEnabled(bool bInIsTickEnabled);
 

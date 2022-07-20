@@ -55,17 +55,17 @@ public:
 
     //! reference actor for odometry.
     //! @todo is this still necessary?
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     AActor* Map = nullptr;
 
     // KINEMATIC MOVEMENT --
     //
     //! Main robot vehicle move component
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
     //! Class of the main robot vehicle move component, configurable in child class
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
 
     /**
@@ -75,6 +75,14 @@ public:
      * @return false
      */
     virtual bool InitMoveComponent();
+
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 
     /**
      * @brief Set the root offset for #RobotVehicleMoveComponent
@@ -101,6 +109,30 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetAngularVel(const FVector& InAngularVelocity);
+
+    /**
+     * @brief Set server linear velocity  to #RobotVehicleMoveComponent
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    virtual void ServerSetLinearVel(float InTimeStamp, const FVector& InPosition, const FVector& InLinearVelocity);
+
+    /**
+     * @brief Set server angular velocity  to #RobotVehicleMoveComponent
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    virtual void ServerSetAngularVel(float InTimeStamp, const FRotator& InRotation, const FVector& InAngularVelocity);
+
+    /**
+     * @brief Set client linear velocity to #RobotVehicleMoveComponent
+     */
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    virtual void ClientSetLinearVel(const FVector& InLinearVelocity);
+
+    /**
+     * @brief Set server angular velocity to #RobotVehicleMoveComponent
+     */
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    virtual void ClientSetAngularVel(const FVector& InAngularVelocity);
 
 protected:
     /**

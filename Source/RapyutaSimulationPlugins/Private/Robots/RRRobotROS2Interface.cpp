@@ -2,6 +2,9 @@
 
 #include "Robots/RRRobotROS2Interface.h"
 
+// UE
+#include "Net/UnrealNetwork.h"
+
 // rclUE
 #include "Msgs/ROS2JointStateMsg.h"
 #include "Msgs/ROS2TwistMsg.h"
@@ -27,6 +30,19 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     // Refresh TF, Odom publishers
     verify(InitPublishers());
     InitSubscriptions();
+}
+
+void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(URRRobotROS2Interface, Robot);
+    DOREPLIFETIME(URRRobotROS2Interface, RobotROS2Node);
+    DOREPLIFETIME(URRRobotROS2Interface, OdomPublisher);
+    DOREPLIFETIME(URRRobotROS2Interface, bPublishOdom);
+    DOREPLIFETIME(URRRobotROS2Interface, bPublishOdomTf);
+    DOREPLIFETIME(URRRobotROS2Interface, CmdVelTopicName);
+    DOREPLIFETIME(URRRobotROS2Interface, JointsCmdTopicName);
+    DOREPLIFETIME(URRRobotROS2Interface, bWarnAboutMissingLink);
 }
 
 void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)

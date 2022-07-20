@@ -10,18 +10,8 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
-#include "Core/RRGameState.h"
-#include "Core/RRNetworkPlayerController.h"
+#include "Core/RRNetworkGameMode.h"
 #include "Tools/RRROS2ClockPublisher.h"
-#include "Tools/SimulationStateClient.h"
-
-
-ARRROS2GameMode::ARRROS2GameMode()
-{
-    GameStateClass = ARRNetworkGameState::StaticClass();
-    PlayerControllerClass = ARRNetworkPlayerController::StaticClass();
-}
-
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
 {
@@ -45,57 +35,34 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
     InitSim();
 }
 
-void ARRROS2GameMode::PostLogin(APlayerController* InPlayer) {
-    Super::PostLogin(InPlayer);
-
-    ClientControllerList.Add(InPlayer);
-    USimulationStateClient* SimulationStateClient = NewObject<USimulationStateClient>(InPlayer, TEXT("Simulation State Client"));
-    SimulationStateClient->RegisterComponent();
-    SimulationStateClient->SetIsReplicated(true);
-    SimulationStateClient->SimulationState = SimulationState;
-    InPlayer->AddInstanceComponent(SimulationStateClient);
-    Cast<ARRNetworkPlayerController>(InPlayer)->SimulationState = SimulationState;
-
-
-#if WITH_EDITOR
-    numPlayers += 1;
-    if(numPlayers == 1) {
-        InPlayer->SetName("pixelstreamer");
-    } else {
-        InPlayer->SetName("amr" + FString::FromInt(numPlayers-1));
-    }
-
-#endif
-
-//    Cast<ARRNetworkPlayerController>(InPlayer)->SimulationStateData = SimulationStateData;
-
-}
-
 void ARRROS2GameMode::InitSim()
 {
-    InitROS2();
+    // Init Sim-wide Main ROS2 node, but only in case of a Network standalone app
+    // For Server-client app, each client will have its own ROS2 Node inited upon Network player controller possessing
+    if (IsNetMode(NM_Standalone) && (nullptr == Cast<ARRNetworkGameMode>(this)))
+    {
+        InitROS2();
+    }
+
+    // Simulation state
+    SimulationState = GetWorld()->SpawnActor<ASimulationState>(SimulationStateClass);
+    SimulationState->InitEntities();
 }
 
 void ARRROS2GameMode::InitROS2()
 {
-    if (IsValid(ROS2Node))
+    if (IsValid(MainROS2Node))
     {
         return;
     }
 
-    UWorld* currentWorld = GetWorld();
-//    ROS2Node = currentWorld->SpawnActor<AROS2Node>();
-//    ROS2Node->Namespace.Reset();
-//    ROS2Node->Name = UENodeName;
-//    ROS2Node->Init();
-//
-//    // Create Clock publisher
-//    ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
-//    // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
-//    ClockPublisher->InitializeWithROS2(ROS2Node);
+    MainROS2Node = GetWorld()->SpawnActor<AROS2Node>();
+    MainROS2Node->Namespace.Reset();
+    MainROS2Node->Name = MainROS2NodeName;
+    MainROS2Node->Init();
 
-    // Simulation state
-    SimulationState = currentWorld->SpawnActor<ASimulationState>(SimulationStateClass);
-    SimulationState->InitEntities();
-
+    // Create Clock publisher
+    ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
+    // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
+    ClockPublisher->InitializeWithROS2(MainROS2Node);
 }

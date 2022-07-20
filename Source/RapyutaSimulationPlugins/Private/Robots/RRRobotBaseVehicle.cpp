@@ -1,6 +1,10 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
 
 #include "Robots/RRRobotBaseVehicle.h"
+
+// UE
+#include "GameFramework/GameStateBase.h"
+#include "Net/UnrealNetwork.h"
 
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
@@ -80,12 +84,51 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
     }
 }
 
+void ARRRobotBaseVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ARRRobotBaseVehicle, Map);
+    DOREPLIFETIME(ARRRobotBaseVehicle, RobotVehicleMoveComponent);
+    DOREPLIFETIME(ARRRobotBaseVehicle, VehicleMoveComponentClass);
+}
+
 void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVelocity)
 {
-    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+    ServerSetLinearVel(GameState->GetServerWorldTimeSeconds(), GetActorLocation(), InLinearVelocity);
+    ClientSetLinearVel(InLinearVelocity);
 }
 
 void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVelocity)
+{
+    ServerSetAngularVel(GameState->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVelocity);
+    ClientSetAngularVel(InAngularVelocity);
+}
+
+void ARRRobotBaseVehicle::ServerSetLinearVel_Implementation(float InTimeStamp,
+                                                            const FVector& InPosition,
+                                                            const FVector& InLinearVelocity)
+{
+    float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+    SetActorLocation(InPosition + InLinearVelocity * (serverCurrentTime - InTimeStamp));
+    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+}
+
+void ARRRobotBaseVehicle::ServerSetAngularVel_Implementation(float InTimeStamp,
+                                                             const FRotator& InRotation,
+                                                             const FVector& InAngularVelocity)
+{
+    float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+    SetActorRotation(InRotation + InAngularVelocity.Rotation() * (serverCurrentTime - InTimeStamp));
+    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
+}
+
+void ARRRobotBaseVehicle::ClientSetLinearVel_Implementation(const FVector& InLinearVelocity)
+{
+    UE_LOG(LogTemp, Warning, TEXT("PLAYER [%s]"), *PlayerController->PlayerState->GetPlayerName());
+    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+}
+
+void ARRRobotBaseVehicle::ClientSetAngularVel_Implementation(const FVector& InAngularVelocity)
 {
     RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
 }

@@ -13,36 +13,32 @@
 
 // rclUE
 #include "ROS2Node.h"
+#include "Srvs/ROS2AttachSrv.h"
+#include "Srvs/ROS2DeleteEntitySrv.h"
+#include "Srvs/ROS2GetEntityStateSrv.h"
+#include "Srvs/ROS2SetEntityStateSrv.h"
+#include "Srvs/ROS2SpawnEntitiesSrv.h"
 #include "Srvs/ROS2SpawnEntitySrv.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
-#include "Core/RRConversionUtils.h"
-#include "Core/RRGeneralUtils.h"
 
-#include "Srvs/ROS2AttachSrv.h"
-#include "Srvs/ROS2DeleteEntitySrv.h"
-#include "Srvs/ROS2GetEntityStateSrv.h"
-#include "Srvs/ROS2SetEntityStateSrv.h"
-#include "Srvs/ROS2SpawnEntitySrv.h"
 #include "SimulationState.generated.h"
 
 /**
- * @brief FActors has only TArray<AActor*> Actors.
- * This struct is used to create TMap<FName, FActors>.
+ * @brief FRREntities has only TArray<AActor*> Actors.
+ * This struct is used to create TMap<FName, FRREntities>.
  *
  */
 USTRUCT()
-struct RAPYUTASIMULATIONPLUGINS_API FActors
+struct RAPYUTASIMULATIONPLUGINS_API FRREntities
 {
     GENERATED_BODY()
 
     UPROPERTY()
     TArray<AActor*> Actors;
 };
-
-class UROS2GenericSrv;
 
 // (NOTE) To be renamed ARRROS2SimulationState, due to its inherent attachment to ROS2 Node
 // & thus house [Entities] spawned by ROS services, and  with ROS relevance.
@@ -80,85 +76,61 @@ public:
     virtual void Init(AROS2Node* InROS2Node);
 
     /**
-     * @brief Callback function of GetEntityState ROS2 service.
-     * Return the pose from reference frame.
-     * @param Service
-     * @sa [ue_mgs/GetEntityState.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/GetEntityState.srv)
-     * @todo Twist is zero. Should return proper value for physics actors.
+     * @brief Fetch all entities in the current map
      */
     UFUNCTION(BlueprintCallable)
     virtual void InitEntities();
 
-    /**
-     * @brief Callback function of SetEntityState ROS2 service.
-     * @param Service
-     * @sa [ue_mgs/SetEntityState.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SetEntityState.srv)
-     * @todo Twist is zero. Should able to set value for physics actors.
-     */
-    UFUNCTION(BlueprintCallable)
-    virtual void InitROS2Node(AROS2Node* InROS2Node);
-
-    /**
-     * @brief Callback function of Attach ROS2 service.
-     * Attach actors if those are not attached and detach actors if those are attached.
-     * @param Service
-     * @sa [ue_mgs/Attach.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/Attach.srv)
-     */
-    UFUNCTION(BlueprintCallable)
-    void AttachSrv(UROS2GenericSrv* InService);
-
     UPROPERTY(BlueprintReadOnly)
     FROSGetEntityState_Request PreviousGetEntityStateRequest;
 
-    //Set Entity Functions
-     */
+    // Set Entity Functions
     UFUNCTION(BlueprintCallable)
-    bool ServerSetEntityStateCheckRequest(FROSSetEntityState_Request Request);
+    bool ServerCheckSetEntityStateRequest(const FROSSetEntityState_Request& InRequest);
 
-    /**
-     * @brief Callback function of DeleteEntity ROS2 service.
-     * @param Service
-     * @sa [ue_mgs/DeleteEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/DeleteEntity.srv)
-     */
     UFUNCTION(BlueprintCallable)
-    void ServerSetEntityState(FROSSetEntityState_Request Request);
+    void ServerSetEntityState(const FROSSetEntityState_Request& InRequest);
 
     UPROPERTY(BlueprintReadOnly)
     FROSSetEntityState_Request PreviousSetEntityStateRequest;
 
-
-    //Attach Functions
+    // Attach Functions
     UFUNCTION(BlueprintCallable)
-    bool ServerAttachCheckRequest(FROSAttach_Request Request);
+    bool ServerCheckAttachRequest(const FROSAttach_Request& InRequest);
 
     UFUNCTION(BlueprintCallable)
-    void ServerAttach(FROSAttach_Request Request);
+    void ServerAttach(const FROSAttach_Request& Request);
 
     UPROPERTY(BlueprintReadOnly)
     FROSAttach_Request PreviousAttachRequest;
 
-    //Spawn Entity Functions
+    // Spawn Entity Functions
     UFUNCTION(BlueprintCallable)
-    bool ServerSpawnCheckRequest(FROSSpawnEntityRequest Request);
+    bool ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InRequest);
 
     UFUNCTION(BlueprintCallable)
-    void ServerSpawnEntity(FROSSpawnEntityRequest Request);
+    AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest);
 
     UPROPERTY(BlueprintReadOnly)
     FROSSpawnEntityRequest PreviousSpawnRequest;
 
-    //Delete Entity Functions
+    // Delete Entity Functions
     UFUNCTION(BlueprintCallable)
-    bool ServerDeleteCheckRequest(FROSDeleteEntity_Request Request);
+    bool ServerCheckDeleteRequest(const FROSDeleteEntity_Request& InRequest);
 
     UFUNCTION(BlueprintCallable)
-    void ServerDeleteEntity(FROSDeleteEntity_Request Request);
+    void ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest);
 
     UPROPERTY(BlueprintReadOnly)
     FROSDeleteEntity_Request PreviousDeleteRequest;
 
-    //Simulation State Manipulation Functions
     UFUNCTION(BlueprintCallable)
+    /**
+     * @brief Add Entity to #Entities and #EntitiesWithTag
+     * Entity become able to be manipulated by Simulationstate's ROS2 servs.
+     * @param Entity
+     */
+    void AddEntity(AActor* InEntity);
 
     UFUNCTION(BlueprintCallable)
     void OnRep_Entity();
@@ -167,7 +139,7 @@ public:
     void OnRep_SpawnableEntity();
 
     UFUNCTION(BlueprintCallable)
-    void AddTaggedEntities(AActor* Entity, const FName& InTag);
+    void AddTaggedEntities(AActor* InEntity, const FName& InTag);
 
     UFUNCTION(BlueprintCallable)
     /**
@@ -180,26 +152,22 @@ public:
     UFUNCTION(BlueprintCallable)
     void GetSplitSpawnableEntities();
 
-    template<typename T>
-    bool CheckEntity(TMap<FString, T>& InEntities, const FString& InEntityName, const bool bAllowEmpty = false);
-    bool CheckEntity(const FString& InEntityName, const bool bAllowEmpty = false);
-    bool CheckSpawnableEntity(const FString& InEntityName, const bool bAllowEmpty = false);
-
     //! need node that will handle services - this class will only define and register the service
     UPROPERTY(BlueprintReadOnly)
-    AROS2Node* ROSServiceNode = nullptr;
+    AROS2Node* MainROS2Node = nullptr;
 
-    //! Entities which can be manipulated by this class via ROS2 services.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
 
     //! Entities which can be manipulated by this class via ROS2 services.
     UPROPERTY()
-    TMap<FName, FActors> EntitiesWithTag;
+    TMap<FName, FRREntities> EntitiesWithTag;
 
+    //! Entities which can be manipulated by this class via ROS2 services.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Entity)
     TArray<AActor*> EntityList;
 
+    //! Spawnable entities from SpawnEntity ROS2 service.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_SpawnableEntity)
     TArray<TSubclassOf<AActor>> SpawnableEntityList;
 
@@ -211,6 +179,9 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle TimerHandle;
+
+private:
+    /**
      * @brief Spawn entity with tag & init nav surrogate
      * @param InROSSpawnRequest (FROSSpawnEntityRequest)
      * @param InEntityClass

@@ -1,6 +1,12 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRNetworkPlayerController.h
+ * @todo add doc
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 #pragma once
+
 // UE
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "UnrealClient.h"
 
@@ -9,19 +15,11 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
-#include "Tools/SimulationState.h"
-#include "Tools/SimulationStateClient.h"
-#include "Tools/ROS2Spawnable.h"
-#include "Tools/RRROS2OdomPublisher.h"
-#include "Tools/RRROS2TFPublisher.h"
 #include "Tools/RRROS2ClockPublisher.h"
+#include "Tools/RRROS2SimulationStateClient.h"
+#include "Tools/SimulationState.h"
 
 #include "RRNetworkPlayerController.generated.h"
-
-class ARRGameMode;
-class ARRGameState;
-class URRGameInstance;
-class ARRActorCommon;
 
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRNetworkPlayerController : public APlayerController
@@ -31,99 +29,54 @@ public:
     ARRNetworkPlayerController();
 
     virtual void Tick(float DeltaSeconds) override;
-
-    UFUNCTION()
-    void WaitForPawnToPossess();
-
-    UFUNCTION(Server, Reliable)
-    void ServerPossessPawn(AActor* InActor);
-
-    UFUNCTION()
-    void GetSimulationStateClient();
-
-    UFUNCTION(Client, Reliable)
-    void ClientInitMoveComp(AActor* InActor);
-
-    UPROPERTY(BlueprintReadOnly, Replicated)
-    AROS2Node* ROS2Node = nullptr;
-
-    UPROPERTY(BlueprintReadOnly, Replicated)
-    APawn* PossessedPawn = nullptr;
+    void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     UPROPERTY(BlueprintReadOnly, Replicated)
     URRROS2ClockPublisher* ClockPublisher = nullptr;
 
+    UFUNCTION()
+    void WaitForPawnPossess();
+
+    UFUNCTION(Server, Reliable)
+    void ServerPossessPawn(APawn* InPawn);
+
+    UFUNCTION(Client, Reliable)
+    void ClientInitMoveComp(AActor* InActor);
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     ASimulationState* SimulationState = nullptr;
+    UPROPERTY(Transient, Replicated)
+    URRROS2SimulationStateClient* SimulationStateClient = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    FString PlayerName = "";
+    FString PlayerName;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    FString Namespace = "";
+    FString Namespace;
 
     UPROPERTY(Transient, Replicated)
-    AROS2Node* RobotROS2Node = nullptr;
+    APawn* PossessedPawn = nullptr;
 
     UPROPERTY(Transient, Replicated)
-    AROS2Node* ROS2ServiceNode = nullptr;
+    AROS2Node* ClientROS2Node = nullptr;
 
-    UPROPERTY(Transient, Replicated)
-    USimulationStateClient* SimulationStateClient = nullptr;
-//Services
-//    UFUNCTION(BlueprintCallable)
-//    void SpawnEntitySrv(UROS2GenericSrv* Service);
-//
-//    UFUNCTION(BlueprintCallable, Server, Reliable)
-//    void ServerSpawnEntity(FROSSpawnEntityRequest Request);
-
-    void InitRobotROS2Node(APawn* InPawn);
-
-    UPROPERTY()
-    FVector InitialPosition = FVector::ZeroVector;
-
-    UPROPERTY()
-    FRotator InitialOrientation = FRotator::ZeroRotator;
-
-    UPROPERTY(Transient, BlueprintReadWrite)
-    URRROS2OdomPublisher* OdomPublisher = nullptr;
-    UFUNCTION()
-    virtual bool InitPublishers(APawn* InPawn);
-
-    UFUNCTION()
-    void InitRobotPublisher(APawn* InPawn);
-
-    UFUNCTION()
-    virtual void MovementCallback(const UROS2GenericMsg* Msg);
+    // Services
+    //    UFUNCTION(BlueprintCallable)
+    //    void SpawnEntitySrv(UROS2GenericSrv* Service);
+    //
+    //    UFUNCTION(BlueprintCallable, Server, Reliable)
+    //    void ServerSpawnEntity(FROSSpawnEntityRequest Request);
 
     virtual void BeginPlay() override;
 
-    virtual void OnPossess(APawn* InPawn) override;
-
-    virtual void OnUnPossess() override;
-
-    virtual void AcknowledgePossession(APawn* InPawn) override;
-
     UFUNCTION(Server, Reliable)
-    void SetServerPlayerName(const FString& InPlayerName);
+    void ServerSetPlayerName(const FString& InPlayerName);
 
-//    UFUNCTION(BlueprintCallable, Client, Reliable)
-//    void ReplicateTag();
+    //    UFUNCTION(BlueprintCallable, Client, Reliable)
+    //    void ReplicateTag();
 
-//    UFUNCTION(Client, Reliable)
-//    void InitPawn(APawn* InPawn);
-
-    UFUNCTION(BlueprintCallable, Client, Reliable)
-    void SubscribeToMovementCommandTopic(const FString& InTopicName);
-
-    UPROPERTY(BlueprintReadWrite)
-    bool bPublishOdom = true;
-
-    UPROPERTY(BlueprintReadWrite)
-    bool bPublishOdomTf = false;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FTimerHandle SimulationStateTimerHandle;
+    //    UFUNCTION(Client, Reliable)
+    //    void InitPawn(APawn* InPawn);
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle PossessTimerHandle;
@@ -131,19 +84,21 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle ClockRequestTimerHandle;
 
-    virtual float GetServerTime() { return ServerTime; }
-
+    UPROPERTY()
+    float ServerTime = 0.0f;
+    virtual float GetServerTime()
+    {
+        return ServerTime;
+    }
     void RequestServerTime();
 
     UFUNCTION(Client, Reliable)
-    void ServerSendClock(float ClientRequestTime, float ServerCurrentTime);
+    void ServerSendClock(float InClientRequestTime, float InServerCurrentTime);
 
     UFUNCTION(Server, Reliable)
-    void ClientRequestClock(float ClientRequestTime);
+    void ClientRequestClock(float InClientRequestTime);
 
-    void LocalClockUpdate(float DeltaSeconds);
+    void LocalClockUpdate(float InDeltaSeconds);
 
     virtual void ReceivedPlayer() override;
-
-    float ServerTime = 0.0f;
 };
