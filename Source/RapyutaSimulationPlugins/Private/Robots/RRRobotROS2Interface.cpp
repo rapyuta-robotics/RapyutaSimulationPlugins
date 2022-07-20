@@ -10,13 +10,15 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
-#include "Robots/RobotVehicle.h"
+#include "Robots/RRBaseRobot.h"
+#include "Robots/RRRobotBaseVehicle.h"
 
-void URRRobotROS2Interface::Initialize(ARobotVehicle* InRobot)
+void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
     Robot = InRobot;
+    Robot->ROS2Interface = this;
 
-    // Instantiate a ROS2 node for each possessed [InPawn]
+    // Instantiate a ROS2 node for InRobot
     InitRobotROS2Node(InRobot);
 
     // Initialize Robot's sensors (lidar, etc.)
@@ -27,7 +29,7 @@ void URRRobotROS2Interface::Initialize(ARobotVehicle* InRobot)
     InitSubscriptions();
 }
 
-void URRRobotROS2Interface::InitRobotROS2Node(ARobotVehicle* InRobot)
+void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
 {
     if (nullptr == RobotROS2Node)
     {
@@ -67,7 +69,8 @@ bool URRRobotROS2Interface::InitPublishers()
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
-        OdomPublisher->RobotVehicle = Robot;
+        // If publishing odom, it must be an [ARRRobotBaseVehicle]
+        OdomPublisher->RobotVehicle = CastChecked<ARRRobotBaseVehicle>(Robot);
     }
     return true;
 }
@@ -122,9 +125,10 @@ void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)
         AsyncTask(ENamedThreads::GameThread,
                   [this, linear, angular]
                   {
-                      check(IsValid(Robot));
-                      Robot->SetLinearVel(linear);
-                      Robot->SetAngularVel(angular);
+                      ARRRobotBaseVehicle* robotVehicle = CastChecked<ARRRobotBaseVehicle>(Robot);
+                      check(IsValid(robotVehicle));
+                      robotVehicle->SetLinearVel(linear);
+                      robotVehicle->SetAngularVel(angular);
                   });
     }
 }

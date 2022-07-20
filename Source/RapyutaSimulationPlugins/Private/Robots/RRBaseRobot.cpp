@@ -7,6 +7,7 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRUObjectUtils.h"
 #include "Drives/RRJointComponent.h"
 #include "Robots/RRRobotROS2Interface.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
@@ -28,9 +29,41 @@ void ARRBaseRobot::SetupDefault()
     // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
+    URRUObjectUtils::SetupDefaultRootComponent(this);
 
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-    ROS2InterfaceClass = URRRobotROS2Interface::StaticClass();
+    // NOTE: Any custom object class (eg ROS2InterfaceClass) that is required to be configurable by this class' child BP ones
+    // & IF its object needs to be created before BeginPlay(),
+    // -> They must be left NULL here, so its object (eg ROS2Interface) is not created by default in [PostInitializeComponents()]
+}
+
+void ARRBaseRobot::PostInitializeComponents()
+{
+    if (ROS2InterfaceClass)
+    {
+        CreateROS2Interface();
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s] [ARRBaseRobot::PostInitializeComponents()] ROS2InterfaceClass has not been configured, "
+                    "probably later in child BP class!"),
+               *GetName());
+    }
+
+    // Super::, for EAutoPossessAI::PlacedInWorldOrSpawned, spawn APawn's default controller,
+    // which does the possessing, thus must be called afterwards
+    Super::PostInitializeComponents();
+}
+
+void ARRBaseRobot::CreateROS2Interface()
+{
+    ROS2Interface = CastChecked<URRRobotROS2Interface>(
+        URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
+    // NOTE: NOT call ROS2Interface->Initialize(this) here since robot's ros2-based accessories might not have been fully accessible
+    // yet. For sure, that would be done in Controller's OnPossess
+
+    UE_LOG(LogTemp, Error, TEXT("%ld %s ARRBaseRobot::CreateROS2Interface %ld"), this, *GetName(), ROS2Interface);
 }
 
 bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
@@ -40,8 +73,10 @@ bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
         return false;
     }
 
-    // (NOTE) Use [ForEachComponent] would cause a fatal log on
-    // [Container has changed during ranged-for iteration!]
+    // NOTE:
+    // + Sensor comps could have been created either statically in child BPs/SetupDefault()/PostInitializeComponents()
+    // OR dynamically afterwards
+    // + Use [ForEachComponent] would cause a fatal log on [Container has changed during ranged-for iteration!]
     TInlineComponentArray<URRROS2BaseSensorComponent*> sensorComponents(this);
     for (auto& sensorComp : sensorComponents)
     {

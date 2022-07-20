@@ -1,5 +1,12 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.10 ##
+* `ARRBaseRobot` add ROS2Interface member & CreateRobotROS2Interface(), only instantiating it upon valid ROS2InterfaceClass
+* `ARRRobotVehicleROSController`: ARobotVehicle -> ARRRobotBaseVehicle
+* Add `ARRCrowAIController` since `ADetourCrowdAIController` lacks module API tag, thus is not compilable in EDITOR build
+* Add Scripts/verify_ue4_env.sh, so users could use a common custom env var (as path to UE4Editor) for all running scripts in client project repos
+* `URRRobotROS2Interface` Add `OnMessageReceived()`, being usable as a generic class callback
+
 ## 0.0.9 ##
 * `SimulationState` Add `SpawnEntity()`, used by `SpawnEntitySrv + SpawnEntitiesSrv`
 

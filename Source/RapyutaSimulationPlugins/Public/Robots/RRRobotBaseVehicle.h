@@ -7,10 +7,7 @@
 #pragma once
 
 // UE
-#include "Components/SkeletalMeshComponent.h"
 #include "CoreMinimal.h"
-#include "Engine/TargetPoint.h"
-#include "GameFramework/Pawn.h"
 
 // RapyutaSimulationPlugins
 #include "Drives/RRJointComponent.h"
@@ -23,7 +20,6 @@
 
 #include "RRRobotBaseVehicle.generated.h"
 
-class URRRobotROS2Interface;
 class URobotVehicleMovementComponent;
 
 /**
@@ -51,14 +47,24 @@ public:
      */
     ARRRobotBaseVehicle(const FObjectInitializer& ObjectInitializer);
 
+    /**
+     * @brief Initialize vehicle default
+     *
+     */
+    void SetupDefaultVehicle();
+
     //! reference actor for odometry.
     //! @todo is this still necessary?
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
     AActor* Map = nullptr;
 
+    // KINEMATIC MOVEMENT --
+    //
+    //! Main robot vehicle move component
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
+    //! Class of the main robot vehicle move component, configurable in child class
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
 
@@ -69,12 +75,6 @@ public:
      * @return false
      */
     virtual bool InitMoveComponent();
-
-    /**
-     * @brief Initialize vehicle default
-     *
-     */
-    void SetupDefaultVehicle();
 
     /**
      * @brief Set the root offset for #RobotVehicleMoveComponent
@@ -109,7 +109,6 @@ protected:
      * @sa[PostInitializeComponents](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
      */
     virtual void PostInitializeComponents() override;
-
     /**
      * @brief This method is called inside #PostInitializeComponents.
      * Custom initialization of child class can be done by overwritting this method.

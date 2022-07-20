@@ -7,6 +7,7 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRUObjectUtils.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Robots/RRRobotVehicleROSController.h"
 #include "Tools/ROS2Spawnable.h"
@@ -29,6 +30,17 @@ void ARRRobotBaseVehicle::SetupDefaultVehicle()
     // classes will automatically get invalidated.
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+    // NOTE: Any custom object class (eg ROS2Interface Class, VehicleMoveComponentClass) that is required to be configurable by
+    // this class' child BP ones & if its object needs to be created before BeginPlay(),
+    // -> The class must be left NULL here, so its object (eg RobotVehicleMoveComponent) is not created by default in
+    // [PostInitializeComponents()]
+}
+
+void ARRRobotBaseVehicle::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+    InitMoveComponent();
 }
 
 void ARRRobotBaseVehicle::SetRootOffset(const FTransform& InRootOffset)
@@ -44,8 +56,8 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
     if (VehicleMoveComponentClass)
     {
         // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
-        RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
-            this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
+        RobotVehicleMoveComponent = CastChecked<URobotVehicleMovementComponent>(
+            URRUObjectUtils::CreateSelfSubobject(this, VehicleMoveComponentClass, FString::Printf(TEXT("%sMoveComp"), *GetName())));
         RobotVehicleMoveComponent->RegisterComponent();
 
         // Configure custom properties (frameids, etc.)
@@ -60,8 +72,10 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
     }
     else
     {
-        // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [VehicleMoveComponentClass] has not been configured!"), *GetName());
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s] [VehicleMoveComponentClass] has not been configured, probably later in child BP class!"),
+               *GetName());
         return false;
     }
 }
@@ -74,10 +88,4 @@ void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVelocity)
 void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVelocity)
 {
     RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
-}
-
-void ARRRobotBaseVehicle::PostInitializeComponents()
-{
-    Super::PostInitializeComponents();
-    InitMoveComponent();
 }
