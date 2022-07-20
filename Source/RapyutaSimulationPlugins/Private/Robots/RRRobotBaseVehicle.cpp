@@ -72,7 +72,6 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
     }
     else
     {
-        // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
         UE_LOG(LogRapyutaCore,
                Warning,
                TEXT("[%s] [VehicleMoveComponentClass] has not been configured, probably later in child BP class!"),

@@ -38,20 +38,22 @@ void ARRBaseRobot::SetupDefault()
 
 void ARRBaseRobot::PostInitializeComponents()
 {
-    Super::PostInitializeComponents();
     if (ROS2InterfaceClass)
     {
         CreateROS2Interface();
     }
     else
     {
-        // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
         UE_LOG(LogRapyutaCore,
                Warning,
                TEXT("[%s] [ARRBaseRobot::PostInitializeComponents()] ROS2InterfaceClass has not been configured, "
                     "probably later in child BP class!"),
                *GetName());
     }
+
+    // Super::, for EAutoPossessAI::PlacedInWorldOrSpawned, spawn APawn's default controller,
+    // which does the possessing, thus must be called afterwards
+    Super::PostInitializeComponents();
 }
 
 void ARRBaseRobot::CreateROS2Interface()
@@ -60,6 +62,8 @@ void ARRBaseRobot::CreateROS2Interface()
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     // NOTE: NOT call ROS2Interface->Initialize(this) here since robot's ros2-based accessories might not have been fully accessible
     // yet. For sure, that would be done in Controller's OnPossess
+
+    UE_LOG(LogTemp, Error, TEXT("%ld %s ARRBaseRobot::CreateROS2Interface %ld"), this, *GetName(), ROS2Interface);
 }
 
 bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)

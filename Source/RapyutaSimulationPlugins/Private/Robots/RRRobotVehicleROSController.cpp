@@ -23,12 +23,8 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
     // + InPawn's child class' ros2-related accessories (ROS2 node, sensors, publishers/subscribers)
     //  may have not been fully accessible until now
     auto* robotVehicle = CastChecked<ARRRobotBaseVehicle>(InPawn);
-    if (robotVehicle->ROS2Interface == nullptr)
-    {
-        robotVehicle->CreateROS2Interface();
-    }
+    verify(IsValid(robotVehicle->ROS2Interface));
     ROS2Interface = robotVehicle->ROS2Interface;
-    verify(ROS2Interface);
     ROS2Interface->Initialize(robotVehicle);
 }
 
