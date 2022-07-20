@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRLidar.h
+ * @brief Standalone lidar sensor actor.
+ * @todo Follow the same imple as #ARRROS2CameraActor.
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -15,6 +20,10 @@
 
 #include "RRLidar.generated.h"
 
+/**
+ * @brief Standalone lidar sensor actor which can be placed in the level.
+ * @todo Follow the same impl as #ARRROS2CameraActor.
+ */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API ARRLidar : public AStaticMeshActor
 {

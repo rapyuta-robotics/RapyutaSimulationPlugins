@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRAssetUtils.h
+ * @brief Asset utils
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 
 #pragma once
 
@@ -15,6 +20,10 @@
 
 #include "RRAssetUtils.generated.h"
 
+/**
+ * @brief Asset utils.
+ * 
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRAssetUtils : public UBlueprintFunctionLibrary
 {
@@ -160,7 +169,17 @@ public:
         return true;
     }
 
-    // Ref: https://docs.unrealengine.com/en-US/Programming/Assets/AsyncLoading/index.html
+    /**
+     * @brief Load asset with UObjectLibrary.
+     * 
+     * @tparam T 
+     * @param InAssetsPath 
+     * @param OutAssetDataList 
+     * @param bHasBPAsset 
+     * @param bIsFullLoad 
+     * @sa [UObjectLibrary](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UObjectLibrary/)
+     * @sa [AsyncLoading](https://docs.unrealengine.com/en-US/Programming/Assets/AsyncLoading/index.html)
+     */
     template<typename T>
     static void LoadAssetDataList(const FString& InAssetsPath,
                                   TArray<FAssetData>& OutAssetDataList,
@@ -182,5 +201,21 @@ public:
 
         objectLibrary->GetAssetDataList(OutAssetDataList);
         verify(IsAssetDataListValid(OutAssetDataList, bIsFullLoad, true));
+    }
+
+    //(NOTE) This must not be invoked at Sim initialization since it would flush Async loaders away!
+    // Besides, [ConstructorHelpers::FObjectFinder<T> asset(AssetPathName); will call [StaticFindObject()] instead
+    // and requires to be run inside a ctor.
+    // This loads synchronously, thus should be avoided if possible.
+    template<typename T>
+    FORCEINLINE static T* LoadObjFromAssetPath(UObject* Outer, const FString& InAssetPath)
+    {
+        if (InAssetPath.IsEmpty())
+        {
+            UE_LOG(LogTemp, Error, TEXT("[LoadObjFromAssetPath]::EMPTY PATH!"))
+            return nullptr;
+        }
+        // This invokes [StaticLoadObject()]
+        return LoadObject<T>(Outer, *InAssetPath);
     }
 };

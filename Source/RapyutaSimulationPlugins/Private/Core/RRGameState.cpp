@@ -28,6 +28,21 @@ ARRGameState::ARRGameState()
 void ARRGameState::PrintSimConfig() const
 {
     UE_LOG(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_NUM: %d"), SCENE_INSTANCES_NUM);
+    UE_LOG(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_DISTANCE_INTERVAL: %f(cm)"), SCENE_INSTANCES_DISTANCE_INTERVAL);
+    UE_LOG(LogRapyutaCore,
+           Display,
+           TEXT("SIM_OUTPUTS_BASE_FOLDER_NAME: %s -> %s"),
+           *SIM_OUTPUTS_BASE_FOLDER_NAME,
+           *GetSimOutputsBaseFolderPath());
+    UE_LOG(LogRapyutaCore, Display, TEXT("OPERATION_BATCHES_NUM: %d"), OPERATION_BATCHES_NUM);
+    UE_LOG(LogRapyutaCore, Display, TEXT("ENTITY_BOUNDING_BOX_VERTEX_NORMALS:"));
+    for (const auto& vertexNormal : ENTITY_BOUNDING_BOX_VERTEX_NORMALS)
+    {
+        UE_LOG(LogRapyutaCore,
+               Display,
+               TEXT("%s"),
+               *FString::Printf(TEXT("%f, %f, %f"), vertexNormal.X, vertexNormal.Y, vertexNormal.Z));
+    }
 }
 
 void ARRGameState::StartSim()
@@ -47,10 +62,7 @@ void ARRGameState::StartSim()
     // [UGameViewportClient::MaxSplitscreenPlayers]
     const int32 maxSplitscreenPlayers = URRCoreUtils::GetMaxSplitscreenPlayers(this);
     UE_LOG(LogRapyutaCore, Display, TEXT("MAX SPLIT SCREEN PLAYERS: %d"), maxSplitscreenPlayers);
-
-#if WITH_EDITOR
-    check(SCENE_INSTANCES_NUM <= maxSplitscreenPlayers);
-#endif
+    verify(SCENE_INSTANCES_NUM <= maxSplitscreenPlayers);
 
     for (int8 i = 0; i < SCENE_INSTANCES_NUM; ++i)
     {
@@ -75,7 +87,7 @@ void ARRGameState::CreateSceneInstance(int8 InSceneInstanceId)
 {
     verify(InSceneInstanceId >= 0);
     URRSceneInstance* newSceneInstance = Cast<URRSceneInstance>(URRUObjectUtils::CreateSelfSubobject(
-        this, SceneInstanceClass, FString::Printf(TEXT("%d_%s"), InSceneInstanceId, *GameInstance->InitialMapName)));
+        this, SceneInstanceClass, FString::Printf(TEXT("%d_%s"), InSceneInstanceId, *URRGameInstance::SMapName)));
     verify(newSceneInstance);
     newSceneInstance->ConfigureStaticClasses();
     SceneInstanceList.Add(newSceneInstance);
@@ -101,7 +113,7 @@ void ARRGameState::CreateServiceObjects(int8 InSceneInstanceId)
     int32 sideNum = FMath::CeilToInt(FMath::Sqrt(static_cast<float>(SCENE_INSTANCES_NUM)));
     sceneInstance->ActorCommon->SceneInstanceLocation.X = (InSceneInstanceId / sideNum) * SCENE_INSTANCES_DISTANCE_INTERVAL;
     sceneInstance->ActorCommon->SceneInstanceLocation.Y = (InSceneInstanceId % sideNum) * SCENE_INSTANCES_DISTANCE_INTERVAL;
-    sceneInstance->ActorCommon->SceneInstanceLocation.Z = 80.f;
+    sceneInstance->ActorCommon->SceneInstanceLocation.Z = 0.f;
 }
 
 bool ARRGameState::HasSceneInstanceListBeenCreated(bool bIsLogged) const
@@ -164,6 +176,19 @@ bool ARRGameState::HasInitialized(bool bIsLogged) const
             {
                 UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRGameState]:: [sceneInstance index[%d]]: is invalid!"), i);
             }
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ARRGameState::HaveAllSceneInstancesCompleted() const
+{
+    for (int8 i = 0; i < SceneInstanceList.Num(); ++i)
+    {
+        if (false == SceneInstanceList[i]->SceneDirector->HasOperationCompleted(false))
+        {
             return false;
         }
     }
@@ -235,5 +260,41 @@ void ARRGameState::OnTick(float DeltaTime)
     for (auto& sceneInstance : SceneInstanceList)
     {
         sceneInstance->ActorCommon->OnTick(DeltaTime);
+    }
+}
+
+ARRMeshActor* ARRGameState::FindEntityByModel(const FString& InEntityModelName, bool bToActivate, bool bToTakeAway)
+{
+    ARRMeshActor* resultEntity = nullptr;
+    for (auto& entity : AllDynamicMeshEntities)
+    {
+        if (InEntityModelName == entity->EntityModelName)
+        {
+            if (bToActivate)
+            {
+                // Bring the found one on stage
+                entity->SetActivated(true);
+            }
+            resultEntity = entity;
+            break;
+        }
+    }
+
+    if (bToTakeAway && resultEntity)
+    {
+        // Better save first then remove
+        OrphanEntities.AddUnique(resultEntity);
+        // (NOTE) Use RemoveSwap() during the for loop would cause crash:
+        // "Attempting to use a container element that already comes from the container being modified"
+        AllDynamicMeshEntities.RemoveSwap(resultEntity);
+    }
+    return resultEntity;
+}
+
+void ARRGameState::SetAllEntitiesActivated(bool bIsActivated)
+{
+    for (auto& entity : AllDynamicMeshEntities)
+    {
+        entity->SetActivated(bIsActivated);
     }
 }

@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRThreadUtils.h
+ * @brief UE type related utils
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 #pragma once
 
 // UE
@@ -21,6 +26,12 @@ class RAPYUTASIMULATIONPLUGINS_API URRThreadUtils : public UBlueprintFunctionLib
     GENERATED_BODY()
 
 public:
+    /**
+     * @brief return true if called inside constructor.
+     *
+     * @return true
+     * @return false
+     */
     static bool IsInsideConstructor()
     {
         auto& ThreadContext = FUObjectThreadContext::Get();
@@ -30,9 +41,12 @@ public:
     // ----------------------------------------------------------------------------------------------------------
     // [ASYNC TASK SERVICES] --
     //
-    // https://stackoverflow.com/questions/47496358/c-lambdas-how-to-capture-variadic-parameter-pack-from-the-upper-scope
-    // UE has equivalent ones of [std::forward] as Forward, [std::make_tuple] as MakeTuple,
-    // but does not have one for [std::apply] :(
+    /**
+     * @brief Used in #URRProceduralMeshComponent
+     * UE has equivalent ones of [std::forward] as Forward, [std::make_tuple] as MakeTuple,
+     * but does not have one for [std::apply] :(
+     * @sa https://stackoverflow.com/questions/47496358/c-lambdas-how-to-capture-variadic-parameter-pack-from-the-upper-scope
+     */
     template<typename TFunc, typename... TArgs>
     static void DoTaskInGameThread(TFunc&& InTaskInGameThread, TArgs&&... InArgs)
     {
@@ -51,6 +65,18 @@ public:
         }
     }
 
+    template<typename TFunc, typename... TArgs>
+    static void DoTaskInGameThreadLater(TFunc&& InTaskInGameThread, float InWaitingTime, TArgs&&... Args)
+    {
+        DoAsyncTaskInThread<void>(
+            [InWaitingTime]()
+            {
+                // Wait for the physics to complete the computation given earlier vel cmds
+                FPlatformProcess::Sleep(InWaitingTime);
+            },
+            [InTaskInGameThread = Forward<TFunc>(InTaskInGameThread)]() { DoTaskInGameThread(InTaskInGameThread); });
+    }
+
     template<typename TResult>
     static auto DoAsyncTaskInThread(TFunction<TResult()> InTask,
                                     TFunction<void()> InCompletionCallback,
@@ -66,5 +92,52 @@ public:
             InExecutionThread,
             MoveTemp(InTask),
             TUniqueFunction<void()>([InCompletionCallback = MoveTemp(InCompletionCallback)]() { InCompletionCallback(); }));
+    }
+    template<typename TResult>
+    static void AddAsyncTaskInThreadPool(FRRAsyncJob& OutAsyncJob,
+                                         const uint64& InCurrentCaptureBatchId,
+                                         TFunction<TResult()> InTask,
+                                         TFunction<void()> InCompletionCallback)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogTemp,
+               Warning,
+               TEXT("[%ld:%s] ASYNC JOB NUM: %d"),
+               InCurrentCaptureBatchId,
+               *OutAsyncJob.JobName,
+               OutAsyncJob.GetTasksNum());
+#endif
+        OutAsyncJob.AddAsyncTask(InCurrentCaptureBatchId, DoAsyncTaskInThread(MoveTemp(InTask), MoveTemp(InCompletionCallback)));
+    }
+
+    template<typename TResult>
+    static void AddAsyncTaskToJob(FRRAsyncJob& OutAsyncJob,
+                                  const uint64& InCurrentCaptureBatchId,
+                                  TFunction<TResult()> InTask,
+                                  TFunction<void()> InCompletionCallback,
+                                  const EAsyncExecution InExecutionThread = EAsyncExecution::ThreadPool)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogTemp,
+               Warning,
+               TEXT("[%ld:%s] ASYNC JOB NUM: %d"),
+               InCurrentCaptureBatchId,
+               *OutAsyncJob.JobName,
+               OutAsyncJob.GetTasksNum());
+#endif
+        OutAsyncJob.AddAsyncTask(InCurrentCaptureBatchId,
+                                 DoAsyncTaskInThread(MoveTemp(InTask), MoveTemp(InCompletionCallback), InExecutionThread));
+    }
+
+    template<typename TAsyncTask>
+    static void EnsureAsyncTasksCompletion(const TArray<TUniquePtr<FAsyncTask<TAsyncTask>>>& InAsyncTasks)
+    {
+        for (auto& task : InAsyncTasks)
+        {
+            if (!task->Cancel())
+            {
+                task->EnsureCompletion();
+            }
+        }
     }
 };

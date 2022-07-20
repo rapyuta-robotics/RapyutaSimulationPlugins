@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file DifferentialDriveComponent.h
+ * @brief Differential Drive component class.
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -12,20 +16,61 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDifferentialDriveComponent, Log, All);
 
+/**
+ * @brief Differential Drive component class.
+ * Simulate differential drive by using 2 UPhysicsConstraintComponent.
+ * Calculate wheel rotation from given Velocity(member of UMovementComponent) and #AngularVelocity and set by calling SetAngularVelocityTarget
+ * Publish odometry from Velocity and #AngularVelocity.
+ * 
+ * @sa [UPhysicsConstraintComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/)
+ * @sa [SetAngularVelocityTarget](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVeloci-_3/)
+ *
+ * @todo Calculate odom from wheel rotation.
+ */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponent : public URobotVehicleMovementComponent
 {
     GENERATED_BODY()
 
 public:
+    /**
+     * @brief Calculate wheel velocity from Velocity(member of UMovementComponent) and #AngularVelocity, and set by calling SetAngularVelocityTarget
+     * SetAngularDriveParams as well. 
+     * @param DeltaTime 
+     * @sa [UPhysicsConstraintComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/)
+     * @sa [SetAngularVelocityTarget](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVeloci-_3/)
+     * @sa [SetAngularDriveParams](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularDriveP-/)
+     */
     virtual void UpdateMovement(float DeltaTime) override;
+
+    /**
+     * @brief Calculate odometry from Velocity and #AngularVelocity.
+     * 
+     * @param DeltaTime 
+     *
+     * @todo Calculate odom from wheel rotation.
+     */
     virtual void UpdateOdom(float DeltaTime) override;
 
+    /**
+     * @brief Set left and right wheels.
+     * 
+     * @param InWheelLeft 
+     * @param InWheelRight 
+     */
     UFUNCTION(BlueprintCallable)
     void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);
 
+    /**
+     * @brief Call Super::Initialize() and #SetPerimeter.
+     * 
+     */
     virtual void Initialize() override;
 
+    /**
+     * @brief SetPerimeter from #WheelRadius * 2.f * M_PI
+     * 
+     */
     UFUNCTION(BlueprintCallable)
     void SetPerimeter();
 
@@ -38,11 +83,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float WheelRadius = 1.f;
 
-    // todo get data from links
+    //! @todo get data from links
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float WheelSeparationHalf = 1.f;
 
-    // todo get data from physics constraints
+    //! @todo get data from physics constraints
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxForce = 1000.f;
 

@@ -1,3 +1,10 @@
+/**
+ * @file RRBaseLidarComponent.h
+ * @brief Base ROS2 LIDAR Component class. Other lidar class should inherit from this class.
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
+
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #pragma once
@@ -17,6 +24,11 @@
 #define TRACE_ASYNC 1
 
 class URRROS2LidarPublisher;
+
+/**
+ * @brief Base ROS2 LIDAR Component class. Other lidar class should inherit from this class.
+ * 
+ */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRBaseLidarComponent : public URRROS2BaseSensorComponent
 {
@@ -29,6 +41,13 @@ protected:
     virtual void BeginPlay() override;
 
 public:
+
+    /**
+     * @brief Return true if laser hits the target actor. This method should be overwritten by child class.
+     * @param TargetActor 
+     * @return true 
+     * @return false 
+     */
     UFUNCTION(BlueprintCallable)
     virtual bool Visible(AActor* TargetActor)
     {
@@ -36,26 +55,34 @@ public:
         return false;
     }
 
-    // adding the rest of the necessary information might be tedious
-    // eventually split into multiple getters
+    
+    /**
+     * @brief Get #RecordedHits and #TimeOfLastScan.
+     * adding the rest of the necessary information might be tedious
+     * eventually split into multiple getters
+     *
+     * @param OutHits 
+     * @param OutTime 
+     */
     UFUNCTION(BlueprintCallable)
     void GetData(TArray<FHitResult>& OutHits, float& OutTime) const;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 NSamplesPerScan = 360;
 
-    // [degrees]
+    //! [degrees] scan goes from StartAngle to StartAngle+FOVHorizontal
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float StartAngle = 0.f;
 
-    // scan goes from StartAngle to StartAngle+FOVHorizontal
-    // [degrees]
+    //! [degrees] scan goes from StartAngle to StartAngle+FOVHorizontal
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float FOVHorizontal = 360.f;
 
+    //! [m]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MinRange = 12.f;
 
+    //! [m]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxRange = 350.f;
 
@@ -101,7 +128,7 @@ public:
 #endif
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool ShowLidarRays = true;
+    bool bShowLidarRays = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool ShowLidarRayMisses = false;
@@ -124,10 +151,14 @@ protected:
     UPROPERTY()
     float Dt = 0.f;
 
-    // C++11 RNG for noise
+    //! C++11 RNG for noise
     std::random_device Rng;
+
+    //! C++11 RNG for noise
     std::mt19937 Gen = std::mt19937{Rng()};
+
     std::normal_distribution<> GaussianRNGPosition;
+
     std::normal_distribution<> GaussianRNGIntensity;
 
     FLinearColor InterpolateColor(float InX);

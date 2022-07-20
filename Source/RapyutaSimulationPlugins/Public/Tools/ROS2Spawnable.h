@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file ROS2Spawnable.h
+ * @brief BaseComponents which is used when spawning Actor from ROS2 service in #ASimulationState.
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 
 #pragma once
 #include "CoreMinimal.h"
@@ -9,6 +14,11 @@
 
 #include "ROS2Spawnable.generated.h"
 
+/**
+ * @brief BaseComponents which is used when spawning Actor from ROS2 service in #ASimulationState.
+ * Set Actor Name and ROS2 namespace of the ROS2Node with SpawnEntity srv.
+ * @sa [ue_msgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
+ */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API UROS2Spawnable : public UActorComponent
 {
@@ -25,6 +35,11 @@ public:
     TArray<FString> ActorTags;
 
 public:
+    /**
+     * @brief Set Actor name and ROS2 namespace from SpawnEntity service request.
+     * @sa [ue_msgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
+     * @param InRequest 
+     */
     UFUNCTION(BlueprintCallable)
     virtual void InitializeParameters(const FROSSpawnEntityRequest& InRequest);
 

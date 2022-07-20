@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRTypeUtils.h
+ * @brief UE type related utils
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -11,6 +15,28 @@
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRTypeUtils.generated.h"
+
+/**
+ * @brief UE/std type related utils
+ * 
+ */
+template<typename T>
+struct TIsBoolean
+{
+    enum
+    {
+        Value = false
+    };
+};
+
+template<>
+struct TIsBoolean<bool>
+{
+    enum
+    {
+        Value = true
+    };
+};
 
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRTypeUtils : public UBlueprintFunctionLibrary

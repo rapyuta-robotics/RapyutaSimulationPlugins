@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRObjectCommon.h
+ * @brief Common objects.
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -13,8 +18,10 @@
 
 // Note: For avoiding cyclic inclusion, only UE built-in source header files could be included herein.
 
-// SIM RESOURCE DATA --
-//
+/**
+ * @brief Sim resource data
+ *
+ */
 UENUM(BlueprintType)
 enum class ERRResourceDataType : uint8
 {
@@ -34,14 +41,30 @@ enum class ERRResourceDataType : uint8
     TOTAL
 };
 
-// The atomic Sim resource
+/**
+ * @brief The atomic Sim resource
+ *
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRResource
 {
     GENERATED_BODY()
+
+    /**
+     * @brief Construct a new FRRResource object
+     *
+     */
     FRRResource()
     {
     }
+
+    /**
+     * @brief Construct a new FRRResource object
+     *
+     * @param InUniqueName
+     * @param InAssetPath
+     * @param InAssetData
+     */
     FRRResource(const FString& InUniqueName, const FSoftObjectPath& InAssetPath, UObject* InAssetData)
         : UniqueName(InUniqueName), AssetPath(InAssetPath), AssetData(InAssetData)
     {
@@ -52,6 +75,12 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResource
 
     UPROPERTY()
     FSoftObjectPath AssetPath;
+
+    /**
+     * @brief Get the Asset Path.
+     *
+     * @return FString
+     */
     FString GetAssetPath() const
     {
         return AssetPath.ToString();
@@ -61,21 +90,38 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResource
     UObject* AssetData = nullptr;
 };
 
+/**
+ * @brief Structure to store resources information.
+ *
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
 {
     GENERATED_BODY()
+
+    /**
+     * @brief Construct a new FRRResourceInfo
+     *
+     */
     FRRResourceInfo()
     {
     }
+
+    /**
+     * @brief Construct a new FRRResourceInfo
+     *
+     * @param InDataType
+     */
     FRRResourceInfo(const ERRResourceDataType InDataType) : DataType(InDataType)
     {
     }
 
     UPROPERTY()
     ERRResourceDataType DataType = ERRResourceDataType::NONE;
+
     UPROPERTY()
     int32 ToBeAsyncLoadedResourceNum = 0;
+
     UPROPERTY()
     bool HasBeenAllLoaded = false;
 
@@ -109,5 +155,52 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
             }
         }
         Data.Reset();
+    }
+};
+
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
+{
+    // These property names are defined in master material by the artist
+    static constexpr const TCHAR* PROP_NAME_ALBEDO = TEXT("AlbedoTexture");
+    static constexpr const TCHAR* PROP_NAME_ORM = TEXT("MergeMapInput");
+    static constexpr const TCHAR* PROP_NAME_NORMAL = TEXT("MainNormalInput");
+    static constexpr const TCHAR* PROP_NAME_MASK = TEXT("MaskSelection");
+    static constexpr const TCHAR* PROP_NAME_COLOR_ALBEDO = TEXT("ColorAlbedo");
+
+    GENERATED_BODY()
+    UPROPERTY(VisibleAnywhere)
+    FString Name;
+    UPROPERTY(VisibleAnywhere)
+    FLinearColor Color = FLinearColor::Transparent;
+    UPROPERTY(VisibleAnywhere)
+    TArray<FString> AlbedoTextureNameList;
+    UPROPERTY(VisibleAnywhere)
+    TArray<FLinearColor> AlbedoColorList;
+    UPROPERTY(VisibleAnywhere)
+    FString MaskTextureName;
+    UPROPERTY(VisibleAnywhere)
+    FString ORMTextureName;
+    UPROPERTY(VisibleAnywhere)
+    FString NormalTextureName;
+
+    void PrintSelf() const
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Material: %s"), *Name);
+        UE_LOG(LogTemp, Display, TEXT("- Color: %s"), *Color.ToString());
+        UE_LOG(LogTemp, Display, TEXT("- AlbedoTextureNameList: %s"), *FString::Join(AlbedoTextureNameList, TEXT(",")));
+        UE_LOG(LogTemp,
+               Display,
+               TEXT("- AlbedoColorList: %s"),
+               *FString::JoinBy(AlbedoColorList, TEXT(","), [](const FLinearColor& InColor) { return InColor.ToString(); }));
+        UE_LOG(LogTemp, Display, TEXT("- MaskTextureName: %s"), *MaskTextureName);
+        UE_LOG(LogTemp, Display, TEXT("- ORMTextureName: %s"), *ORMTextureName);
+        UE_LOG(LogTemp, Display, TEXT("- NormalTextureName: %s"), *NormalTextureName);
+    }
+
+    bool HasTexture(const FString& InTextureName)
+    {
+        return AlbedoTextureNameList.Contains(InTextureName) || (InTextureName == MaskTextureName) ||
+               (InTextureName == ORMTextureName) || (InTextureName == NormalTextureName);
     }
 };

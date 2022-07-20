@@ -1,4 +1,10 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRCoreUtils.h
+ * @brief Core utils.
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 #pragma once
 
 // Native
@@ -31,15 +37,16 @@ class URRStaticMeshComponent;
 class ARRBaseActor;
 class UCameraComponent;
 
+/**
+ * @brief Core utils
+ * @todo add documentation
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRCoreUtils : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 
 public:
-    UFUNCTION()
-    static void OnWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources);
-
     // -------------------------------------------------------------------------------------------------------------
     // GENERAL UTILS ===============================================================================================
     //
@@ -94,14 +101,52 @@ public:
     static constexpr const TCHAR* CMD_MEMORY_REPORT = TEXT("memreport");
     static constexpr const TCHAR* CMD_MEMORY_REPORT_FULL = TEXT("memreport -full");
     static constexpr const TCHAR* CMD_GC_DUMP_POOL_STATS = TEXT("gc.DumpPoolStats");
-    static constexpr const TCHAR* CMD_RHI_ENABLE_GPU_CAPTURE_OPTIONS = TEXT("r.RHISetGPUCaptureOptions 1");
+    static constexpr const TCHAR* CMD_RHI_GPU_CAPTURE_OPTIONS_ENABLE = TEXT("r.RHISetGPUCaptureOptions 1");
     static constexpr const TCHAR* CMD_RENDER_DOC_CAPTURE_FRAME = TEXT("renderdoc.CaptureFrame");
     static constexpr const TCHAR* CMD_SHADOW_MAP_CACHING_TURN_OFF = TEXT("r.Shadow.CacheWholeSceneShadows 0");
-    static constexpr const TCHAR* CMD_AO_USE_HISTORY_DISABLED = TEXT("r.AOUseHistory 0");
-    static constexpr const TCHAR* CMD_VISUALIZE_OCCLUDED_PRIMITIVES = TEXT("r.VisualizeOccludedPrimitives 1");
+    static constexpr const TCHAR* CMD_AO_USE_HISTORY_DISABLE = TEXT("r.AOUseHistory 0");
+    static constexpr const TCHAR* CMD_OCCLUDED_PRIMITIVES_VISUALIZE = TEXT("r.VisualizeOccludedPrimitives 1");
+    static constexpr const TCHAR* CMD_CUSTOM_DEPTH_STENCIL_ENABLE = TEXT("r.CustomDepth 3");
+    // https://docs.unrealengine.com/4.26/en-US/TestingAndOptimization/PerformanceAndProfiling/ForwardRenderer
+    static constexpr const TCHAR* CMD_FORWARD_SHADING_ENABLE = TEXT("r.ForwardShading 1");
 
     // SIM FILE EXTENSIONS --
-    static const TMap<ERRFileType, const TCHAR*> SimFileExts;
+    static constexpr const TCHAR* SimFileExts[] = {
+        TEXT(""),    // ERRFileType::NONE
+        // UE & General
+        TEXT(".uasset"),    // ERRFileType::UASSET
+        TEXT(".ini"),       // ERRFileType::INI
+        TEXT(".yaml"),      // ERRFileType::YAML
+
+        // Image
+        TEXT(".jpg"),    // ERRFileType::IMAGE_JPG
+        TEXT(".png"),    // ERRFileType::IMAGE_PNG
+        TEXT(".tga"),    // ERRFileType::IMAGE_TGA
+        TEXT(".exr"),    // ERRFileType::IMAGE_EXR
+        TEXT(".hdr"),    // ERRFileType::IMAGE_HDR
+
+        // Meta data
+        TEXT(".json"),    // ERRFileType::JSON
+
+        // 3D Description formats
+        TEXT(".urdf"),     // ERRFileType::URDF
+        TEXT(".sdf"),      // ERRFileType::SDF
+        TEXT(".world"),    // ERRFileType::GAZEBO_WORLD
+        TEXT(".mjcf"),     // ERRFileType::MJCF
+
+        // 3D CAD
+        TEXT(".fbx"),    // ERRFileType::CAD_FBX
+        TEXT(".obj"),    // ERRFileType::CAD_OBJ
+        TEXT(".stl"),    // ERRFileType::CAD_STL
+        TEXT(".dae"),    // ERRFileType::CAD_DAE
+    };
+
+    FORCEINLINE static const TCHAR* GetSimFileExt(const ERRFileType InFileType)
+    {
+        const uint8 fileTypeIdx = static_cast<uint8>(InFileType);
+        verify((fileTypeIdx >= static_cast<uint8>(ERRFileType::NONE)) && (fileTypeIdx < static_cast<uint8>(ERRFileType::TOTAL)));
+        return SimFileExts[fileTypeIdx];
+    }
     static FString GetFileTypeFilter(const ERRFileType InFileType);
 
     FORCEINLINE static ERRFileType GetFileType(const FString& InFilePath)
@@ -111,7 +156,7 @@ public:
         for (uint8 i = 0; i < static_cast<uint8>(ERRFileType::TOTAL); ++i)
         {
             const ERRFileType& fileType = static_cast<ERRFileType>(i);
-            if (InFilePath.EndsWith(URRCoreUtils::SimFileExts[fileType]))
+            if (InFilePath.EndsWith(URRCoreUtils::GetSimFileExt(fileType)))
             {
                 imageFileType = fileType;
             }
@@ -123,7 +168,7 @@ public:
     {
         for (const auto& fileType : InFileTypes)
         {
-            if (InFilePath.EndsWith(URRCoreUtils::SimFileExts[fileType]))
+            if (InFilePath.EndsWith(URRCoreUtils::GetSimFileExt(fileType)))
             {
                 return true;
             }
@@ -273,6 +318,11 @@ public:
     static ARRSceneDirector* GetSceneDirector(const UObject* InContextObject, int8 InSceneInstanceId);
     static FVector GetSceneInstanceLocation(int8 InSceneInstanceId);
 
+    static bool HasEnoughDiskSpace(const FString& InPath, uint64 InRequiredMemorySizeInBytes);
+
+    static bool ShutDownSim(const UObject* InContextObject, uint64 InSimCompletionTimeoutInSecs);
+    static void ExecuteSimQuitCommand(const UObject* InContextObject);
+
     static uint32 GetNewGuid()
     {
         return GetTypeHash(FGuid::NewGuid());
@@ -325,6 +375,13 @@ public:
         // `GetWorld()->GetTimeSeconds()` relies on a context object's World and thus is less robust.
         return FPlatformTime::Seconds();
     }
+
+    // It was observed that with high polling frequency as [0.01] or sometimes [0.1] second, we got crash on AutomationTest
+    // module. Thus, [IntervalTimeInSec] as [0.5] sec is used for now.
+    static bool WaitUntilThenAct(TFunctionRef<bool()> InCond,
+                                 TFunctionRef<void()> InPassedCondAct,
+                                 float InTimeoutInSec,
+                                 float InIntervalTimeInSec = 0.5f);
 
     static bool CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
                                  const TFunctionRef<void()>& InAction,
@@ -394,7 +451,7 @@ public:
     static TMap<ERRFileType, TSharedPtr<IImageWrapper>> SImageWrappers;
     static void LoadImageWrapperModule();
 
-    static UTexture2D* LoadImageToTexture(const FString& InFullFilePath, const FString& InTextureName)
+    FORCEINLINE static UTexture2D* LoadImageToTexture(const FString& InFullFilePath, const FString& InTextureName)
     {
         UTexture2D* loadedTexture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
         if (loadedTexture)
@@ -403,6 +460,37 @@ public:
         }
 
         return loadedTexture;
+    }
+
+    static bool LoadImagesFromFolder(const FString& InImageFolderPath,
+                                     const TArray<ERRFileType>& InImageFileTypes,
+                                     TArray<UTexture*>& OutImageTextureList,
+                                     bool bIsLogged = false);
+
+    static bool IsValidBitDepth(int32 InBitDepth)
+    {
+        return (URRActorCommon::IMAGE_BIT_DEPTH_INT8 == InBitDepth) || (URRActorCommon::IMAGE_BIT_DEPTH_FLOAT16 == InBitDepth) ||
+               (URRActorCommon::IMAGE_BIT_DEPTH_FLOAT32 == InBitDepth);
+    }
+
+    template<int8 InBitDepth>
+    FORCEINLINE static void GetCompressedImageData(const ERRFileType InImageFileType,
+                                                   const FRRColorArray& InImageData,
+                                                   const FIntPoint& ImageSize,
+                                                   const int8 BitDepth,    // normally 8
+                                                   const ERGBFormat RGBFormat,
+                                                   TArray64<uint8>& OutCompressedData)
+    {
+        TSharedPtr<IImageWrapper> imageWrapper = URRCoreUtils::SImageWrappers[InImageFileType];
+        verify(imageWrapper.IsValid());
+        const auto& bitmap = InImageData.GetImageData<InBitDepth>();
+        imageWrapper->SetRaw(bitmap.GetData(), bitmap.GetAllocatedSize(), ImageSize.X, ImageSize.Y, RGBFormat, BitDepth);
+
+        // Get compressed data because uncompressed is the same fidelity, but much larger
+        // EImageCompressionQuality::Default will make the Quality as 85, which is not optimal
+        // Besides, this Quality value only matters to JPG, PNG compression is always lossless
+        // Please refer to FJpegImageWrapper, FPngImageWrapper for details
+        OutCompressedData = imageWrapper->GetCompressed(100);
     }
 
     // -------------------------------------------------------------------------------------------------------------------------

@@ -44,6 +44,12 @@ bool ARRBaseActor::Initialize()
     }
     std::call_once(*OnceFlagList[thisClass], [this]() { PrintSimConfig(); });
 
+    // Entity Model Name
+    if (ActorInfo.IsValid())
+    {
+        EntityModelName = ActorInfo->EntityModelName;
+    }
+
     // Tick setup
     SetTickEnabled(ActorInfo ? ActorInfo->bIsTickEnabled : false);
 

@@ -22,13 +22,17 @@ ARRGameMode::ARRGameMode()
 
 void ARRGameMode::PreInitializeComponents()
 {
-    UE_LOG(LogRapyutaCore, Verbose, TEXT("[ARRGameMode] PreInitializeComponents()"))
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRGameMode] PreInitializeComponents()"))
+#endif
     Super::PreInitializeComponents();
 }
 
 void ARRGameMode::InitGameState()
 {
-    UE_LOG(LogRapyutaCore, Verbose, TEXT("[ARRGameMode] InitGameState()"));
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRGameMode] InitGameState()"));
+#endif
     Super::InitGameState();
 }
 
@@ -36,11 +40,9 @@ void ARRGameMode::PrintSimConfig() const
 {
     UE_LOG(LogRapyutaCore, Display, TEXT("SIM GAME MODE CONFIG -----------------------------"));
     UE_LOG(LogRapyutaCore, Display, TEXT("- bBenchmark: %d"), bBenchmark);
-    UE_LOG(LogRapyutaCore, Display, TEXT("- SimType: %s"), *GetSimTypeName());
-    UE_LOG(LogRapyutaCore, Display, TEXT("- CaptureResolution: %s"), *CaptureResolution.ToString());
 }
 
-void ARRGameMode::PrintUEPreprocessors()
+void ARRGameMode::PrintUEPreprocessors() const
 {
     UE_LOG(LogRapyutaCore, Display, TEXT("[ARRGameMode]: UE PREPROCESSORS:"));
     UE_LOG(LogRapyutaCore, Display, TEXT("* [DO_CHECK] %s!"), URRCoreUtils::GetBoolPreprocessorText<DO_CHECK>());
@@ -92,15 +94,7 @@ void ARRGameMode::PrintUEPreprocessors()
 
 void ARRGameMode::ConfigureSimInPlay()
 {
-    if (CaptureResolution.Size() > 0)
-    {
-        UGameUserSettings* gameSettings = GEngine->GetGameUserSettings();
-        gameSettings->SetFullscreenMode(EWindowMode::Windowed);
-        gameSettings->SetScreenResolution(FIntPoint(CaptureResolution.X, CaptureResolution.Y));
-        gameSettings->ApplyResolutionSettings(false);
-    }
-
-    URRCoreUtils::ExecuteConsoleCommand(this, URRCoreUtils::CMD_AO_USE_HISTORY_DISABLED);
+    URRCoreUtils::ExecuteConsoleCommand(this, URRCoreUtils::CMD_AO_USE_HISTORY_DISABLE);
 
     for (auto& moduleNames : URRGameSingleton::SASSET_OWNING_MODULE_NAMES)
     {
@@ -150,7 +144,7 @@ void ARRGameMode::StartSim()
 {
     // 1- LOAD [ImageWrapperModule]
     // This must be loaded this early for possible external image-based texture loading at Sim initialization!
-    // Todo
+    URRCoreUtils::LoadImageWrapperModule();
 
     // 2- LOAD SIM STATIC GLOBAL RESOURCES --
     URRGameSingleton::Get()->InitializeResources();
@@ -169,7 +163,7 @@ bool ARRGameMode::TryStartingSim()
     static FDateTime sBeginTime(FDateTime::UtcNow());
 
     // !NOTE: This method was scheduled to be run by BeginPlay()
-    // 1 - WAIT FOR RESOURCE LOADING, in prep for Sim mode initialization
+    // 1 - WAIT FOR RESOURCE LOADING, in prep for Sim initialization
     UWorld* world = GetWorld();
     bool bResult = URRCoreUtils::CheckWithTimeOut(
         []() { return URRGameSingleton::Get()->HaveAllResourcesBeenLoaded(); },

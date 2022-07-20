@@ -1,4 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRROS2ActorTFPublisher.h
+ * @brief Publish TF of Actor relative to the reference actor.
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -17,6 +21,11 @@
 
 #include "RRROS2ActorTFPublisher.generated.h"
 
+/**
+ * @brief Publish TF of Actor relative to the reference actor.
+ * If reference actor name is empty, publishes TF from world origin.
+ * Provides ROS2Service to start/stop publishing tf.
+ */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2ActorTFPublisher : public URRROS2TFPublisher
 
@@ -28,6 +37,10 @@ public:
 
     void InitializeWithROS2(AROS2Node* InROS2Node) override;
 
+    /**
+     * @brief Callback function of TriggerPublishSrv
+     * @sa [example_interfaces/SetBool.srv](https://github.com/ros2/example_interfaces/blob/master/srv/SetBool.srv)
+     */
     UFUNCTION(BlueprintCallable)
     void TriggerPublishSrv(UROS2GenericSrv* Service);
 
@@ -46,6 +59,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     AActor* ReferenceActor = nullptr;
 
+    //! if this value is empty, publish pose from world origin.
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     FString ReferenceActorName = TEXT("");
 

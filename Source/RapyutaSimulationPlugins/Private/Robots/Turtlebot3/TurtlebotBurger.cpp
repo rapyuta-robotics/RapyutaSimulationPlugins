@@ -7,6 +7,7 @@
 
 // RapyutaSimulationPlugins
 #include "Drives/DifferentialDriveComponent.h"
+#include "Robots/Turtlebot3/RRTurtlebotROS2Interface.h"
 #include "Sensors/RR2DLidarComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTurtlebotBurger);
@@ -14,6 +15,7 @@ DEFINE_LOG_CATEGORY(LogTurtlebotBurger);
 ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
     PrimaryActorTick.bCanEverTick = true;
+    ROS2InterfaceClass = URRTurtlebotROS2Interface::StaticClass();
     VehicleMoveComponentClass = UDifferentialDriveComponent::StaticClass();
     bBodyComponentsCreated = false;
     SetupBody();

@@ -1,21 +1,32 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRStaticMeshComponent.h
+ * @brief static mesh component
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
 // UE
 #include "Components/StaticMeshComponent.h"
 #include "CoreMinimal.h"
+#include "MeshDescriptionBuilder.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameSingleton.h"
 #include "Core/RRMeshData.h"
+#include "Core/RRUObjectUtils.h"
 
 #include "RRStaticMeshComponent.generated.h"
 
 // [URRStaticMeshComponent] - COMPONENT OF [ARRMeshActor] --
-UCLASS()
+/**
+ * @brief Component of #ARRMeshActor. UStaticMeshComponent with utils.
+ * @todo documentation.
+ */
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRStaticMeshComponent : public UStaticMeshComponent
 {
     GENERATED_BODY()
@@ -25,6 +36,7 @@ public:
     URRStaticMeshComponent();
     static constexpr int8 CUSTOM_DEPTH_STENCIL_VOID = 0;
     void Initialize(bool bInIsStationary, bool bInIsPhysicsEnabled);
+    bool InitializeMesh(const FString& InMeshFileName);
     FOnMeshCreationDone OnMeshCreationDone;
 
     UPROPERTY()
@@ -35,11 +47,15 @@ public:
 
     UPROPERTY()
     FString MeshUniqueName;
+
     void SetMesh(UStaticMesh* InStaticMesh);
     void SetMeshSize(const FVector& InSize)
     {
         SetWorldScale3D(InSize / GetStaticMesh()->GetBoundingBox().GetSize());
     }
+
+    UPROPERTY()
+    ERRShapeType ShapeType = ERRShapeType::INVALID;
 
     UPROPERTY()
     FTransform OriginRelativeTransform;
@@ -56,18 +72,35 @@ public:
     UFUNCTION()
     FVector GetScaledExtent() const;
 
+    /**
+     * @brief  This function is used proprietarily for Generic Link/Joint (Non-Articulation) structure.
+     *
+     */
     UFUNCTION()
     void LockSelf();
 
     UFUNCTION()
-    void HideSelf(bool IsHidden);
+    void HideSelf(bool bInHidden);
 
     // Collision/Overlapping --
     UFUNCTION()
-    void SetCollisionModeAvailable(bool IsOn, bool IsHitEventEnabled = false);
+    void SetCollisionModeAvailable(bool bInCollisionEnabled, bool bInHitEventEnabled = false);
     UFUNCTION()
     void EnableOverlapping();
 
 protected:
     virtual void BeginPlay() override;
+
+private:
+    // This is used as a buffer storing loaded mesh data in worker thread,
+    // thus needs to belong to each individual mesh comp of its own
+    // As such, this just exists transiently and should not be queried. Use FRRMeshData::MeshDataStore instead
+    UPROPERTY()
+    FRRMeshData MeshDataBuffer;
+
+    UPROPERTY()
+    FTimerHandle StaticMeshTimerHandle;
+
+    UStaticMesh* CreateMeshBody();
+    void CreateMeshSection(const TArray<FRRMeshNodeData>& InMeshSectionData, FMeshDescriptionBuilder& OutMeshDescBuilder);
 };

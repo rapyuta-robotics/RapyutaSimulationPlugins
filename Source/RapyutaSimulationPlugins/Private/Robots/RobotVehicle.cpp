@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
 
 #include "Robots/RobotVehicle.h"
 
@@ -8,15 +8,9 @@
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
 
-// RapyutaSimulationPlugins
-#include "Drives/RobotVehicleMovementComponent.h"
-#include "Robots/RRRobotVehicleROSController.h"
-#include "Tools/ROS2Spawnable.h"
-#include "Tools/SimulationState.h"
-
 ARobotVehicle::ARobotVehicle()
 {
-    SetupDefault();
+    SetupDefaultRootSkeletal();
     bReplicates = true;
 }
 
@@ -38,10 +32,10 @@ void ARobotVehicle::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & Ou
 
 ARobotVehicle::ARobotVehicle(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-    SetupDefault();
+    SetupDefaultRootSkeletal();
 }
 
-void ARobotVehicle::SetupDefault()
+void ARobotVehicle::SetupDefaultRootSkeletal()
 {
     // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
@@ -145,12 +139,4 @@ void ARobotVehicle::SetClientLinearVel_Implementation(const FVector& InLinearVel
 }
 
 void ARobotVehicle::SetClientAngularVel_Implementation(const FVector& InAngularVelocity)
-{
-    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
-}
-
-void ARobotVehicle::PostInitializeComponents()
-{
-    Super::PostInitializeComponents();
-    InitMoveComponent();
 }

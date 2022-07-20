@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRMeshActor.h
+ * @brief Mesh Actor
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 
@@ -11,12 +16,19 @@
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRMeshActor.generated.h"
-
+/**
+ * @brief Mesh actor.
+ *
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRMeshActor : public ARRBaseActor
 {
     GENERATED_BODY()
 public:
+    /**
+     * @brief Construct a new ARRMeshActor object
+     *
+     */
     ARRMeshActor();
 
 public:
@@ -43,6 +55,15 @@ public:
 
     UPROPERTY(VisibleAnywhere)
     UMeshComponent* BaseMeshComp = nullptr;
+    UMaterialInterface* GetBaseMeshMaterial(int32 InMaterialIndex = 0) const
+    {
+        return BaseMeshComp ? BaseMeshComp->GetMaterial(InMaterialIndex) : nullptr;
+    }
+
+    UPROPERTY()
+    TArray<ARRMeshActor*> PartnerList;
+    UPROPERTY()
+    FIntVector CellIdx = FIntVector::ZeroValue;
 
     virtual void DeclareFullCreation(bool bInCreationResult);
 
@@ -73,13 +94,10 @@ public:
             const FString& meshUniqueName = InMeshUniqueNameList[i];
 
             // [ProcMeshComp] Verify path as absolute & existing
-            if constexpr (TIsSame<TMeshComp, URRProceduralMeshComponent>::Value)
+            if ((false == FPaths::IsRelative(meshUniqueName)) && (false == FPaths::FileExists(meshUniqueName)))
             {
-                if ((false == FPaths::IsRelative(meshUniqueName)) && (false == FPaths::FileExists(meshUniqueName)))
-                {
-                    UE_LOG(LogTemp, Error, TEXT("Mesh invalid [%s] is non-existent"), *meshUniqueName);
-                    continue;
-                }
+                UE_LOG(LogTemp, Error, TEXT("Mesh invalid [%s] is non-existent"), *meshUniqueName);
+                continue;
             }
 
             static int64 count = 0;
@@ -97,23 +115,14 @@ public:
 
             if (meshComp)
             {
-                // [ProcMeshComp] Load mesh from disk path
-                if constexpr (TIsSame<TMeshComp, URRProceduralMeshComponent>::Value)
+                // (Note) This must be the full path to the mesh file on disk
+                if (meshComp->InitializeMesh(meshUniqueName))
                 {
-                    // (Note) This must be the full path to the mesh file on disk
-                    if (meshComp->InitializeMesh(meshUniqueName))
-                    {
-                        addedMeshCompList.AddUnique(meshComp);
-                    }
-                    else
-                    {
-                        UE_LOG(LogTemp, Error, TEXT("%s: Failed initializing Proc mesh comp[%s]"), *GetName(), *meshUniqueName);
-                    }
+                    addedMeshCompList.AddUnique(meshComp);
                 }
                 else
                 {
-                    addedMeshCompList.AddUnique(meshComp);
-                    OnBodyComponentMeshCreationDone(true, meshComp);
+                    UE_LOG(LogTemp, Error, TEXT("%s: Failed initializing mesh comp[%s]"), *GetName(), *meshUniqueName);
                 }
             }
             else
@@ -156,17 +165,20 @@ public:
 
     FORCEINLINE void SetActivated(bool bInIsActivated)
     {
+#if RAPYUTA_SIM_VISUAL_DEBUG
         // Visible/Invisibile
         SetActorHiddenInGame(!bInIsActivated);
 
         // RenderCustomDepth
         SetCustomDepthEnabled(bInIsActivated);
+#endif
 
         // Then teleport itself to a camera-blind location if being deactivated,
         // so when it get activated back, it would not happen to appear at an unintended pose
         if (false == bInIsActivated)
         {
             AddActorWorldOffset(FVector(0.f, 0.f, -500.f));
+            CellIdx = FIntVector::ZeroValue;
         }
     }
 

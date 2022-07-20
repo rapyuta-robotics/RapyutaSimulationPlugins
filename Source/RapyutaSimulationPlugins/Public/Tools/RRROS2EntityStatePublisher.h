@@ -1,4 +1,10 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRROS2EntityStatePublisher.h
+ * @brief Entity(Actor) state publisher class
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
+
 
 #pragma once
 
@@ -10,6 +16,10 @@
 
 #include "RRROS2EntityStatePublisher.generated.h"
 
+/**
+ * @brief Entity(Actor) state publisher class
+ * @todo add ROSService to change reference frame
+ */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2EntityStatePublisher : public URRROS2BaseSensorPublisher
 {
@@ -17,6 +27,4 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2EntityStatePublisher : public URRROS2B
 
 public:
     URRROS2EntityStatePublisher();
-
-    //todo add ROSService to change reference frame
 };

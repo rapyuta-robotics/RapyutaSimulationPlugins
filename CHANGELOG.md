@@ -1,5 +1,45 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.10 ##
+* `ARRBaseRobot` add ROS2Interface member & CreateRobotROS2Interface(), only instantiating it upon valid ROS2InterfaceClass
+* `ARRRobotVehicleROSController`: ARobotVehicle -> ARRRobotBaseVehicle
+* Add `ARRCrowAIController` since `ADetourCrowdAIController` lacks module API tag, thus is not compilable in EDITOR build
+* Add Scripts/verify_ue4_env.sh, so users could use a common custom env var (as path to UE4Editor) for all running scripts in client project repos
+* `URRRobotROS2Interface` Add `OnMessageReceived()`, being usable as a generic class callback
+
+## 0.0.9 ##
+* `SimulationState` Add `SpawnEntity()`, used by `SpawnEntitySrv + SpawnEntitiesSrv`
+
+## 0.0.8 ##
+* Add ARRBaseRobot, ARRRobotROS2Interface taking src from ARobotROSController
+* Robot vehicle Collision fix2 (#69)
+* URRGameSingleton Add meshName <-> shapeType conversion (#68)
+* Prefix RR->RobotBaseVehicle 
+* Rem ATurtleborROSController, use URRTurtlebotROS2Interface + Rem BP_TurlebotROSController, use BP_TurtlebotROS2Interface instead
+
+## 0.0.7 ##
+* URRGameSingleton Add meshName <-> shapeType conversion
+* Add Content/DynamicContents/Materials/M_RapyutaPropMaster
+* FRRMeshData add MeshSize for primitive type
+
+## 0.0.6 ##
+* Add data synth utils
+
+## 0.0.5 ##
+* Add Content/SkeletalRobots/turtlebot3 BP actor classes for BallCasterSphereWheeled, ConvexWheeled, SphereWheeled, StaticMeshConstrained, FullLockConstrained, WheeledVehicle types
+* Add Content/Robots & SkeletalRobots to lfs
+* FRRMeshNodeData::BoneInfluences: `TArray<FRRBoneInfluenceList> -> TArray<FRRBoneInfluence>`
+* Fix teleport option to get correct collision management #63
+* Add default subscirbes #61
+* Joint controller #59
+* reset the array ContactPoints #60
+* add missing InitMovementComponent to BeginPlay of RobotVehicleMovementComponent #58
+* Sphinx and doxygen documentation #56 #66
+* Add SpawnEntities and followFloor #57
+
+## 0.0.4 ##
+* Add the class `ARobotBaseVehicle` without skeletal mesh as root component. Class `ARobotVehicle` inherits from it.
+
 ## 0.0.3 ##
 * Add Assimp as 3rd dependency (release sources + lib)
 * Add URRProceduralMeshComponent & mesh util classes: `FRRMeshData, URRMeshUtils`

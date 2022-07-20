@@ -6,13 +6,16 @@
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Robots/RobotVehicle.h"
 
-void URRROS2OdomPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
+URRROS2OdomPublisher::URRROS2OdomPublisher()
 {
-    Super::InitializeWithROS2(InROS2Node);
-
     MsgClass = UROS2OdometryMsg::StaticClass();
     TopicName = TEXT("odom");
     PublicationFrequencyHz = 30;
+}
+
+void URRROS2OdomPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
+{
+    Super::InitializeWithROS2(InROS2Node);
 
     // [URRROS2OdomPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
     Init(UROS2QoS::KeepLast);
@@ -52,7 +55,7 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdometry& OutOdomData) const
     if (moveComponent && moveComponent->OdomData.IsValid())
     {
         
-        OutOdomData = ConversionUtils::OdomUEToROS(moveComponent->OdomData);
+        OutOdomData = URRConversionUtils::OdomUEToROS(moveComponent->OdomData);
         if (bAppendNodeNamespace)
         {
             OutOdomData.header_frame_id = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.header_frame_id);

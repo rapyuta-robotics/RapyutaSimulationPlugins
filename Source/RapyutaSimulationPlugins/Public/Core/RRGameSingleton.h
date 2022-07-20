@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRGameSingleton.h
+ * @brief GameSingleton
+ * @todo add documentation
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
 
 #pragma once
 #include "CoreMinimal.h"
@@ -122,8 +127,17 @@ public:
         }
     }
 
-    // Callback to handle an asynchronously loaded resource, which receives a [FSoftObjectPath] that references a valid [UObject]
-    // Then put it into both [ResourceMap] & [ResourceStore].
+    /**
+     * @brief
+     * Callback to handle an asynchronously loaded resource, which receives a [FSoftObjectPath] that references a valid [UObject]
+     * Then put it into both [ResourceMap] & [ResourceStore].
+     *
+     * @tparam TResource
+     * @param InDataType
+     * @param InResourcePath
+     * @param InResourceUniqueName
+     * @return bool
+     */
     template<typename TResource>
     FORCEINLINE bool ProcessAsyncLoadedResource(const ERRResourceDataType InDataType,
                                                 const FSoftObjectPath& InResourcePath,
@@ -265,9 +279,39 @@ public:
     static constexpr const TCHAR* SHAPE_NAME_SPHERE = TEXT("Sphere");
     static constexpr const TCHAR* SHAPE_NAME_CAPSULE = TEXT("Capsule");
 
-    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName) const
+    static const FString GetMeshNameFromShapeType(const ERRShapeType InShapeType)
     {
-        return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, InStaticMeshName);
+        switch (InShapeType)
+        {
+            case ERRShapeType::PLANE:
+                return SHAPE_NAME_PLANE;
+            case ERRShapeType::BOX:
+                return SHAPE_NAME_CUBE;
+            case ERRShapeType::CYLINDER:
+                return SHAPE_NAME_CYLINDER;
+            case ERRShapeType::SPHERE:
+                return SHAPE_NAME_SPHERE;
+            case ERRShapeType::CAPSULE:
+                return SHAPE_NAME_CAPSULE;
+            default:
+                return EMPTY_STR;
+        }
+    }
+
+    static ERRShapeType GetShapeTypeFromMeshName(const FString& InMeshName)
+    {
+        return InMeshName.Equals(SHAPE_NAME_PLANE)    ? ERRShapeType::PLANE
+             : InMeshName.Equals(SHAPE_NAME_CUBE)     ? ERRShapeType::BOX
+             : InMeshName.Equals(SHAPE_NAME_CYLINDER) ? ERRShapeType::CYLINDER
+             : InMeshName.Equals(SHAPE_NAME_SPHERE)   ? ERRShapeType::SPHERE
+             : InMeshName.Equals(SHAPE_NAME_CAPSULE)  ? ERRShapeType::CAPSULE
+                                                      : ERRShapeType::MESH;
+    }
+
+    // (NOTE) StaticMesh could be dynamically created
+    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName, bool bIsStaticResource = true) const
+    {
+        return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, InStaticMeshName, bIsStaticResource);
     }
 
     // SKELETAL ASSETS --
@@ -292,10 +336,10 @@ public:
     FString FOLDER_PATH_ASSET_MATERIALS = TEXT("Materials");
 
     // Here we only define specially used materials for some specific purpose!
-    static constexpr const TCHAR* MATERIAL_NAME_FLOOR = TEXT("M_FloorMat");
-    static constexpr const TCHAR* MATERIAL_NAME_MASTER = TEXT("M_Base");
+    static constexpr const TCHAR* MATERIAL_NAME_ASSET_MASTER = TEXT("M_RapyutaAssetMaster");
+    static constexpr const TCHAR* MATERIAL_NAME_PROP_MASTER = TEXT("M_RapyutaPropMaster");
 
-    FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName)
+    FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName) const
     {
         return GetSimResource<UMaterialInterface>(ERRResourceDataType::UE_MATERIAL, InMaterialName);
     }

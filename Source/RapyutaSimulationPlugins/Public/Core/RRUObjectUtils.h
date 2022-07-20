@@ -1,4 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RRUObjectUtils.h
+ * @brief UObject general utils
+ * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ */
+
 #pragma once
 
 // Unreal
@@ -9,26 +14,42 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
+#include "Core/RRTextureData.h"
 #include "Core/RRThreadUtils.h"
 
 #include "RRUObjectUtils.generated.h"
 
+class ARRBaseActor;
+class ARRMeshActor;
 class URRStaticMeshComponent;
 
+/**
+ * @brief UObject general utils.
+ *
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRUObjectUtils : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 
 public:
-    // UOBJECT GENERAL UTILS --
-    //
     template<typename T>
     FORCEINLINE static T* CreateSelfSubobject(UObject* InOuter, const FString& InObjectUniqueName)
     {
         return Cast<T>(CreateSelfSubobject(InOuter, T::StaticClass(), InObjectUniqueName));
     }
 
+    /**
+     * @brief Use CreateDefaultSubobject or NewObject based on where this method is called.
+     * Uses #URRThreadUtils::IsInsideConstructor.
+     * @param InOuter test
+     * @param InObjectClass
+     * @param InObjectUniqueName
+     * @return static UObject*
+     *
+     * @sa[CreateDefaultSubobject](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
+     * @sa[NewObject](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
+     */
     FORCEINLINE static UObject* CreateSelfSubobject(UObject* InOuter, UClass* InObjectClass, const FString& InObjectUniqueName)
     {
         if (URRThreadUtils::IsInsideConstructor())
@@ -44,6 +65,14 @@ public:
         }
     }
 
+    /**
+     * @brief Return true if InParentObj has subobjects with InChildName.
+     *
+     * @tparam T
+     * @param InParentObj
+     * @param InChildName
+     * @return static bool
+     */
     template<typename T>
     FORCEINLINE static bool HasSubobject(UObject* InParentObj, const FString& InChildName)
     {
@@ -78,6 +107,7 @@ public:
     //
     UFUNCTION()
     static void SetupComponentTick(UActorComponent* InComponent, bool bIsTickEnabled);
+
     UFUNCTION()
     static void SetupDefaultRootComponent(AActor* InActor);
 
@@ -119,6 +149,19 @@ public:
         primComp->SetSimulatePhysics(bIsPhysicsEnabled);
     }
 
+    /**
+     * @brief Use SetupAttachment or AttachToComponent based on where this method is called.
+     * Uses #URRThreadUtils::IsInsideConstructor.
+     *
+     * @param InChildComp
+     * @param InParentComp
+     * @param InRelativeTransf
+     * @param InAttachmentRules
+     * @param InSocketName
+     *
+     * @sa[SetupAttachment](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
+     * @sa[AttachToComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
+     */
     static void AttachComponentToComponent(
         USceneComponent* InChildComp,
         USceneComponent* InParentComp,
@@ -126,6 +169,17 @@ public:
         const FAttachmentTransformRules& InAttachmentRules = FAttachmentTransformRules::KeepRelativeTransform,
         const TCHAR* InSocketName = nullptr);
 
+    /**
+     * @brief Create a Child Component object and attach to InActor and calls #ConfigureComponentPhysics.
+     *
+     * @tparam T
+     * @param InActor
+     * @param InUniqueName
+     * @param bIsPhysicsEnabled
+     * @param bIsCollisionEnabled
+     * @param bIsOverlapEventEnabled
+     * @return T*
+     */
     template<typename T>
     static T* CreateChildComponent(AActor* InActor,
                                    const FString& InUniqueName,
@@ -182,6 +236,20 @@ public:
         return newChildComp;
     }
 
+    /**
+     * @brief Create a Mesh Component, attach to InActor, set parameters.
+     *
+     * @tparam TMeshComponent
+     * @param InActor
+     * @param InObjMeshUniqueName
+     * @param InMeshCompUniqueName
+     * @param InRelativeTransf
+     * @param bInIsOwningActorStationary
+     * @param bInIsPhysicsEnabled
+     * @param bInIsCollisionEnabled
+     * @param InParentComp
+     * @return static TMeshComponent*
+     */
     template<typename TMeshComponent>
     FORCEINLINE static TMeshComponent* CreateMeshComponent(AActor* InActor,
                                                            const FString& InObjMeshUniqueName,
@@ -235,16 +303,6 @@ public:
             meshComp->SetMobility(EComponentMobility::Movable);
         }
 
-        // Static mesh (if applicable) --
-        if constexpr (TIsDerivedFrom<TMeshComponent, URRStaticMeshComponent>::IsDerived)
-        {
-            // Mesh -- Must be after above configuration, based on which particular mesh properties are verified!
-            // Material instance created here-in, thus no need to create a default one like based on [CMAT_NAME_GENERIC]
-            meshComp->SetMesh(URRGameSingleton::Get()->GetStaticMesh(InObjMeshUniqueName));
-        }
-        // else Runtime mesh, if available, would be fetched on-the-fly later
-        // (due to their changeable content (by users either offline or online), thus Sim would never storing ones on disk)
-
         // Physics (last)--
         const bool bIsStationary = InObjMeshUniqueName.Equals(URRGameSingleton::SHAPE_NAME_PLANE);
         // If using Custom Physics Engine, also create [PhysicsComp] here-in!
@@ -259,11 +317,24 @@ public:
     //
     UFUNCTION()
     static void SetupActorTick(AActor* InActor, bool bIsTickEnabled, float InTickInterval = 0.f);
+
+    /**
+     * @brief Uses URRThreadUtils::IsInsideConstructor() to avoid crash by calling RegisterComponents() outside of constructor.
+     *
+     */
     UFUNCTION()
     static void RegisterActorComponent(UActorComponent* Comp);
 
-    // [FIND ACTOR BY NAME/SUBNAME] --
-    // GetAllActors() is expensive
+    /**
+     * @brief Find actor by name. GetAllActors() is expensive.
+     *
+     * @tparam T
+     * @param InWorld
+     * @param InName
+     * @param InCaseType
+     * @return T*
+     *
+     */
     template<typename T>
     static T* FindActorByName(UWorld* InWorld, const FString& InName, const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
     {
@@ -278,6 +349,15 @@ public:
         return nullptr;
     }
 
+    /**
+     * @brief Find actor by subname. search actor whose name contains InSubname.
+     *
+     * @tparam T
+     * @param InWorld
+     * @param InSubname
+     * @param InCaseType
+     * @return T*
+     */
     template<typename T>
     static T* FindActorBySubname(UWorld* InWorld,
                                  const FString& InSubname,
@@ -298,7 +378,7 @@ public:
     static AActor* FindEnvironmentActor(UWorld* InWorld)
     {
         // There is only one common [Environment] actor of all Scene instances!
-        return FindActorBySubname<AActor>(InWorld, TEXT("RapyutaEnvironment"));
+        return FindActorBySubname<AActor>(InWorld, TEXT("MainEnvironment"));
     }
 
     UFUNCTION()
@@ -316,6 +396,18 @@ public:
     }
 
     UFUNCTION()
+    static AActor* FindFloorActor(UWorld* InWorld)
+    {
+        return FindActorBySubname<AActor>(InWorld, TEXT("MainFloor"));
+    }
+
+    UFUNCTION()
+    static AActor* FindWallActor(UWorld* InWorld)
+    {
+        return FindActorBySubname<AActor>(InWorld, TEXT("MainWall"));
+    }
+
+    UFUNCTION()
     static APostProcessVolume* FindPostProcessVolume(UWorld* InWorld)
     {
         // There is only one common [PostProcessVolume] actor of all Scene instances!
@@ -323,6 +415,19 @@ public:
     }
 
     // TActorSpawnInfo: [FRRActorSpawnInfo], etc.
+    /**
+     * @brief
+     * @tparam T
+     * @tparam TActorSpawnInfo
+     * @param InWorld
+     * @param InSceneInstanceId
+     * @param InActorSpawnInfo
+     * @param CollisionHandlingType
+     * @return T*
+     *
+     * @todo add documentation
+     *
+     */
     template<typename T, typename TActorSpawnInfo>
     static T* SpawnSimActor(
         UWorld* InWorld,
@@ -388,6 +493,20 @@ public:
         return newSimActor;
     }
 
+    /**
+     * @brief
+     *
+     * @param InWorld
+     * @param InSceneInstanceId
+     * @param InActorClass
+     * @param InActorName
+     * @param InActorTransform
+     * @param InCollisionHandlingType
+     * @return ARRBaseActor*
+     *
+     * @todo add documentation
+     *
+     */
     static ARRBaseActor* SpawnSimActor(
         UWorld* InWorld,
         int8 InSceneInstanceId,
@@ -397,8 +516,46 @@ public:
         const FTransform& InActorTransform = FTransform::Identity,
         const ESpawnActorCollisionHandlingMethod InCollisionHandlingType = ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
+    FORCEINLINE static FVector GetRelativeLocFrom(const AActor* InActor, const AActor* InBaseActor)
+    {
+        return InBaseActor->GetTransform().InverseTransformPosition(InActor->GetActorLocation());
+    }
+
+    FORCEINLINE static FQuat GetRelativeQuatFrom(const AActor* InActor, const AActor* InBaseActor)
+    {
+        return InBaseActor->GetTransform().InverseTransformRotation(InActor->GetActorQuat());
+    }
+
+    FORCEINLINE static FRotator GetRelativeRotFrom(const AActor* InActor, const AActor* InBaseActor)
+    {
+        return GetRelativeQuatFrom(InActor, InBaseActor).Rotator();
+    }
+
+    static void GetActorCenterAndBoundingBoxVertices(const AActor* InActor,
+                                                     const AActor* InBaseActor,
+                                                     TArray<FVector>& OutCenterAndVertices,
+                                                     bool bInIncludeNonColliding = true);
+    static FVector GetActorExtent(AActor* InActor, bool bOnlyCollidingComponents = true, bool bIncludeFromChildActors = false)
+    {
+        FVector actorOrigin, actorExtent;
+        InActor->GetActorBounds(bOnlyCollidingComponents, actorOrigin, actorExtent, bIncludeFromChildActors);
+        return actorExtent;
+    }
+
+    static FVector GetActorSize(AActor* InActor, bool bOnlyCollidingComponents = true, bool bIncludeFromChildActors = false)
+    {
+        return 2.f * GetActorExtent(InActor, bOnlyCollidingComponents, bIncludeFromChildActors);
+    }
+
+    static void DrawActorBoundingBox(AActor* InActor)
+    {
+        FVector actorCenter, actorExtent;
+        InActor->GetActorBounds(false, actorCenter, actorExtent);
+        DrawDebugBox(InActor->GetWorld(), actorCenter, actorExtent, FColor::Yellow, false, 2.f, 0, 2.f);
+    }
+
     template<typename T>
-    static FVector GetActorGroupCenter(const TArray<T*>& InActors)
+    static FVector GetActorsGroupCenter(const TArray<T*>& InActors)
     {
         FVector sumLocation = FVector::ZeroVector;
         for (const auto& actor : InActors)
@@ -412,7 +569,7 @@ public:
     static void HuddleActors(const TArray<T*>& InActors)
     {
         // (NOTE) Actors should be not touching the floor so they could sweep
-        const FVector center = URRUObjectUtils::GetActorGroupCenter(InActors);
+        const FVector center = URRUObjectUtils::GetActorsGroupCenter(InActors);
         const auto actorsNum = InActors.Num();
         const auto actorsNumHalf = FMath::CeilToInt(0.5f * actorsNum);
         for (auto i = actorsNumHalf; i < actorsNum; ++i)
@@ -426,8 +583,15 @@ public:
             actor->AddActorWorldOffset(center - actor->GetActorLocation(), true);
         }
     }
-
+    static FString GetSegMaskDepthStencilsAsText(ARRMeshActor* InActor);
+    static bool GetPhysicsActorHandles(FBodyInstance* InBody1,
+                                       FBodyInstance* InBody2,
+                                       FPhysicsActorHandle& OutActorRef1,
+                                       FPhysicsActorHandle& OutActorRef2);
     static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                     int32 InMaterialIndex,
                                                                     const FString& InMaterialInterfaceName);
+    static UMaterialInstanceDynamic* GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex = 0);
+    static bool ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo);
+    static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);
 };
