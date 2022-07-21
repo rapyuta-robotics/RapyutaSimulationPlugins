@@ -66,8 +66,6 @@ void ARRBaseRobot::CreateROS2Interface()
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     // NOTE: NOT call ROS2Interface->Initialize(this) here since robot's ros2-based accessories might not have been fully accessible
     // yet. For sure, that would be done in Controller's OnPossess
-
-    UE_LOG(LogTemp, Error, TEXT("%ld %s ARRBaseRobot::CreateROS2Interface %ld"), this, *GetName(), ROS2Interface);
 }
 
 bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)

@@ -51,14 +51,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString PlayerName;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    FString Namespace;
-
     UPROPERTY(Transient, Replicated)
     APawn* PossessedPawn = nullptr;
 
     UPROPERTY(Transient, Replicated)
     AROS2Node* ClientROS2Node = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
+    FString ClientROS2Namespace;
 
     // Services
     //    UFUNCTION(BlueprintCallable)
