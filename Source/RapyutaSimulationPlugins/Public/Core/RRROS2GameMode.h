@@ -42,15 +42,15 @@ public:
 
     //! Provide ROS2 implementation of sim-wide operations like get/set actor state, spawn/delete actor, attach/detach actor.
     UPROPERTY(BlueprintReadOnly)
-    ASimulationState* SimulationState = nullptr;
+    ASimulationState* MainSimState = nullptr;
 
     //! Provide ROS2 interface of sim-wide operations implemented by #SimulationState
     UPROPERTY(BlueprintReadOnly)
-    URRROS2SimulationStateClient* ROS2SimStateClient = nullptr;
+    URRROS2SimulationStateClient* MainROS2SimStateClient = nullptr;
 
     //! Custom type to instantiate #SimulationState, configurable in child classes
     UPROPERTY(BlueprintReadOnly)
-    TSubclassOf<ASimulationState> SimulationStateClass = ASimulationState::StaticClass();
+    TSubclassOf<URRROS2SimulationStateClient> ROS2SimStateClientClass = URRROS2SimulationStateClient::StaticClass();
 
 protected:
     /**

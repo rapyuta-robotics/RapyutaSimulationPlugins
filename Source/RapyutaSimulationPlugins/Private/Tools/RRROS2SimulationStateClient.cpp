@@ -28,7 +28,7 @@
 void URRROS2SimulationStateClient::Init(AROS2Node* InROS2Node)
 {
     ClientROS2Node = InROS2Node;
-    SimulationState = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this)->SimulationState;
+    MainSimState = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this)->MainSimState;
 
     // register delegates to node
     FServiceCallback GetEntityStateSrvCallback;
@@ -43,19 +43,19 @@ void URRROS2SimulationStateClient::Init(AROS2Node* InROS2Node)
     SpawnEntitySrvCallback.BindDynamic(this, &URRROS2SimulationStateClient::SpawnEntitySrv);
     SpawnEntitiesSrvCallback.BindDynamic(this, &URRROS2SimulationStateClient::SpawnEntitiesSrv);
     DeleteEntitySrvCallback.BindDynamic(this, &URRROS2SimulationStateClient::DeleteEntitySrv);
-    ClientROS2Node->AddServiceServer(TEXT("GetEntityState"), UROS2GetEntityStateSrv::StaticClass(), GetEntityStateSrvCallback);
-    ClientROS2Node->AddServiceServer(TEXT("SetEntityState"), UROS2SetEntityStateSrv::StaticClass(), SetEntityStateSrvCallback);
-    ClientROS2Node->AddServiceServer(TEXT("Attach"), UROS2AttachSrv::StaticClass(), AttachSrvCallback);
-    ClientROS2Node->AddServiceServer(TEXT("SpawnEntity"), UROS2SpawnEntitySrv::StaticClass(), SpawnEntitySrvCallback);
-    ClientROS2Node->AddServiceServer(TEXT("SpawnEntities"), UROS2SpawnEntitiesSrv::StaticClass(), SpawnEntitiesSrvCallback);
-    ClientROS2Node->AddServiceServer(TEXT("DeleteEntity"), UROS2DeleteEntitySrv::StaticClass(), DeleteEntitySrvCallback);
+    InROS2Node->AddServiceServer(TEXT("GetEntityState"), UROS2GetEntityStateSrv::StaticClass(), GetEntityStateSrvCallback);
+    InROS2Node->AddServiceServer(TEXT("SetEntityState"), UROS2SetEntityStateSrv::StaticClass(), SetEntityStateSrvCallback);
+    InROS2Node->AddServiceServer(TEXT("Attach"), UROS2AttachSrv::StaticClass(), AttachSrvCallback);
+    InROS2Node->AddServiceServer(TEXT("SpawnEntity"), UROS2SpawnEntitySrv::StaticClass(), SpawnEntitySrvCallback);
+    InROS2Node->AddServiceServer(TEXT("SpawnEntities"), UROS2SpawnEntitiesSrv::StaticClass(), SpawnEntitiesSrvCallback);
+    InROS2Node->AddServiceServer(TEXT("DeleteEntity"), UROS2DeleteEntitySrv::StaticClass(), DeleteEntitySrvCallback);
 }
 
 void URRROS2SimulationStateClient::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(URRROS2SimulationStateClient, ClientROS2Node);
-    DOREPLIFETIME(URRROS2SimulationStateClient, SimulationState);
+    DOREPLIFETIME(URRROS2SimulationStateClient, MainSimState);
 }
 
 template<typename T>
@@ -99,12 +99,12 @@ template bool URRROS2SimulationStateClient::CheckEntity<TSubclassOf<AActor>>(TMa
 
 bool URRROS2SimulationStateClient::CheckEntity(const FString& InEntityName, const bool bAllowEmpty)
 {
-    return CheckEntity<AActor*>(SimulationState->Entities, InEntityName, bAllowEmpty);
+    return CheckEntity<AActor*>(MainSimState->Entities, InEntityName, bAllowEmpty);
 }
 
 bool URRROS2SimulationStateClient::CheckSpawnableEntity(const FString& InEntityName, const bool bAllowEmpty)
 {
-    return CheckEntity<TSubclassOf<AActor>>(SimulationState->SpawnableEntities, InEntityName, bAllowEmpty);
+    return CheckEntity<TSubclassOf<AActor>>(MainSimState->SpawnableEntities, InEntityName, bAllowEmpty);
 }
 
 void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
@@ -121,9 +121,9 @@ void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
     if (response.success)
     {
         FTransform relativeTransf;
-        FTransform worldTransf = SimulationState->Entities[request.name]->GetTransform();
+        FTransform worldTransf = MainSimState->Entities[request.name]->GetTransform();
         URRGeneralUtils::GetRelativeTransform(
-            request.reference_frame, SimulationState->Entities.FindRef(request.reference_frame), worldTransf, relativeTransf);
+            request.reference_frame, MainSimState->Entities.FindRef(request.reference_frame), worldTransf, relativeTransf);
         relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
         response.state_pose_position_x = relativeTransf.GetTranslation().X;
@@ -150,7 +150,7 @@ void URRROS2SimulationStateClient::SetEntityStateSrv(UROS2GenericSrv* InService)
 
     if (response.success)
     {
-        SimulationState->ServerSetEntityState(request);
+        MainSimState->ServerSetEntityState(request);
     }
 
     setEntityStateService->SetResponse(response);
@@ -167,7 +167,7 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
     response.success = CheckEntity(request.name1, false) && CheckEntity(request.name2, false);
     if (response.success)
     {
-        SimulationState->ServerAttach(request);
+        MainSimState->ServerAttach(request);
     }
     else
     {
@@ -200,7 +200,7 @@ void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
         if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
             // Spawn entity
-            AActor* newEntity = SimulationState->ServerSpawnEntity(request);
+            AActor* newEntity = MainSimState->ServerSpawnEntity(request);
             response.bSuccess = (nullptr != newEntity);
             response.StatusMessage = newEntity
                                        ? FString::Printf(TEXT("Newly spawned Entity: %s"), *newEntity->GetName())
@@ -251,7 +251,7 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
         {
             if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityRequest.StateName))
             {
-                newEntity = SimulationState->ServerSpawnEntity(entityRequest);
+                newEntity = MainSimState->ServerSpawnEntity(entityRequest);
                 if (newEntity)
                 {
                     numEntitySpawned++;
@@ -341,9 +341,9 @@ void URRROS2SimulationStateClient::DeleteEntitySrv(UROS2GenericSrv* InService)
 
     FROSDeleteEntity_Response response;
     response.success = false;
-    if (SimulationState->Entities.Contains(request.name))
+    if (MainSimState->Entities.Contains(request.name))
     {
-        SimulationState->ServerDeleteEntity(request);
+        MainSimState->ServerDeleteEntity(request);
         response.success = true;
     }
     else

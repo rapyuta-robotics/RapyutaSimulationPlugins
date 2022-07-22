@@ -18,16 +18,18 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     Super::PostLogin(InPlayerController);
 
     auto* networkPlayerController = CastChecked<ARRNetworkPlayerController>(InPlayerController);
-    auto& simStateClient = networkPlayerController->SimulationStateClient;
-    if (nullptr == simStateClient)
+    auto& networkSimStateClient = networkPlayerController->ROS2SimStateClient;
+    if (nullptr == networkSimStateClient)
     {
-        // Create [simStateClient]
-        simStateClient = NewObject<URRROS2SimulationStateClient>(
-            networkPlayerController, FName(*FString::Printf(TEXT("%sROS2SimStateClient"), *InPlayerController->GetName())));
-        simStateClient->SimulationState = SimulationState;
+        // Create [networkSimStateClient]
+        networkSimStateClient = NewObject<URRROS2SimulationStateClient>(
+            networkPlayerController,
+            ROS2SimStateClientClass,
+            FName(*FString::Printf(TEXT("%sROS2SimStateClient"), *InPlayerController->GetName())));
+        networkSimStateClient->MainSimState = MainSimState;
 
-        // Update networkPlayerController's [SimulationState]
-        networkPlayerController->SimulationState = SimulationState;
+        // Set [networkPlayerController's MainSimState] -> [GameMode's MainSimState]
+        networkPlayerController->MainSimState = MainSimState;
         UE_LOG(LogRapyutaCore,
                Warning,
                TEXT("ARRNetworkGameMode::PostLogin Logged-in PC[%d] %s"),

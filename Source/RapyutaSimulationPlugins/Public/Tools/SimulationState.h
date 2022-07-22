@@ -189,7 +189,7 @@ private:
      * @param InEntityTransform
      * @return AActor*
      */
-    AActor* SpawnEntity(const FROSSpawnEntityRequest& InROSSpawnRequest,
-                        const TSubclassOf<AActor>& InEntityClass,
-                        const FTransform& InEntityTransform);
+    AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InROSSpawnRequest,
+                              const TSubclassOf<AActor>& InEntityClass,
+                              const FTransform& InEntityTransform);
 };

@@ -266,9 +266,9 @@ bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InR
     }
 }
 
-AActor* ASimulationState::SpawnEntity(const FROSSpawnEntityRequest& InROSSpawnRequest,
-                                      const TSubclassOf<AActor>& InEntityClass,
-                                      const FTransform& InEntityTransform)
+AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSSpawnRequest,
+                                            const TSubclassOf<AActor>& InEntityClass,
+                                            const FTransform& InEntityTransform)
 {
     // SpawnActorDeferred to set parameters beforehand
     AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(InEntityClass, InEntityTransform);
@@ -337,7 +337,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
                    *worldTransf.ToString());
 
             // Spawn entity
-            newEntity = SpawnEntity(InRequest, SpawnableEntities[entityModelName], worldTransf);
+            newEntity = ServerSpawnEntity(InRequest, SpawnableEntities[entityModelName], worldTransf);
         }
         else
         {

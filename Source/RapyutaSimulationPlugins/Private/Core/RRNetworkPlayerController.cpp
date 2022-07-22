@@ -49,8 +49,8 @@ void ARRNetworkPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ARRNetworkPlayerController, ClientROS2Node);
     DOREPLIFETIME(ARRNetworkPlayerController, ClockPublisher);
-    DOREPLIFETIME(ARRNetworkPlayerController, SimulationState);
-    DOREPLIFETIME(ARRNetworkPlayerController, SimulationStateClient);
+    DOREPLIFETIME(ARRNetworkPlayerController, MainSimState);
+    DOREPLIFETIME(ARRNetworkPlayerController, ROS2SimStateClient);
     DOREPLIFETIME(ARRNetworkPlayerController, PlayerName);
     DOREPLIFETIME(ARRNetworkPlayerController, PossessedPawn);
 }
@@ -63,7 +63,7 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
 #endif
     // Init [ClientROS2Node] & [ClockPublisher]
     if (!ClientROS2Node && IsNetMode(NM_Client) && !PlayerName.IsEmpty() &&
-        (PlayerName != URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME) && SimulationStateClient)
+        (PlayerName != URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME) && ROS2SimStateClient)
     {
         UWorld* currentWorld = GetWorld();
         ClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
@@ -72,9 +72,8 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
         ClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
         ClientROS2Node->Init();
 
-        // Init both [SimulationState + SimulationStateClient] with [ClientROS2Node]
-        SimulationState->Init(ClientROS2Node);
-        SimulationStateClient->Init(ClientROS2Node);
+        // Init [ROS2SimStateClient] with [ClientROS2Node]
+        ROS2SimStateClient->Init(ClientROS2Node);
 
         // Create Clock publisher
         ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
@@ -98,15 +97,15 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
         }
 #endif
 
-        if (SimulationState)
+        if (MainSimState)
         {
             AActor* matchingEntity = nullptr;
             UROS2Spawnable* matchingEntitySpawnParams = nullptr;
 
             // Find [matchingEntity] of the same name as PlayerName
-            for (auto& entity : SimulationState->EntityList)
+            for (auto& entity : MainSimState->EntityList)
             {
-                if (entity)
+                if (IsValid(entity))
                 {
                     UROS2Spawnable* rosSpawnParameters = entity->FindComponentByClass<UROS2Spawnable>();
                     if (rosSpawnParameters)

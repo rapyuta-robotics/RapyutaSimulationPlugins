@@ -43,7 +43,7 @@ public:
     AROS2Node* ClientROS2Node = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    ASimulationState* SimulationState = nullptr;
+    ASimulationState* MainSimState = nullptr;
     void InitSimulationState();
 
     /**

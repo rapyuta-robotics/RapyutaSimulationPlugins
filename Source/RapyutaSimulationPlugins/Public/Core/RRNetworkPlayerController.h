@@ -50,9 +50,9 @@ public:
     void ClientInitRobotROS2Interface(AActor* InActor);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    ASimulationState* SimulationState = nullptr;
+    ASimulationState* MainSimState = nullptr;
     UPROPERTY(Transient, Replicated)
-    URRROS2SimulationStateClient* SimulationStateClient = nullptr;
+    URRROS2SimulationStateClient* ROS2SimStateClient = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString PlayerName;

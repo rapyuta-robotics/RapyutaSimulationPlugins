@@ -38,9 +38,9 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
 void ARRROS2GameMode::InitSim()
 {
     // 1- Simulation state
-    SimulationState = GetWorld()->SpawnActor<ASimulationState>(SimulationStateClass);
+    MainSimState = GetWorld()->SpawnActor<ASimulationState>();
     // Fetch Entities in the map first regardless of ROS2
-    SimulationState->InitEntities();
+    MainSimState->InitEntities();
 
     // 2 - Init Sim-wide Main ROS2 node, but only in case of a Network standalone app
     // For Server-client app, each client will have its own ROS2 Node inited upon Network player controller possessing
@@ -57,19 +57,19 @@ void ARRROS2GameMode::InitROS2()
         return;
     }
 
-    // [MainROS2Node]
+    // MainROS2Node
     MainROS2Node = GetWorld()->SpawnActor<AROS2Node>();
     MainROS2Node->Namespace.Reset();
     MainROS2Node->Name = MainROS2NodeName;
     MainROS2Node->Init();
 
-    // SimulationState
-    check(SimulationState);
-    SimulationState->Init(MainROS2Node);
+    // MainSimState
+    check(MainSimState);
+    MainSimState->Init(MainROS2Node);
 
-    // ROS2SimStateClient
-    ROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(this, TEXT("ROS2SimStateClient"));
-    ROS2SimStateClient->Init(MainROS2Node);
+    // MainROS2SimStateClient
+    MainROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(this, ROS2SimStateClientClass, TEXT("MainROS2SimStateClient"));
+    MainROS2SimStateClient->Init(MainROS2Node);
 
     // Create Clock publisher
     ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
