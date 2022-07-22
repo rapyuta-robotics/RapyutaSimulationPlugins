@@ -22,7 +22,8 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     if (nullptr == simStateClient)
     {
         // Create [simStateClient]
-        simStateClient = NewObject<URRROS2SimulationStateClient>(networkPlayerController, TEXT("ROS2SimStateClient"));
+        simStateClient = NewObject<URRROS2SimulationStateClient>(
+            networkPlayerController, FName(*FString::Printf(TEXT("%sROS2SimStateClient"), *InPlayerController->GetName())));
         simStateClient->SimulationState = SimulationState;
 
         // Update networkPlayerController's [SimulationState]

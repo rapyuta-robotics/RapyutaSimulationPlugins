@@ -40,7 +40,6 @@ void ASimulationState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 void ASimulationState::Init(AROS2Node* InROS2Node)
 {
     MainROS2Node = InROS2Node;
-    InitEntities();
 }
 
 void ASimulationState::InitEntities()

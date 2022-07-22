@@ -71,6 +71,9 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
         // ClientROS2Node->Namespace = PlayerName;
         ClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
         ClientROS2Node->Init();
+
+        // Init both [SimulationState + SimulationStateClient] with [ClientROS2Node]
+        SimulationState->Init(ClientROS2Node);
         SimulationStateClient->Init(ClientROS2Node);
 
         // Create Clock publisher
