@@ -46,7 +46,6 @@ void ARRNetworkPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ARRNetworkPlayerController, ClientROS2Node);
-    DOREPLIFETIME(ARRNetworkPlayerController, ClientROS2Namespace);
     DOREPLIFETIME(ARRNetworkPlayerController, ClockPublisher);
     DOREPLIFETIME(ARRNetworkPlayerController, SimulationState);
     DOREPLIFETIME(ARRNetworkPlayerController, SimulationStateClient);
@@ -66,7 +65,6 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
     {
         UWorld* currentWorld = GetWorld();
         ClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
-        ClientROS2Node->Namespace.Reset();
         // ClientROS2Node->Namespace = PlayerName;
         ClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
         ClientROS2Node->Init();
@@ -164,7 +162,7 @@ void ARRNetworkPlayerController::BeginPlay()
         // Remove '"' & '=' in Robot Name
         robotName = robotName.Replace(TEXT("="), TEXT("")).Replace(TEXT("\""), TEXT(""));
         PlayerName = robotName;
-        ClientROS2Namespace = robotName;
+        ClientROS2Node->Namespace = robotName;
         this->SetName(robotName);
         ServerSetPlayerName(robotName);
     }
@@ -186,7 +184,7 @@ void ARRNetworkPlayerController::BeginPlay()
 void ARRNetworkPlayerController::ServerSetPlayerName_Implementation(const FString& InPlayerName)
 {
     PlayerName = InPlayerName;
-    ClientROS2Namespace = InPlayerName;
+    ClientROS2Node->Namespace = InPlayerName;
 }
 
 // Client Requesting Server to send time, Client Clock at time of request is sent as well

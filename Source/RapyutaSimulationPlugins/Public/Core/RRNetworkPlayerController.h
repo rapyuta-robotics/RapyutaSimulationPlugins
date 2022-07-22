@@ -57,9 +57,6 @@ public:
     UPROPERTY(Transient, Replicated)
     AROS2Node* ClientROS2Node = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    FString ClientROS2Namespace;
-
     // Services
     //    UFUNCTION(BlueprintCallable)
     //    void SpawnEntitySrv(UROS2GenericSrv* Service);
