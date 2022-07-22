@@ -3,7 +3,7 @@
 #include "Robots/RRRobotBaseVehicle.h"
 
 // UE
-#include "GameFramework/GameStateBase.h"
+#include "GameFramework/GameState.h"
 #include "Net/UnrealNetwork.h"
 
 // rclUE
@@ -33,7 +33,6 @@ void ARRRobotBaseVehicle::SetupDefaultVehicle()
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
-    AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // NOTE: Any custom object class (eg ROS2Interface Class, VehicleMoveComponentClass) that is required to be configurable by
     // this class' child BP ones & if its object needs to be created before BeginPlay(),
@@ -92,43 +91,66 @@ void ARRRobotBaseVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     DOREPLIFETIME(ARRRobotBaseVehicle, VehicleMoveComponentClass);
 }
 
-void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVelocity)
+void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVel)
 {
-    ServerSetLinearVel(GameState->GetServerWorldTimeSeconds(), GetActorLocation(), InLinearVelocity);
-    ClientSetLinearVel(InLinearVelocity);
+    ServerSetLinearVel(InLinearVel);
+    ClientSetLinearVel(InLinearVel);
 }
 
-void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVelocity)
+void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
 {
-    ServerSetAngularVel(GameState->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVelocity);
-    ClientSetAngularVel(InAngularVelocity);
+    ServerSetAngularVel(InAngularVel);
+    ClientSetAngularVel(InAngularVel);
 }
 
-void ARRRobotBaseVehicle::ServerSetLinearVel_Implementation(float InTimeStamp,
-                                                            const FVector& InPosition,
-                                                            const FVector& InLinearVelocity)
+void ARRRobotBaseVehicle::ServerSetLinearVel_Implementation(const FVector& InLinearVel)
 {
-    float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-    SetActorLocation(InPosition + InLinearVelocity * (serverCurrentTime - InTimeStamp));
-    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+    if (RobotVehicleMoveComponent)
+    {
+        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+        float serverWorldTime = URRCoreUtils::GetGameState<AGameState>(this)->GetServerWorldTimeSeconds();
+        SetActorLocation(GetActorLocation() + InLinearVel * (serverCurrentTime - serverWorldTime));
+        RobotVehicleMoveComponent->Velocity = InLinearVel;
+    }
 }
 
-void ARRRobotBaseVehicle::ServerSetAngularVel_Implementation(float InTimeStamp,
-                                                             const FRotator& InRotation,
-                                                             const FVector& InAngularVelocity)
+void ARRRobotBaseVehicle::ServerSetAngularVel_Implementation(const FVector& InAngularVel)
 {
-    float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-    SetActorRotation(InRotation + InAngularVelocity.Rotation() * (serverCurrentTime - InTimeStamp));
-    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
+    if (RobotVehicleMoveComponent)
+    {
+        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+        float serverWorldTime = URRCoreUtils::GetGameState<AGameState>(this)->GetServerWorldTimeSeconds();
+        SetActorRotation(GetActorRotation() + InAngularVel.Rotation() * (serverCurrentTime - serverWorldTime));
+        RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+    }
 }
 
-void ARRRobotBaseVehicle::ClientSetLinearVel_Implementation(const FVector& InLinearVelocity)
+void ARRRobotBaseVehicle::ClientSetLinearVel_Implementation(const FVector& InLinearVel)
 {
-    UE_LOG(LogTemp, Warning, TEXT("PLAYER [%s]"), *PlayerController->PlayerState->GetPlayerName());
-    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+    if (RobotVehicleMoveComponent)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("PLAYER [%s] ClientSetLinearVel %s"),
+               *PlayerController->PlayerState->GetPlayerName(),
+               *InLinearVel.ToString());
+#endif
+        RobotVehicleMoveComponent->Velocity = InLinearVel;
+    }
 }
 
-void ARRRobotBaseVehicle::ClientSetAngularVel_Implementation(const FVector& InAngularVelocity)
+void ARRRobotBaseVehicle::ClientSetAngularVel_Implementation(const FVector& InAngularVel)
 {
-    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
+    if (RobotVehicleMoveComponent)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("PLAYER [%s] ClientSetAngularVel %s"),
+               *PlayerController->PlayerState->GetPlayerName(),
+               *InLinearVel.ToString());
+#endif
+        RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+    }
 }

@@ -19,6 +19,5 @@ class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameState : public AGameState
 public:
     ARRNetworkGameState();
 
-protected:
     virtual float GetServerWorldTimeSeconds() const override;
 };

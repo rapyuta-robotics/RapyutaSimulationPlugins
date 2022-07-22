@@ -31,6 +31,9 @@ public:
     virtual void Tick(float DeltaSeconds) override;
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+    UPROPERTY(Transient, Replicated)
+    AROS2Node* ClientROS2Node = nullptr;
+
     UPROPERTY(BlueprintReadOnly, Replicated)
     URRROS2ClockPublisher* ClockPublisher = nullptr;
 
@@ -41,7 +44,10 @@ public:
     void ServerPossessPawn(APawn* InPawn);
 
     UFUNCTION(Client, Reliable)
-    void ClientInitMoveComp(AActor* InActor);
+    void ClientInitRobotMoveComp(AActor* InActor);
+
+    UFUNCTION(Client, Reliable)
+    void ClientInitRobotROS2Interface(AActor* InActor);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     ASimulationState* SimulationState = nullptr;
@@ -53,9 +59,6 @@ public:
 
     UPROPERTY(Transient, Replicated)
     APawn* PossessedPawn = nullptr;
-
-    UPROPERTY(Transient, Replicated)
-    AROS2Node* ClientROS2Node = nullptr;
 
     // Services
     //    UFUNCTION(BlueprintCallable)

@@ -37,7 +37,6 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
     RootComponent = SkeletalMeshComp;
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
-    AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void ARobotVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

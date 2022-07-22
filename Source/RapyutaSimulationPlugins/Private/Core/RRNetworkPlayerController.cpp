@@ -16,7 +16,9 @@
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
 #include "Core/RRUObjectUtils.h"
+#include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotBaseVehicle.h"
+#include "Robots/RRRobotROS2Interface.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/RRROS2SimulationStateClient.h"
 #include "Tools/SimulationState.h"
@@ -65,6 +67,7 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
     {
         UWorld* currentWorld = GetWorld();
         ClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
+        ClientROS2Node->Namespace.Reset();
         // ClientROS2Node->Namespace = PlayerName;
         ClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
         ClientROS2Node->Init();
@@ -97,6 +100,7 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
             AActor* matchingEntity = nullptr;
             UROS2Spawnable* matchingEntitySpawnParams = nullptr;
 
+            // Find [matchingEntity] of the same name as PlayerName
             for (auto& entity : SimulationState->EntityList)
             {
                 if (entity)
@@ -114,6 +118,7 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
                 }
             }
 
+            // Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
             if (matchingEntity)
             {
                 if (APawn* matchingEntityPawn = Cast<APawn>(matchingEntity))
@@ -121,7 +126,11 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
                     ServerPossessPawn(matchingEntityPawn);
                     PossessedPawn = matchingEntityPawn;
                 }
-                ClientInitMoveComp(matchingEntity);
+
+                // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
+                ClientInitRobotROS2Interface(matchingEntity);
+                ClientInitRobotMoveComp(matchingEntity);
+
                 GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
             }
 #if RAPYUTA_SIM_DEBUG
@@ -143,7 +152,15 @@ void ARRNetworkPlayerController::ServerPossessPawn_Implementation(APawn* InPawn)
     Possess(InPawn);
 }
 
-void ARRNetworkPlayerController::ClientInitMoveComp_Implementation(AActor* InActor)
+void ARRNetworkPlayerController::ClientInitRobotROS2Interface_Implementation(AActor* InActor)
+{
+    if (ARRBaseRobot* robot = Cast<ARRBaseRobot>(InActor))
+    {
+        robot->ROS2Interface->Initialize(robot);
+    }
+}
+
+void ARRNetworkPlayerController::ClientInitRobotMoveComp_Implementation(AActor* InActor)
 {
     if (ARRRobotBaseVehicle* robotVehicle = Cast<ARRRobotBaseVehicle>(InActor))
     {

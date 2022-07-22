@@ -18,6 +18,7 @@
 
 #include "RRBaseRobot.generated.h"
 
+class ARRNetworkGameState;
 class URRRobotROS2Interface;
 
 /**

@@ -98,41 +98,41 @@ public:
     /**
      * @brief Set velocity to #RobotVehicleMoveComponent
      *
-     * @param InLinearVelocity
+     * @param InLinearVel
      */
     UFUNCTION(BlueprintCallable)
-    virtual void SetLinearVel(const FVector& InLinearVelocity);
+    virtual void SetLinearVel(const FVector& InLinearVel);
 
     /**
      * @brief Set angular velocity to #RobotVehicleMoveComponent
-     *
+     * @param InAngularVel
      */
     UFUNCTION(BlueprintCallable)
-    virtual void SetAngularVel(const FVector& InAngularVelocity);
+    virtual void SetAngularVel(const FVector& InAngularVel);
 
     /**
      * @brief Set server linear velocity  to #RobotVehicleMoveComponent
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void ServerSetLinearVel(float InTimeStamp, const FVector& InPosition, const FVector& InLinearVelocity);
+    virtual void ServerSetLinearVel(const FVector& InLinearVel);
 
     /**
      * @brief Set server angular velocity  to #RobotVehicleMoveComponent
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void ServerSetAngularVel(float InTimeStamp, const FRotator& InRotation, const FVector& InAngularVelocity);
+    virtual void ServerSetAngularVel(const FVector& InAngularVel);
 
     /**
      * @brief Set client linear velocity to #RobotVehicleMoveComponent
      */
     UFUNCTION(BlueprintCallable, Client, Reliable)
-    virtual void ClientSetLinearVel(const FVector& InLinearVelocity);
+    virtual void ClientSetLinearVel(const FVector& InLinearVel);
 
     /**
      * @brief Set server angular velocity to #RobotVehicleMoveComponent
      */
     UFUNCTION(BlueprintCallable, Client, Reliable)
-    virtual void ClientSetAngularVel(const FVector& InAngularVelocity);
+    virtual void ClientSetAngularVel(const FVector& InAngularVel);
 
 protected:
     /**
