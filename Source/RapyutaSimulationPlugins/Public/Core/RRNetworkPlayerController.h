@@ -50,9 +50,10 @@ public:
     void ClientInitRobotROS2Interface(AActor* InActor);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    ASimulationState* MainSimState = nullptr;
+    ASimulationState* ServerSimState = nullptr;
     UPROPERTY(Transient, Replicated)
     URRROS2SimulationStateClient* ROS2SimStateClient = nullptr;
+    void CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString PlayerName;
@@ -60,23 +61,10 @@ public:
     UPROPERTY(Transient, Replicated)
     APawn* PossessedPawn = nullptr;
 
-    // Services
-    //    UFUNCTION(BlueprintCallable)
-    //    void SpawnEntitySrv(UROS2GenericSrv* Service);
-    //
-    //    UFUNCTION(BlueprintCallable, Server, Reliable)
-    //    void ServerSpawnEntity(FROSSpawnEntityRequest Request);
-
     virtual void BeginPlay() override;
 
     UFUNCTION(Server, Reliable)
     void ServerSetPlayerName(const FString& InPlayerName);
-
-    //    UFUNCTION(BlueprintCallable, Client, Reliable)
-    //    void ReplicateTag();
-
-    //    UFUNCTION(Client, Reliable)
-    //    void InitPawn(APawn* InPawn);
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle PossessTimerHandle;

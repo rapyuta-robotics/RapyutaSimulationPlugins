@@ -28,7 +28,7 @@
 void URRROS2SimulationStateClient::Init(AROS2Node* InROS2Node)
 {
     ClientROS2Node = InROS2Node;
-    MainSimState = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this)->MainSimState;
+    ServerSimState = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this)->MainSimState;
 
     // register delegates to node
     FServiceCallback GetEntityStateSrvCallback;
@@ -55,7 +55,7 @@ void URRROS2SimulationStateClient::GetLifetimeReplicatedProps(TArray<FLifetimePr
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(URRROS2SimulationStateClient, ClientROS2Node);
-    DOREPLIFETIME(URRROS2SimulationStateClient, MainSimState);
+    DOREPLIFETIME(URRROS2SimulationStateClient, ServerSimState);
 }
 
 template<typename T>
@@ -99,12 +99,12 @@ template bool URRROS2SimulationStateClient::CheckEntity<TSubclassOf<AActor>>(TMa
 
 bool URRROS2SimulationStateClient::CheckEntity(const FString& InEntityName, const bool bAllowEmpty)
 {
-    return CheckEntity<AActor*>(MainSimState->Entities, InEntityName, bAllowEmpty);
+    return CheckEntity<AActor*>(ServerSimState->Entities, InEntityName, bAllowEmpty);
 }
 
 bool URRROS2SimulationStateClient::CheckSpawnableEntity(const FString& InEntityName, const bool bAllowEmpty)
 {
-    return CheckEntity<TSubclassOf<AActor>>(MainSimState->SpawnableEntities, InEntityName, bAllowEmpty);
+    return CheckEntity<TSubclassOf<AActor>>(ServerSimState->SpawnableEntities, InEntityName, bAllowEmpty);
 }
 
 void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
@@ -121,9 +121,9 @@ void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
     if (response.success)
     {
         FTransform relativeTransf;
-        FTransform worldTransf = MainSimState->Entities[request.name]->GetTransform();
+        FTransform worldTransf = ServerSimState->Entities[request.name]->GetTransform();
         URRGeneralUtils::GetRelativeTransform(
-            request.reference_frame, MainSimState->Entities.FindRef(request.reference_frame), worldTransf, relativeTransf);
+            request.reference_frame, ServerSimState->Entities.FindRef(request.reference_frame), worldTransf, relativeTransf);
         relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
         response.state_pose_position_x = relativeTransf.GetTranslation().X;
@@ -150,7 +150,7 @@ void URRROS2SimulationStateClient::SetEntityStateSrv(UROS2GenericSrv* InService)
 
     if (response.success)
     {
-        MainSimState->ServerSetEntityState(request);
+        ServerSimState->ServerSetEntityState(request);
     }
 
     setEntityStateService->SetResponse(response);
@@ -167,7 +167,7 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
     response.success = CheckEntity(request.name1, false) && CheckEntity(request.name2, false);
     if (response.success)
     {
-        MainSimState->ServerAttach(request);
+        ServerSimState->ServerAttach(request);
     }
     else
     {
@@ -200,7 +200,7 @@ void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
         if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
             // Spawn entity
-            AActor* newEntity = MainSimState->ServerSpawnEntity(request);
+            AActor* newEntity = ServerSimState->ServerSpawnEntity(request);
             response.bSuccess = (nullptr != newEntity);
             response.StatusMessage = newEntity
                                        ? FString::Printf(TEXT("Newly spawned Entity: %s"), *newEntity->GetName())
@@ -251,7 +251,7 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
         {
             if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityRequest.StateName))
             {
-                newEntity = MainSimState->ServerSpawnEntity(entityRequest);
+                newEntity = ServerSimState->ServerSpawnEntity(entityRequest);
                 if (newEntity)
                 {
                     numEntitySpawned++;
@@ -341,9 +341,9 @@ void URRROS2SimulationStateClient::DeleteEntitySrv(UROS2GenericSrv* InService)
 
     FROSDeleteEntity_Response response;
     response.success = false;
-    if (MainSimState->Entities.Contains(request.name))
+    if (ServerSimState->Entities.Contains(request.name))
     {
-        MainSimState->ServerDeleteEntity(request);
+        ServerSimState->ServerDeleteEntity(request);
         response.success = true;
     }
     else

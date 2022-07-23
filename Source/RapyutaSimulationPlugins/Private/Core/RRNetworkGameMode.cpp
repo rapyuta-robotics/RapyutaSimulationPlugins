@@ -18,24 +18,15 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     Super::PostLogin(InPlayerController);
 
     auto* networkPlayerController = CastChecked<ARRNetworkPlayerController>(InPlayerController);
-    auto& networkSimStateClient = networkPlayerController->ROS2SimStateClient;
-    if (nullptr == networkSimStateClient)
-    {
-        // Create [networkSimStateClient]
-        networkSimStateClient = NewObject<URRROS2SimulationStateClient>(
-            networkPlayerController,
-            ROS2SimStateClientClass,
-            FName(*FString::Printf(TEXT("%sROS2SimStateClient"), *InPlayerController->GetName())));
-        networkSimStateClient->MainSimState = MainSimState;
+    networkPlayerController->CreateROS2SimStateClient(ROS2SimStateClientClass);
 
-        // Set [networkPlayerController's MainSimState] -> [GameMode's MainSimState]
-        networkPlayerController->MainSimState = MainSimState;
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("ARRNetworkGameMode::PostLogin Logged-in PC[%d] %s"),
-               NetworkClientControllerList.Num(),
-               *InPlayerController->GetName());
-    }
+    // Set [networkPlayerController's ServerSimState] -> [GameMode's MainSimState]
+    networkPlayerController->ServerSimState = MainSimState;
+    UE_LOG(LogRapyutaCore,
+           Warning,
+           TEXT("ARRNetworkGameMode::PostLogin Logged-in PC[%d] %s"),
+           NetworkClientControllerList.Num(),
+           *InPlayerController->GetName());
 
 #if WITH_EDITOR
     if (NetworkClientControllerList.Num() == 0)

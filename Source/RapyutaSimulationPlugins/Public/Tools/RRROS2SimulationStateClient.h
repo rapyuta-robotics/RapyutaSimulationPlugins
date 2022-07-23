@@ -39,12 +39,13 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2SimulationStateClient : public UObject
     GENERATED_BODY()
 
 public:
+    //! ROS2 node of each client's own in the network
     UPROPERTY(BlueprintReadOnly, Replicated)
     AROS2Node* ClientROS2Node = nullptr;
 
+    //! Handle to server's main sim state
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    ASimulationState* MainSimState = nullptr;
-    void InitSimulationState();
+    ASimulationState* ServerSimState = nullptr;
 
     /**
      * @brief Start ROSservices.

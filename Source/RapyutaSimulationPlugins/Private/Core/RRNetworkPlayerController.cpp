@@ -49,10 +49,21 @@ void ARRNetworkPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ARRNetworkPlayerController, ClientROS2Node);
     DOREPLIFETIME(ARRNetworkPlayerController, ClockPublisher);
-    DOREPLIFETIME(ARRNetworkPlayerController, MainSimState);
+    DOREPLIFETIME(ARRNetworkPlayerController, ServerSimState);
     DOREPLIFETIME(ARRNetworkPlayerController, ROS2SimStateClient);
     DOREPLIFETIME(ARRNetworkPlayerController, PlayerName);
     DOREPLIFETIME(ARRNetworkPlayerController, PossessedPawn);
+}
+
+void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass)
+{
+    if (ROS2SimStateClient)
+    {
+        return;
+    }
+
+    ROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(
+        this, InSimStateClientClass, FName(*FString::Printf(TEXT("%sROS2SimStateClient"), *GetName())));
 }
 
 void ARRNetworkPlayerController::WaitForPawnPossess()
@@ -73,6 +84,7 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
         ClientROS2Node->Init();
 
         // Init [ROS2SimStateClient] with [ClientROS2Node]
+        // Also [ROS2SimStateClient]'s ServerSimState is set here-in
         ROS2SimStateClient->Init(ClientROS2Node);
 
         // Create Clock publisher
@@ -97,13 +109,13 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
         }
 #endif
 
-        if (MainSimState)
+        if (ServerSimState)
         {
             AActor* matchingEntity = nullptr;
             UROS2Spawnable* matchingEntitySpawnParams = nullptr;
 
             // Find [matchingEntity] of the same name as PlayerName
-            for (auto& entity : MainSimState->EntityList)
+            for (auto& entity : ServerSimState->EntityList)
             {
                 if (IsValid(entity))
                 {
