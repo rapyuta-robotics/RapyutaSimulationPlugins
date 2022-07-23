@@ -66,13 +66,9 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle PossessTimerHandle;
 
-    //! Client - Init possessed robot's ROS2Interface
+    //! Client - Init possessed robot's ROS2Interface & MoveComponent, etc.
     UFUNCTION(Client, Reliable)
-    void ClientInitRobotROS2Interface(AActor* InActor);
-
-    //! Client - Init possessed robot's MoveComponent
-    UFUNCTION(Client, Reliable)
-    void ClientInitRobotMoveComp(AActor* InActor);
+    void ClientInitPawn(AActor* InActor);
 
     // PLAYER
     //! Controller's PlayerName

@@ -20,7 +20,10 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     auto* networkPlayerController = CastChecked<ARRNetworkPlayerController>(InPlayerController);
     networkPlayerController->CreateROS2SimStateClient(ROS2SimStateClientClass);
 
-    // Set [networkPlayerController's ServerSimState] -> [GameMode's MainSimState]
+    // Set [networkPlayerController's ServerSimState] -> [GameMode's MainSimState],
+    // which should have been instantiated in [InitSim()]
+    check(MainSimState);
+    networkPlayerController->ROS2SimStateClient->ServerSimState = MainSimState;
     networkPlayerController->ServerSimState = MainSimState;
     UE_LOG(LogRapyutaCore,
            Warning,

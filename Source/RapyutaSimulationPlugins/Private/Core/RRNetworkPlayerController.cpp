@@ -64,8 +64,15 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
 
     ROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(
         this, InSimStateClientClass, FName(*FString::Printf(TEXT("%sROS2SimStateClient"), *GetName())));
+    ROS2SimStateClient->RegisterComponent();
+    AddOwnedComponent(ROS2SimStateClient);
 
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[PC:%u] ROS2SimStateClient[%s] created"), this, *ROS2SimStateClient->GetName());
+    UE_LOG(LogRapyutaCore,
+           Warning,
+           TEXT("[PC:%u] ROS2SimStateClient[%s:%u] created"),
+           this,
+           *ROS2SimStateClient->GetName(),
+           ROS2SimStateClient);
 }
 
 void ARRNetworkPlayerController::InitClientROS2()
@@ -100,7 +107,7 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
 #if 1    // RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore,
            Warning,
-           TEXT("ARRNetworkPlayerController::WaitForPawnPossess[%u:%s] %s NM_Client(%d) ROS2SimStateClient(%ld)"),
+           TEXT("ARRNetworkPlayerController::WaitForPawnPossess[%u:%s] %s NM_Client(%d) ROS2SimStateClient(%u)"),
            this,
            *GetName(),
            *PlayerName,
@@ -114,6 +121,8 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
     }
 
     // 1- Init [ClientROS2] only once [ROS2SimStateClient] is created
+    TInlineComponentArray<URRROS2SimulationStateClient*> simStateComponents(this);
+    ROS2SimStateClient = (simStateComponents.Num() > 0) ? simStateComponents[0] : nullptr;
     if (ROS2SimStateClient)
     {
         InitClientROS2();
@@ -137,9 +146,9 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
                 ServerPossessPawn(entityPawn);
                 PossessedPawn = entityPawn;
 
+                // 2.3- ClientInitPawn
                 // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
-                ClientInitRobotROS2Interface(entity);
-                ClientInitRobotMoveComp(entity);
+                ClientInitPawn(entity);
 
                 GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
 
@@ -167,19 +176,16 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
 void ARRNetworkPlayerController::ServerPossessPawn_Implementation(APawn* InPawn)
 {
     Possess(InPawn);
-    UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] possessed Pawn[%s]"), *PlayerName, *InPawn->GetName());
+    // NOTE: Logging PlayerName, InPawn->GetName() here might crash
 }
 
-void ARRNetworkPlayerController::ClientInitRobotROS2Interface_Implementation(AActor* InActor)
+void ARRNetworkPlayerController::ClientInitPawn_Implementation(AActor* InActor)
 {
     if (ARRBaseRobot* robot = Cast<ARRBaseRobot>(InActor))
     {
         robot->ROS2Interface->Initialize(robot);
     }
-}
 
-void ARRNetworkPlayerController::ClientInitRobotMoveComp_Implementation(AActor* InActor)
-{
     if (ARRRobotBaseVehicle* robotVehicle = Cast<ARRRobotBaseVehicle>(InActor))
     {
         robotVehicle->InitMoveComponent();

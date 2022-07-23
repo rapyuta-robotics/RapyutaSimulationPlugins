@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
 
 // rclUE
@@ -25,10 +26,15 @@
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/SimulationState.h"
 
+void URRROS2SimulationStateClient::OnComponentCreated()
+{
+    Super::OnComponentCreated();
+    SetIsReplicated(true);
+}
+
 void URRROS2SimulationStateClient::Init(AROS2Node* InROS2Node)
 {
     ClientROS2Node = InROS2Node;
-    ServerSimState = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this)->MainSimState;
 
     // register delegates to node
     FServiceCallback GetEntityStateSrvCallback;

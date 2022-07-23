@@ -8,8 +8,8 @@
 #pragma once
 
 // UE
+#include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 
 // rclUE
 #include "ROS2Node.h"
@@ -34,7 +34,7 @@ class ASimulationState;
  *
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API URRROS2SimulationStateClient : public UObject
+class RAPYUTASIMULATIONPLUGINS_API URRROS2SimulationStateClient : public UActorComponent
 {
     GENERATED_BODY()
 
@@ -106,30 +106,23 @@ public:
     void SpawnEntitySrv(UROS2GenericSrv* InService);
 
     /**
+     * @brief Callback function of SpawnEntities ROS2 service.
+     * @param Service
+     * @sa [ue_mgs/SpawnEntities.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntities.srv)
+     */
+    UFUNCTION(BlueprintCallable)
+    void SpawnEntitiesSrv(UROS2GenericSrv* InService);
+
+    /**
      * @brief Callback function of DeleteEntity ROS2 service.
      * @param Service
      * @sa [ue_mgs/DeleteEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/DeleteEntity.srv)
      */
     UFUNCTION(BlueprintCallable)
-    void SpawnEntitiesSrv(UROS2GenericSrv* InService);
-
-    UFUNCTION(BlueprintCallable)
     void DeleteEntitySrv(UROS2GenericSrv* InService);
 
-#if 0
-    // need node that will handle services - this class will only define and register the service
-    UPROPERTY(BlueprintReadOnly)
-    UROS2SpawnEntitySrv* SpawnEntityService = nullptr;
-
-    UPROPERTY(BlueprintReadOnly, Replicated)
-    FROSSpawnEntityResponse SpawnResponse;
-#endif
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FTimerHandle TimerHandle;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FTimerHandle TimerHandleResponder;
+protected:
+    virtual void OnComponentCreated() override;
 
 private:
     template<typename T>
