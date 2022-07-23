@@ -41,7 +41,7 @@ void ARRNetworkPlayerController::Tick(float DeltaSeconds)
         SetControlRotation(InitRot);
     }
 #endif
-    LocalClockUpdate(DeltaSeconds);
+    UpdateLocalClock(DeltaSeconds);
 }
 
 void ARRNetworkPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -66,40 +66,56 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
         this, InSimStateClientClass, FName(*FString::Printf(TEXT("%sROS2SimStateClient"), *GetName())));
 }
 
+void ARRNetworkPlayerController::InitClientROS2()
+{
+    if (ClientROS2Node || (false == IsNetMode(NM_Client)))
+    {
+        return;
+    }
+
+    // Init [ClientROS2Node] & [ClockPublisher]
+    UWorld* currentWorld = GetWorld();
+    ClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
+    ClientROS2Node->Namespace.Reset();
+    // ClientROS2Node->Namespace = PlayerName;
+    ClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
+    ClientROS2Node->Init();
+
+    // Init [ROS2SimStateClient] with [ClientROS2Node]
+    // Also [ROS2SimStateClient]'s ServerSimState is set here-in
+    ROS2SimStateClient->Init(ClientROS2Node);
+
+    // Create Clock publisher
+    ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
+    // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
+    ClockPublisher->InitializeWithROS2(ClientROS2Node);
+
+    UE_LOG(LogRapyutaCore,
+           Warning,
+           TEXT("ARRNetworkPlayerController::WaitForPawnPossess ClientROS2Node[%s] created"),
+           *ClientROS2Node->Name);
+}
+
 void ARRNetworkPlayerController::WaitForPawnPossess()
 {
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(
         LogRapyutaCore, Warning, TEXT("ARRNetworkPlayerController::WaitForPawnPossess %s %d"), *PlayerName, IsNetMode(NM_Client));
 #endif
-    // Init [ClientROS2Node] & [ClockPublisher]
-    if (!ClientROS2Node && IsNetMode(NM_Client) && !PlayerName.IsEmpty() &&
-        (PlayerName != URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME) && ROS2SimStateClient)
+
+    if ((false == IsNetMode(NM_Client)) || (PlayerName == URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME))
     {
-        UWorld* currentWorld = GetWorld();
-        ClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
-        ClientROS2Node->Namespace.Reset();
-        // ClientROS2Node->Namespace = PlayerName;
-        ClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
-        ClientROS2Node->Init();
-
-        // Init [ROS2SimStateClient] with [ClientROS2Node]
-        // Also [ROS2SimStateClient]'s ServerSimState is set here-in
-        ROS2SimStateClient->Init(ClientROS2Node);
-
-        // Create Clock publisher
-        ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
-        // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
-        ClockPublisher->InitializeWithROS2(ClientROS2Node);
-
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("ARRNetworkPlayerController::WaitForPawnPossess ClientROS2Node[%s] created"),
-               *ClientROS2Node->Name);
+        return;
     }
 
-    // Fetch on with matching player name in [SimulationState->EntityList]
-    if (PlayerState && !PossessedPawn && IsNetMode(NM_Client) && (PlayerName != URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME))
+    // 1- Init [ClientROS2] once [ROS2SimStateClient] is created
+    if (ROS2SimStateClient && (false == PlayerName.IsEmpty()))
+    {
+        InitClientROS2();
+    }
+
+    // 2- Keep waiting for a spawned entity with a matching player name in [ServerSimState->EntityList]
+    if (PlayerState && !PossessedPawn)
     {
 #if WITH_EDITOR
         if (PlayerName.IsEmpty())
@@ -109,61 +125,63 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
         }
 #endif
 
-        if (ServerSimState)
+        if (nullptr == ServerSimState)
         {
-            AActor* matchingEntity = nullptr;
-            UROS2Spawnable* matchingEntitySpawnParams = nullptr;
+            return;
+        }
 
-            // Find [matchingEntity] of the same name as PlayerName
-            for (auto& entity : ServerSimState->EntityList)
+        AActor* matchingEntity = nullptr;
+        UROS2Spawnable* matchingEntitySpawnParams = nullptr;
+
+        // 2.1- Find [matchingEntity] of the same name as PlayerName
+        for (auto& entity : ServerSimState->EntityList)
+        {
+            if (IsValid(entity))
             {
-                if (IsValid(entity))
+                UROS2Spawnable* rosSpawnParameters = entity->FindComponentByClass<UROS2Spawnable>();
+                if (rosSpawnParameters)
                 {
-                    UROS2Spawnable* rosSpawnParameters = entity->FindComponentByClass<UROS2Spawnable>();
-                    if (rosSpawnParameters)
+                    if (rosSpawnParameters->GetName() == PlayerName)
                     {
-                        if (rosSpawnParameters->GetName() == PlayerName)
-                        {
-                            matchingEntity = entity;
-                            matchingEntitySpawnParams = rosSpawnParameters;
-                            break;
-                        }
+                        matchingEntity = entity;
+                        matchingEntitySpawnParams = rosSpawnParameters;
+                        break;
                     }
                 }
             }
-
-            // Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
-            if (matchingEntity)
-            {
-                if (APawn* matchingEntityPawn = Cast<APawn>(matchingEntity))
-                {
-                    ServerPossessPawn(matchingEntityPawn);
-                    PossessedPawn = matchingEntityPawn;
-                }
-
-                // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
-                ClientInitRobotROS2Interface(matchingEntity);
-                ClientInitRobotMoveComp(matchingEntity);
-
-                GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
-            }
-#if RAPYUTA_SIM_DEBUG
-            else
-            {
-                UE_LOG(LogRapyutaCore,
-                       Warning,
-                       TEXT("NetworkPlayerController [%s] found no Pawn of its matching name to possess yet"),
-                       *PlayerName);
-            }
-#endif
         }
+
+        // 2.2- Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
+        if (matchingEntity)
+        {
+            if (APawn* matchingEntityPawn = Cast<APawn>(matchingEntity))
+            {
+                ServerPossessPawn(matchingEntityPawn);
+                PossessedPawn = matchingEntityPawn;
+            }
+
+            // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
+            ClientInitRobotROS2Interface(matchingEntity);
+            ClientInitRobotMoveComp(matchingEntity);
+
+            GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
+        }
+#if RAPYUTA_SIM_DEBUG
+        else
+        {
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("NetworkPlayerController [%s] found no Pawn of its matching name to possess yet"),
+                   *PlayerName);
+        }
+#endif
     }
 }
 
 void ARRNetworkPlayerController::ServerPossessPawn_Implementation(APawn* InPawn)
 {
-    UE_LOG(LogTemp, Warning, TEXT("Player [%s] Possessing Pawn"), *PlayerName);
     Possess(InPawn);
+    UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] possessed Pawn[%s]"), *PlayerName, *InPawn->GetName());
 }
 
 void ARRNetworkPlayerController::ClientInitRobotROS2Interface_Implementation(AActor* InActor)
@@ -215,7 +233,10 @@ void ARRNetworkPlayerController::BeginPlay()
 void ARRNetworkPlayerController::ServerSetPlayerName_Implementation(const FString& InPlayerName)
 {
     PlayerName = InPlayerName;
-    ClientROS2Node->Namespace = InPlayerName;
+    if (ClientROS2Node)
+    {
+        ClientROS2Node->Namespace = InPlayerName;
+    }
 }
 
 // Client Requesting Server to send time, Client Clock at time of request is sent as well
@@ -240,7 +261,7 @@ void ARRNetworkPlayerController::RequestServerTime()
     }
 }
 
-void ARRNetworkPlayerController::LocalClockUpdate(float InDeltaSeconds)
+void ARRNetworkPlayerController::UpdateLocalClock(float InDeltaSeconds)
 {
     if (IsLocalController())
     {

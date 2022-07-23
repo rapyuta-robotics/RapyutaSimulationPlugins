@@ -21,6 +21,10 @@
 
 #include "RRNetworkPlayerController.generated.h"
 
+/**
+ * @brief Network Player controller with its own {ROS2 Node + Clock publisher + ROS2 Sim state client} created for each possessed
+ * robot
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRNetworkPlayerController : public APlayerController
 {
@@ -31,11 +35,27 @@ public:
     virtual void Tick(float DeltaSeconds) override;
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+    // ROS2
     UPROPERTY(Transient, Replicated)
     AROS2Node* ClientROS2Node = nullptr;
 
     UPROPERTY(BlueprintReadOnly, Replicated)
     URRROS2ClockPublisher* ClockPublisher = nullptr;
+    void InitClientROS2();
+
+    // SIM STATE & ROS2 STATE CLIENT
+    //! Pointer to ServerSimState
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
+    ASimulationState* ServerSimState = nullptr;
+    //! ROS2 Sim state client
+    UPROPERTY(Transient, Replicated)
+    URRROS2SimulationStateClient* ROS2SimStateClient = nullptr;
+    void CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass);
+
+    // POSSESSED PAWN
+    //! Pawn that has been possessed by this controller
+    UPROPERTY(Transient, Replicated)
+    APawn* PossessedPawn = nullptr;
 
     UFUNCTION()
     void WaitForPawnPossess();
@@ -43,32 +63,26 @@ public:
     UFUNCTION(Server, Reliable)
     void ServerPossessPawn(APawn* InPawn);
 
-    UFUNCTION(Client, Reliable)
-    void ClientInitRobotMoveComp(AActor* InActor);
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTimerHandle PossessTimerHandle;
 
+    //! Client - Init possessed robot's ROS2Interface
     UFUNCTION(Client, Reliable)
     void ClientInitRobotROS2Interface(AActor* InActor);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    ASimulationState* ServerSimState = nullptr;
-    UPROPERTY(Transient, Replicated)
-    URRROS2SimulationStateClient* ROS2SimStateClient = nullptr;
-    void CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass);
+    //! Client - Init possessed robot's MoveComponent
+    UFUNCTION(Client, Reliable)
+    void ClientInitRobotMoveComp(AActor* InActor);
 
+    // PLAYER
+    //! Controller's PlayerName
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString PlayerName;
-
-    UPROPERTY(Transient, Replicated)
-    APawn* PossessedPawn = nullptr;
-
-    virtual void BeginPlay() override;
 
     UFUNCTION(Server, Reliable)
     void ServerSetPlayerName(const FString& InPlayerName);
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FTimerHandle PossessTimerHandle;
-
+    // LOCAL CLOCK
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle ClockRequestTimerHandle;
 
@@ -86,7 +100,9 @@ public:
     UFUNCTION(Server, Reliable)
     void ClientRequestClock(float InClientRequestTime);
 
-    void LocalClockUpdate(float InDeltaSeconds);
+    void UpdateLocalClock(float InDeltaSeconds);
 
+protected:
+    virtual void BeginPlay() override;
     virtual void ReceivedPlayer() override;
 };
