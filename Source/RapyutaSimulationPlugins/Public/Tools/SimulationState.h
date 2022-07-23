@@ -12,7 +12,6 @@
 #include "GameFramework/Actor.h"
 
 // rclUE
-#include "ROS2Node.h"
 #include "Srvs/ROS2AttachSrv.h"
 #include "Srvs/ROS2DeleteEntitySrv.h"
 #include "Srvs/ROS2GetEntityStateSrv.h"
@@ -25,6 +24,30 @@
 #include "Core/RRGeneralUtils.h"
 
 #include "SimulationState.generated.h"
+
+/**
+ * @brief FRREntityInfo
+ * This struct is used to create #SpawnableEntityInfoList
+ */
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FRREntityInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    FString EntityTypeName;
+
+    UPROPERTY()
+    TSubclassOf<AActor> EntityClass;
+
+    FRREntityInfo()
+    {
+    }
+    FRREntityInfo(const TPair<FString, TSubclassOf<AActor>>& InEntityInfo)
+        : EntityTypeName(InEntityInfo.Key), EntityClass(InEntityInfo.Value)
+    {
+    }
+};
 
 /**
  * @brief FRREntities has only TArray<AActor*> Actors.
@@ -66,15 +89,6 @@ public:
     ASimulationState();
 
 public:
-    /**
-     * @brief Start ROSservices.
-     *
-     * @param InROS2Node
-     * @sa [ROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
-     */
-    UFUNCTION(BlueprintCallable)
-    virtual void Init(AROS2Node* InROS2Node);
-
     /**
      * @brief Fetch all entities in the current map
      */
@@ -143,40 +157,34 @@ public:
 
     UFUNCTION(BlueprintCallable)
     /**
-     * @brief Add Entities to #SpawnableEntities which can be spawn by SpawnEntity ROS2 service.
+     * @brief Add Entity Types to #SpawnableEntities which can be spawn by SpawnEntity ROS2 service.
      * BP callable thus the param could not be const&
-     * @param InSpawnableEntities
+     * @param InSpawnableEntityTypes
      */
-    void AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities);
+    void AddSpawnableEntityTypes(TMap<FString, TSubclassOf<AActor>> InSpawnableEntityTypes);
 
     UFUNCTION(BlueprintCallable)
-    void GetSplitSpawnableEntities();
-
-    //! Main ROS2 Node for NM_Standalone to register ROS2 services, actions
-    UPROPERTY(BlueprintReadOnly)
-    AROS2Node* MainROS2Node = nullptr;
+    void GetSpawnableEntityInfoList();
 
     //! All existing entities
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
 
-    //! Entities which can be manipulated by this class via ROS2 services.
+    //! Entities with tags which can be manipulated by this class via ROS2 services.
     UPROPERTY()
     TMap<FName, FRREntities> EntitiesWithTag;
 
-    //! Entities which can be manipulated by this class via ROS2 services.
+    //! Replicatable copy of #Entities
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Entity)
     TArray<AActor*> EntityList;
 
-    //! Spawnable entities from SpawnEntity ROS2 service.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_SpawnableEntity)
-    TArray<TSubclassOf<AActor>> SpawnableEntityList;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_SpawnableEntity)
-    TArray<FString> SpawnableEntityNameList;
-
+    //! Spawnable entity types for SpawnEntity ROS2 service.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TMap<FString, TSubclassOf<AActor>> SpawnableEntities;
+    TMap<FString, TSubclassOf<AActor>> SpawnableEntityTypes;
+
+    //! Replicatable Copy of #SpawnableEntityTypes
+    UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SpawnableEntity)
+    TArray<FRREntityInfo> SpawnableEntityInfoList;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle TimerHandle;

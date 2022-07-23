@@ -65,11 +65,12 @@ void ARRROS2GameMode::InitROS2()
 
     // MainSimState
     check(MainSimState);
-    MainSimState->Init(MainROS2Node);
 
     // MainROS2SimStateClient
     MainROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(this, ROS2SimStateClientClass, TEXT("MainROS2SimStateClient"));
     MainROS2SimStateClient->Init(MainROS2Node);
+    // NOTE: Inside [URRROS2SimulationStateClient], GameMode, which is server-only, is inaccessible
+    MainROS2SimStateClient->ServerSimState = MainSimState;
 
     // Create Clock publisher
     ClockPublisher = NewObject<URRROS2ClockPublisher>(this);

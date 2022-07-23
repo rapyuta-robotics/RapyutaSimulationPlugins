@@ -33,13 +33,7 @@ void ASimulationState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ASimulationState, EntityList);
-    DOREPLIFETIME(ASimulationState, SpawnableEntityList);
-    DOREPLIFETIME(ASimulationState, SpawnableEntityNameList);
-}
-
-void ASimulationState::Init(AROS2Node* InROS2Node)
-{
-    MainROS2Node = InROS2Node;
+    DOREPLIFETIME(ASimulationState, SpawnableEntityInfoList);
 }
 
 void ASimulationState::InitEntities()
@@ -55,30 +49,32 @@ void ASimulationState::InitEntities()
         AActor* actor = *It;
         AddEntity(actor);
     }
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ASimulationState::GetSplitSpawnableEntities, 1.0f, true);
+
+    // NOTE: [SpawnableEntityInfoList] is a TArray<> thus replicatable, which is not supported for [SpawnableEntities] as a TMap
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ASimulationState::GetSpawnableEntityInfoList, 1.0f, true);
 }
 
-void ASimulationState::AddEntity(AActor* Entity)
+void ASimulationState::AddEntity(AActor* InEntity)
 {
-    if (false == IsValid(Entity))
+    if (false == IsValid(InEntity))
     {
         return;
     }
 
-    GetSplitSpawnableEntities();
-    Entities.Emplace(Entity->GetName(), Entity);
-    EntityList.Emplace(Entity);
-    for (auto& tag : Entity->Tags)
+    GetSpawnableEntityInfoList();
+    Entities.Emplace(InEntity->GetName(), InEntity);
+    EntityList.Emplace(InEntity);
+    for (auto& tag : InEntity->Tags)
     {
         if (EntitiesWithTag.Contains(tag))
         {
-            EntitiesWithTag[tag].Actors.Emplace(Entity);
+            EntitiesWithTag[tag].Actors.Emplace(InEntity);
         }
         else
         {
             FRREntities actors;
-            actors.Actors.Emplace(Entity);
-            EntitiesWithTag.Emplace(tag, actors);
+            actors.Actors.Emplace(InEntity);
+            EntitiesWithTag.Emplace(tag, MoveTemp(actors));
         }
     }
 }
@@ -86,36 +82,38 @@ void ASimulationState::AddEntity(AActor* Entity)
 // Work around to replicating Entities and EntitiesWithTag since TMaps cannot be replicated
 void ASimulationState::OnRep_Entity()
 {
-    for (AActor* Entity : EntityList)
+    for (AActor* entity : EntityList)
     {
-        if (Entity)
+        if (false == IsValid(entity))
         {
-            if (!Entities.Contains(Entity->GetName()))
-            {
-                UROS2Spawnable* rosSpawnParameters = Entity->FindComponentByClass<UROS2Spawnable>();
-                if (rosSpawnParameters)
-                {
-                    Entities.Emplace(rosSpawnParameters->GetName(), Entity);
-                }
-                else
-                {
-                    Entities.Emplace(Entity->GetName(), Entity);
-                }
-            }
+            continue;
+        }
 
-            for (auto& tag : Entity->Tags)
+        if (!Entities.Contains(entity->GetName()))
+        {
+            UROS2Spawnable* rosSpawnParameters = entity->FindComponentByClass<UROS2Spawnable>();
+            if (rosSpawnParameters)
             {
-                AddTaggedEntities(Entity, tag);
+                Entities.Emplace(rosSpawnParameters->GetName(), entity);
             }
-
-            UROS2Spawnable* EntitySpawnParam = Entity->FindComponentByClass<UROS2Spawnable>();
-            if (EntitySpawnParam)
+            else
             {
-                Entity->Rename(*EntitySpawnParam->GetName());
-                for (auto& tag : EntitySpawnParam->ActorTags)
-                {
-                    AddTaggedEntities(Entity, FName(tag));
-                }
+                Entities.Emplace(entity->GetName(), entity);
+            }
+        }
+
+        for (const auto& tag : entity->Tags)
+        {
+            AddTaggedEntities(entity, tag);
+        }
+
+        UROS2Spawnable* EntitySpawnParam = entity->FindComponentByClass<UROS2Spawnable>();
+        if (EntitySpawnParam)
+        {
+            entity->Rename(*EntitySpawnParam->GetName());
+            for (const auto& tag : EntitySpawnParam->ActorTags)
+            {
+                AddTaggedEntities(entity, FName(tag));
             }
         }
     }
@@ -123,9 +121,9 @@ void ASimulationState::OnRep_Entity()
 
 void ASimulationState::OnRep_SpawnableEntity()
 {
-    for (int i = 0; i < SpawnableEntityList.Num(); i++)
+    for (const auto& entityInfo : SpawnableEntityInfoList)
     {
-        SpawnableEntities.Emplace(SpawnableEntityNameList[i], SpawnableEntityList[i]);
+        SpawnableEntityTypes.Emplace(entityInfo.EntityTypeName, entityInfo.EntityClass);
     }
 }
 
@@ -156,24 +154,22 @@ void ASimulationState::AddTaggedEntities(AActor* Entity, const FName& InTag)
     }
 }
 
-void ASimulationState::AddSpawnableEntities(TMap<FString, TSubclassOf<AActor>> InSpawnableEntities)
+void ASimulationState::AddSpawnableEntityTypes(TMap<FString, TSubclassOf<AActor>> InSpawnableEntityTypes)
 {
-    for (auto& Elem : InSpawnableEntities)
+    for (auto& elem : InSpawnableEntityTypes)
     {
-        SpawnableEntityList.Emplace(Elem.Value);
-        SpawnableEntityNameList.Emplace(Elem.Key);
-        SpawnableEntities.Emplace(Elem.Key, Elem.Value);
+        SpawnableEntityInfoList.Emplace(FRREntityInfo(elem));
+        SpawnableEntityTypes.Emplace(MoveTemp(elem.Key), MoveTemp(elem.Value));
     }
 }
 
-void ASimulationState::GetSplitSpawnableEntities()
+void ASimulationState::GetSpawnableEntityInfoList()
 {
-    for (auto& Elem : SpawnableEntities)
+    for (auto& elem : SpawnableEntityTypes)
     {
-        SpawnableEntityList.Emplace(Elem.Value);
-        SpawnableEntityNameList.Emplace(Elem.Key);
+        SpawnableEntityInfoList.Emplace(FRREntityInfo(elem));
     }
-    if (SpawnableEntityList.Num() > 0)
+    if (SpawnableEntityInfoList.Num() > 0)
     {
         GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
     }
@@ -251,8 +247,9 @@ void ASimulationState::ServerAttach(const FROSAttach_Request& InRequest)
 
 bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InRequest)
 {
-    if (PreviousSpawnRequest.Xml == InRequest.Xml && PreviousSpawnRequest.StateName == InRequest.StateName &&
-        PreviousSpawnRequest.Xml == InRequest.Xml && PreviousSpawnRequest.StatePosePositionX == InRequest.StatePosePositionX &&
+    if (PreviousSpawnRequest.Xml == InRequest.Xml && PreviousSpawnRequest.RobotNamespace == InRequest.RobotNamespace &&
+        PreviousSpawnRequest.StateName == InRequest.StateName &&
+        PreviousSpawnRequest.StatePosePositionX == InRequest.StatePosePositionX &&
         PreviousSpawnRequest.StatePosePositionY == InRequest.StatePosePositionY &&
         PreviousSpawnRequest.StatePosePositionZ == InRequest.StatePosePositionZ &&
         PreviousSpawnRequest.StatePoseOrientation == InRequest.StatePoseOrientation &&
@@ -337,7 +334,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
                    *worldTransf.ToString());
 
             // Spawn entity
-            newEntity = ServerSpawnEntity(InRequest, SpawnableEntities[entityModelName], worldTransf);
+            newEntity = ServerSpawnEntity(InRequest, SpawnableEntityTypes[entityModelName], worldTransf);
         }
         else
         {

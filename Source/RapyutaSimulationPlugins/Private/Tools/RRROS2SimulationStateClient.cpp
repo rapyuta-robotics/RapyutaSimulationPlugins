@@ -110,7 +110,7 @@ bool URRROS2SimulationStateClient::CheckEntity(const FString& InEntityName, cons
 
 bool URRROS2SimulationStateClient::CheckSpawnableEntity(const FString& InEntityName, const bool bAllowEmpty)
 {
-    return CheckEntity<TSubclassOf<AActor>>(ServerSimState->SpawnableEntities, InEntityName, bAllowEmpty);
+    return CheckEntity<TSubclassOf<AActor>>(ServerSimState->SpawnableEntityTypes, InEntityName, bAllowEmpty);
 }
 
 void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
