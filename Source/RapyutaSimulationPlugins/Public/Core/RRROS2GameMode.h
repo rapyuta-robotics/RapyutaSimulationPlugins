@@ -48,7 +48,7 @@ public:
     UPROPERTY(BlueprintReadOnly)
     URRROS2SimulationStateClient* MainROS2SimStateClient = nullptr;
 
-    //! Custom type to instantiate #SimulationState, configurable in child classes
+    //! Custom type to instantiate #MainROS2SimStateClient, configurable in child classes
     UPROPERTY(BlueprintReadOnly)
     TSubclassOf<URRROS2SimulationStateClient> ROS2SimStateClientClass = URRROS2SimulationStateClient::StaticClass();
 

@@ -64,6 +64,8 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
 
     ROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(
         this, InSimStateClientClass, FName(*FString::Printf(TEXT("%sROS2SimStateClient"), *GetName())));
+
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[PC:%u] ROS2SimStateClient[%s] created"), this, *ROS2SimStateClient->GetName());
 }
 
 void ARRNetworkPlayerController::InitClientROS2()
@@ -90,17 +92,20 @@ void ARRNetworkPlayerController::InitClientROS2()
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
     ClockPublisher->InitializeWithROS2(ClientROS2Node);
 
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("ARRNetworkPlayerController::WaitForPawnPossess ClientROS2Node[%s] created"),
-           *ClientROS2Node->Name);
+    UE_LOG(LogRapyutaCore, Warning, TEXT("ARRNetworkPlayerController ClientROS2Node[%s] created"), *ClientROS2Node->Name);
 }
 
 void ARRNetworkPlayerController::WaitForPawnPossess()
 {
-#if RAPYUTA_SIM_DEBUG
-    UE_LOG(
-        LogRapyutaCore, Warning, TEXT("ARRNetworkPlayerController::WaitForPawnPossess %s %d"), *PlayerName, IsNetMode(NM_Client));
+#if 1    // RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore,
+           Warning,
+           TEXT("ARRNetworkPlayerController::WaitForPawnPossess[%u:%s] %s NM_Client(%d) ROS2SimStateClient(%ld)"),
+           this,
+           *GetName(),
+           *PlayerName,
+           IsNetMode(NM_Client),
+           ROS2SimStateClient);
 #endif
 
     if ((false == IsNetMode(NM_Client)) || (PlayerName == URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME))
@@ -108,8 +113,8 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
         return;
     }
 
-    // 1- Init [ClientROS2] once [ROS2SimStateClient] is created
-    if (ROS2SimStateClient && (false == PlayerName.IsEmpty()))
+    // 1- Init [ClientROS2] only once [ROS2SimStateClient] is created
+    if (ROS2SimStateClient)
     {
         InitClientROS2();
     }
@@ -117,57 +122,38 @@ void ARRNetworkPlayerController::WaitForPawnPossess()
     // 2- Keep waiting for a spawned entity with a matching player name in [ServerSimState->EntityList]
     if (PlayerState && !PossessedPawn)
     {
-#if WITH_EDITOR
-        if (PlayerName.IsEmpty())
-        {
-            PlayerName = PlayerState->GetPlayerName();
-            ServerSetPlayerName(PlayerState->GetPlayerName());
-        }
-#endif
-
         if (nullptr == ServerSimState)
         {
             return;
         }
 
-        AActor* matchingEntity = nullptr;
-        UROS2Spawnable* matchingEntitySpawnParams = nullptr;
-
-        // 2.1- Find [matchingEntity] of the same name as PlayerName
+        // 2.1- Possess any newly spawned entity that is not possessed yet by this controller
         for (auto& entity : ServerSimState->EntityList)
         {
-            if (IsValid(entity))
+            APawn* entityPawn = Cast<APawn>(entity);
+            if (IsValid(entityPawn) && (GetPawn() != entityPawn))
             {
-                UROS2Spawnable* rosSpawnParameters = entity->FindComponentByClass<UROS2Spawnable>();
-                if (rosSpawnParameters)
-                {
-                    if (rosSpawnParameters->GetName() == PlayerName)
-                    {
-                        matchingEntity = entity;
-                        matchingEntitySpawnParams = rosSpawnParameters;
-                        break;
-                    }
-                }
+                // 2.2- Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
+                ServerPossessPawn(entityPawn);
+                PossessedPawn = entityPawn;
+
+                // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
+                ClientInitRobotROS2Interface(entity);
+                ClientInitRobotMoveComp(entity);
+
+                GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
+
+#if WITH_EDITOR
+                // 2.3- Set Controller's PlayerName -> entity's Name
+                PlayerName = entity->GetName();
+                ServerSetPlayerName(PlayerName);
+#endif
+                break;
             }
         }
 
-        // 2.2- Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
-        if (matchingEntity)
-        {
-            if (APawn* matchingEntityPawn = Cast<APawn>(matchingEntity))
-            {
-                ServerPossessPawn(matchingEntityPawn);
-                PossessedPawn = matchingEntityPawn;
-            }
-
-            // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
-            ClientInitRobotROS2Interface(matchingEntity);
-            ClientInitRobotMoveComp(matchingEntity);
-
-            GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
-        }
 #if RAPYUTA_SIM_DEBUG
-        else
+        if (nullptr == GetPawn())
         {
             UE_LOG(LogRapyutaCore,
                    Warning,

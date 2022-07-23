@@ -29,15 +29,13 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
            *InPlayerController->GetName());
 
 #if WITH_EDITOR
+#if RAPYUTA_SIM_DEBUG
     if (NetworkClientControllerList.Num() == 0)
     {
+        // This should be configured in INI or passed in cmdline?
         networkPlayerController->SetName(URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME);
     }
-    else
-    {
-        // TBD: "amr%d" is hardcoded to be the same as robot unique name?
-        networkPlayerController->SetName(FString::Printf(TEXT("amr%d"), NetworkClientControllerList.Num()));
-    }
+#endif
 #endif
 
     // Add to [ClientControllerList]
