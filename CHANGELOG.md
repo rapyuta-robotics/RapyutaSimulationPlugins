@@ -1,5 +1,11 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.11 ##
+* `ASimulationState`: Add `Server~` for service callbacks called on server only. There is a single instance owned by GameMode, which is server-only.
+* Add replicatble `URRROS2SimulationStateClient` as UActorComponent, moving setup of ROS2 servicesthere from `ASimulationState`. One is created for each client's network player controller.
+* Add `ARRNetworkGameMode, ARRNetworkGameState, ARRNetworkPlayerController`
+* Turn on `bReplicates` for `ARRBaseRobot, ASimulationState, ARRNetworkGameState, ARRNetworkPlayerController`
+
 ## 0.0.10 ##
 * `ARRBaseRobot` add ROS2Interface member & CreateRobotROS2Interface(), only instantiating it upon valid ROS2InterfaceClass
 * `ARRRobotVehicleROSController`: ARobotVehicle -> ARRRobotBaseVehicle

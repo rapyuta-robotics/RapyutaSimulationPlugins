@@ -5,6 +5,14 @@
 // rclUE
 #include "Srvs/ROS2SpawnEntitySrv.h"
 
+void UROS2Spawnable::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME( UROS2Spawnable, ActorName );
+    DOREPLIFETIME( UROS2Spawnable, ActorNamespace );
+    DOREPLIFETIME( UROS2Spawnable, ActorTags );
+}
+
 void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityRequest& InRequest)
 {
     SetName(InRequest.StateName);
@@ -20,6 +28,11 @@ void UROS2Spawnable::SetName(const FString& InName)
 void UROS2Spawnable::SetNamespace(const FString& InNamespace)
 {
     ActorNamespace = InNamespace;
+}
+
+void UROS2Spawnable::AddTag(const FString& InTag)
+{
+    ActorTags.Emplace(InTag);
 }
 
 FString UROS2Spawnable::GetName()

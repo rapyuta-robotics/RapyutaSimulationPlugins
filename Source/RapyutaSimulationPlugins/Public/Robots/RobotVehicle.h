@@ -43,7 +43,7 @@ public:
     ARobotVehicle(const FObjectInitializer& ObjectInitializer);
 
     //! Robot Mesh
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     USkeletalMeshComponent* SkeletalMeshComp = nullptr;
 
     /**
@@ -51,4 +51,12 @@ public:
      *
      */
     void SetupDefaultRootSkeletal();
+
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 };

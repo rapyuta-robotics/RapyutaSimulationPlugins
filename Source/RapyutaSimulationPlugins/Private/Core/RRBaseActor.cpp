@@ -63,8 +63,11 @@ bool ARRBaseActor::Initialize()
     GameSingleton = URRGameSingleton::Get();
     check(GameSingleton);
 
-    PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
-    check(PlayerController);
+    if (IsNetMode(NM_Standalone))
+    {
+        PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
+        check(PlayerController);
+    }
 
     ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
     return true;

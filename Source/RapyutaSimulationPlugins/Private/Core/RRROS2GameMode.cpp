@@ -10,8 +10,7 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
-#include "Core/RRGameState.h"
-#include "Core/RRPlayerController.h"
+#include "Core/RRNetworkGameMode.h"
 #include "Tools/RRROS2ClockPublisher.h"
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
@@ -38,28 +37,43 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
 
 void ARRROS2GameMode::InitSim()
 {
-    InitROS2();
+    // 1- Simulation state
+    MainSimState = GetWorld()->SpawnActor<ASimulationState>();
+    // Fetch Entities in the map first regardless of ROS2
+    MainSimState->InitEntities();
+
+    // 2 - Init Sim-wide Main ROS2 node, but only in case of a Network standalone app
+    // For Server-client app, each client will have its own ROS2 Node inited upon Network player controller possessing
+    if (IsNetMode(NM_Standalone) && (nullptr == Cast<ARRNetworkGameMode>(this)))
+    {
+        InitROS2();
+    }
 }
 
 void ARRROS2GameMode::InitROS2()
 {
-    if (IsValid(ROS2Node))
+    if (IsValid(MainROS2Node))
     {
         return;
     }
 
-    UWorld* currentWorld = GetWorld();
-    ROS2Node = currentWorld->SpawnActor<AROS2Node>();
-    ROS2Node->Namespace.Reset();
-    ROS2Node->Name = UENodeName;
-    ROS2Node->Init();
+    // MainROS2Node
+    MainROS2Node = GetWorld()->SpawnActor<AROS2Node>();
+    MainROS2Node->Namespace.Reset();
+    MainROS2Node->Name = MainROS2NodeName;
+    MainROS2Node->Init();
+
+    // MainSimState
+    check(MainSimState);
+
+    // MainROS2SimStateClient
+    MainROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(this, ROS2SimStateClientClass, TEXT("MainROS2SimStateClient"));
+    MainROS2SimStateClient->Init(MainROS2Node);
+    // NOTE: Inside [URRROS2SimulationStateClient], GameMode, which is server-only, is inaccessible
+    MainROS2SimStateClient->ServerSimState = MainSimState;
 
     // Create Clock publisher
     ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
-    ClockPublisher->InitializeWithROS2(ROS2Node);
-
-    // Simulation state
-    SimulationState = currentWorld->SpawnActor<ASimulationState>(SimulationStateClass);
-    SimulationState->Init(ROS2Node);
+    ClockPublisher->InitializeWithROS2(MainROS2Node);
 }

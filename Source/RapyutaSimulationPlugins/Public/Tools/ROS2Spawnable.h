@@ -25,11 +25,14 @@ class RAPYUTASIMULATIONPLUGINS_API UROS2Spawnable : public UActorComponent
     GENERATED_BODY()
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString ActorName;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString ActorNamespace;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    TArray<FString> ActorTags;
 
 public:
     /**
@@ -47,8 +50,12 @@ public:
     virtual void SetNamespace(const FString& InNamespace);
 
     UFUNCTION(BlueprintCallable)
+    virtual void AddTag(const FString& InTag);
+
+    UFUNCTION(BlueprintCallable)
     virtual FString GetName();
 
     UFUNCTION(BlueprintCallable)
     virtual FString GetNamespace();
+
 };
