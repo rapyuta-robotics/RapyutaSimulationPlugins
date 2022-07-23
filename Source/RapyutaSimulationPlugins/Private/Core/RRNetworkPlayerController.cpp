@@ -86,12 +86,12 @@ void ARRNetworkPlayerController::InitClientROS2()
     UWorld* currentWorld = GetWorld();
     ClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
     ClientROS2Node->Namespace.Reset();
-    // ClientROS2Node->Namespace = PlayerName;
+    // NOTE: ClientROS2Node's NameSpace will be set to [PlayerName] in [ServerSetPlayerName()]
     ClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
     ClientROS2Node->Init();
 
     // Init [ROS2SimStateClient] with [ClientROS2Node]
-    // Also [ROS2SimStateClient]'s ServerSimState is set here-in
+    check(ROS2SimStateClient);
     ROS2SimStateClient->Init(ClientROS2Node);
 
     // Create Clock publisher
@@ -102,12 +102,12 @@ void ARRNetworkPlayerController::InitClientROS2()
     UE_LOG(LogRapyutaCore, Warning, TEXT("ARRNetworkPlayerController ClientROS2Node[%s] created"), *ClientROS2Node->Name);
 }
 
-void ARRNetworkPlayerController::WaitForPawnPossess()
+void ARRNetworkPlayerController::WaitToPossessPawn()
 {
-#if 1    // RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore,
            Warning,
-           TEXT("ARRNetworkPlayerController::WaitForPawnPossess[%u:%s] %s NM_Client(%d) ROS2SimStateClient(%u)"),
+           TEXT("ARRNetworkPlayerController::WaitToPossessPawn[%u:%s] %s NM_Client(%d) ROS2SimStateClient(%u)"),
            this,
            *GetName(),
            *PlayerName,
@@ -217,7 +217,7 @@ void ARRNetworkPlayerController::BeginPlay()
     if (IsLocalController())
     {
         FTimerManager& timerManager = GetWorld()->GetTimerManager();
-        timerManager.SetTimer(PossessTimerHandle, this, &ARRNetworkPlayerController::WaitForPawnPossess, 1.f, true);
+        timerManager.SetTimer(PossessTimerHandle, this, &ARRNetworkPlayerController::WaitToPossessPawn, 1.f, true);
         timerManager.SetTimer(ClockRequestTimerHandle, this, &ARRNetworkPlayerController::RequestServerTime, 5.f, true);
     }
 }

@@ -22,6 +22,8 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
 
     // Set [networkPlayerController's ServerSimState] -> [GameMode's MainSimState],
     // which should have been instantiated in [InitSim()]
+    // NOTE: This could only be done here since from inside [networkPlayerController],
+    // GameMode, which is server-only, is inaccessible
     check(MainSimState);
     networkPlayerController->ROS2SimStateClient->ServerSimState = MainSimState;
     networkPlayerController->ServerSimState = MainSimState;

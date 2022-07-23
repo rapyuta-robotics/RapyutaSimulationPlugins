@@ -58,7 +58,7 @@ public:
     APawn* PossessedPawn = nullptr;
 
     UFUNCTION()
-    void WaitForPawnPossess();
+    void WaitToPossessPawn();
 
     UFUNCTION(Server, Reliable)
     void ServerPossessPawn(APawn* InPawn);
