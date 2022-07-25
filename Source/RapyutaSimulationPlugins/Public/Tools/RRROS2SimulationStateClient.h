@@ -41,7 +41,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2SimulationStateClient : public UActorC
 public:
     //! ROS2 node of each client's own in the network
     UPROPERTY(BlueprintReadOnly, Replicated)
-    AROS2Node* ClientROS2Node = nullptr;
+    AROS2Node* ServerROS2Node = nullptr;
 
     //! Handle to server's main sim state
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)

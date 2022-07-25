@@ -37,11 +37,11 @@ public:
 
     // ROS2
     UPROPERTY(Transient, Replicated)
-    AROS2Node* ClientROS2Node = nullptr;
+    AROS2Node* ServerROS2Node = nullptr;
 
     UPROPERTY(BlueprintReadOnly, Replicated)
-    URRROS2ClockPublisher* ClockPublisher = nullptr;
-    void InitClientROS2();
+    URRROS2ClockPublisher* ServerClockPublisher = nullptr;
+    void InitServerROS2();
 
     // SIM STATE & ROS2 STATE CLIENT
     //! Pointer to ServerSimState

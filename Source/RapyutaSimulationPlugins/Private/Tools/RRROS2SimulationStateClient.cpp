@@ -34,7 +34,7 @@ void URRROS2SimulationStateClient::OnComponentCreated()
 
 void URRROS2SimulationStateClient::Init(AROS2Node* InROS2Node)
 {
-    ClientROS2Node = InROS2Node;
+    ServerROS2Node = InROS2Node;
 
     // register delegates to node
     FServiceCallback GetEntityStateSrvCallback;
@@ -60,7 +60,7 @@ void URRROS2SimulationStateClient::Init(AROS2Node* InROS2Node)
 void URRROS2SimulationStateClient::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(URRROS2SimulationStateClient, ClientROS2Node);
+    DOREPLIFETIME(URRROS2SimulationStateClient, ServerROS2Node);
     DOREPLIFETIME(URRROS2SimulationStateClient, ServerSimState);
 }
 
