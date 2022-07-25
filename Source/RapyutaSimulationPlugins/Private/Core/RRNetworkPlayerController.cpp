@@ -52,6 +52,9 @@ void ARRNetworkPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
     DOREPLIFETIME(ARRNetworkPlayerController, ServerSimState);
     DOREPLIFETIME(ARRNetworkPlayerController, ROS2SimStateClient);
     DOREPLIFETIME(ARRNetworkPlayerController, PlayerName);
+
+    // After pawn possession, PossessedPawn & Super::Pawn are actually referring to the same one.
+    // But we could not setup replication for Pawn here due to its being private in Super
     DOREPLIFETIME(ARRNetworkPlayerController, PossessedPawn);
 }
 
@@ -75,7 +78,7 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
            ROS2SimStateClient);
 }
 
-void ARRNetworkPlayerController::InitServerROS2()
+void ARRNetworkPlayerController::InitSimStateClientROS2()
 {
     if (SimStateClientROS2Node || (false == IsNetMode(NM_Client)))
     {
@@ -99,7 +102,10 @@ void ARRNetworkPlayerController::InitServerROS2()
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
     SimStateClientClockPublisher->InitializeWithROS2(SimStateClientROS2Node);
 
-    UE_LOG(LogRapyutaCore, Warning, TEXT("ARRNetworkPlayerController ServerROS2Node[%s] created"), *SimStateClientROS2Node->Name);
+    UE_LOG(LogRapyutaCore,
+           Warning,
+           TEXT("ARRNetworkPlayerController SimStateClientROS2Node[%s] created"),
+           *SimStateClientROS2Node->Name);
 }
 
 void ARRNetworkPlayerController::WaitToPossessPawn()
@@ -120,12 +126,12 @@ void ARRNetworkPlayerController::WaitToPossessPawn()
         return;
     }
 
-    // 1- Init [ServerROS2] only once [ROS2SimStateClient] is created
+    // 1- Init [SimStateClientROS2Node] only once [ROS2SimStateClient] is created
     TInlineComponentArray<URRROS2SimulationStateClient*> simStateComponents(this);
     ROS2SimStateClient = (simStateComponents.Num() > 0) ? simStateComponents[0] : nullptr;
     if (ROS2SimStateClient)
     {
-        InitServerROS2();
+        InitSimStateClientROS2();
     }
 
     // 2- Keep waiting for a spawned entity with a matching player name in [ServerSimState->EntityList]

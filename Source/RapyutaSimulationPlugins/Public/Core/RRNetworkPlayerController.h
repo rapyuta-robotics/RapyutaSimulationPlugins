@@ -41,7 +41,7 @@ public:
 
     UPROPERTY(BlueprintReadOnly, Replicated)
     URRROS2ClockPublisher* SimStateClientClockPublisher = nullptr;
-    void InitServerROS2();
+    void InitSimStateClientROS2();
 
     // SIM STATE & ROS2 STATE CLIENT
     //! Pointer to ServerSimState
