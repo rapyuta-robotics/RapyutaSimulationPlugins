@@ -191,6 +191,11 @@ public:
 
 private:
     /**
+     * @brief Verify a function is called for server
+     */
+    bool VerifyIsServerCall(const FString& InFunctionName);
+
+    /**
      * @brief Spawn entity with tag & init nav surrogate
      * @param InROSSpawnRequest (FROSSpawnEntityRequest)
      * @param InEntityClass

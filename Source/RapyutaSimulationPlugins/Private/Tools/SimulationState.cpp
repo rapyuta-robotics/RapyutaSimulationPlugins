@@ -36,6 +36,19 @@ void ASimulationState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(ASimulationState, SpawnableEntityInfoList);
 }
 
+bool ASimulationState::VerifyIsServerCall(const FString& InFunctionName)
+{
+#if RAPYUTA_SIM_DEBUG
+    // Unclear why this check does not work yet?
+    if (IsNetMode(NM_Client))
+    {
+        UE_LOG(LogRapyutaCore, Fatal, TEXT("[%s] should be called by server only"), *InFunctionName);
+        return false;
+    }
+#endif
+    return true;
+}
+
 void ASimulationState::InitEntities()
 {
 #if RAPYUTA_SIM_DEBUG
@@ -194,6 +207,11 @@ bool ASimulationState::ServerCheckSetEntityStateRequest(const FROSSetEntityState
 
 void ASimulationState::ServerSetEntityState(const FROSSetEntityState_Request& InRequest)
 {
+    if (false == VerifyIsServerCall(TEXT("ServerSetEntityState")))
+    {
+        return;
+    }
+
     if (ServerCheckSetEntityStateRequest(InRequest))
     {
         FVector pos(InRequest.state_pose_position_x, InRequest.state_pose_position_y, InRequest.state_pose_position_z);
@@ -213,11 +231,20 @@ void ASimulationState::ServerSetEntityState(const FROSSetEntityState_Request& In
 
 bool ASimulationState::ServerCheckAttachRequest(const FROSAttach_Request& InRequest)
 {
+    if (false == VerifyIsServerCall(TEXT("ServerCheckAttachRequest")))
+    {
+        return false;
+    }
     return ((PreviousAttachRequest.name1 != InRequest.name1) || (PreviousAttachRequest.name2 != InRequest.name2));
 }
 
 void ASimulationState::ServerAttach(const FROSAttach_Request& InRequest)
 {
+    if (false == VerifyIsServerCall(TEXT("ServerAttach")))
+    {
+        return;
+    }
+
     if (ServerCheckAttachRequest(InRequest))
     {
         AActor* entity1 = Entities[InRequest.name1];
@@ -247,6 +274,11 @@ void ASimulationState::ServerAttach(const FROSAttach_Request& InRequest)
 
 bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InRequest)
 {
+    if (false == VerifyIsServerCall(TEXT("ServerCheckSpawnRequest")))
+    {
+        return false;
+    }
+
     if (PreviousSpawnRequest.Xml == InRequest.Xml && PreviousSpawnRequest.RobotNamespace == InRequest.RobotNamespace &&
         PreviousSpawnRequest.StateName == InRequest.StateName &&
         PreviousSpawnRequest.StatePosePositionX == InRequest.StatePosePositionX &&
@@ -267,6 +299,11 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
                                             const TSubclassOf<AActor>& InEntityClass,
                                             const FTransform& InEntityTransform)
 {
+    if (false == VerifyIsServerCall(TEXT("ServerSpawnEntity")))
+    {
+        return nullptr;
+    }
+
     // SpawnActorDeferred to set parameters beforehand
     AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(InEntityClass, InEntityTransform);
     if (newEntity == nullptr)
@@ -311,6 +348,11 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
 
 AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest)
 {
+    if (false == VerifyIsServerCall(TEXT("ServerSpawnEntity")))
+    {
+        return nullptr;
+    }
+
     AActor* newEntity = nullptr;
     if (ServerCheckSpawnRequest(InRequest))
     {
@@ -347,11 +389,20 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
 
 bool ASimulationState::ServerCheckDeleteRequest(const FROSDeleteEntity_Request& InRequest)
 {
+    if (false == VerifyIsServerCall(TEXT("ServerCheckDeleteRequest")))
+    {
+        return false;
+    }
     return (PreviousDeleteRequest.name != InRequest.name);
 }
 
 void ASimulationState::ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest)
 {
+    if (false == VerifyIsServerCall(TEXT("ServerDeleteEntity")))
+    {
+        return;
+    }
+
     if (ServerCheckDeleteRequest(InRequest))
     {
         AActor* Removed = Entities.FindAndRemoveChecked(InRequest.name);

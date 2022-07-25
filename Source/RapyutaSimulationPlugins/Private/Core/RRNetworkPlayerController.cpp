@@ -47,8 +47,8 @@ void ARRNetworkPlayerController::Tick(float DeltaSeconds)
 void ARRNetworkPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ARRNetworkPlayerController, ServerROS2Node);
-    DOREPLIFETIME(ARRNetworkPlayerController, ServerClockPublisher);
+    DOREPLIFETIME(ARRNetworkPlayerController, SimStateClientROS2Node);
+    DOREPLIFETIME(ARRNetworkPlayerController, SimStateClientClockPublisher);
     DOREPLIFETIME(ARRNetworkPlayerController, ServerSimState);
     DOREPLIFETIME(ARRNetworkPlayerController, ROS2SimStateClient);
     DOREPLIFETIME(ARRNetworkPlayerController, PlayerName);
@@ -77,29 +77,29 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
 
 void ARRNetworkPlayerController::InitServerROS2()
 {
-    if (ServerROS2Node || (false == IsNetMode(NM_Client)))
+    if (SimStateClientROS2Node || (false == IsNetMode(NM_Client)))
     {
         return;
     }
 
-    // Init [ServerROS2Node] & [ClockPublisher]
+    // Init SimStateClient's [ROS2Node] & [ClockPublisher]
     UWorld* currentWorld = GetWorld();
-    ServerROS2Node = currentWorld->SpawnActor<AROS2Node>();
-    ServerROS2Node->Namespace.Reset();
-    // NOTE: ServerROS2Node's NameSpace will be set to [PlayerName] in [ServerSetPlayerName()]
-    ServerROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
-    ServerROS2Node->Init();
+    SimStateClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
+    SimStateClientROS2Node->Namespace.Reset();
+    // NOTE: Its NameSpace will be set to [PlayerName] in [ServerSetPlayerName()]
+    SimStateClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
+    SimStateClientROS2Node->Init();
 
-    // Init [ROS2SimStateClient] with [ServerROS2Node]
+    // Init [ROS2SimStateClient] with [SimStateClientROS2Node]
     check(ROS2SimStateClient);
-    ROS2SimStateClient->Init(ServerROS2Node);
+    ROS2SimStateClient->Init(SimStateClientROS2Node);
 
     // Create Clock publisher
-    ServerClockPublisher = NewObject<URRROS2ClockPublisher>(this);
+    SimStateClientClockPublisher = NewObject<URRROS2ClockPublisher>(this);
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
-    ServerClockPublisher->InitializeWithROS2(ServerROS2Node);
+    SimStateClientClockPublisher->InitializeWithROS2(SimStateClientROS2Node);
 
-    UE_LOG(LogRapyutaCore, Warning, TEXT("ARRNetworkPlayerController ServerROS2Node[%s] created"), *ServerROS2Node->Name);
+    UE_LOG(LogRapyutaCore, Warning, TEXT("ARRNetworkPlayerController ServerROS2Node[%s] created"), *SimStateClientROS2Node->Name);
 }
 
 void ARRNetworkPlayerController::WaitToPossessPawn()
@@ -140,7 +140,7 @@ void ARRNetworkPlayerController::WaitToPossessPawn()
         for (auto& entity : ServerSimState->EntityList)
         {
             APawn* entityPawn = Cast<APawn>(entity);
-            if (IsValid(entityPawn) && (GetPawn() != entityPawn))
+            if (IsValid(entityPawn) && (nullptr == entityPawn->GetController()) && (GetPawn() != entityPawn))
             {
                 // 2.2- Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
                 ServerPossessPawn(entityPawn);
@@ -152,11 +152,10 @@ void ARRNetworkPlayerController::WaitToPossessPawn()
 
                 GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
 
-#if WITH_EDITOR
                 // 2.3- Set Controller's PlayerName -> entity's Name
                 PlayerName = entity->GetName();
                 ServerSetPlayerName(PlayerName);
-#endif
+
                 break;
             }
         }
@@ -196,18 +195,20 @@ void ARRNetworkPlayerController::BeginPlay()
 {
     Super::BeginPlay();
 
-#if !WITH_EDITOR
+    // Set PlayerName to [robotname] if specified as an Sim executor arg
     FString robotName;
     if (FParse::Value(FCommandLine::Get(), TEXT("robotname"), robotName))
     {
         // Remove '"' & '=' in Robot Name
         robotName = robotName.Replace(TEXT("="), TEXT("")).Replace(TEXT("\""), TEXT(""));
-        PlayerName = robotName;
-        ServerROS2Node->Namespace = robotName;
-        this->SetName(robotName);
-        ServerSetPlayerName(robotName);
+        if (false == robotName.IsEmpty())
+        {
+            PlayerName = robotName;
+            SimStateClientROS2Node->Namespace = robotName;
+            SetName(robotName);
+            ServerSetPlayerName(robotName);
+        }
     }
-#endif
 
     if (PlayerName == URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME)
     {
@@ -225,9 +226,9 @@ void ARRNetworkPlayerController::BeginPlay()
 void ARRNetworkPlayerController::ServerSetPlayerName_Implementation(const FString& InPlayerName)
 {
     PlayerName = InPlayerName;
-    if (ServerROS2Node)
+    if (SimStateClientROS2Node)
     {
-        ServerROS2Node->Namespace = InPlayerName;
+        SimStateClientROS2Node->Namespace = InPlayerName;
     }
 }
 
