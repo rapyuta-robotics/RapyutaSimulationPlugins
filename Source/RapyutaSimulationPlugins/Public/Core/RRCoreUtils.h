@@ -15,6 +15,7 @@
 #include "UnrealEd.h"
 #endif
 #include "Delegates/Delegate.h"
+#include "Engine/TextureLightProfile.h"
 #include "Engine/World.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
@@ -28,6 +29,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Core/RRTextureData.h"
 #include "Core/RRTypeUtils.h"
 
 #include "RRCoreUtils.generated.h"
@@ -125,6 +127,9 @@ public:
         TEXT(".tga"),    // ERRFileType::IMAGE_TGA
         TEXT(".exr"),    // ERRFileType::IMAGE_EXR
         TEXT(".hdr"),    // ERRFileType::IMAGE_HDR
+
+        // Light Profile
+        TEXT(".ies"),    // ERRFileType::LIGHT_PROFILE_IES
 
         // Meta data
         TEXT(".json"),    // ERRFileType::JSON
@@ -467,6 +472,14 @@ public:
                                      const TArray<ERRFileType>& InImageFileTypes,
                                      TArray<UTexture*>& OutImageTextureList,
                                      bool bIsLogged = false);
+
+    static FRRLightProfileData SLightProfileData;
+    static UTextureLightProfile* LoadIESProfile(const FString& InFullFilePath, const FString& InLightProfileName);
+    static bool LoadIESProfilesFromFolder(const FString& InFolderPath,
+                                          TArray<UTextureLightProfile*>& OutLightProfileList,
+                                          bool bIsLogged = false);
+
+    static TFunction<void(uint8*, const FUpdateTextureRegion2D*)> CleanupLightProfileData;
 
     static bool IsValidBitDepth(int32 InBitDepth)
     {

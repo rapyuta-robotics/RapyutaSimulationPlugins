@@ -85,6 +85,9 @@ enum class ERRFileType : uint8
     IMAGE_EXR,
     IMAGE_HDR,
 
+    // Light Profile
+    LIGHT_PROFILE_IES,
+
     // Meta Data
     JSON,
 

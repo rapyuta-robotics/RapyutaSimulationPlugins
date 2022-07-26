@@ -43,7 +43,7 @@ public class RapyutaSimulationPlugins : ModuleRules
         CppStandard = CppStandardVersion.Cpp17;
         bEnableExceptions = true;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "Renderer", "RHI", "PhysicsCore",  "XmlParser",
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "Renderer", "RHI", "PhysicsCore", "XmlParser", "IESFile",
                                                             "AIModule", "NavigationSystem", "TimeManagement", "Json",
                                                             "ChaosVehicles",
                                                             "ProceduralMeshComponent", "MeshDescription", "StaticMeshDescription", "MeshConversion",
