@@ -14,11 +14,12 @@ ARRNetworkGameState::ARRNetworkGameState()
 
 float ARRNetworkGameState::GetServerWorldTimeSeconds() const
 {
+    // The simulated TimeSeconds on the server is the first network player controller's local time
     APlayerController* pc = GetGameInstance()->GetFirstLocalPlayerController(GetWorld());
     if (pc && IsNetMode(NM_Client))
     {
         auto* networkPC = CastChecked<ARRNetworkPlayerController>(pc);
-        return networkPC->GetServerTime();
+        return networkPC->GetLocalTime();
     }
     else
     {

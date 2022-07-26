@@ -143,31 +143,30 @@ void ARRNetworkPlayerController::WaitToPossessPawn()
         }
 
         // 2.1- Possess any newly spawned entity that is not possessed yet by this controller
-        for (auto& entity : ServerSimState->EntityList)
+        APawn* matchingPawn = FindPawnToPossess();
+        if (IsValid(matchingPawn))
         {
-            APawn* entityPawn = Cast<APawn>(entity);
-            if (IsValid(entityPawn) && (nullptr == entityPawn->GetController()) && (GetPawn() != entityPawn))
-            {
-                // 2.2- Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
-                ServerPossessPawn(entityPawn);
-                PossessedPawn = entityPawn;
+            // 2.2- Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
+            ServerPossessPawn(matchingPawn);
 
-                // 2.3- ClientInitPawn
-                // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
-                ClientInitPawn(entity);
+            // 2.3- ClientInitPawn
+            // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
+            ClientInitPawn(matchingPawn);
 
-                GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
+            GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
 
-                // 2.3- Set Controller's PlayerName -> entity's Name
-                PlayerName = entity->GetName();
-                ServerSetPlayerName(PlayerName);
-
-                break;
-            }
+#if WITH_EDITOR
+            // 2.4- Set Controller's PlayerName -> entity's Name
+            PlayerName = matchingPawn->GetName();
+            ServerSetPlayerName(PlayerName);
+#else
+            // PlayerName is provided from [robotname] param passed to Sim client executor for to-be-possesed robot matching
+#endif
+            PossessedPawn = matchingPawn;
+            UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] possessed pawn %s"), *PlayerName, *PossessedPawn->GetName());
         }
-
 #if RAPYUTA_SIM_DEBUG
-        if (nullptr == GetPawn())
+        else
         {
             UE_LOG(LogRapyutaCore,
                    Warning,
@@ -176,6 +175,39 @@ void ARRNetworkPlayerController::WaitToPossessPawn()
         }
 #endif
     }
+}
+
+APawn* ARRNetworkPlayerController::FindPawnToPossess()
+{
+    APawn* matchingPawn = nullptr;
+#if WITH_EDITOR
+    for (auto& entity : ServerSimState->EntityList)
+    {
+        matchingPawn = Cast<APawn>(entity);
+        if (IsValid(matchingPawn) && (nullptr == matchingPawn->GetController()) && (GetPawn() != matchingPawn))
+        {
+            break;
+        }
+    }
+#else
+    for (AActor* entity : SimulationState->EntityList)
+    {
+        if (entity && (entity->GetName() == PlayerName))
+        {
+            matchingPawn = Cast<APawn>(entity);
+            if (!matchingPawn)
+            {
+                UE_LOG(LogRapyutaCore,
+                       Error,
+                       TEXT("Player [%s] found an entity of matching name %s BUT it's not a pawn. "
+                            "Please recheck [robotname] param value."),
+                       *PlayerName);
+            }
+            break;
+        }
+    }
+#endif
+    return matchingPawn;
 }
 
 void ARRNetworkPlayerController::ServerPossessPawn_Implementation(APawn* InPawn)
@@ -201,9 +233,10 @@ void ARRNetworkPlayerController::BeginPlay()
 {
     Super::BeginPlay();
 
+#if !WITH_EDITOR
     // Set PlayerName to [robotname] if specified as an Sim executor arg
     FString robotName;
-    if (FParse::Value(FCommandLine::Get(), TEXT("robotname"), robotName))
+    if (URRCoreUtils::GetCommandLineArgumentValue<FString>(CMDLINE_ARG_NET_CLIENT_ROBOT_NAME, robotName))
     {
         // Remove '"' & '=' in Robot Name
         robotName = robotName.Replace(TEXT("="), TEXT("")).Replace(TEXT("\""), TEXT(""));
@@ -215,6 +248,7 @@ void ARRNetworkPlayerController::BeginPlay()
             ServerSetPlayerName(robotName);
         }
     }
+#endif
 
     if (PlayerName == URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME)
     {
@@ -225,7 +259,7 @@ void ARRNetworkPlayerController::BeginPlay()
     {
         FTimerManager& timerManager = GetWorld()->GetTimerManager();
         timerManager.SetTimer(PossessTimerHandle, this, &ARRNetworkPlayerController::WaitToPossessPawn, 1.f, true);
-        timerManager.SetTimer(ClockRequestTimerHandle, this, &ARRNetworkPlayerController::RequestServerTime, 5.f, true);
+        timerManager.SetTimer(ClockRequestTimerHandle, this, &ARRNetworkPlayerController::RequestServerTimeUpdate, 5.f, true);
     }
 }
 
@@ -239,24 +273,24 @@ void ARRNetworkPlayerController::ServerSetPlayerName_Implementation(const FStrin
 }
 
 // Client Requesting Server to send time, Client Clock at time of request is sent as well
-void ARRNetworkPlayerController::ClientRequestClock_Implementation(float InClientRequestTime)
+void ARRNetworkPlayerController::ClientRequestLocalClockUpdate_Implementation(float InClientRequestTime)
 {
     float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-    ServerSendClock(serverCurrentTime, InClientRequestTime);
+    ServerSendLocalClockUpdate(serverCurrentTime, InClientRequestTime);
 }
 
-void ARRNetworkPlayerController::ServerSendClock_Implementation(float InServerCurrentTime, float InClientRequestTime)
+void ARRNetworkPlayerController::ServerSendLocalClockUpdate_Implementation(float InServerCurrentTime, float InClientRequestTime)
 {
-    float clientRequestRoundTrip = ServerTime - InClientRequestTime;
+    float clientRequestRoundTrip = LocalTime - InClientRequestTime;
     float latencyAdjustedTime = InServerCurrentTime + (clientRequestRoundTrip * 0.5f);
-    ServerTime = latencyAdjustedTime;
+    LocalTime = latencyAdjustedTime;
 }
 
-void ARRNetworkPlayerController::RequestServerTime()
+void ARRNetworkPlayerController::RequestServerTimeUpdate()
 {
     if (IsLocalController())
     {
-        ClientRequestClock(ServerTime);
+        ClientRequestLocalClockUpdate(LocalTime);
     }
 }
 
@@ -264,14 +298,15 @@ void ARRNetworkPlayerController::UpdateLocalClock(float InDeltaSeconds)
 {
     if (IsLocalController())
     {
-        ServerTime += InDeltaSeconds;
+        LocalTime += InDeltaSeconds;
     }
 }
 
 void ARRNetworkPlayerController::ReceivedPlayer()
 {
+    Super::ReceivedPlayer();
     if (IsLocalController())
     {
-        ClientRequestClock(ServerTime);
+        ClientRequestLocalClockUpdate(LocalTime);
     }
 }

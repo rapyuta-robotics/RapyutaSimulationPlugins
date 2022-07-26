@@ -31,6 +31,7 @@ class RAPYUTASIMULATIONPLUGINS_API ARRNetworkPlayerController : public APlayerCo
     GENERATED_BODY()
 public:
     ARRNetworkPlayerController();
+    static constexpr const TCHAR* CMDLINE_ARG_NET_CLIENT_ROBOT_NAME = TEXT("robotname");
 
     virtual void Tick(float DeltaSeconds) override;
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -41,6 +42,9 @@ public:
 
     UPROPERTY(BlueprintReadOnly, Replicated)
     URRROS2ClockPublisher* SimStateClientClockPublisher = nullptr;
+    /**
+     * @brief Init SimStateClient's ROS2 (Node, ClockPublisher, etc.)
+     */
     void InitSimStateClientROS2();
 
     // SIM STATE & ROS2 STATE CLIENT
@@ -50,19 +54,33 @@ public:
     //! ROS2 Sim state client
     UPROPERTY(Transient, Replicated)
     URRROS2SimulationStateClient* ROS2SimStateClient = nullptr;
+    /**
+     * @brief Create ROS2SimStateClient without initializing yet
+     */
     void CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass);
 
     // POSSESSED PAWN
     //! Pawn that has been possessed by this controller
     UPROPERTY(Transient, Replicated)
     APawn* PossessedPawn = nullptr;
+    /**
+     * @brief Search for the targeted pawn to possess
+     */
+    APawn* FindPawnToPossess();
 
+    /**
+     * @brief Wait to possess the targeted pawn
+     */
     UFUNCTION()
     void WaitToPossessPawn();
 
+    /**
+     * @brief Possess a pawn on server
+     */
     UFUNCTION(Server, Reliable)
     void ServerPossessPawn(APawn* InPawn);
 
+    //! Timer handle used by WaitToPossessPawn()
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle PossessTimerHandle;
 
@@ -71,31 +89,50 @@ public:
     void ClientInitPawn(AActor* InActor);
 
     // PLAYER
-    //! Controller's PlayerName
+    //! Controller's PlayerName, taken from [robotname] param in Engine build.
+    //! In Editor build, it will be automatically set from #PossessedPawn's name upon possession
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString PlayerName;
 
+    /**
+     * @brief Possess a pawn on server
+     */
     UFUNCTION(Server, Reliable)
     void ServerSetPlayerName(const FString& InPlayerName);
 
     // LOCAL CLOCK
+    //! Timer handle used by RequestServerTime()
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle ClockRequestTimerHandle;
 
+    //! Local clock time
     UPROPERTY()
-    float ServerTime = 0.0f;
-    virtual float GetServerTime()
+    float LocalTime = 0.0f;
+    virtual float GetLocalTime()
     {
-        return ServerTime;
+        return LocalTime;
     }
-    void RequestServerTime();
+    /**
+     * @brief Request server time update
+     */
+    void RequestServerTimeUpdate();
 
+    /**
+     * @brief TODO
+     */
     UFUNCTION(Client, Reliable)
-    void ServerSendClock(float InClientRequestTime, float InServerCurrentTime);
+    void ServerSendLocalClockUpdate(float InClientRequestTime, float InServerCurrentTime);
 
+    /**
+     * @brief TODO
+     */
     UFUNCTION(Server, Reliable)
-    void ClientRequestClock(float InClientRequestTime);
+    void ClientRequestLocalClockUpdate(float InClientRequestTime);
 
+    /**
+     * @brief Increase local clock's time by delta seconds
+     * @param InDeltaSeconds
+     */
     void UpdateLocalClock(float InDeltaSeconds);
 
 protected:
