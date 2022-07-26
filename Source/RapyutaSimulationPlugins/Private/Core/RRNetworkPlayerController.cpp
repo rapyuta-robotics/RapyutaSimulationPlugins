@@ -190,9 +190,9 @@ APawn* ARRNetworkPlayerController::FindPawnToPossess()
         }
     }
 #else
-    for (AActor* entity : SimulationState->EntityList)
+    for (AActor* entity : ServerSimState->EntityList)
     {
-        if (entity && (entity->GetName() == PlayerName))
+        if (IsValid(entity) && (entity->GetName() == PlayerName))
         {
             matchingPawn = Cast<APawn>(entity);
             if (!matchingPawn)
