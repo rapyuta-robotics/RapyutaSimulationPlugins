@@ -149,7 +149,7 @@ void ARRRobotBaseVehicle::ClientSetAngularVel_Implementation(const FVector& InAn
                Warning,
                TEXT("PLAYER [%s] ClientSetAngularVel %s"),
                *PlayerController->PlayerState->GetPlayerName(),
-               *InLinearVel.ToString());
+               *InAngularVel.ToString());
 #endif
         RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
     }
