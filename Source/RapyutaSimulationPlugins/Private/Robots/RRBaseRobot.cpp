@@ -35,8 +35,6 @@ void ARRBaseRobot::SetupDefault()
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
     URRUObjectUtils::SetupDefaultRootComponent(this);
-    bReplicates = true;
-    bAlwaysRelevant = true;
 
     // By default, turn off to be possessed manually by possible a Network player controller.
     // In case of non-NetworkGameMode, AI Controller could possess manually later.

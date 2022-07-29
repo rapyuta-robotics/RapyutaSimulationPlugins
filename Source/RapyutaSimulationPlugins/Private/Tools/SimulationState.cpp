@@ -277,13 +277,13 @@ bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InR
         return false;
     }
 
-    if (PreviousSpawnEntityRequest.Xml == InRequest.Xml && PreviousSpawnEntityRequest.RobotNamespace == InRequest.RobotNamespace &&
-        PreviousSpawnEntityRequest.StateName == InRequest.StateName &&
-        PreviousSpawnEntityRequest.StatePosePositionX == InRequest.StatePosePositionX &&
-        PreviousSpawnEntityRequest.StatePosePositionY == InRequest.StatePosePositionY &&
-        PreviousSpawnEntityRequest.StatePosePositionZ == InRequest.StatePosePositionZ &&
-        PreviousSpawnEntityRequest.StatePoseOrientation == InRequest.StatePoseOrientation &&
-        PreviousSpawnEntityRequest.StateReferenceFrame == InRequest.StateReferenceFrame)
+    if (PrevSpawnEntityRequest.Xml == InRequest.Xml && PrevSpawnEntityRequest.RobotNamespace == InRequest.RobotNamespace &&
+        PrevSpawnEntityRequest.StateName == InRequest.StateName &&
+        PrevSpawnEntityRequest.StatePosePositionX == InRequest.StatePosePositionX &&
+        PrevSpawnEntityRequest.StatePosePositionY == InRequest.StatePosePositionY &&
+        PrevSpawnEntityRequest.StatePosePositionZ == InRequest.StatePosePositionZ &&
+        PrevSpawnEntityRequest.StatePoseOrientation == InRequest.StatePoseOrientation &&
+        PrevSpawnEntityRequest.StateReferenceFrame == InRequest.StateReferenceFrame)
     {
         return false;
     }
@@ -313,13 +313,9 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     UROS2Spawnable* spawnableComponent = NewObject<UROS2Spawnable>(newEntity, TEXT("ROS2 Spawn Parameters"));
     spawnableComponent->RegisterComponent();
     spawnableComponent->InitializeParameters(InROSSpawnRequest);
-    spawnableComponent->SetIsReplicated(true);
 
     newEntity->AddInstanceComponent(spawnableComponent);
     newEntity->Rename(*InROSSpawnRequest.StateName);
-    newEntity->SetReplicates(true);
-    // Needs to be set to relevant otherwise it won't consistantly replicate
-    newEntity->bAlwaysRelevant = true;
 #if WITH_EDITOR
     newEntity->SetActorLabel(*InROSSpawnRequest.StateName);
 #endif
@@ -381,7 +377,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
             UE_LOG(LogRapyutaCore, Error, TEXT("Entity spawning failed - [%s] given name actor already exists!"), *entityName);
         }
     }
-    PreviousSpawnEntityRequest = InRequest;
+    PrevSpawnEntityRequest = InRequest;
     return newEntity;
 }
 

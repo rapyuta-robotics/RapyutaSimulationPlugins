@@ -64,6 +64,12 @@ public:
      */
     ARRBaseActor(const FObjectInitializer& ObjectInitializer);
 
+    /**
+     * @brief Initialize default components being configurable in child BP classes.
+     * Could only be called in constructor.
+     */
+    void SetupDefaultBase();
+
     TSharedPtr<FRRActorSpawnInfo> ActorInfo = nullptr;
 
     static int8 SSceneInstanceId;

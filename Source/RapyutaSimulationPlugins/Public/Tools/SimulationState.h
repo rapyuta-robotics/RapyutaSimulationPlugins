@@ -150,7 +150,7 @@ public:
 
     //! Cached the previous [SpawnEntity] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSSpawnEntityRequest PreviousSpawnEntityRequest;
+    FROSSpawnEntityRequest PrevSpawnEntityRequest;
 
     /**
      * @brief Check delete-entity-request for duplication on Server

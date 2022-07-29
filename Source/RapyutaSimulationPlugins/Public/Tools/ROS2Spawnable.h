@@ -4,7 +4,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -34,11 +33,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TArray<FString> ActorTags;
 
-public:
     /**
      * @brief Set Actor name and ROS2 namespace from SpawnEntity service request.
      * @sa [ue_msgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
-     * @param InRequest 
+     * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
     virtual void InitializeParameters(const FROSSpawnEntityRequest& InRequest);
@@ -58,4 +56,6 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual FString GetNamespace();
 
+protected:
+    virtual void OnComponentCreated() override;
 };
