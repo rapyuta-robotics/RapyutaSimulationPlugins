@@ -64,7 +64,8 @@ void ASimulationState::InitEntities()
     }
 
     // NOTE: [SpawnableEntityInfoList] is a TArray<> thus replicatable, which is not supported for [SpawnableEntities] as a TMap
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ASimulationState::GetSpawnableEntityInfoList, 1.0f, true);
+    GetWorld()->GetTimerManager().SetTimer(
+        FetchEntityListTimerHandle, this, &ASimulationState::GetSpawnableEntityInfoList, 1.0f, true);
 }
 
 void ASimulationState::AddEntity(AActor* InEntity)
@@ -93,7 +94,7 @@ void ASimulationState::AddEntity(AActor* InEntity)
 }
 
 // Work around to replicating Entities and EntitiesWithTag since TMaps cannot be replicated
-void ASimulationState::OnRep_Entity()
+void ASimulationState::OnRep_EntityList()
 {
     for (AActor* entity : EntityList)
     {
@@ -117,7 +118,7 @@ void ASimulationState::OnRep_Entity()
 
         for (const auto& tag : entity->Tags)
         {
-            AddTaggedEntities(entity, tag);
+            AddTaggedEntity(entity, tag);
         }
 
         UROS2Spawnable* EntitySpawnParam = entity->FindComponentByClass<UROS2Spawnable>();
@@ -126,13 +127,13 @@ void ASimulationState::OnRep_Entity()
             entity->Rename(*EntitySpawnParam->GetName());
             for (const auto& tag : EntitySpawnParam->ActorTags)
             {
-                AddTaggedEntities(entity, FName(tag));
+                AddTaggedEntity(entity, FName(tag));
             }
         }
     }
 }
 
-void ASimulationState::OnRep_SpawnableEntity()
+void ASimulationState::OnRep_SpawnableEntityInfoList()
 {
     for (const auto& entityInfo : SpawnableEntityInfoList)
     {
@@ -140,7 +141,7 @@ void ASimulationState::OnRep_SpawnableEntity()
     }
 }
 
-void ASimulationState::AddTaggedEntities(AActor* Entity, const FName& InTag)
+void ASimulationState::AddTaggedEntity(AActor* Entity, const FName& InTag)
 {
     if (EntitiesWithTag.Contains(InTag))
     {
@@ -184,18 +185,18 @@ void ASimulationState::GetSpawnableEntityInfoList()
     }
     if (SpawnableEntityInfoList.Num() > 0)
     {
-        GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+        GetWorld()->GetTimerManager().ClearTimer(FetchEntityListTimerHandle);
     }
 }
 
 bool ASimulationState::ServerCheckSetEntityStateRequest(const FROSSetEntityState_Request& InRequest)
 {
-    if (PreviousSetEntityStateRequest.state_name == InRequest.state_name &&
-        PreviousSetEntityStateRequest.state_reference_frame == InRequest.state_reference_frame &&
-        PreviousSetEntityStateRequest.state_pose_position_x == InRequest.state_pose_position_x &&
-        PreviousSetEntityStateRequest.state_pose_position_y == InRequest.state_pose_position_y &&
-        PreviousSetEntityStateRequest.state_pose_position_z == InRequest.state_pose_position_z &&
-        PreviousSetEntityStateRequest.state_pose_orientation == InRequest.state_pose_orientation)
+    if (PrevSetEntityStateRequest.state_name == InRequest.state_name &&
+        PrevSetEntityStateRequest.state_reference_frame == InRequest.state_reference_frame &&
+        PrevSetEntityStateRequest.state_pose_position_x == InRequest.state_pose_position_x &&
+        PrevSetEntityStateRequest.state_pose_position_y == InRequest.state_pose_position_y &&
+        PrevSetEntityStateRequest.state_pose_position_z == InRequest.state_pose_position_z &&
+        PrevSetEntityStateRequest.state_pose_orientation == InRequest.state_pose_orientation)
     {
         return false;
     }
@@ -226,7 +227,7 @@ void ASimulationState::ServerSetEntityState(const FROSSetEntityState_Request& In
         Entities[InRequest.state_name]->SetActorTransform(worldTransf);
     }
 
-    PreviousSetEntityStateRequest = InRequest;
+    PrevSetEntityStateRequest = InRequest;
 }
 
 bool ASimulationState::ServerCheckAttachRequest(const FROSAttach_Request& InRequest)
@@ -235,7 +236,7 @@ bool ASimulationState::ServerCheckAttachRequest(const FROSAttach_Request& InRequ
     {
         return false;
     }
-    return ((PreviousAttachRequest.name1 != InRequest.name1) || (PreviousAttachRequest.name2 != InRequest.name2));
+    return ((PrevAttachEntityRequest.name1 != InRequest.name1) || (PrevAttachEntityRequest.name2 != InRequest.name2));
 }
 
 void ASimulationState::ServerAttach(const FROSAttach_Request& InRequest)
@@ -269,7 +270,7 @@ void ASimulationState::ServerAttach(const FROSAttach_Request& InRequest)
                *InRequest.name2);
     }
 
-    PreviousAttachRequest = InRequest;
+    PrevAttachEntityRequest = InRequest;
 }
 
 bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InRequest)
@@ -279,13 +280,13 @@ bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InR
         return false;
     }
 
-    if (PreviousSpawnRequest.Xml == InRequest.Xml && PreviousSpawnRequest.RobotNamespace == InRequest.RobotNamespace &&
-        PreviousSpawnRequest.StateName == InRequest.StateName &&
-        PreviousSpawnRequest.StatePosePositionX == InRequest.StatePosePositionX &&
-        PreviousSpawnRequest.StatePosePositionY == InRequest.StatePosePositionY &&
-        PreviousSpawnRequest.StatePosePositionZ == InRequest.StatePosePositionZ &&
-        PreviousSpawnRequest.StatePoseOrientation == InRequest.StatePoseOrientation &&
-        PreviousSpawnRequest.StateReferenceFrame == InRequest.StateReferenceFrame)
+    if (PreviousSpawnEntityRequest.Xml == InRequest.Xml && PreviousSpawnEntityRequest.RobotNamespace == InRequest.RobotNamespace &&
+        PreviousSpawnEntityRequest.StateName == InRequest.StateName &&
+        PreviousSpawnEntityRequest.StatePosePositionX == InRequest.StatePosePositionX &&
+        PreviousSpawnEntityRequest.StatePosePositionY == InRequest.StatePosePositionY &&
+        PreviousSpawnEntityRequest.StatePosePositionZ == InRequest.StatePosePositionZ &&
+        PreviousSpawnEntityRequest.StatePoseOrientation == InRequest.StatePoseOrientation &&
+        PreviousSpawnEntityRequest.StateReferenceFrame == InRequest.StateReferenceFrame)
     {
         return false;
     }
@@ -383,7 +384,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
             UE_LOG(LogRapyutaCore, Error, TEXT("Entity spawning failed - [%s] given name actor already exists!"), *entityName);
         }
     }
-    PreviousSpawnRequest = InRequest;
+    PreviousSpawnEntityRequest = InRequest;
     return newEntity;
 }
 
@@ -393,7 +394,7 @@ bool ASimulationState::ServerCheckDeleteRequest(const FROSDeleteEntity_Request& 
     {
         return false;
     }
-    return (PreviousDeleteRequest.name != InRequest.name);
+    return (PrevDeleteEntityRequest.name != InRequest.name);
 }
 
 void ASimulationState::ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest)
@@ -408,5 +409,5 @@ void ASimulationState::ServerDeleteEntity(const FROSDeleteEntity_Request& InRequ
         AActor* Removed = Entities.FindAndRemoveChecked(InRequest.name);
         Removed->Destroy();
     }
-    PreviousDeleteRequest = InRequest;
+    PrevDeleteEntityRequest = InRequest;
 }

@@ -95,48 +95,73 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void InitEntities();
 
+    //! Cached the previous [GetEntityState] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSGetEntityState_Request PreviousGetEntityStateRequest;
+    FROSGetEntityState_Request PrevGetEntityStateRequest;
 
-    // Set Entity Functions
+    /**
+     * @brief Check set-entity-state-request for duplication on server
+     */
     UFUNCTION(BlueprintCallable)
     bool ServerCheckSetEntityStateRequest(const FROSSetEntityState_Request& InRequest);
 
+    /**
+     * @brief Set Entity state on server
+     */
     UFUNCTION(BlueprintCallable)
     void ServerSetEntityState(const FROSSetEntityState_Request& InRequest);
 
+    //! Cached the previous [SetEntityState] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSSetEntityState_Request PreviousSetEntityStateRequest;
+    FROSSetEntityState_Request PrevSetEntityStateRequest;
 
-    // Attach Functions
+    /**
+     * @brief Check entity-attach request for duplication on server
+     */
     UFUNCTION(BlueprintCallable)
     bool ServerCheckAttachRequest(const FROSAttach_Request& InRequest);
 
+    /**
+     * @brief Attach an entity to another on Server
+     */
     UFUNCTION(BlueprintCallable)
     void ServerAttach(const FROSAttach_Request& Request);
 
+    //! Cached the previous [Attach] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSAttach_Request PreviousAttachRequest;
+    FROSAttach_Request PrevAttachEntityRequest;
 
-    // Spawn Entity Functions
+    /**
+     * @brief Check entity-spawn-request for duplication on Server
+     */
     UFUNCTION(BlueprintCallable)
     bool ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InRequest);
 
+    /**
+     * @brief Spawn entity on Server
+     */
     UFUNCTION(BlueprintCallable)
     AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest);
 
+    //! Cached the previous [SpawnEntity] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSSpawnEntityRequest PreviousSpawnRequest;
+    FROSSpawnEntityRequest PreviousSpawnEntityRequest;
 
-    // Delete Entity Functions
+    /**
+     * @brief Check delete-entity-request for duplication on Server
+     */
     UFUNCTION(BlueprintCallable)
     bool ServerCheckDeleteRequest(const FROSDeleteEntity_Request& InRequest);
 
+    /**
+     * @brief Delete entity on Server
+     */
     UFUNCTION(BlueprintCallable)
     void ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest);
 
+    //! Cached the previous [DeleteEntity] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSDeleteEntity_Request PreviousDeleteRequest;
+    FROSDeleteEntity_Request PrevDeleteEntityRequest;
 
     UFUNCTION(BlueprintCallable)
     /**
@@ -146,25 +171,19 @@ public:
      */
     void AddEntity(AActor* InEntity);
 
+    /**
+     * @brief Add an entity with tag
+     */
     UFUNCTION(BlueprintCallable)
-    void OnRep_Entity();
+    void AddTaggedEntity(AActor* InEntity, const FName& InTag);
 
-    UFUNCTION(BlueprintCallable)
-    void OnRep_SpawnableEntity();
-
-    UFUNCTION(BlueprintCallable)
-    void AddTaggedEntities(AActor* InEntity, const FName& InTag);
-
-    UFUNCTION(BlueprintCallable)
     /**
      * @brief Add Entity Types to #SpawnableEntities which can be spawn by SpawnEntity ROS2 service.
      * BP callable thus the param could not be const&
      * @param InSpawnableEntityTypes
      */
-    void AddSpawnableEntityTypes(TMap<FString, TSubclassOf<AActor>> InSpawnableEntityTypes);
-
     UFUNCTION(BlueprintCallable)
-    void GetSpawnableEntityInfoList();
+    void AddSpawnableEntityTypes(TMap<FString, TSubclassOf<AActor>> InSpawnableEntityTypes);
 
     //! All existing entities
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -175,19 +194,37 @@ public:
     TMap<FName, FRREntities> EntitiesWithTag;
 
     //! Replicatable copy of #Entities
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Entity)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_EntityList)
     TArray<AActor*> EntityList;
+    /**
+     * @brief Callback when #EntityList is replicated
+     */
+    UFUNCTION(BlueprintCallable)
+    void OnRep_EntityList();
 
     //! Spawnable entity types for SpawnEntity ROS2 service.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntityTypes;
 
     //! Replicatable Copy of #SpawnableEntityTypes
-    UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SpawnableEntity)
+    UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SpawnableEntityInfoList)
     TArray<FRREntityInfo> SpawnableEntityInfoList;
 
+    /**
+     * @brief Fetch #SpawnableEntityInfoList
+     */
+    UFUNCTION(BlueprintCallable)
+    void GetSpawnableEntityInfoList();
+
+    /**
+     * @brief Callback when #SpawnableEntityInfoList is replicated
+     */
+    UFUNCTION(BlueprintCallable)
+    void OnRep_SpawnableEntityInfoList();
+
+    //! Timer handle to fetch #SpawnableEntityInfoList
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FTimerHandle TimerHandle;
+    FTimerHandle FetchEntityListTimerHandle;
 
 private:
     /**
