@@ -36,6 +36,7 @@ void ARRBaseRobot::SetupDefault()
     // classes will automatically get invalidated.
     URRUObjectUtils::SetupDefaultRootComponent(this);
     bReplicates = true;
+    bAlwaysRelevant = true;
 
     // By default, turn off to be possessed manually by possible a Network player controller.
     // In case of non-NetworkGameMode, AI Controller could possess manually later.
@@ -51,7 +52,12 @@ void ARRBaseRobot::PostInitializeComponents()
 {
     if (ROS2InterfaceClass)
     {
-        CreateROS2Interface();
+        // Since [ROS2Interface] instance itself is not replicated,
+        // This is for standalone-server only
+        if (IsNetMode(NM_Standalone))
+        {
+            CreateROS2Interface();
+        }
     }
     else
     {

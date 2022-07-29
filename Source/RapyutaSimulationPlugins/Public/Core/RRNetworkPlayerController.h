@@ -138,4 +138,5 @@ public:
 protected:
     virtual void BeginPlay() override;
     virtual void ReceivedPlayer() override;
+    virtual void AcknowledgePossession(APawn* InPawn) override;
 };

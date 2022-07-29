@@ -38,14 +38,11 @@ void ASimulationState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 bool ASimulationState::VerifyIsServerCall(const FString& InFunctionName)
 {
-#if RAPYUTA_SIM_DEBUG
-    // Unclear why this check does not work yet?
     if (IsNetMode(NM_Client))
     {
         UE_LOG(LogRapyutaCore, Fatal, TEXT("[%s] should be called by server only"), *InFunctionName);
         return false;
     }
-#endif
     return true;
 }
 
@@ -60,7 +57,7 @@ void ASimulationState::InitEntities()
     for (TActorIterator<AActor> It(GetWorld(), AActor::StaticClass()); It; ++It)
     {
         AActor* actor = *It;
-        AddEntity(actor);
+        ServerAddEntity(actor);
     }
 
     // NOTE: [SpawnableEntityInfoList] is a TArray<> thus replicatable, which is not supported for [SpawnableEntities] as a TMap
@@ -68,7 +65,7 @@ void ASimulationState::InitEntities()
         FetchEntityListTimerHandle, this, &ASimulationState::GetSpawnableEntityInfoList, 1.0f, true);
 }
 
-void ASimulationState::AddEntity(AActor* InEntity)
+void ASimulationState::ServerAddEntity(AActor* InEntity)
 {
     if (false == IsValid(InEntity))
     {
@@ -343,7 +340,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     UGameplayStatics::FinishSpawningActor(newEntity, InEntityTransform);
 
     // Add to [Entities]
-    AddEntity(newEntity);
+    ServerAddEntity(newEntity);
     return newEntity;
 }
 

@@ -90,7 +90,7 @@ void ARRNetworkPlayerController::InitSimStateClientROS2()
     SimStateClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
     SimStateClientROS2Node->Namespace.Reset();
     // NOTE: Its NameSpace will be set to [PlayerName] in [ServerSetPlayerName()]
-    SimStateClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
+    SimStateClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *GetName());
     SimStateClientROS2Node->Init();
 
     // Init [ROS2SimStateClient] with [SimStateClientROS2Node]
@@ -148,11 +148,10 @@ void ARRNetworkPlayerController::WaitToPossessPawn()
         {
             // 2.2- Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
             ServerPossessPawn(matchingPawn);
+            // NOTE: [ClientInitPawn(matchingPawn)] will be done at its own Client side only at [AcknowledgePossession()],
+            // when it is sure it has been possessed by Server
 
-            // 2.3- ClientInitPawn
-            // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
-            ClientInitPawn(matchingPawn);
-
+            // 2.3 - Stop [PossessTimerHandle]
             GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
 
 #if WITH_EDITOR
@@ -213,13 +212,29 @@ APawn* ARRNetworkPlayerController::FindPawnToPossess()
 void ARRNetworkPlayerController::ServerPossessPawn_Implementation(APawn* InPawn)
 {
     Possess(InPawn);
-    // NOTE: Logging PlayerName, InPawn->GetName() here might crash
+}
+
+void ARRNetworkPlayerController::AcknowledgePossession(APawn* InPawn)
+{
+    // NOTE: [AcknowledgePossession] runs on Client only
+    Super::AcknowledgePossession(InPawn);
+
+    if (false == PlayerName.IsEmpty())
+    {
+        UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] AcknowledgePossession %s"), *PlayerName, *InPawn->GetName());
+        // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
+        ClientInitPawn(InPawn);
+    }
 }
 
 void ARRNetworkPlayerController::ClientInitPawn_Implementation(AActor* InActor)
 {
-    if (ARRBaseRobot* robot = Cast<ARRBaseRobot>(InActor))
+    ARRBaseRobot* robot = Cast<ARRBaseRobot>(InActor);
+    if (robot)
     {
+        // Instantiate ROS2 interface, of which the instance is not replicated, for each possessed robot
+        verify(nullptr == robot->ROS2Interface);
+        robot->CreateROS2Interface();
         robot->ROS2Interface->Initialize(robot);
     }
 

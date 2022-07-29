@@ -118,7 +118,7 @@ public:
     UPROPERTY(BlueprintReadWrite, Replicated)
     FString JointsCmdTopicName = TEXT("joint_states");
 
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(BlueprintReadWrite, Replicated)
     bool bWarnAboutMissingLink = true;
 
 protected:

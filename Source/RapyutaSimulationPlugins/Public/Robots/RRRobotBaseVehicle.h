@@ -111,16 +111,22 @@ public:
     virtual void SetAngularVel(const FVector& InAngularVel);
 
     /**
-     * @brief Set server linear velocity  to #RobotVehicleMoveComponent
+     * @brief Set server linear velocity to #RobotVehicleMoveComponent
+     * @param InClientTimeStamp
+     * @param InClientRobotPosition
+     * @param InLinearVel
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void ServerSetLinearVel(const FVector& InLinearVel);
+    virtual void ServerSetLinearVel(float InClientTimeStamp, const FVector& InClientRobotPosition, const FVector& InLinearVel);
 
     /**
-     * @brief Set server angular velocity  to #RobotVehicleMoveComponent
+     * @brief Set server angular velocity to #RobotVehicleMoveComponent
+     * @param InClientTimeStamp
+     * @param InClientRobotRotation
+     * @param InAngularVel
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void ServerSetAngularVel(const FVector& InAngularVel);
+    virtual void ServerSetAngularVel(float InClientTimeStamp, const FRotator& InClientRobotRotation, const FVector& InAngularVel);
 
     /**
      * @brief Set client linear velocity to #RobotVehicleMoveComponent

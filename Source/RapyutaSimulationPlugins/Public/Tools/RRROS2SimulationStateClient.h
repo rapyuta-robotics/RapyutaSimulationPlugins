@@ -13,6 +13,12 @@
 
 // rclUE
 #include "ROS2Node.h"
+#include "Srvs/ROS2AttachSrv.h"
+#include "Srvs/ROS2DeleteEntitySrv.h"
+#include "Srvs/ROS2GetEntityStateSrv.h"
+#include "Srvs/ROS2SetEntityStateSrv.h"
+#include "Srvs/ROS2SpawnEntitiesSrv.h"
+#include "Srvs/ROS2SpawnEntitySrv.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
@@ -89,6 +95,13 @@ public:
     void SetEntityStateSrv(UROS2GenericSrv* InService);
 
     /**
+     * @brief RPC call to Server's SetEntityState
+     * @param InRequest
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    void ServerSetEntityState(const FROSSetEntityState_Request& InRequest);
+
+    /**
      * @brief Callback function of Attach ROS2 service.
      * Attach actors if those are not attached and detach actors if those are attached.
      * @param Service
@@ -96,6 +109,13 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     void AttachSrv(UROS2GenericSrv* InService);
+
+    /**
+     * @brief RPC call to Server's Attach
+     * @param InRequest
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    void ServerAttach(const FROSAttach_Request& InRequest);
 
     /**
      * @brief Callback function of SpawnEntity ROS2 service.
@@ -114,12 +134,33 @@ public:
     void SpawnEntitiesSrv(UROS2GenericSrv* InService);
 
     /**
+     * @brief RPC call to Server's SpawnEntity
+     * @param InRequest
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    void ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest);
+
+    /**
      * @brief Callback function of DeleteEntity ROS2 service.
      * @param Service
      * @sa [ue_mgs/DeleteEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/DeleteEntity.srv)
      */
     UFUNCTION(BlueprintCallable)
     void DeleteEntitySrv(UROS2GenericSrv* InService);
+
+    /**
+     * @brief RPC call to Server's DeleteEntity
+     * @param InRequest
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    void ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest);
+
+    /**
+     * @brief RPC call to Server's AddEntity
+     * @param InEntity
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    void ServerAddEntity(AActor* InEntity);
 
 protected:
     virtual void OnComponentCreated() override;

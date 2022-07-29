@@ -107,6 +107,7 @@ public:
 
     /**
      * @brief Set Entity state on server
+     * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
     void ServerSetEntityState(const FROSSetEntityState_Request& InRequest);
@@ -117,15 +118,17 @@ public:
 
     /**
      * @brief Check entity-attach request for duplication on server
+     * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
     bool ServerCheckAttachRequest(const FROSAttach_Request& InRequest);
 
     /**
      * @brief Attach an entity to another on Server
+     * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    void ServerAttach(const FROSAttach_Request& Request);
+    void ServerAttach(const FROSAttach_Request& InRequest);
 
     //! Cached the previous [Attach] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
@@ -133,12 +136,14 @@ public:
 
     /**
      * @brief Check entity-spawn-request for duplication on Server
+     * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
     bool ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InRequest);
 
     /**
      * @brief Spawn entity on Server
+     * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
     AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest);
@@ -149,12 +154,14 @@ public:
 
     /**
      * @brief Check delete-entity-request for duplication on Server
+     * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
     bool ServerCheckDeleteRequest(const FROSDeleteEntity_Request& InRequest);
 
     /**
      * @brief Delete entity on Server
+     * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
     void ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest);
@@ -163,13 +170,13 @@ public:
     UPROPERTY(BlueprintReadOnly)
     FROSDeleteEntity_Request PrevDeleteEntityRequest;
 
-    UFUNCTION(BlueprintCallable)
     /**
      * @brief Add Entity to #Entities and #EntitiesWithTag
      * Entity become able to be manipulated by Simulationstate's ROS2 servs.
-     * @param Entity
+     * @param InEntity
      */
-    void AddEntity(AActor* InEntity);
+    UFUNCTION(BlueprintCallable)
+    void ServerAddEntity(AActor* InEntity);
 
     /**
      * @brief Add an entity with tag

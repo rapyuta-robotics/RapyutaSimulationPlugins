@@ -93,34 +93,36 @@ void ARRRobotBaseVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVel)
 {
-    ServerSetLinearVel(InLinearVel);
+    ServerSetLinearVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), InLinearVel);
     ClientSetLinearVel(InLinearVel);
 }
 
 void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
 {
-    ServerSetAngularVel(InAngularVel);
+    ServerSetAngularVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
     ClientSetAngularVel(InAngularVel);
 }
 
-void ARRRobotBaseVehicle::ServerSetLinearVel_Implementation(const FVector& InLinearVel)
+void ARRRobotBaseVehicle::ServerSetLinearVel_Implementation(float InClientTimeStamp,
+                                                            const FVector& InClientRobotPosition,
+                                                            const FVector& InLinearVel)
 {
     if (RobotVehicleMoveComponent)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-        float serverWorldTime = URRCoreUtils::GetGameState<AGameState>(this)->GetServerWorldTimeSeconds();
-        SetActorLocation(GetActorLocation() + InLinearVel * (serverCurrentTime - serverWorldTime));
+        SetActorLocation(InClientRobotPosition + InLinearVel * (serverCurrentTime - InClientTimeStamp));
         RobotVehicleMoveComponent->Velocity = InLinearVel;
     }
 }
 
-void ARRRobotBaseVehicle::ServerSetAngularVel_Implementation(const FVector& InAngularVel)
+void ARRRobotBaseVehicle::ServerSetAngularVel_Implementation(float InClientTimeStamp,
+                                                             const FRotator& InClientRobotRotation,
+                                                             const FVector& InAngularVel)
 {
     if (RobotVehicleMoveComponent)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-        float serverWorldTime = URRCoreUtils::GetGameState<AGameState>(this)->GetServerWorldTimeSeconds();
-        SetActorRotation(GetActorRotation() + InAngularVel.Rotation() * (serverCurrentTime - serverWorldTime));
+        SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
         RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
     }
 }

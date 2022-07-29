@@ -18,6 +18,17 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     Super::PostLogin(InPlayerController);
 
     auto* networkPlayerController = CastChecked<ARRNetworkPlayerController>(InPlayerController);
+#if WITH_EDITOR
+    FString pcName = (NetworkClientControllerList.Num() == 0)
+                       ? URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME
+                       : FString::Printf(TEXT("NetworkPC%d"), NetworkClientControllerList.Num());
+    // pc's server name
+    networkPlayerController->SetName(pcName);
+    // pc's client local name
+    networkPlayerController->Rename(*pcName);
+    // NOTE: PC's PlayerName would be updated later to Pawn's name after possession
+    networkPlayerController->PlayerName = pcName;
+#endif
     networkPlayerController->CreateROS2SimStateClient(ROS2SimStateClientClass);
 
     // Set [networkPlayerController's ServerSimState] -> [GameMode's MainSimState],
@@ -31,17 +42,7 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
            Warning,
            TEXT("ARRNetworkGameMode::PostLogin Logged-in PC[%d] %s"),
            NetworkClientControllerList.Num(),
-           *InPlayerController->GetName());
-
-#if WITH_EDITOR
-#if RAPYUTA_SIM_DEBUG
-    if (NetworkClientControllerList.Num() == 0)
-    {
-        // This should be configured in INI or passed in cmdline?
-        networkPlayerController->SetName(URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME);
-    }
-#endif
-#endif
+           *networkPlayerController->GetName());
 
     // Add to [ClientControllerList]
     NetworkClientControllerList.Add(networkPlayerController);
