@@ -1,6 +1,6 @@
 /**
  * @file SimulationState.h
- * @brief SimulationState class provides ROS2 service & action implementation to interact with UE4.
+ * @brief SimulationState class provides ROS2 interface implementation to interact with UE4.
  * Supported interactions: get/set actor state, spawn/delete actor, attach/detach actor.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -67,8 +67,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRREntities
 // & thus house [Entities] spawned by ROS services, and  with ROS relevance.
 // However, check for its usage in BP and refactor if there is accordingly!
 /**
- * @brief Provide ROS2 implementations of services, actions to interact with UE4.
- * Supported interactions: GetEntityState, SetEntityState, Attach, SpawnEntity, DeleteEntity
+ * @brief Provide ROS2 interface implementations to interact with UE4.
+ * Supported interactions: Service [GetEntityState, SetEntityState, Attach, SpawnEntity, DeleteEntity]
  *
  * SimulationState can manipulate only actors in #Entities and #EntitiesWithTag. All actors in the world are added to #Entities and
  * #EntitiesWithTag with #Init method and actors can be added to those list by #AddEntity method individually as well.
