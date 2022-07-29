@@ -82,7 +82,7 @@ void ARRBaseRobot::CreateROS2Interface()
     // + ROS2Interface, due to requirements for also instantiatable in ARRBaseRobot's child BPs, may not
     // have been instantiated yet
     // + Child class' ros2-related accessories (ROS2 node, sensors, publishers/subscribers)
-    //  may have not been fully accessible until now
+    //  may have not been fully accessible until then.
 }
 
 bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
