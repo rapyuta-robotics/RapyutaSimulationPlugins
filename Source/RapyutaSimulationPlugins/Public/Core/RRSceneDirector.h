@@ -60,6 +60,9 @@ public:
 
     virtual bool HasOperationCompleted(bool bIsLogged = false);
 
+    UPROPERTY()
+    double DataCollectionTimeStamp = 0.f;
+
 protected:
     virtual bool Initialize() override;
     virtual void Tick(float DeltaTime) override;

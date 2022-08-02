@@ -27,6 +27,7 @@ ARRGameState::ARRGameState()
 
 void ARRGameState::PrintSimConfig() const
 {
+    UE_LOG(LogRapyutaCore, Log, TEXT("GAME STATE CONFIG -----------------------------"));
     UE_LOG(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_NUM: %d"), SCENE_INSTANCES_NUM);
     UE_LOG(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_DISTANCE_INTERVAL: %f(cm)"), SCENE_INSTANCES_DISTANCE_INTERVAL);
     UE_LOG(LogRapyutaCore,
@@ -49,7 +50,7 @@ void ARRGameState::StartSim()
 {
     UE_LOG(LogRapyutaCore, Display, TEXT("[ARRGameState::StartSim() with Num of SceneInstances: %d]"), SCENE_INSTANCES_NUM);
 
-    // TBU: URRGameSingleton::Get()->PrintSimConfig();
+    URRGameSingleton::Get()->PrintSimConfig();
     PrintSimConfig();
 
     GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);

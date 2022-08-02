@@ -18,12 +18,19 @@ TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_
     {ERRResourceDataType::UE_MATERIAL, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
 };
 
-URRGameSingleton::URRGameSingleton(){
-    UE_LOG(LogRapyutaCore, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"))}
+URRGameSingleton::URRGameSingleton()
+{
+    UE_LOG(LogRapyutaCore, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"));
+}
 
 URRGameSingleton::~URRGameSingleton()
 {
     // AssetDataList.Empty();
+}
+
+void URRGameSingleton::PrintSimConfig() const
+{
+    UE_LOG(LogRapyutaCore, Display, TEXT("- SIM PROFILING: %d"), BSIM_PROFILING);
 }
 
 URRGameSingleton* URRGameSingleton::Get()

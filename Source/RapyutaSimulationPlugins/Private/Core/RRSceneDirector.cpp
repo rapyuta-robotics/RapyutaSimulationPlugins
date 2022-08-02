@@ -122,6 +122,18 @@ void ARRSceneDirector::OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhas
     {
         bIsDataCollecting = false;
     }
+
+    // PROFILING --
+    if (URRCoreUtils::IsSimProfiling())
+    {
+        // Measure the running of the previous data collection
+        UE_LOG(LogRapyutaCore,
+               Log,
+               TEXT("[%d] DATA COLLECTION[%d] DONE - TOOK [%lf] secs!"),
+               SceneInstanceId,
+               bIsFinalDataCollectingPhase ? 2 : 1,
+               URRCoreUtils::GetElapsedTime(DataCollectionTimeStamp));
+    }
 }
 
 void ARRSceneDirector::ResetScene()

@@ -37,6 +37,13 @@ public:
     static URRGameSingleton* Get();
     virtual ~URRGameSingleton();
 
+    virtual void PrintSimConfig() const;
+
+    // SIM GLOBAL PROPERTIES --
+    //
+    UPROPERTY(config)
+    bool BSIM_PROFILING = false;
+
     // SIM RESOURCES ==
     //
     bool InitializeResources();

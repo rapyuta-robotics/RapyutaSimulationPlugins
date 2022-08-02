@@ -97,7 +97,6 @@ public:
     }
 
     // SIM CONSOLE COMMANDS --
-    // SIM CONSOLE COMMANDS --
     static constexpr const TCHAR* CMD_SIM_QUIT = TEXT("quit");
     static constexpr const TCHAR* CMD_STATS_START = TEXT("stat startfile");
     static constexpr const TCHAR* CMD_STATS_STOP = TEXT("stat stopfile");
@@ -297,6 +296,7 @@ public:
             OutPlayerControllerList.Add(newPlayer);
         }
     }
+    static bool HasPlayerControllerListInitialized(const UObject* InContextObject, bool bIsLogged = false);
 
     // This value could be configured in [DefaultEngine.ini]
     static int32 GetMaxSplitscreenPlayers(const UObject* InContextObject);
@@ -317,7 +317,7 @@ public:
         return InContextObject->GetClass()->GetConfigName();
     }
 
-    static bool HasPlayerControllerListInitialized(const UObject* InContextObject, bool bIsLogged = false);
+    static bool IsSimProfiling();
 
     // GameState & PlayerController should be able to be recognized polymorphically!
     static bool HasSimInitialized(const UObject* InContextObject, bool bIsLogged = false);
@@ -380,7 +380,22 @@ public:
     FORCEINLINE static float GetSeconds()
     {
         // `GetWorld()->GetTimeSeconds()` relies on a context object's World and thus is less robust.
+        // typedef FUnixTime FPlatformTime, used by:
+        // + UEngine::UpdateTimeAndHandleMaxTickRate() to set FApp::CurrentTime
+        // + UGameplayStatics::GetAccurateRealTime()
         return FPlatformTime::Seconds();
+    }
+
+    template<typename T, typename = TEnableIf<TIsFloatingPoint<T>::Value>>
+    static void MarkCurrentTime(T& OutTimestamp)
+    {
+        OutTimestamp = GetSeconds();
+    }
+
+    template<typename T, typename = TEnableIf<TIsFloatingPoint<T>::Value>>
+    static T GetElapsedTime(T& InLastTimestamp)
+    {
+        return GetSeconds() - InLastTimestamp;
     }
 
     // It was observed that with high polling frequency as [0.01] or sometimes [0.1] second, we got crash on AutomationTest

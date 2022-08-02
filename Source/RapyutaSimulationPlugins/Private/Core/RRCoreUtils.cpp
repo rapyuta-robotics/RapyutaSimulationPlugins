@@ -138,6 +138,11 @@ bool URRCoreUtils::HasEnoughDiskSpace(const FString& InPath, uint64 InRequiredMe
     return bEnoughMemory;
 }
 
+bool URRCoreUtils::IsSimProfiling()
+{
+    return URRGameSingleton::Get()->BSIM_PROFILING;
+}
+
 bool URRCoreUtils::ShutDownSim(const UObject* InContextObject, uint64 InSimCompletionTimeoutInSecs)
 {
     // END ALL SCENE INSTANCES' OPERATIONS --
