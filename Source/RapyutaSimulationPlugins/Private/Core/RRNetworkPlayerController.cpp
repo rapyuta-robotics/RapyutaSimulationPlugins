@@ -66,7 +66,7 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
     }
 
     ROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(
-        this, InSimStateClientClass, FName(*FString::Printf(TEXT("%sROS2SimStateClient"), *GetName())));
+        this, InSimStateClientClass, FName(*FString::Printf(TEXT("%s_ROS2SimStateClient"), *PlayerName)));
     ROS2SimStateClient->RegisterComponent();
     AddOwnedComponent(ROS2SimStateClient);
 
@@ -88,9 +88,10 @@ void ARRNetworkPlayerController::InitSimStateClientROS2()
     // Init SimStateClient's [ROS2Node] & [ClockPublisher]
     UWorld* currentWorld = GetWorld();
     SimStateClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
+    SimStateClientROS2Node->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
     SimStateClientROS2Node->Namespace.Reset();
     // NOTE: Its NameSpace will be set to [PlayerName] in [ServerSetPlayerName()]
-    SimStateClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *GetName());
+    SimStateClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
     SimStateClientROS2Node->Init();
 
     // Init [ROS2SimStateClient] with [SimStateClientROS2Node]
@@ -102,10 +103,7 @@ void ARRNetworkPlayerController::InitSimStateClientROS2()
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
     SimStateClientClockPublisher->InitializeWithROS2(SimStateClientROS2Node);
 
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("ARRNetworkPlayerController SimStateClientROS2Node[%s] created"),
-           *SimStateClientROS2Node->Name);
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] SimStateClient ROS2Node[%s] created"), *PlayerName, *SimStateClientROS2Node->Name);
 }
 
 void ARRNetworkPlayerController::WaitToPossessPawn()
@@ -274,6 +272,7 @@ void ARRNetworkPlayerController::BeginPlay()
 
     if (IsLocalController())
     {
+        UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] LocalController!!!!!!!!!!\n\n\n"), *PlayerName);
         FTimerManager& timerManager = GetWorld()->GetTimerManager();
         timerManager.SetTimer(PossessTimerHandle, this, &ARRNetworkPlayerController::WaitToPossessPawn, 1.f, true);
         timerManager.SetTimer(ClockRequestTimerHandle, this, &ARRNetworkPlayerController::RequestServerTimeUpdate, 5.f, true);

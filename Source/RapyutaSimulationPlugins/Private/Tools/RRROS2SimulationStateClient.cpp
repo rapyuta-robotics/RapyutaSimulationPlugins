@@ -76,7 +76,11 @@ bool URRROS2SimulationStateClient::CheckEntity(TMap<FString, T>& InEntities, con
         }
         else
         {
-            UE_LOG(LogRapyutaCore, Warning, TEXT("Entity named [%s] gets invalid -> removed from Entities"), *InEntityName);
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("[%s] Entity named [%s] gets invalid -> removed from Entities"),
+                   *GetName(),
+                   *InEntityName);
             InEntities.Remove(InEntityName);
         }
     }
@@ -88,7 +92,8 @@ bool URRROS2SimulationStateClient::CheckEntity(TMap<FString, T>& InEntities, con
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("Entity named [%s] is not under SimulationState control. Please register it to SimulationState!"),
+               TEXT("[%s] Entity named [%s] is not under SimulationState control. Please register it to SimulationState!"),
+               *GetName(),
                *InEntityName);
     }
     return result;
@@ -186,8 +191,10 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors "
+               TEXT("[%s] Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make "
+                    "Actors "
                     "under SimulationState control."),
+               *GetName(),
                *request.name1,
                *request.name2);
     }
@@ -219,14 +226,30 @@ void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
         {
             // RPC to Server's Spawn entity
             ServerSpawnEntity(request);
-            response.StatusMessage = FString::Printf(TEXT("[%s]Entity spawning failed, probably out collision!"), *entityName);
-            UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *response.StatusMessage);
+
+            // RPC is not blocking and can't get actor even if it is spawned.
+            // todo: handle failed to spawn with collision and etc.
+
+            // AActor* newEntity = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName);
+            // if (nullptr == newEntity)
+            // {
+            //     response.bSuccess = false;
+            //     response.StatusMessage =
+            //         FString::Printf(TEXT("[%s] Failed to spawn entity named %s, probably out collision!"), *GetName(),
+            //         *entityName);
+            // }
+            // else
+            // {
+            response.bSuccess = true;
+            // response.StatusMessage = FString::Printf(TEXT("Spawning Entity of model [%s] as [%s]"), *entityModelName,
+            // *entityName);
+            // }
         }
         else
         {
             response.bSuccess = false;
-            response.StatusMessage =
-                FString::Printf(TEXT("Entity spawning failed - [%s] given name actor already exists!"), *entityName);
+            response.StatusMessage = FString::Printf(
+                TEXT("[%s] Failed to spawn entity named %s,  given name actor already exists!"), *GetName(), *entityName);
             UE_LOG(LogRapyutaCore, Error, TEXT("%s"), *response.StatusMessage);
         }
     }
@@ -245,7 +268,8 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("Spawning Entity : %s (name: %s)"),
+               TEXT("[%s] Spawning Entity : %s (name: %s)"),
+               *GetName(),
                *entityListRequest.TypeList[i],
                *entityListRequest.NameList[i]);
         FROSSpawnEntityRequest entityRequest;
@@ -272,7 +296,8 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
             {
                 UE_LOG(LogRapyutaCore,
                        Error,
-                       TEXT("Entity spawning failed - Actor of [%s] name already exists"),
+                       TEXT("[%s] Failed to spawn entity named %s,  given name actor already exists!"),
+                       *GetName(),
                        *entityRequest.StateName);
             }
         }
@@ -352,7 +377,7 @@ void URRROS2SimulationStateClient::DeleteEntitySrv(UROS2GenericSrv* InService)
     FROSDeleteEntity_Request request;
     deleteEntityService->GetRequest(request);
 
-    UE_LOG(LogTemp, Warning, TEXT("DeleteEntityService called"));
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] Deleting %s"), *GetName(), *request.name);
 
     FROSDeleteEntity_Response response;
     response.success = false;
@@ -361,10 +386,14 @@ void URRROS2SimulationStateClient::DeleteEntitySrv(UROS2GenericSrv* InService)
         // RPC to server
         ServerDeleteEntity(request);
         response.success = true;
+        response.status_message = FString::Printf(TEXT("[%s] Deleted Entity named %s"), *GetName(), *request.name);
+        UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *response.status_message);
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("Entity %s not found"), *request.name);
+        response.status_message = FString::Printf(
+            TEXT("[%s] Failed to delete entity named %s. %s do not exist."), *GetName(), *request.name, *request.name);
+        UE_LOG(LogRapyutaCore, Error, TEXT("%s"), *response.status_message);
     }
 
     deleteEntityService->SetResponse(response);
