@@ -57,6 +57,22 @@ public:
     //! Robot's ROS2 Interface
     UPROPERTY(Replicated)
     URRRobotROS2Interface* ROS2Interface = nullptr;
+
+    //! is this robot is possed or not. Defaults method's do not works with multiplayer.
+    UPROPERTY(Replicated)
+    bool isPossessed = false;
+
+    void PossessedBy(AController* NewController) override
+    {
+        Super::PossessedBy(NewController);
+        isPossessed = true;
+    };
+
+    void UnPossessed() override
+    {
+        Super::UnPossessed();
+        isPossessed = false;
+    };
     /**
      * @brief Instantiate ROS2 Interface without initializing yet
      */
@@ -72,6 +88,7 @@ public:
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString RobotUniqueName;
+
     /**
      * @brief Get robot unique name
      */
@@ -79,6 +96,7 @@ public:
     {
         return RobotUniqueName;
     }
+
     /**
      * @brief Set robot unique name
      */
@@ -90,6 +108,7 @@ public:
     //! Robot Model Name (loaded from URDF/SDF)
     UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString RobotModelName;
+
     /**
      * @brief Get robot model name
      */
@@ -109,6 +128,7 @@ public:
     //! Robot ID No
     UPROPERTY(EditAnyWhere, Replicated)
     uint64 RobotID = 0;
+
     /**
      * @brief Get robot ID
      */

@@ -64,6 +64,7 @@ public:
     //! Pawn that has been possessed by this controller
     UPROPERTY(Transient, Replicated)
     APawn* PossessedPawn = nullptr;
+
     /**
      * @brief Search for the targeted pawn to possess
      */

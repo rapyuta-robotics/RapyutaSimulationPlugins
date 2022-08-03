@@ -152,15 +152,22 @@ void ARRNetworkPlayerController::WaitToPossessPawn()
             // 2.3 - Stop [PossessTimerHandle]
             GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
 
+            PossessedPawn = matchingPawn;
+            UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] possessed pawn %s"), *PlayerName, *PossessedPawn->GetName());
+
 #if WITH_EDITOR
             // 2.4- Set Controller's PlayerName -> entity's Name
+            FString prevPlayerName = PlayerName;
             PlayerName = matchingPawn->GetName();
             ServerSetPlayerName(PlayerName);
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("Player[%s] possessed pawn %s and renamed to same name as pawn name"),
+                   *prevPlayerName,
+                   *PossessedPawn->GetName());
 #else
             // PlayerName is provided from [robotname] param passed to Sim client executor for to-be-possesed robot matching
 #endif
-            PossessedPawn = matchingPawn;
-            UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] possessed pawn %s"), *PlayerName, *PossessedPawn->GetName());
         }
 #if RAPYUTA_SIM_DEBUG
         else
@@ -181,9 +188,14 @@ APawn* ARRNetworkPlayerController::FindPawnToPossess()
     for (auto& entity : ServerSimState->EntityList)
     {
         matchingPawn = Cast<APawn>(entity);
-        if (IsValid(matchingPawn) && (nullptr == matchingPawn->GetController()) && (GetPawn() != matchingPawn))
+        ARRBaseRobot* robot = Cast<ARRBaseRobot>(entity);
+        if (IsValid(robot) && !robot->isPossessed && (GetPawn() != robot))
         {
             break;
+        }
+        else
+        {
+            matchingPawn = nullptr;
         }
     }
 #else
@@ -272,7 +284,6 @@ void ARRNetworkPlayerController::BeginPlay()
 
     if (IsLocalController())
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] LocalController!!!!!!!!!!\n\n\n"), *PlayerName);
         FTimerManager& timerManager = GetWorld()->GetTimerManager();
         timerManager.SetTimer(PossessTimerHandle, this, &ARRNetworkPlayerController::WaitToPossessPawn, 1.f, true);
         timerManager.SetTimer(ClockRequestTimerHandle, this, &ARRNetworkPlayerController::RequestServerTimeUpdate, 5.f, true);
