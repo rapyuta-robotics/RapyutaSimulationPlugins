@@ -110,6 +110,7 @@ public:
                 ActorInfo->bIsStationary,
                 ActorInfo->bIsPhysicsEnabled,
                 ActorInfo->bIsCollisionEnabled,
+                ActorInfo->bIsOverlapEventEnabled,
                 InParentComp);
 
             if (meshComp)

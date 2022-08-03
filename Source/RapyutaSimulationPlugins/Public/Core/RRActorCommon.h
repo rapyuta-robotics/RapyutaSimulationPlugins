@@ -386,7 +386,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
                       const TArray<FString>& InMaterialNameList = TArray<FString>(),
                       bool bInIsStationary = false,
                       bool bInIsPhysicsEnabled = false,
-                      bool bInIsCollisionEnabled = false);
+                      bool bInIsCollisionEnabled = false,
+                      bool bInIsOverlapEventEnabled = false);
 
     void operator()(const FString& InEntityModelName,
                     const FString& InUniqueName,
@@ -396,7 +397,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
                     const TArray<FString>& InMaterialNameList = TArray<FString>(),
                     bool bInIsStationary = false,
                     bool bInIsPhysicsEnabled = false,
-                    bool bInIsCollisionEnabled = false);
+                    bool bInIsCollisionEnabled = false,
+                    bool bInIsOverlapEventEnabled = false);
 
     void ClearMeshInfo()
     {
@@ -442,6 +444,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
 
     UPROPERTY()
     uint8 bIsSelfCollision : 1;
+
+    UPROPERTY()
+    uint8 bIsOverlapEventEnabled : 1;
 
     UPROPERTY()
     uint8 bIsDataSynthEntity : 1;

@@ -264,6 +264,7 @@ public:
                                                            bool bInIsOwningActorStationary,
                                                            bool bInIsPhysicsEnabled,
                                                            bool bInIsCollisionEnabled,
+                                                           bool bInIsOverlapEventEnabled = false,
                                                            USceneComponent* InParentComp = nullptr)
     {
         // 1 - Create --
@@ -290,7 +291,7 @@ public:
         // Overlapping --
         if (!bInIsPhysicsEnabled && !bInIsCollisionEnabled)
         {
-            meshComp->EnableOverlapping();
+            meshComp->EnableOverlapping(bInIsOverlapEventEnabled);
         }
 
         // Stationary --

@@ -400,11 +400,11 @@ void URRProceduralMeshComponent::SetCollisionModeAvailable(bool bIsOn, bool bIsH
     }
 }
 
-void URRProceduralMeshComponent::EnableOverlapping()
+void URRProceduralMeshComponent::EnableOverlapping(bool bOverlapEventEnabled)
 {
     SetSimulatePhysics(false);
     SetCollisionProfileName(TEXT("Overlap"));
     SetCollisionEnabled(ECollisionEnabled::QueryOnly);    // SUPER IMPORTANT!
     SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-    SetGenerateOverlapEvents(true);
+    SetGenerateOverlapEvents(bOverlapEventEnabled);
 }

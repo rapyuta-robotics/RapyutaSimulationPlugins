@@ -372,13 +372,13 @@ void URRStaticMeshComponent::SetCollisionModeAvailable(bool bInCollisionEnabled,
     }
 }
 
-void URRStaticMeshComponent::EnableOverlapping()
+void URRStaticMeshComponent::EnableOverlapping(bool bOverlapEventEnabled)
 {
     SetSimulatePhysics(false);
     SetCollisionProfileName(TEXT("Overlap"));
     SetCollisionEnabled(ECollisionEnabled::QueryOnly);    // SUPER IMPORTANT!
     SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-    SetGenerateOverlapEvents(true);
+    SetGenerateOverlapEvents(bOverlapEventEnabled);
 }
 
 // This function is used proprietarily for Generic Link/Joint (Non-Articulation) structure
