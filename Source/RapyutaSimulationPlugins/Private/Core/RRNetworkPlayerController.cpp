@@ -191,7 +191,9 @@ APawn* ARRNetworkPlayerController::FindPawnToPossess()
 #else
     for (AActor* entity : ServerSimState->EntityList)
     {
-        if (IsValid(entity) && (entity->GetName() == PlayerName))
+        // [entity->GetName()] is not reliable due to UObject::NamePrivate is not replicated by default
+        ARRBaseRobot* robot = Cast<ARRBaseRobot>(entity);
+        if (IsValid(robot) && (robot->RobotUniqueName == PlayerName))
         {
             matchingPawn = Cast<APawn>(entity);
             if (!matchingPawn)
@@ -281,10 +283,6 @@ void ARRNetworkPlayerController::BeginPlay()
 void ARRNetworkPlayerController::ServerSetPlayerName_Implementation(const FString& InPlayerName)
 {
     PlayerName = InPlayerName;
-    if (SimStateClientROS2Node)
-    {
-        SimStateClientROS2Node->Namespace = InPlayerName;
-    }
 }
 
 // Client Requesting Server to send time, Client Clock at time of request is sent as well

@@ -20,6 +20,7 @@
 #include "Core/RRActorCommon.h"
 #include "Core/RRConversionUtils.h"
 #include "Core/RRUObjectUtils.h"
+#include "Robots/RRBaseRobot.h"
 #include "Tools/ROS2Spawnable.h"
 
 ASimulationState::ASimulationState()
@@ -319,6 +320,11 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
 #if WITH_EDITOR
     newEntity->SetActorLabel(*InROSSpawnRequest.StateName);
 #endif
+    ARRBaseRobot* robot = Cast<ARRBaseRobot>(newEntity);
+    if (robot)
+    {
+        robot->RobotUniqueName = InROSSpawnRequest.StateName;
+    }
 
     // Add tags
     UE_LOG(LogRapyutaCore,
