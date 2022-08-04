@@ -179,7 +179,8 @@ protected:
      */
     virtual void PostInitializeComponents() override;
 
-    //! is this robot is possed or not. Defaults method's do not works with multiplayer.
+    //! is this robot is possed or not. Following methods do not works with multiplayer,
+    //! nullptr == GetController(), nullptr == Controller, IsPawnControlled(),IsControlled()
     UPROPERTY(Replicated)
     bool bIsPossessed = false;
 
