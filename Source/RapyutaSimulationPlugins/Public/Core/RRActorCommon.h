@@ -80,6 +80,7 @@ enum class ERRFileType : uint8
 
     // Image
     IMAGE_JPG,
+    IMAGE_GRAYSCALE_JPG,
     IMAGE_PNG,
     IMAGE_TGA,
     IMAGE_EXR,

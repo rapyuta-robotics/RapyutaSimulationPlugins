@@ -50,6 +50,7 @@ void URRCoreUtils::LoadImageWrapperModule()
     {
         verify(SImageWrapperModule);
         SImageWrappers.Add(ERRFileType::IMAGE_JPG, SImageWrapperModule->CreateImageWrapper(EImageFormat::JPEG));
+        SImageWrappers.Add(ERRFileType::IMAGE_GRAYSCALE_JPG, SImageWrapperModule->CreateImageWrapper(EImageFormat::GrayscaleJPEG));
         SImageWrappers.Add(ERRFileType::IMAGE_PNG, SImageWrapperModule->CreateImageWrapper(EImageFormat::PNG));
         SImageWrappers.Add(ERRFileType::IMAGE_EXR, SImageWrapperModule->CreateImageWrapper(EImageFormat::EXR));
     }

@@ -122,6 +122,7 @@ public:
 
         // Image
         TEXT(".jpg"),    // ERRFileType::IMAGE_JPG
+        TEXT(".jpg"),    // ERRFileType::IMAGE_GRAYSCALE_JPG
         TEXT(".png"),    // ERRFileType::IMAGE_PNG
         TEXT(".tga"),    // ERRFileType::IMAGE_TGA
         TEXT(".exr"),    // ERRFileType::IMAGE_EXR
