@@ -379,10 +379,15 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
             newEntity = ServerSpawnEntity(InRequest, SpawnableEntityTypes[entityModelName], worldTransf);
             if (nullptr == newEntity)
             {
+                // todo: need pass response to SimulationStateClient
                 // response.bSuccess = false;
                 // response.StatusMessage =
                 //     FString::Printf(TEXT("[%s] Failed to spawn entity named %s, probably out collision!"), *GetName(),
                 //     *entityName);
+                UE_LOG(LogRapyutaCore,
+                       Error,
+                       TEXT("[ASimulationState] Failed to spawn entity named %s, probably out collision!"),
+                       *entityName);
             }
         }
         else

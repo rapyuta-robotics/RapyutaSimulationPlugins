@@ -187,15 +187,11 @@ APawn* ARRNetworkPlayerController::FindPawnToPossess()
 #if WITH_EDITOR
     for (auto& entity : ServerSimState->EntityList)
     {
-        matchingPawn = Cast<APawn>(entity);
         ARRBaseRobot* robot = Cast<ARRBaseRobot>(entity);
-        if (IsValid(robot) && !robot->isPossessed && (GetPawn() != robot))
+        if (IsValid(robot) && !robot->IsPossessed() && (GetPawn() != robot))
         {
+            matchingPawn = Cast<APawn>(entity);
             break;
-        }
-        else
-        {
-            matchingPawn = nullptr;
         }
     }
 #else

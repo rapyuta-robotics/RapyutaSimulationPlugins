@@ -189,14 +189,16 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s] Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make "
-                    "Actors "
-                    "under SimulationState control."),
-               *GetName(),
-               *request.name1,
-               *request.name2);
+        UE_LOG(
+            LogRapyutaCore,
+            Warning,
+            TEXT(
+                "[%s] Entity %s and/or %s not exit or not under SimulationState Actor control. Please call ServerAddEntity to make "
+                "Actors "
+                "under SimulationState control."),
+            *GetName(),
+            *request.name1,
+            *request.name2);
     }
 
     attachService->SetResponse(response);

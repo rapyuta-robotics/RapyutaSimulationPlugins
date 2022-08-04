@@ -58,21 +58,6 @@ public:
     UPROPERTY(Replicated)
     URRRobotROS2Interface* ROS2Interface = nullptr;
 
-    //! is this robot is possed or not. Defaults method's do not works with multiplayer.
-    UPROPERTY(Replicated)
-    bool isPossessed = false;
-
-    void PossessedBy(AController* NewController) override
-    {
-        Super::PossessedBy(NewController);
-        isPossessed = true;
-    };
-
-    void UnPossessed() override
-    {
-        Super::UnPossessed();
-        isPossessed = false;
-    };
     /**
      * @brief Instantiate ROS2 Interface without initializing yet
      */
@@ -182,9 +167,31 @@ public:
     // UFUNCTION(BlueprintCallable)
     virtual void SetJointState(const TMap<FString, TArray<float>>& InJointState, const ERRJointControlType InJointControlType);
 
+    UFUNCTION(BlueprintCallable)
+    bool IsPossessed()
+    {
+        return bIsPossessed;
+    }
+
 protected:
     /**
      * @brief Instantiate default child components
      */
     virtual void PostInitializeComponents() override;
+
+    //! is this robot is possed or not. Defaults method's do not works with multiplayer.
+    UPROPERTY(Replicated)
+    bool bIsPossessed = false;
+
+    void PossessedBy(AController* NewController) override
+    {
+        Super::PossessedBy(NewController);
+        bIsPossessed = true;
+    };
+
+    void UnPossessed() override
+    {
+        Super::UnPossessed();
+        bIsPossessed = false;
+    };
 };
