@@ -122,7 +122,6 @@ void ARRBaseRobot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ARRBaseRobot, RobotUniqueName);
     DOREPLIFETIME(ARRBaseRobot, ROS2Interface);
     DOREPLIFETIME(ARRBaseRobot, ROS2InterfaceClass);
-    DOREPLIFETIME(ARRBaseRobot, bIsPossessed);
 }
 
 void ARRBaseRobot::SetJointState(const TMap<FString, TArray<float>>& InJointState, const ERRJointControlType InJointControlType)

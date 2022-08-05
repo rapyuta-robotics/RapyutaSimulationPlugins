@@ -167,32 +167,9 @@ public:
     // UFUNCTION(BlueprintCallable)
     virtual void SetJointState(const TMap<FString, TArray<float>>& InJointState, const ERRJointControlType InJointControlType);
 
-    UFUNCTION(BlueprintCallable)
-    bool IsPossessed()
-    {
-        return bIsPossessed;
-    }
-
 protected:
     /**
      * @brief Instantiate default child components
      */
     virtual void PostInitializeComponents() override;
-
-    //! is this robot is possed or not. Following methods do not works with multiplayer,
-    //! nullptr == GetController(), nullptr == Controller, IsPawnControlled(),IsControlled()
-    UPROPERTY(Replicated)
-    bool bIsPossessed = false;
-
-    void PossessedBy(AController* NewController) override
-    {
-        Super::PossessedBy(NewController);
-        bIsPossessed = true;
-    };
-
-    void UnPossessed() override
-    {
-        Super::UnPossessed();
-        bIsPossessed = false;
-    };
 };
