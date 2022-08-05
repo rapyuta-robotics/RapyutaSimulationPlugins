@@ -51,6 +51,39 @@ public:
      */
     void InitRobotROS2Node(ARRBaseRobot* InRobot);
 
+    /**
+     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS2 msg.
+     * Supports only 1 DOF joints.
+     * Effort control is not supported.
+     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
+     */
+    UFUNCTION()
+    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bPublishOdom = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bPublishOdomTf = false;
+
+    //! Movement command topic. If empty is given, subscriber will not be initiated.
+    UPROPERTY(BlueprintReadWrite)
+    FString CmdVelTopicName = TEXT("cmd_vel");
+
+    //! Joint control command topic. If empty is given, subscriber will not be initiated.
+    UPROPERTY(BlueprintReadWrite)
+    FString JointsCmdTopicName = TEXT("joint_states");
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bWarnAboutMissingLink = true;
+
+    /**
+     * @brief Setup ROS Params, overridable by child classes to config custom ROS2 Interface's params
+     */
+    UFUNCTION()
+    virtual void SetupROSParams();
+
+    //! Odom publisher
     UPROPERTY(Transient, BlueprintReadWrite)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
 
@@ -81,32 +114,6 @@ public:
      */
     UFUNCTION()
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
-
-    /**
-     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS2 msg.
-     * Supports only 1 DOF joints.
-     * Effort control is not supported.
-     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
-     */
-    UFUNCTION()
-    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bPublishOdom = true;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bPublishOdomTf = false;
-
-    //! Movement command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite)
-    FString CmdVelTopicName = TEXT("cmd_vel");
-
-    //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite)
-    FString JointsCmdTopicName = TEXT("joint_states");
-
-    UPROPERTY(BlueprintReadWrite)
-    bool bWarnAboutMissingLink = true;
 
 protected:
     /**

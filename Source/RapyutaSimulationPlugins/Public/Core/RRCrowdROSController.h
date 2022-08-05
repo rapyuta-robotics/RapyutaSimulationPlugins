@@ -10,6 +10,8 @@
 
 #include "RRCrowdROSController.generated.h"
 
+class URRRobotROS2Interface;
+
 /**
  * @brief Base Crowd ROS Controller for ARRBaseRobot descedent classes, utilizing UCrowdFollowingComponent
  */

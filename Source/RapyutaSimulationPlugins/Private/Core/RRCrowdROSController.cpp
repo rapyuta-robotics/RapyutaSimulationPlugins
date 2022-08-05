@@ -21,7 +21,7 @@ void ARRCrowdROSController::OnPossess(APawn* InPawn)
     ROS2Interface->Initialize(robot);
 }
 
-void ARRRobotVehicleROSController::OnUnPossess()
+void ARRCrowdROSController::OnUnPossess()
 {
     if (ROS2Interface)
     {
