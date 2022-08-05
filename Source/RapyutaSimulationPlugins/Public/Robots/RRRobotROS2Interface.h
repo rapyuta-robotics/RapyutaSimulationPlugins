@@ -122,6 +122,7 @@ protected:
                          const TSubclassOf<UROS2Publisher>& InPublisherClass,
                          const TSubclassOf<UROS2GenericMsg>& InMsgClass,
                          int32 InPubFrequency,
+                         uint8 InQoS,
                          UROS2Publisher*& OutPublisher);
 
     template<typename TROS2Message,
