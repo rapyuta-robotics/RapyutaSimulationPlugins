@@ -87,7 +87,7 @@ void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
         OutPublisher = UROS2Publisher::CreatePublisher(this, InTopicName, InPublisherClass, InMsgClass, InPubFrequency);
     }
     OutPublisher->InitializeWithROS2(RobotROS2Node);
-    OutPublisher->Init(InQoS);
+    OutPublisher->Init(TEnumAsByte<UROS2QoS>(InQoS));
 }
 
 void URRRobotROS2Interface::StopPublishers()
