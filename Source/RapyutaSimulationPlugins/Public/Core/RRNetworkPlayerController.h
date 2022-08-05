@@ -42,6 +42,7 @@ public:
 
     UPROPERTY(BlueprintReadOnly, Replicated)
     URRROS2ClockPublisher* SimStateClientClockPublisher = nullptr;
+
     /**
      * @brief Init SimStateClient's ROS2 (Node, ClockPublisher, etc.)
      */
@@ -63,6 +64,7 @@ public:
     //! Pawn that has been possessed by this controller
     UPROPERTY(Transient, Replicated)
     APawn* PossessedPawn = nullptr;
+
     /**
      * @brief Search for the targeted pawn to possess
      */
