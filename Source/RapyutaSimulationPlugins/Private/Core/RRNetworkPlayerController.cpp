@@ -305,6 +305,8 @@ void ARRNetworkPlayerController::ServerSendLocalClockUpdate_Implementation(float
     float clientRequestRoundTrip = LocalTime - InClientRequestTime;
     float latencyAdjustedTime = InServerCurrentTime + (clientRequestRoundTrip * 0.5f);
     LocalTime = latencyAdjustedTime;
+
+    GetWorld()->TimeSeconds = LocalTime;
 }
 
 void ARRNetworkPlayerController::RequestServerTimeUpdate()
