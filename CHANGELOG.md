@@ -1,5 +1,10 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.11 ##
+* `URRRobotROS2Interface::CreatePublisher()` Add QoS param to init publisher's frequent msg publishing callback
+* Add `ARRCrowdROSController`, inheriting from `ARRCrowdAIController`, to init possessed robot's ROS2Interface
+* `ARRRobotROS2Interface` add virtual `SetupROSParams()`, overridable in child classes (eg with bPublishOdom off if not used)
+
 ## 0.0.10 ##
 * `ARRBaseRobot` add ROS2Interface member & CreateRobotROS2Interface(), only instantiating it upon valid ROS2InterfaceClass
 * `ARRRobotVehicleROSController`: ARobotVehicle -> ARRRobotBaseVehicle
