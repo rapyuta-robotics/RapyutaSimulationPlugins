@@ -74,6 +74,24 @@ public:
 
     virtual bool HaveAllSceneInstancesCompleted() const;
 
+    // ENV
+    UPROPERTY()
+    AActor* MainEnvironment = nullptr;
+    UPROPERTY()
+    FVector MainEnvOriginalLocation = FVector::ZeroVector;
+
+    UPROPERTY()
+    AActor* MainFloor = nullptr;
+
+    UPROPERTY()
+    AActor* MainWall = nullptr;
+
+    UPROPERTY()
+    TArray<ALight*> MainLights;
+
+    UPROPERTY()
+    TArray<AStaticMeshActor*> MainStaticMeshActors;
+
     // SIM OUTPUTS
     UPROPERTY(config)
     FString SIM_OUTPUTS_BASE_FOLDER_NAME = TEXT("OutputData");
@@ -128,11 +146,14 @@ public:
         }
     }
 
+    void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId);
+
 protected:
     virtual void CreateSceneInstance(int8 InSceneInstanceId);
     virtual void InitializeSim(int8 InSceneInstanceId);
     virtual void StartSubSim(int8 InSceneInstanceId);
     virtual void CreateServiceObjects(int8 InSceneInstanceId);
+    virtual void FetchEnvironmentActors();
 
     virtual void FinalizeSim();
     virtual void PrintSimConfig() const;

@@ -67,6 +67,7 @@ void ARRCamera::RandomizePose(bool bIsRandomLocationOnly)
 
 float ARRCamera::GetDistanceToFloor() const
 {
-    check(IsValid(ActorCommon->MainFloor));
-    return FVector::Dist(CameraComponent->GetComponentLocation(), ActorCommon->MainFloor->GetActorLocation());
+    return ActorCommon->SceneFloor
+             ? FVector::Dist(CameraComponent->GetComponentLocation(), ActorCommon->SceneFloor->GetActorLocation())
+             : 0.f;
 };

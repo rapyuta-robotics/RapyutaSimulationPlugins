@@ -82,8 +82,8 @@ bool ARRSceneDirector::InitializeOperation()
     ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
 
     // Camera
-    MainCamera = ActorCommon->MainCamera;
-    verify(MainCamera);
+    SceneCamera = ActorCommon->SceneCamera;
+    verify(SceneCamera);
 
     // PostProcessVolume
     MainPostProcessVolume = Cast<APostProcessVolume>(URRUObjectUtils::FindPostProcessVolume(GetWorld()));

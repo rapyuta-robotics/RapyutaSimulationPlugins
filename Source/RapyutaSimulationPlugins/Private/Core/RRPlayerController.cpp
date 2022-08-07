@@ -53,8 +53,8 @@ bool ARRPlayerController::Initialize()
     check(ActorCommon);
     check(ActorCommon->SceneInstanceId == SceneInstanceId);
 
-    MainCamera = ActorCommon->MainCamera;
-    check(MainCamera);
+    SceneCamera = ActorCommon->SceneCamera;
+    check(SceneCamera);
 
     // Not all maps has GlobalPostProcessVolume
     MainPostProcessVolume = Cast<APostProcessVolume>(URRUObjectUtils::FindPostProcessVolume(GetWorld()));
@@ -78,11 +78,11 @@ bool ARRPlayerController::HasInitialized(bool bIsLogged) const
         return false;
     }
 
-    if (!MainCamera)
+    if (!SceneCamera)
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRPlayerController]:: MainCamera is NULL!"));
+            UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRPlayerController]:: SceneCamera is NULL!"));
         }
         return false;
     }

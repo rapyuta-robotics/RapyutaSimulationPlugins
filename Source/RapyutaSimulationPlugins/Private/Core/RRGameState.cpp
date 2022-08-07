@@ -65,22 +65,65 @@ void ARRGameState::StartSim()
     UE_LOG(LogRapyutaCore, Display, TEXT("MAX SPLIT SCREEN PLAYERS: %d"), maxSplitscreenPlayers);
     verify(SCENE_INSTANCES_NUM <= maxSplitscreenPlayers);
 
+    // 0- Fetch static-env actors
+    FetchEnvironmentActors();
+
     for (int8 i = 0; i < SCENE_INSTANCES_NUM; ++i)
     {
-        // 0 - Create a new one added into [SceneInstanceList], each of which houses ~Common objects, and configures
+        // 1 - Create a new one added into [SceneInstanceList], each of which houses ~Common objects, and configures
         // ~CommonClass, ~SceneDirectorClass
         CreateSceneInstance(i);
 
-        // 1 - Create <SceneType>Common & <Plugin>Common objects
+        // 2 - Create <SceneType>Common & <Plugin>Common objects
         CreateServiceObjects(i);
 
-        // 2 - Trigger OnStartSim() for creating plugins' own common artifacts
+        // 3 - Trigger OnStartSim() for creating plugins' own common artifacts
         StartSubSim(i);
 
-        // 3 - Do preliminary configuration/spawning for the Sim operation
+        // 4 - Do preliminary configuration/spawning for the Sim operation
         InitializeSim(i);
 
         UE_LOG(LogRapyutaCore, Display, TEXT("[ARRGameState]:: SIM SCENE INSTANCE [%d] STARTED SUCCESSFULLY! "), i);
+    }
+}
+
+void ARRGameState::FetchEnvironmentActors()
+{
+    UWorld* currentWorld = GetWorld();
+    checkf(currentWorld, TEXT("[ARRGameState::SetupEnvironment] Failed fetching Game World"));
+
+    // Fetch Main background environment
+    MainEnvironment = URRUObjectUtils::FindEnvironmentActor(currentWorld);
+    // Not all maps has MainEnvironment setup
+
+    MainFloor = URRUObjectUtils::FindFloorActor(currentWorld);
+    // Not all maps has MainFloor setup
+
+    MainWall = URRUObjectUtils::FindWallActor(currentWorld);
+    // Not all maps has MainWall setup
+
+    MainLights = URRUObjectUtils::FindActorListByType<ALight>(currentWorld);
+    check(MainLights.Num() > 0);
+
+    MainStaticMeshActors = URRUObjectUtils::FindActorListByType<AStaticMeshActor>(currentWorld);
+    if ((MainStaticMeshActors.Num() > 0) && (nullptr == MainEnvironment))
+    {
+        // Set the first static mesh actor as [MainEnvironment]
+        MainEnvironment = MainStaticMeshActors[0];
+        // & let others attach to it
+        for (auto i = 1; i < MainStaticMeshActors.Num(); ++i)
+        {
+            MainStaticMeshActors[i]->AttachToActor(MainEnvironment, FAttachmentTransformRules::KeepWorldTransform);
+        }
+        for (auto& light : MainLights)
+        {
+            light->AttachToActor(MainEnvironment, FAttachmentTransformRules::KeepWorldTransform);
+        }
+    }
+
+    if (MainEnvironment)
+    {
+        MainEnvOriginalLocation = MainEnvironment->GetActorLocation();
     }
 }
 
@@ -199,6 +242,16 @@ bool ARRGameState::HaveAllSceneInstancesCompleted() const
     }
 
     return true;
+}
+
+void ARRGameState::MoveEnvironmentToSceneInstance(int8 InSceneInstanceId)
+{
+    if (IsValid(MainEnvironment))
+    {
+        const FVector defaultSceneInstanceLocation = URRCoreUtils::GetSceneInstanceLocation(0);
+        const FVector sceneInstanceLocation = URRCoreUtils::GetSceneInstanceLocation(InSceneInstanceId);
+        MainEnvironment->SetActorLocation(MainEnvOriginalLocation + sceneInstanceLocation - defaultSceneInstanceLocation);
+    }
 }
 
 void ARRGameState::FinalizeSim()

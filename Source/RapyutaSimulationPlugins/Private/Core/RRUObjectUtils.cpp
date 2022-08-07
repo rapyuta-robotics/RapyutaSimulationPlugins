@@ -275,6 +275,7 @@ FString URRUObjectUtils::GetSegMaskDepthStencilsAsText(ARRMeshActor* InActor)
     return FString::JoinBy(
         depthStencilValueList, TEXT("/"), [](const uint8& InDepthStencilValue) { return FString::FromInt(InDepthStencilValue); });
 }
+
 UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                           int32 InMaterialIndex,
                                                                           const FString& InMaterialInterfaceName)

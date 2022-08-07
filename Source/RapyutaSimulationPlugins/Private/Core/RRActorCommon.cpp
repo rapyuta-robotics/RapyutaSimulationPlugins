@@ -210,36 +210,20 @@ void URRActorCommon::OnStartSim()
 
 void URRActorCommon::SetupEnvironment()
 {
-    // Here, we initialize artifacts that utilized play resources
     UWorld* currentWorld = GetWorld();
     checkf(currentWorld, TEXT("[URRActorCommon::SetupEnvironment] Failed fetching Game World"));
 
-    // Fetch Main background environment
-    if (!MainEnvironment)
-    {
-        MainEnvironment = URRUObjectUtils::FindEnvironmentActor(currentWorld);
-        // Not all maps has MainEnvironment setup
-    }
+    // By default, these just reference GameState's floor & wall but could be overridable in child class setup
+    SceneFloor = GameState->MainFloor;
+    SceneWall = GameState->MainWall;
 
-    if (!MainFloor)
-    {
-        MainFloor = URRUObjectUtils::FindFloorActor(currentWorld);
-        // Not all maps has MainFloor setup
-    }
-
-    if (!MainWall)
-    {
-        MainWall = URRUObjectUtils::FindWallActor(currentWorld);
-        // Not all maps has MainWall setup
-    }
-
-    // Spawn MainCamera
-    MainCamera =
+    // Spawn Scene main camera
+    SceneCamera =
         Cast<ARRCamera>(URRUObjectUtils::SpawnSimActor(GetWorld(),
                                                        SceneInstanceId,
                                                        ARRCamera::StaticClass(),
                                                        TEXT("RapyutaCamera"),
-                                                       FString::Printf(TEXT("%d_MainCamera"), SceneInstanceId),
+                                                       FString::Printf(TEXT("%d_SceneCamera"), SceneInstanceId),
                                                        FTransform(SceneInstanceLocation),
                                                        ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn));
 }
@@ -251,23 +235,13 @@ bool URRActorCommon::HasInitialized(bool bIsLogged) const
         return true;
     }
 
-    if (!MainCamera)
+    if (!SceneCamera)
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[URRActorCommon]:: MainCamera is NULL!"))
+            UE_LOG(LogRapyutaCore, Display, TEXT("[URRActorCommon]:: SceneCamera is NULL!"))
         }
         return false;
     }
     return true;
-}
-
-void URRActorCommon::MoveEnvironmentToSceneInstance(int8 InSceneInstanceId)
-{
-    if (IsValid(MainEnvironment))
-    {
-        const FVector currentEnvLocation = MainEnvironment->GetActorLocation();
-        const FVector sceneInstanceLocation = URRCoreUtils::GetSceneInstanceLocation(InSceneInstanceId);
-        MainEnvironment->SetActorLocation(FVector(sceneInstanceLocation.X, sceneInstanceLocation.Y, currentEnvLocation.Z));
-    }
 }

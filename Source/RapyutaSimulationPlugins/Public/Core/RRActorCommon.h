@@ -262,6 +262,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRREntityLogInfo
 {
     GENERATED_BODY()
 
+    //  NOTE: CustomDepthStencilValue, being used as segmaskid, is inherent to each meshcomp & assign once at creation
+    // & kept unchanged thus could be fetched directly from [Entity] at the logging moment
     FRREntityLogInfo()
     {
     }
@@ -550,19 +552,16 @@ public:
 
     //! Main environment actor if pre-setup in the level
     UPROPERTY()
-    AActor* MainEnvironment = nullptr;
+    AActor* SceneFloor = nullptr;
 
     //! Main floor actor if pre-setup in the level
-    UPROPERTY()
-    AActor* MainFloor = nullptr;
-
     //! Main wall actor if pre-setup in the level
     UPROPERTY()
-    AActor* MainWall = nullptr;
+    AActor* SceneWall = nullptr;
 
     //! Main camera actor used in the scene instance
     UPROPERTY()
-    ARRCamera* MainCamera = nullptr;
+    ARRCamera* SceneCamera = nullptr;
 
     //! Print sim config vars in INI
     virtual void PrintSimConfig() const;
@@ -592,7 +591,6 @@ public:
     //! Setup the scene instance's environment
     virtual void SetupEnvironment();
     //! Move the common main environment to another scene instance
-    void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId);
 
     //! Callback on a mesh actor being fully created in the scene
     FOnMeshActorFullyCreated OnMeshActorFullyCreated;
