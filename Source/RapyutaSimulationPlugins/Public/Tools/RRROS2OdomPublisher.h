@@ -65,7 +65,7 @@ public:
     UPROPERTY(BlueprintReadWrite)
     bool bPublishOdomTf = false;
 
-    //! add robot name to the frame_id and child_frame_id or not.
+    //! add robot name to the frame_id and ChildFrameId or not.
     UPROPERTY(BlueprintReadWrite)
     bool bAppendNodeNamespace = true;
 };

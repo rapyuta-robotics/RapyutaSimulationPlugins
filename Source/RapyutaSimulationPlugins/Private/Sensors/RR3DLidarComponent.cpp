@@ -274,47 +274,47 @@ bool URR3DLidarComponent::Visible(AActor* TargetActor)
 FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
 {
     FROSPointCloud2 retValue;
-    retValue.header_stamp_sec = (int32)TimeOfLastScan;
+    retValue.HeaderStampSec = (int32)TimeOfLastScan;
     uint64 ns = (uint64)(TimeOfLastScan * 1e+09f);
-    retValue.header_stamp_nanosec = (uint32)(ns - (retValue.header_stamp_sec * 1e+09));
+    retValue.HeaderStampNanosec = (uint32)(ns - (retValue.HeaderStampSec * 1e+09));
 
-    retValue.header_frame_id = FrameId;
+    retValue.HeaderFrameId = FrameId;
 
-    retValue.height = NChannelsPerScan;
-    retValue.width = NSamplesPerScan;
+    retValue.Height = NChannelsPerScan;
+    retValue.Width = NSamplesPerScan;
 
-    retValue.fields_name.Add("x");
-    retValue.fields_name.Add("y");
-    retValue.fields_name.Add("z");
-    retValue.fields_name.Add("distance");
-    retValue.fields_name.Add("intensity");
+    retValue.FieldsName.Add("x");
+    retValue.FieldsName.Add("y");
+    retValue.FieldsName.Add("z");
+    retValue.FieldsName.Add("distance");
+    retValue.FieldsName.Add("intensity");
 
     // what's the measure? bytes?
-    retValue.fields_offset.Add(0);
-    retValue.fields_offset.Add(4);
-    retValue.fields_offset.Add(8);
-    retValue.fields_offset.Add(12);
-    retValue.fields_offset.Add(16);
+    retValue.FieldsOffset.Add(0);
+    retValue.FieldsOffset.Add(4);
+    retValue.FieldsOffset.Add(8);
+    retValue.FieldsOffset.Add(12);
+    retValue.FieldsOffset.Add(16);
 
     // 7: float
-    retValue.fields_datatype.Add(7);
-    retValue.fields_datatype.Add(7);
-    retValue.fields_datatype.Add(7);
-    retValue.fields_datatype.Add(7);
-    retValue.fields_datatype.Add(7);
+    retValue.FieldsDatatype.Add(7);
+    retValue.FieldsDatatype.Add(7);
+    retValue.FieldsDatatype.Add(7);
+    retValue.FieldsDatatype.Add(7);
+    retValue.FieldsDatatype.Add(7);
 
-    retValue.fields_count.Add(1);
-    retValue.fields_count.Add(1);
-    retValue.fields_count.Add(1);
-    retValue.fields_count.Add(1);
-    retValue.fields_count.Add(1);
+    retValue.FieldsCount.Add(1);
+    retValue.FieldsCount.Add(1);
+    retValue.FieldsCount.Add(1);
+    retValue.FieldsCount.Add(1);
+    retValue.FieldsCount.Add(1);
 
-    retValue.is_bigendian = false;
+    retValue.bIsBigendian = false;
 
-    retValue.point_step = sizeof(float) * 5;
-    retValue.row_step = sizeof(float) * 5 * NSamplesPerScan;
+    retValue.PointStep = sizeof(float) * 5;
+    retValue.RowStep = sizeof(float) * 5 * NSamplesPerScan;
 
-    retValue.data.Init(0, RecordedHits.Num() * sizeof(float) * 5);
+    retValue.Data.Init(0, RecordedHits.Num() * sizeof(float) * 5);
     for (auto i = 0; i < RecordedHits.Num(); i++)
     {
         float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
@@ -356,14 +356,14 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
         }
 
         FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
-        memcpy(&retValue.data[i * 4 * 5], &Pos.X, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 4], &Pos.Y, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 8], &Pos.Z, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 12], &Distance, 4);
-        memcpy(&retValue.data[i * 4 * 5 + 16], &Intensity, 4);
+        memcpy(&retValue.Data[i * 4 * 5], &Pos.X, 4);
+        memcpy(&retValue.Data[i * 4 * 5 + 4], &Pos.Y, 4);
+        memcpy(&retValue.Data[i * 4 * 5 + 8], &Pos.Z, 4);
+        memcpy(&retValue.Data[i * 4 * 5 + 12], &Distance, 4);
+        memcpy(&retValue.Data[i * 4 * 5 + 16], &Intensity, 4);
     }
 
-    retValue.is_dense = true;
+    retValue.bIsDense = true;
 
     return retValue;
 }

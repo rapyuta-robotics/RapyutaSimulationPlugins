@@ -1,6 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/RRROS2ClockPublisher.h"
+#include "rclcUtilities.h"
 
 void URRROS2ClockPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
@@ -20,6 +21,11 @@ void URRROS2ClockPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
     auto* gameState = GetWorld()->GetGameState();
     if (gameState)
     {
-        CastChecked<UROS2ClockMsg>(InMessage)->Update(gameState->GetServerWorldTimeSeconds());
+        auto stamp = UROS2Utils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
+
+        FROSClock msg;
+        msg.ClockSec = stamp.sec;
+        msg.ClockNanosec = stamp.nanosec;
+        CastChecked<UROS2ClockMsg>(InMessage)->SetMsg(msg);
     }
 }

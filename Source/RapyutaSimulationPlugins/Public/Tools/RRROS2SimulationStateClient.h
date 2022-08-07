@@ -99,7 +99,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerSetEntityState(const FROSSetEntityState_Request& InRequest);
+    void ServerSetEntityState(const FROSSetEntityStateRequest& InRequest);
 
     /**
      * @brief Callback function of Attach ROS2 service.
@@ -115,7 +115,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerAttach(const FROSAttach_Request& InRequest);
+    void ServerAttach(const FROSAttachRequest& InRequest);
 
     /**
      * @brief Callback function of SpawnEntity ROS2 service.
@@ -153,7 +153,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest);
+    void ServerDeleteEntity(const FROSDeleteEntityRequest& InRequest);
 
     /**
      * @brief RPC call to Server's AddEntity

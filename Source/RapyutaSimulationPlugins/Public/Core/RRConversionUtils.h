@@ -89,16 +89,11 @@ public:
     {
         FROSOdometry Output = Input;
 
-        VectorUEToROS(Input.pose_pose_position_x,
-                      Input.pose_pose_position_y,
-                      Input.pose_pose_position_z,
-                      Output.pose_pose_position_x,
-                      Output.pose_pose_position_y,
-                      Output.pose_pose_position_z);
-        Output.pose_pose_orientation = QuatUEToROS(Output.pose_pose_orientation);
+        VectorROSToUE(Input.PosePosePosition, Output.PosePosePosition);
+        Output.PosePoseOrientation = QuatUEToROS(Output.PosePoseOrientation);
 
-        Output.twist_twist_linear = VectorUEToROS(Output.twist_twist_linear);
-        Output.twist_twist_angular = RotationUEToROS(Output.twist_twist_angular);
+        Output.TwistTwistLinear = VectorUEToROS(Output.TwistTwistLinear);
+        Output.TwistTwistAngular = RotationUEToROS(Output.TwistTwistAngular);
 
         return Output;
     }
@@ -118,17 +113,23 @@ public:
 
         return 100.f * Output;
     }
-    FORCEINLINE static void VectorROSToUE(const double& InputX,
-                                          const double& InputY,
-                                          const double& InputZ,
-                                          double& OutputX,
-                                          double& OutputY,
-                                          double& OutputZ)
+    
+    FORCEINLINE static void VectorROSToUE(const FVector& Input, FVector& Output)
     {
-        OutputX = InputX * 100.f;
-        OutputY = -InputY * 100.f;
-        OutputZ = InputZ * 100.f;
+        Output.Set(Input.X * 100.f, -Input.Y * 100.f, Input.Z * 100.f);
     }
+
+    // FORCEINLINE static void VectorROSToUE(const double& InputX,
+    //                                       const double& InputY,
+    //                                       const double& InputZ,
+    //                                       double& OutputX,
+    //                                       double& OutputY,
+    //                                       double& OutputZ)
+    // {
+    //     OutputX = InputX * 100.f;
+    //     OutputY = -InputY * 100.f;
+    //     OutputZ = InputZ * 100.f;
+    // }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FVector RotationROSToUE(const FVector& Input)
@@ -168,16 +169,11 @@ public:
     {
         FROSOdometry Output = Input;
 
-        VectorROSToUE(Input.pose_pose_position_x,
-                      Input.pose_pose_position_y,
-                      Input.pose_pose_position_z,
-                      Output.pose_pose_position_x,
-                      Output.pose_pose_position_y,
-                      Output.pose_pose_position_z);
-        Output.pose_pose_orientation = QuatROSToUE(Output.pose_pose_orientation);
+        VectorROSToUE(Input.PosePosePosition, Output.PosePosePosition);
+        Output.PosePoseOrientation = QuatROSToUE(Output.PosePoseOrientation);
 
-        Output.twist_twist_linear = VectorROSToUE(Output.twist_twist_linear);
-        Output.twist_twist_angular = RotationROSToUE(Output.twist_twist_angular);
+        Output.TwistTwistLinear = VectorROSToUE(Output.TwistTwistLinear);
+        Output.TwistTwistAngular = RotationROSToUE(Output.TwistTwistAngular);
 
         return Output;
     }

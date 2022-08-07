@@ -187,14 +187,14 @@ void ASimulationState::GetSpawnableEntityInfoList()
     }
 }
 
-bool ASimulationState::ServerCheckSetEntityStateRequest(const FROSSetEntityState_Request& InRequest)
+bool ASimulationState::ServerCheckSetEntityStateRequest(const FROSSetEntityStateRequest& InRequest)
 {
-    if (PrevSetEntityStateRequest.state_name == InRequest.state_name &&
-        PrevSetEntityStateRequest.state_reference_frame == InRequest.state_reference_frame &&
-        PrevSetEntityStateRequest.state_pose_position_x == InRequest.state_pose_position_x &&
-        PrevSetEntityStateRequest.state_pose_position_y == InRequest.state_pose_position_y &&
-        PrevSetEntityStateRequest.state_pose_position_z == InRequest.state_pose_position_z &&
-        PrevSetEntityStateRequest.state_pose_orientation == InRequest.state_pose_orientation)
+    if (PrevSetEntityStateRequest.StateName == InRequest.StateName &&
+        PrevSetEntityStateRequest.StateReferenceFrame == InRequest.StateReferenceFrame &&
+        PrevSetEntityStateRequest.StatePosePosition.X == InRequest.StatePosePosition.X &&
+        PrevSetEntityStateRequest.StatePosePosition.Y == InRequest.StatePosePosition.Y &&
+        PrevSetEntityStateRequest.StatePosePosition.Z == InRequest.StatePosePosition.Z &&
+        PrevSetEntityStateRequest.StatePoseOrientation == InRequest.StatePoseOrientation)
     {
         return false;
     }
@@ -204,7 +204,7 @@ bool ASimulationState::ServerCheckSetEntityStateRequest(const FROSSetEntityState
     }
 }
 
-void ASimulationState::ServerSetEntityState(const FROSSetEntityState_Request& InRequest)
+void ASimulationState::ServerSetEntityState(const FROSSetEntityStateRequest& InRequest)
 {
     if (false == VerifyIsServerCall(TEXT("ServerSetEntityState")))
     {
@@ -213,31 +213,31 @@ void ASimulationState::ServerSetEntityState(const FROSSetEntityState_Request& In
 
     if (ServerCheckSetEntityStateRequest(InRequest))
     {
-        FVector pos(InRequest.state_pose_position_x, InRequest.state_pose_position_y, InRequest.state_pose_position_z);
-        FTransform relativeTransf(InRequest.state_pose_orientation, pos);
+        FVector pos(InRequest.StatePosePosition.X, InRequest.StatePosePosition.Y, InRequest.StatePosePosition.Z);
+        FTransform relativeTransf(InRequest.StatePoseOrientation, pos);
         relativeTransf = URRConversionUtils::TransformROSToUE(relativeTransf);
         FTransform worldTransf;
         URRGeneralUtils::GetWorldTransform(
-            InRequest.state_reference_frame,
-            Entities.Contains(InRequest.state_reference_frame) ? Entities[InRequest.state_reference_frame] : nullptr,
+            InRequest.StateReferenceFrame,
+            Entities.Contains(InRequest.StateReferenceFrame) ? Entities[InRequest.StateReferenceFrame] : nullptr,
             relativeTransf,
             worldTransf);
-        Entities[InRequest.state_name]->SetActorTransform(worldTransf);
+        Entities[InRequest.StateName]->SetActorTransform(worldTransf);
     }
 
     PrevSetEntityStateRequest = InRequest;
 }
 
-bool ASimulationState::ServerCheckAttachRequest(const FROSAttach_Request& InRequest)
+bool ASimulationState::ServerCheckAttachRequest(const FROSAttachRequest& InRequest)
 {
     if (false == VerifyIsServerCall(TEXT("ServerCheckAttachRequest")))
     {
         return false;
     }
-    return ((PrevAttachEntityRequest.name1 != InRequest.name1) || (PrevAttachEntityRequest.name2 != InRequest.name2));
+    return ((PrevAttachEntityRequest.Name1 != InRequest.Name1) || (PrevAttachEntityRequest.Name2 != InRequest.Name2));
 }
 
-void ASimulationState::ServerAttach(const FROSAttach_Request& InRequest)
+void ASimulationState::ServerAttach(const FROSAttachRequest& InRequest)
 {
     if (false == VerifyIsServerCall(TEXT("ServerAttach")))
     {
@@ -246,8 +246,8 @@ void ASimulationState::ServerAttach(const FROSAttach_Request& InRequest)
 
     if (ServerCheckAttachRequest(InRequest))
     {
-        AActor* entity1 = Entities[InRequest.name1];
-        AActor* entity2 = Entities[InRequest.name2];
+        AActor* entity1 = Entities[InRequest.Name1];
+        AActor* entity2 = Entities[InRequest.Name2];
 
         if (!entity2->IsAttachedTo(entity1))
         {
@@ -284,8 +284,8 @@ void ASimulationState::ServerAttach(const FROSAttach_Request& InRequest)
                Warning,
                TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors "
                     "under SimulationState control."),
-               *InRequest.name1,
-               *InRequest.name2);
+               *InRequest.Name1,
+               *InRequest.Name2);
     }
 
     PrevAttachEntityRequest = InRequest;
@@ -300,9 +300,9 @@ bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InR
 
     if (PrevSpawnEntityRequest.Xml == InRequest.Xml && PrevSpawnEntityRequest.RobotNamespace == InRequest.RobotNamespace &&
         PrevSpawnEntityRequest.StateName == InRequest.StateName &&
-        PrevSpawnEntityRequest.StatePosePositionX == InRequest.StatePosePositionX &&
-        PrevSpawnEntityRequest.StatePosePositionY == InRequest.StatePosePositionY &&
-        PrevSpawnEntityRequest.StatePosePositionZ == InRequest.StatePosePositionZ &&
+        PrevSpawnEntityRequest.StatePosePosition.X == InRequest.StatePosePosition.X &&
+        PrevSpawnEntityRequest.StatePosePosition.Y == InRequest.StatePosePosition.Y &&
+        PrevSpawnEntityRequest.StatePosePosition.Z == InRequest.StatePosePosition.Z &&
         PrevSpawnEntityRequest.StatePoseOrientation == InRequest.StatePoseOrientation &&
         PrevSpawnEntityRequest.StateReferenceFrame == InRequest.StateReferenceFrame)
     {
@@ -389,7 +389,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
         if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
             // Calculate to-be-spawned entity's [world transf]
-            FVector relLocation(InRequest.StatePosePositionX, InRequest.StatePosePositionY, InRequest.StatePosePositionZ);
+            FVector relLocation(InRequest.StatePosePosition.X, InRequest.StatePosePosition.Y, InRequest.StatePosePosition.Z);
             FTransform relativeTransf =
                 URRConversionUtils::TransformROSToUE(FTransform(InRequest.StatePoseOrientation, relLocation));
             FTransform worldTransf;
@@ -426,16 +426,16 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
     return newEntity;
 }
 
-bool ASimulationState::ServerCheckDeleteRequest(const FROSDeleteEntity_Request& InRequest)
+bool ASimulationState::ServerCheckDeleteRequest(const FROSDeleteEntityRequest& InRequest)
 {
     if (false == VerifyIsServerCall(TEXT("ServerCheckDeleteRequest")))
     {
         return false;
     }
-    return (PrevDeleteEntityRequest.name != InRequest.name);
+    return (PrevDeleteEntityRequest.Name != InRequest.Name);
 }
 
-void ASimulationState::ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest)
+void ASimulationState::ServerDeleteEntity(const FROSDeleteEntityRequest& InRequest)
 {
     if (false == VerifyIsServerCall(TEXT("ServerDeleteEntity")))
     {
@@ -444,7 +444,7 @@ void ASimulationState::ServerDeleteEntity(const FROSDeleteEntity_Request& InRequ
 
     if (ServerCheckDeleteRequest(InRequest))
     {
-        AActor* Removed = Entities.FindAndRemoveChecked(InRequest.name);
+        AActor* Removed = Entities.FindAndRemoveChecked(InRequest.Name);
         Removed->Destroy();
     }
     PrevDeleteEntityRequest = InRequest;

@@ -19,5 +19,7 @@ void URRROS2StringPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
 void URRROS2StringPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-    CastChecked<UROS2StringMsg>(InMessage)->Update(Message);
+    FROSString msg;
+    msg.Data = Message;
+    CastChecked<UROS2StringMsg>(InMessage)->SetMsg(msg);
 }

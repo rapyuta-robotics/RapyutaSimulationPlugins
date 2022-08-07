@@ -276,29 +276,29 @@ float URR2DLidarComponent::GetMaxAngleRadians() const
 FROSLaserScan URR2DLidarComponent::GetROS2Data()
 {
     FROSLaserScan retValue;
-    retValue.header_stamp_sec = (int32)TimeOfLastScan;
+    retValue.HeaderStampSec = (int32)TimeOfLastScan;
     uint64 ns = (uint64)(TimeOfLastScan * 1e+09f);
-    retValue.header_stamp_nanosec = (uint32)(ns - (retValue.header_stamp_sec * 1e+09));
+    retValue.HeaderStampNanosec = (uint32)(ns - (retValue.HeaderStampSec * 1e+09));
 
-    retValue.header_frame_id = FrameId;
+    retValue.HeaderFrameId = FrameId;
 
-    retValue.angle_min = GetMinAngleRadians();
-    retValue.angle_max = GetMaxAngleRadians();
-    retValue.angle_increment = FMath::DegreesToRadians(DHAngle);
-    retValue.time_increment = Dt / NSamplesPerScan;
-    retValue.scan_time = Dt;
-    retValue.range_min = MinRange * .01f;
-    retValue.range_max = MaxRange * .01f;
+    retValue.AngleMin = GetMinAngleRadians();
+    retValue.AngleMax = GetMaxAngleRadians();
+    retValue.AngleIncrement = FMath::DegreesToRadians(DHAngle);
+    retValue.TimeIncrement = Dt / NSamplesPerScan;
+    retValue.ScanTime = Dt;
+    retValue.RangeMin = MinRange * .01f;
+    retValue.RangeMax = MaxRange * .01f;
 
-    retValue.ranges.Empty();
-    retValue.intensities.Empty();
+    retValue.Ranges.Empty();
+    retValue.Intensities.Empty();
     // note that angles are reversed compared to rviz
     // ROS is right handed
     // UE4 is left handed
     for (auto i = 0; i < RecordedHits.Num(); i++)
     {
         // convert to [m]
-        retValue.ranges.Add((MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f);
+        retValue.Ranges.Add((MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f);
 
         const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
 
@@ -308,12 +308,12 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
             // retroreflective material
             if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
             {
-                retValue.intensities.Add(IntensityScale * IntensityReflective);
+                retValue.Intensities.Add(IntensityScale * IntensityReflective);
             }
             // non-reflective material
             else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
             {
-                retValue.intensities.Add(IntensityScale * IntensityNonReflective);
+                retValue.Intensities.Add(IntensityScale * IntensityNonReflective);
             }
             // reflective material
             else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
@@ -330,12 +330,12 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
                                  IntensityReflective);
                 check(Intensity >= IntensityNonReflective);
                 check(Intensity <= IntensityReflective);
-                retValue.intensities.Add(IntensityScale * Intensity);
+                retValue.Intensities.Add(IntensityScale * Intensity);
             }
         }
         else
         {
-            retValue.intensities.Add(std::numeric_limits<double>::quiet_NaN());
+            retValue.Intensities.Add(std::numeric_limits<double>::quiet_NaN());
         }
     }
 

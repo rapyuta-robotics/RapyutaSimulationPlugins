@@ -97,42 +97,42 @@ public:
 
     //! Cached the previous [GetEntityState] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSGetEntityState_Request PrevGetEntityStateRequest;
+    FROSGetEntityStateRequest PrevGetEntityStateRequest;
 
     /**
      * @brief Check set-entity-state-request for duplication on server
      */
     UFUNCTION(BlueprintCallable)
-    bool ServerCheckSetEntityStateRequest(const FROSSetEntityState_Request& InRequest);
+    bool ServerCheckSetEntityStateRequest(const FROSSetEntityStateRequest& InRequest);
 
     /**
      * @brief Set Entity state on server
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    void ServerSetEntityState(const FROSSetEntityState_Request& InRequest);
+    void ServerSetEntityState(const FROSSetEntityStateRequest& InRequest);
 
     //! Cached the previous [SetEntityState] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSSetEntityState_Request PrevSetEntityStateRequest;
+    FROSSetEntityStateRequest PrevSetEntityStateRequest;
 
     /**
      * @brief Check entity-attach request for duplication on server
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    bool ServerCheckAttachRequest(const FROSAttach_Request& InRequest);
+    bool ServerCheckAttachRequest(const FROSAttachRequest& InRequest);
 
     /**
      * @brief Attach an entity to another on Server
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    void ServerAttach(const FROSAttach_Request& InRequest);
+    void ServerAttach(const FROSAttachRequest& InRequest);
 
     //! Cached the previous [Attach] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSAttach_Request PrevAttachEntityRequest;
+    FROSAttachRequest PrevAttachEntityRequest;
 
     /**
      * @brief Check entity-spawn-request for duplication on Server
@@ -157,18 +157,18 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    bool ServerCheckDeleteRequest(const FROSDeleteEntity_Request& InRequest);
+    bool ServerCheckDeleteRequest(const FROSDeleteEntityRequest& InRequest);
 
     /**
      * @brief Delete entity on Server
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    void ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest);
+    void ServerDeleteEntity(const FROSDeleteEntityRequest& InRequest);
 
     //! Cached the previous [DeleteEntity] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
-    FROSDeleteEntity_Request PrevDeleteEntityRequest;
+    FROSDeleteEntityRequest PrevDeleteEntityRequest;
 
     /**
      * @brief Add Entity to #Entities and #EntitiesWithTag
