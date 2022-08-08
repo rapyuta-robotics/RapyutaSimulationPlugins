@@ -173,7 +173,10 @@ public:
 
 protected:
     virtual void BeginPlay() override;
-
+    virtual bool IsSupportedForNetworking() const override
+    {
+        return true;
+    }
     /**
      * @brief Move actor by using SafeMoveUpdatedComponent and SlideAlongSurface.
      * Calculate #DesiredMovement and #DesiredRotation from deltatime, UpdatedComponent and #AngularVelocity.

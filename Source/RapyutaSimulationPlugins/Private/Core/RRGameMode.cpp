@@ -94,7 +94,10 @@ void ARRGameMode::PrintUEPreprocessors() const
 
 void ARRGameMode::ConfigureSimInPlay()
 {
-    URRCoreUtils::ExecuteConsoleCommand(this, URRCoreUtils::CMD_AO_USE_HISTORY_DISABLE);
+    if (IsNetMode(NM_Standalone))
+    {
+        URRCoreUtils::ExecuteConsoleCommand(this, URRCoreUtils::CMD_AO_USE_HISTORY_DISABLE);
+    }
 
     for (auto& moduleNames : URRGameSingleton::SASSET_OWNING_MODULE_NAMES)
     {

@@ -232,9 +232,6 @@ bool URRCoreUtils::WaitUntilThenAct(TFunctionRef<bool()> InCond,
         // Sleep takes seconds, not msec
         FPlatformProcess::Sleep(InIntervalTimeInSec);
         elapsed_time = FTimespan(FDateTime::UtcNow() - begin).GetTotalSeconds();
-#if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogRapyutaInternal, Display, TEXT("Waiting Thread Id: %ld"), URRThreadUtils::GetCurrentThreadId());
-#endif
     }
     // Either InCond() is met or [elapsed_ticks] is over [InTimeoutInSec]
 

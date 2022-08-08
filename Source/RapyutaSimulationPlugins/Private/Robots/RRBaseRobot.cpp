@@ -2,11 +2,16 @@
 
 #include "Robots/RRBaseRobot.h"
 
+// UE
+#include "Net/UnrealNetwork.h"
+
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRNetworkGameMode.h"
+#include "Core/RRNetworkGameState.h"
 #include "Core/RRUObjectUtils.h"
 #include "Drives/RRJointComponent.h"
 #include "Robots/RRRobotROS2Interface.h"
@@ -31,6 +36,11 @@ void ARRBaseRobot::SetupDefault()
     // classes will automatically get invalidated.
     URRUObjectUtils::SetupDefaultRootComponent(this);
 
+    // By default, turn off to be possessed manually by possible a Network player controller.
+    // In case of non-NetworkGameMode, AI Controller could possess manually later.
+    AutoPossessPlayer = EAutoReceiveInput::Disabled;
+    AutoPossessAI = EAutoPossessAI::Disabled;
+
     // NOTE: Any custom object class (eg ROS2InterfaceClass) that is required to be configurable by this class' child BP ones
     // & IF its object needs to be created before BeginPlay(),
     // -> They must be left NULL here, so its object (eg ROS2Interface) is not created by default in [PostInitializeComponents()]
@@ -40,7 +50,12 @@ void ARRBaseRobot::PostInitializeComponents()
 {
     if (ROS2InterfaceClass)
     {
-        CreateROS2Interface();
+        // Since [ROS2Interface] instance itself is not replicated,
+        // This is for standalone-server only
+        if (IsNetMode(NM_Standalone))
+        {
+            CreateROS2Interface();
+        }
     }
     else
     {
@@ -51,6 +66,10 @@ void ARRBaseRobot::PostInitializeComponents()
                *GetName());
     }
 
+    if (nullptr == URRCoreUtils::GetGameMode<ARRNetworkGameMode>(this))
+    {
+        AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+    }
     // Super::, for EAutoPossessAI::PlacedInWorldOrSpawned, spawn APawn's default controller,
     // which does the possessing, thus must be called afterwards
     Super::PostInitializeComponents();
@@ -61,9 +80,13 @@ void ARRBaseRobot::CreateROS2Interface()
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     // NOTE: NOT call ROS2Interface->Initialize(this) here since robot's ros2-based accessories might not have been fully accessible
-    // yet. For sure, that would be done in Controller's OnPossess
-
-    UE_LOG(LogTemp, Error, TEXT("%ld %s ARRBaseRobot::CreateROS2Interface %ld"), this, *GetName(), ROS2Interface);
+    // yet.
+    // Thus, that would be done in Controller's OnPossess for reasons:
+    // + Controller, upon posses/unpossess, acts as the pivot to start/stop robot's ROS2Interface
+    // + ROS2Interface, due to requirements for also instantiatable in ARRBaseRobot's child BPs, may not
+    // have been instantiated yet
+    // + Child class' ros2-related accessories (ROS2 node, sensors, publishers/subscribers)
+    //  may have not been fully accessible until then.
 }
 
 bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
@@ -84,6 +107,21 @@ bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
     }
 
     return true;
+}
+
+void ARRBaseRobot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    UBlueprintGeneratedClass* bpClass = Cast<UBlueprintGeneratedClass>(this->GetClass());
+    if (bpClass)
+    {
+        bpClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
+    }
+    DOREPLIFETIME(ARRBaseRobot, RobotModelName);
+    DOREPLIFETIME(ARRBaseRobot, RobotID);
+    DOREPLIFETIME(ARRBaseRobot, RobotUniqueName);
+    DOREPLIFETIME(ARRBaseRobot, ROS2Interface);
+    DOREPLIFETIME(ARRBaseRobot, ROS2InterfaceClass);
 }
 
 void ARRBaseRobot::SetJointState(const TMap<FString, TArray<float>>& InJointState, const ERRJointControlType InJointControlType)

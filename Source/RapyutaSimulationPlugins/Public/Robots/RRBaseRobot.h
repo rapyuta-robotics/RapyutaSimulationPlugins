@@ -18,6 +18,7 @@
 
 #include "RRBaseRobot.generated.h"
 
+class ARRNetworkGameState;
 class URRRobotROS2Interface;
 
 /**
@@ -50,12 +51,16 @@ public:
     void SetupDefault();
 
     //! Default class to use when ROS2 Interface is setup for robot
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS2 Interface Class"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS2 Interface Class"), Replicated)
     TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass;
 
     //! Robot's ROS2 Interface
-    UPROPERTY()
+    UPROPERTY(Replicated)
     URRRobotROS2Interface* ROS2Interface = nullptr;
+
+    /**
+     * @brief Instantiate ROS2 Interface without initializing yet
+     */
     void CreateROS2Interface();
 
     /**
@@ -66,8 +71,9 @@ public:
      * + An Actor's Name could get updated as its Label is updated
      * + In pending-kill state, GetName() goes to [None]
      */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString RobotUniqueName;
+
     /**
      * @brief Get robot unique name
      */
@@ -75,6 +81,7 @@ public:
     {
         return RobotUniqueName;
     }
+
     /**
      * @brief Set robot unique name
      */
@@ -84,8 +91,9 @@ public:
     }
 
     //! Robot Model Name (loaded from URDF/SDF)
-    UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+    UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString RobotModelName;
+
     /**
      * @brief Get robot model name
      */
@@ -103,8 +111,9 @@ public:
     }
 
     //! Robot ID No
-    UPROPERTY(EditAnyWhere)
+    UPROPERTY(EditAnyWhere, Replicated)
     uint64 RobotID = 0;
+
     /**
      * @brief Get robot ID
      */
@@ -123,13 +132,13 @@ public:
     /**
      * @brief Manually built links
      */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite /*, Replicated*/)
     TMap<FString, UStaticMeshComponent*> Links;
 
     /**
      * @brief Manually built joints
      */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite /*, Replicated*/)
     TMap<FString, URRJointComponent*> Joints;
 
     /**
@@ -143,6 +152,14 @@ public:
      * @sa [GetComponents](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/GameFramework/AActor/GetComponents/2/)
      */
     bool InitSensors(AROS2Node* InROS2Node);
+
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     /**
      * @brief Set Joints state to #Joints

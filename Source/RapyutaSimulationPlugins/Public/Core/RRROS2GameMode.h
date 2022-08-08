@@ -11,6 +11,7 @@
 #include "GameFramework/GameMode.h"
 
 // RapyutaSimulationPlugins
+#include "Tools/RRROS2SimulationStateClient.h"
 #include "Tools/SimulationState.h"
 
 #include "RRROS2GameMode.generated.h"
@@ -27,30 +28,37 @@ UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
     GENERATED_BODY()
 
 public:
+    //! Sim's Main ROS2 node
     UPROPERTY(BlueprintReadOnly)
-    AROS2Node* ROS2Node = nullptr;
+    AROS2Node* MainROS2Node = nullptr;
+
+    //! Sim's Main ROS2 node name
+    UPROPERTY(BlueprintReadWrite)
+    FString MainROS2NodeName = TEXT("UEROS2Node");
 
     //! Publish /clock
     UPROPERTY(BlueprintReadOnly)
     URRROS2ClockPublisher* ClockPublisher = nullptr;
 
-    //! Provide ROS2 interface to get/set actor state, spawn/delete actor, attach/detach actor.
+    //! Provide ROS2 implementation of sim-wide operations like get/set actor state, spawn/delete actor, attach/detach actor.
     UPROPERTY(BlueprintReadOnly)
-    ASimulationState* SimulationState = nullptr;
+    ASimulationState* MainSimState = nullptr;
 
+    //! Provide ROS2 interface of sim-wide operations implemented by #SimulationState
     UPROPERTY(BlueprintReadOnly)
-    TSubclassOf<ASimulationState> SimulationStateClass = ASimulationState::StaticClass();
+    URRROS2SimulationStateClient* MainROS2SimStateClient = nullptr;
 
-    UPROPERTY(BlueprintReadWrite)
-    FString UENodeName = TEXT("UENode");
+    //! Custom type to instantiate #MainROS2SimStateClient, configurable in child classes
+    UPROPERTY(BlueprintReadOnly)
+    TSubclassOf<URRROS2SimulationStateClient> ROS2SimStateClientClass = URRROS2SimulationStateClient::StaticClass();
 
 protected:
     /**
      * @brief Initialize Game and call #InitSim.
-     * 
-     * @param InMapName 
-     * @param InOptions 
-     * @param OutErrorMessage 
+     *
+     * @param InMapName
+     * @param InOptions
+     * @param OutErrorMessage
      *
      * @sa [InitGame](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameMode/InitGame/)
      */
@@ -58,14 +66,14 @@ protected:
 
     /**
      * @brief Call #InitROS
-     * 
+     *
      */
     virtual void InitSim();
 
 private:
     /**
      * @brief Create and initialize #ROS2Node, #ClockPublisher and #SimulationState.
-     * 
+     *
      */
     void InitROS2();
 };

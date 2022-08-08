@@ -1,6 +1,10 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
 
 #include "Robots/RRRobotBaseVehicle.h"
+
+// UE
+#include "GameFramework/GameState.h"
+#include "Net/UnrealNetwork.h"
 
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
@@ -29,7 +33,6 @@ void ARRRobotBaseVehicle::SetupDefaultVehicle()
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
-    AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // NOTE: Any custom object class (eg ROS2Interface Class, VehicleMoveComponentClass) that is required to be configurable by
     // this class' child BP ones & if its object needs to be created before BeginPlay(),
@@ -80,12 +83,76 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
     }
 }
 
-void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVelocity)
+void ARRRobotBaseVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ARRRobotBaseVehicle, Map);
+    DOREPLIFETIME(ARRRobotBaseVehicle, RobotVehicleMoveComponent);
+    DOREPLIFETIME(ARRRobotBaseVehicle, VehicleMoveComponentClass);
 }
 
-void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVelocity)
+void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVel)
 {
-    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
+    ServerSetLinearVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), InLinearVel);
+    ClientSetLinearVel(InLinearVel);
+}
+
+void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
+{
+    ServerSetAngularVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
+    ClientSetAngularVel(InAngularVel);
+}
+
+void ARRRobotBaseVehicle::ServerSetLinearVel_Implementation(float InClientTimeStamp,
+                                                            const FVector& InClientRobotPosition,
+                                                            const FVector& InLinearVel)
+{
+    if (RobotVehicleMoveComponent)
+    {
+        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+        SetActorLocation(InClientRobotPosition + InLinearVel * (serverCurrentTime - InClientTimeStamp));
+        RobotVehicleMoveComponent->Velocity = InLinearVel;
+    }
+}
+
+void ARRRobotBaseVehicle::ServerSetAngularVel_Implementation(float InClientTimeStamp,
+                                                             const FRotator& InClientRobotRotation,
+                                                             const FVector& InAngularVel)
+{
+    if (RobotVehicleMoveComponent)
+    {
+        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+        SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
+        RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+    }
+}
+
+void ARRRobotBaseVehicle::ClientSetLinearVel_Implementation(const FVector& InLinearVel)
+{
+    if (RobotVehicleMoveComponent)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("PLAYER [%s] ClientSetLinearVel %s"),
+               *PlayerController->PlayerState->GetPlayerName(),
+               *InLinearVel.ToString());
+#endif
+        RobotVehicleMoveComponent->Velocity = InLinearVel;
+    }
+}
+
+void ARRRobotBaseVehicle::ClientSetAngularVel_Implementation(const FVector& InAngularVel)
+{
+    if (RobotVehicleMoveComponent)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("PLAYER [%s] ClientSetAngularVel %s"),
+               *PlayerController->PlayerState->GetPlayerName(),
+               *InAngularVel.ToString());
+#endif
+        RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+    }
 }
