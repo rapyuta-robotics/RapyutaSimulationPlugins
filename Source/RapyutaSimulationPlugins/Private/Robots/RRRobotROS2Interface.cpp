@@ -16,6 +16,15 @@
 #include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotBaseVehicle.h"
 
+void URRRobotROS2Interface::SetupROSParams()
+{
+    bPublishOdom = true;
+    bPublishOdomTf = false;
+    CmdVelTopicName = TEXT("cmd_vel");
+    JointsCmdTopicName = TEXT("joint_states");
+    bWarnAboutMissingLink = true;
+}
+
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
     Robot = InRobot;
@@ -95,6 +104,7 @@ void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
                                             const TSubclassOf<UROS2Publisher>& InPublisherClass,
                                             const TSubclassOf<UROS2GenericMsg>& InMsgClass,
                                             int32 InPubFrequency,
+                                            uint8 InQoS,
                                             UROS2Publisher*& OutPublisher)
 {
     if (nullptr == OutPublisher)
@@ -102,6 +112,7 @@ void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
         OutPublisher = UROS2Publisher::CreatePublisher(this, InTopicName, InPublisherClass, InMsgClass, InPubFrequency);
     }
     OutPublisher->InitializeWithROS2(RobotROS2Node);
+    OutPublisher->Init(TEnumAsByte<UROS2QoS>(InQoS));
 }
 
 void URRRobotROS2Interface::StopPublishers()

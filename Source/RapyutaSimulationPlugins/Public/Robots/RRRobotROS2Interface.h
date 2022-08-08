@@ -33,6 +33,17 @@ public:
     UPROPERTY(Transient, Replicated)
     ARRBaseRobot* Robot = nullptr;
 
+    virtual bool IsSupportedForNetworking() const override
+    {
+        return true;
+    }
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
+    void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
     //! Target ROS2 node of this interface
     UPROPERTY(Transient, Replicated)
     AROS2Node* RobotROS2Node = nullptr;
@@ -51,19 +62,39 @@ public:
      */
     void InitRobotROS2Node(ARRBaseRobot* InRobot);
 
-    virtual bool IsSupportedForNetworking() const override
-    {
-        return true;
-    }
+    /**
+     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS2 msg.
+     * Supports only 1 DOF joints.
+     * Effort control is not supported.
+     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
+     */
+    UFUNCTION()
+    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    bool bPublishOdom = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    bool bPublishOdomTf = false;
+
+    //! Movement command topic. If empty is given, subscriber will not be initiated.
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    FString CmdVelTopicName = TEXT("cmd_vel");
+
+    //! Joint control command topic. If empty is given, subscriber will not be initiated.
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    FString JointsCmdTopicName = TEXT("joint_states");
+
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    bool bWarnAboutMissingLink = true;
 
     /**
-     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
-     * replicated properties
-     *
-     * @param OutLifetimeProps Output lifetime properties
+     * @brief Setup ROS Params, overridable by child classes to config custom ROS2 Interface's params
      */
-    void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+    UFUNCTION()
+    virtual void SetupROSParams();
 
+    //! Odom publisher
     UPROPERTY(Transient, BlueprintReadWrite, Replicated)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
 
@@ -95,32 +126,6 @@ public:
     UFUNCTION()
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
 
-    /**
-     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS2 msg.
-     * Supports only 1 DOF joints.
-     * Effort control is not supported.
-     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
-     */
-    UFUNCTION()
-    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    bool bPublishOdom = true;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    bool bPublishOdomTf = false;
-
-    //! Movement command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite, Replicated)
-    FString CmdVelTopicName = TEXT("cmd_vel");
-
-    //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite, Replicated)
-    FString JointsCmdTopicName = TEXT("joint_states");
-
-    UPROPERTY(BlueprintReadWrite, Replicated)
-    bool bWarnAboutMissingLink = true;
-
 protected:
     /**
      * @brief Create a ROS2 publisher
@@ -135,6 +140,7 @@ protected:
                          const TSubclassOf<UROS2Publisher>& InPublisherClass,
                          const TSubclassOf<UROS2GenericMsg>& InMsgClass,
                          int32 InPubFrequency,
+                         uint8 InQoS,
                          UROS2Publisher*& OutPublisher);
 
     template<typename TROS2Message,

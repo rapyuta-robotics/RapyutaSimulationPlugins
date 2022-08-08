@@ -79,6 +79,7 @@ void ARRBaseRobot::CreateROS2Interface()
 {
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
+    ROS2Interface->SetupROSParams();
     // NOTE: NOT call ROS2Interface->Initialize(this) here since robot's ros2-based accessories might not have been fully accessible
     // yet.
     // Thus, that would be done in Controller's OnPossess for reasons:

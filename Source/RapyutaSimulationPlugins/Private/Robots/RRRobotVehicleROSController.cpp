@@ -2,12 +2,6 @@
 
 #include "Robots/RRRobotVehicleROSController.h"
 
-// UE
-#include "Kismet/GameplayStatics.h"
-
-// rclUE
-#include "ROS2Node.h"
-
 // RapyutaSimulationPlugins
 #include "Robots/RRRobotBaseVehicle.h"
 #include "Robots/RRRobotROS2Interface.h"
