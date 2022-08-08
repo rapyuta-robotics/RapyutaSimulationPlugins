@@ -34,13 +34,18 @@ bool ARRCamera::Initialize()
     {
         return false;
     }
-    CameraComponent->FieldOfView = URRMathUtils::GetRandomFloatInRange(CameraProperties.HFoVRangeInDegree);
+    RandomizeFoV();
     return true;
 }
 
-void ARRCamera::LookAt(const FVector& InTargetLocation)
+void ARRCamera::LookAt(const FVector& InTargetLocation, bool bMoveToNearTarget)
 {
-    CameraComponent->SetWorldRotation((InTargetLocation - GetActorLocation()).ToOrientationQuat());
+    if (bMoveToNearTarget)
+    {
+        SetActorLocation(URRMathUtils::GetRandomSphericalPosition(
+            InTargetLocation, CameraProperties.DistanceRangeInCm, CameraProperties.HeightRangeInCm));
+    }
+    SetActorRotation((InTargetLocation - GetActorLocation()).ToOrientationQuat());
 }
 
 void ARRCamera::RandomizeFoV()
@@ -48,11 +53,10 @@ void ARRCamera::RandomizeFoV()
     CameraComponent->FieldOfView = URRMathUtils::GetRandomFloatInRange(CameraProperties.HFoVRangeInDegree);
 }
 
-void ARRCamera::RandomizePose(bool bIsRandomLocationOnly)
+void ARRCamera::RandomizePose(const FVector& InBaseLocation, bool bIsRandomLocationOnly)
 {
-    const FVector sceneInstanceLocation = URRCoreUtils::GetSceneInstanceLocation(SceneInstanceId);
     const FVector randomLocation = URRMathUtils::GetRandomSphericalPosition(
-        sceneInstanceLocation, CameraProperties.DistanceRangeInCm, CameraProperties.HeightRangeInCm);
+        InBaseLocation, CameraProperties.DistanceRangeInCm, CameraProperties.HeightRangeInCm);
 
     if (bIsRandomLocationOnly)
     {
@@ -70,4 +74,4 @@ float ARRCamera::GetDistanceToFloor() const
     return ActorCommon->SceneFloor
              ? FVector::Dist(CameraComponent->GetComponentLocation(), ActorCommon->SceneFloor->GetActorLocation())
              : 0.f;
-};
+}

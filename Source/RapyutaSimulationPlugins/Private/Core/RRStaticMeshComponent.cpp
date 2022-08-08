@@ -56,13 +56,7 @@ void URRStaticMeshComponent::Initialize(bool bInIsStationary, bool bInIsPhysicsE
     // Refer to [FBodyInstance::SetInstanceSimulatePhysics()]
     SetSimulatePhysics(bInIsPhysicsEnabled);
 
-    // CustomDepthStencilValue
-    ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
-    if (ownerActor->GameMode->IsDataSynthSimType() && ownerActor->IsDataSynthEntity())
-    {
-        verify(IsValid(ownerActor->ActorCommon));
-        SetCustomDepthStencilValue(ownerActor->ActorCommon->GenerateUniqueDepthStencilValue());
-    }
+    // CustomDepthStencil will be actively set by stakeholders or ARRMeshActor if needs be
 }
 
 void URRStaticMeshComponent::SetMesh(UStaticMesh* InStaticMesh)
@@ -318,7 +312,7 @@ void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& In
             const FVertexInstanceID instanceID = OutMeshDescBuilder.AppendInstance(vertexIDs[vIdx]);
             OutMeshDescBuilder.SetInstanceNormal(instanceID, mesh.Normals[vIdx]);
             OutMeshDescBuilder.SetInstanceUV(instanceID, mesh.UVs[vIdx], 0);
-            OutMeshDescBuilder.SetInstanceColor(instanceID, FVector4f(mesh.VertexColors[vIdx]));
+            OutMeshDescBuilder.SetInstanceColor(instanceID, FVector4f(FLinearColor(mesh.VertexColors[vIdx])));
             vertexInsts.Emplace(instanceID);
         }
 

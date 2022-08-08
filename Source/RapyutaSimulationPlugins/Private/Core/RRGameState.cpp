@@ -14,6 +14,7 @@
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameInstance.h"
 #include "Core/RRMathUtils.h"
+#include "Core/RRMeshActor.h"
 #include "Core/RRPlayerController.h"
 #include "Core/RRROS2GameMode.h"
 #include "Core/RRSceneDirector.h"
@@ -35,6 +36,7 @@ void ARRGameState::PrintSimConfig() const
            TEXT("SIM_OUTPUTS_BASE_FOLDER_NAME: %s -> %s"),
            *SIM_OUTPUTS_BASE_FOLDER_NAME,
            *GetSimOutputsBaseFolderPath());
+
     UE_LOG(LogRapyutaCore, Display, TEXT("OPERATION_BATCHES_NUM: %d"), OPERATION_BATCHES_NUM);
     UE_LOG(LogRapyutaCore, Display, TEXT("ENTITY_BOUNDING_BOX_VERTEX_NORMALS:"));
     for (const auto& vertexNormal : ENTITY_BOUNDING_BOX_VERTEX_NORMALS)
@@ -65,8 +67,8 @@ void ARRGameState::StartSim()
     UE_LOG(LogRapyutaCore, Display, TEXT("MAX SPLIT SCREEN PLAYERS: %d"), maxSplitscreenPlayers);
     verify(SCENE_INSTANCES_NUM <= maxSplitscreenPlayers);
 
-    // 0- Fetch static-env actors
-    FetchEnvironmentActors();
+    // 0- Stream level & Fetch static-env actors
+    SetupEnvironment();
 
     for (int8 i = 0; i < SCENE_INSTANCES_NUM; ++i)
     {
@@ -87,8 +89,14 @@ void ARRGameState::StartSim()
     }
 }
 
-void ARRGameState::FetchEnvironmentActors()
+void ARRGameState::SetupEnvironment()
 {
+    FetchEnvStaticActors();
+}
+
+void ARRGameState::FetchEnvStaticActors()
+{
+    // Fetch env actors
     UWorld* currentWorld = GetWorld();
     checkf(currentWorld, TEXT("[ARRGameState::SetupEnvironment] Failed fetching Game World"));
 
@@ -103,28 +111,7 @@ void ARRGameState::FetchEnvironmentActors()
     // Not all maps has MainWall setup
 
     MainLights = URRUObjectUtils::FindActorListByType<ALight>(currentWorld);
-    check(MainLights.Num() > 0);
-
-    MainStaticMeshActors = URRUObjectUtils::FindActorListByType<AStaticMeshActor>(currentWorld);
-    if ((MainStaticMeshActors.Num() > 0) && (nullptr == MainEnvironment))
-    {
-        // Set the first static mesh actor as [MainEnvironment]
-        MainEnvironment = MainStaticMeshActors[0];
-        // & let others attach to it
-        for (auto i = 1; i < MainStaticMeshActors.Num(); ++i)
-        {
-            MainStaticMeshActors[i]->AttachToActor(MainEnvironment, FAttachmentTransformRules::KeepWorldTransform);
-        }
-        for (auto& light : MainLights)
-        {
-            light->AttachToActor(MainEnvironment, FAttachmentTransformRules::KeepWorldTransform);
-        }
-    }
-
-    if (MainEnvironment)
-    {
-        MainEnvOriginalLocation = MainEnvironment->GetActorLocation();
-    }
+    // Not all maps has MainLights setup
 }
 
 void ARRGameState::CreateSceneInstance(int8 InSceneInstanceId)
@@ -246,11 +233,14 @@ bool ARRGameState::HaveAllSceneInstancesCompleted() const
 
 void ARRGameState::MoveEnvironmentToSceneInstance(int8 InSceneInstanceId)
 {
-    if (IsValid(MainEnvironment))
+    if (InSceneInstanceId != LastSceneInstanceId)
     {
-        const FVector defaultSceneInstanceLocation = URRCoreUtils::GetSceneInstanceLocation(0);
-        const FVector sceneInstanceLocation = URRCoreUtils::GetSceneInstanceLocation(InSceneInstanceId);
-        MainEnvironment->SetActorLocation(MainEnvOriginalLocation + sceneInstanceLocation - defaultSceneInstanceLocation);
+        if (IsValid(MainEnvironment))
+        {
+            MainEnvironment->AddActorWorldOffset(URRCoreUtils::GetSceneInstanceLocation(InSceneInstanceId) -
+                                                 URRCoreUtils::GetSceneInstanceLocation(LastSceneInstanceId));
+        }
+        LastSceneInstanceId = InSceneInstanceId;
     }
 }
 
@@ -302,25 +292,11 @@ void ARRGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
     Super::EndPlay(EndPlayReason);
 }
 
-void ARRGameState::Tick(float DeltaTime)
+void ARRGameState::SetAllEntitiesActivated(bool bIsActivated)
 {
-    Super::Tick(DeltaTime);
-
-    if (!HasInitialized())
+    for (auto& entity : AllDynamicMeshEntities)
     {
-        return;
-    }
-
-    // PROFILING --
-    // [OnTick()] is virtual, and only runs upon GameState having been already initialized!
-    OnTick(DeltaTime);
-}
-
-void ARRGameState::OnTick(float DeltaTime)
-{
-    for (auto& sceneInstance : SceneInstanceList)
-    {
-        sceneInstance->ActorCommon->OnTick(DeltaTime);
+        entity->SetActivated(bIsActivated);
     }
 }
 
@@ -352,10 +328,7 @@ ARRMeshActor* ARRGameState::FindEntityByModel(const FString& InEntityModelName, 
     return resultEntity;
 }
 
-void ARRGameState::SetAllEntitiesActivated(bool bIsActivated)
+void ARRGameState::AddEntity(ARRMeshActor* InEntity)
 {
-    for (auto& entity : AllDynamicMeshEntities)
-    {
-        entity->SetActivated(bIsActivated);
-    }
+    AllDynamicMeshEntities.AddUnique(InEntity);
 }

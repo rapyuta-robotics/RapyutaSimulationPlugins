@@ -339,7 +339,7 @@ UTextureLightProfile* URRCoreUtils::LoadIESProfile(const FString& InFullFilePath
     {
         UE_LOG(LogRapyutaCore,
                Error,
-               TEXT("[URRCoreUtils::LoadIESProfile] IESConverter failed creating buffer from imdage loaded from [%s]"),
+               TEXT("[URRCoreUtils::LoadIESProfile] IESConverter failed creating buffer from image loaded from [%s]"),
                *InFullFilePath);
         return nullptr;
     }

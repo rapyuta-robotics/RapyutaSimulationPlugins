@@ -55,6 +55,7 @@ bool ARRPlayerController::Initialize()
 
     SceneCamera = ActorCommon->SceneCamera;
     check(SceneCamera);
+    Possess(SceneCamera);
 
     // Not all maps has GlobalPostProcessVolume
     MainPostProcessVolume = Cast<APostProcessVolume>(URRUObjectUtils::FindPostProcessVolume(GetWorld()));

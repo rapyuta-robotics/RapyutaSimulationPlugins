@@ -14,6 +14,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
+#include "Core/RRGameState.h"
 #include "Core/RRTextureData.h"
 #include "Core/RRThreadUtils.h"
 
@@ -381,6 +382,22 @@ public:
         return nullptr;
     }
 
+    template<typename T>
+    static TArray<T*> FindActorListBySubname(UWorld* InWorld,
+                                             const FString& InSubname,
+                                             const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        TArray<T*> actors;
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (actorItr->GetName().Contains(InSubname, InCaseType))
+            {
+                actors.Add(*actorItr);
+            }
+        }
+        return actors;
+    }
+
     UFUNCTION()
     static AActor* FindEnvironmentActor(UWorld* InWorld)
     {
@@ -415,6 +432,43 @@ public:
     }
 
     UFUNCTION()
+    static TArray<AStaticMeshActor*> FindStaticMeshActorListByMeshSubname(
+        UWorld* InWorld,
+        const FString& InMeshSubname,
+        bool bCreateMaterialInstanceDynamic,
+        const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        TArray<AStaticMeshActor*> actors;
+        for (TActorIterator<AStaticMeshActor> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            auto* meshComp = actorItr->GetStaticMeshComponent();
+            if (meshComp->GetStaticMesh()->GetName().Contains(InMeshSubname, InCaseType))
+            {
+                if (bCreateMaterialInstanceDynamic)
+                {
+                    for (auto i = 0; i < meshComp->GetMaterials().Num(); ++i)
+                    {
+                        meshComp->CreateDynamicMaterialInstance(i, meshComp->GetMaterial(i));
+                    }
+                }
+                actors.Add(*actorItr);
+            }
+        }
+        return actors;
+    }
+
+    template<typename T>
+    static TArray<T*> FindActorListByType(UWorld* InWorld)
+    {
+        TArray<T*> actors;
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            actors.Add(*actorItr);
+        }
+        return actors;
+    }
+
+    UFUNCTION()
     static APostProcessVolume* FindPostProcessVolume(UWorld* InWorld)
     {
         // There is only one common [PostProcessVolume] actor of all Scene instances!
@@ -423,7 +477,7 @@ public:
 
     // TActorSpawnInfo: [FRRActorSpawnInfo], etc.
     /**
-     * @brief
+     * @brief Spawn a generic actor that is either mesh-based or mesh-free & initialize it with actor spawn info
      * @tparam T
      * @tparam TActorSpawnInfo
      * @param InWorld
@@ -431,9 +485,6 @@ public:
      * @param InActorSpawnInfo
      * @param CollisionHandlingType
      * @return T*
-     *
-     * @todo add documentation
-     *
      */
     template<typename T, typename TActorSpawnInfo>
     static T* SpawnSimActor(
@@ -501,7 +552,7 @@ public:
     }
 
     /**
-     * @brief
+     * @brief Spawn a generic actor that is either mesh-based or mesh-free
      *
      * @param InWorld
      * @param InSceneInstanceId
@@ -510,9 +561,6 @@ public:
      * @param InActorTransform
      * @param InCollisionHandlingType
      * @return ARRBaseActor*
-     *
-     * @todo add documentation
-     *
      */
     static ARRBaseActor* SpawnSimActor(
         UWorld* InWorld,
@@ -528,9 +576,14 @@ public:
         return InBaseActor->GetTransform().InverseTransformPosition(InActor->GetActorLocation());
     }
 
+    FORCEINLINE static FQuat GetRelativeQuatFrom(const FQuat& InQuat, const AActor* InBaseActor)
+    {
+        return InBaseActor->GetTransform().InverseTransformRotation(InQuat);
+    }
+
     FORCEINLINE static FQuat GetRelativeQuatFrom(const AActor* InActor, const AActor* InBaseActor)
     {
-        return InBaseActor->GetTransform().InverseTransformRotation(InActor->GetActorQuat());
+        return GetRelativeQuatFrom(InActor->GetActorQuat(), InBaseActor);
     }
 
     FORCEINLINE static FRotator GetRelativeRotFrom(const AActor* InActor, const AActor* InBaseActor)
@@ -538,10 +591,72 @@ public:
         return GetRelativeQuatFrom(InActor, InBaseActor).Rotator();
     }
 
+    FORCEINLINE static FVector GetDirectedExtent(const FVector& InNormal, const FVector& InExtent)
+    {
+        // Normal coord -> Extent coord
+        return FVector((0.f == InNormal.X) ? -InExtent.X : InExtent.X,
+                       (0.f == InNormal.Y) ? -InExtent.Y : InExtent.Y,
+                       (0.f == InNormal.Z) ? -InExtent.Z : InExtent.Z);
+    }
+
     static void GetActorCenterAndBoundingBoxVertices(const AActor* InActor,
                                                      const AActor* InBaseActor,
-                                                     TArray<FVector>& OutCenterAndVertices,
+                                                     TArray<FVector>* OutCenterAndVertices3D,
                                                      bool bInIncludeNonColliding = true);
+
+    template<typename TActor>
+    static void GetHomoActorGroupCenterAndBoundingBoxVertices(const TArray<TActor*>& InActors,
+                                                              const AActor* InBaseActor,
+                                                              TArray<FVector>* OutCenterAndVertices3D,
+                                                              bool bInIncludeNonColliding = true)
+    {
+        OutCenterAndVertices3D->Reset();
+        ARRGameState* gameState = URRCoreUtils::GetGameState<ARRGameState>(InActors[0]);
+
+        // [InActors]' World bounding box
+        FBox groupWorldBox(ForceInit);
+        for (const auto& actor : InActors)
+        {
+            groupWorldBox += actor->GetComponentsBoundingBox(bInIncludeNonColliding);
+        }
+        FVector centerWorld, extentsWorld;
+        groupWorldBox.GetCenterAndExtents(centerWorld, extentsWorld);
+
+        // [InActors]'s group bounding box with rotation (in BaseActor frame or World frame)
+        if (InBaseActor)
+        {
+            // Calculate [centerBase] to [InBaseActor] frame
+            // UnrealEngine/Engine/Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteComponent.cpp:179
+            const FTransform homoGroupTransform = GetHomoActorGroupTransform(InActors);
+            const FTransform baseTransform = homoGroupTransform.GetRelativeTransform(InBaseActor->GetTransform());
+            const FVector centerBase = baseTransform.GetTranslation();
+
+            // [0]: centerBase
+            OutCenterAndVertices3D->Emplace(centerBase);
+
+            // [1-8]: verticesBase
+            // Calculate global vertices as : [centerBase] + Rotated [extentsWorld]
+            for (auto i = 0; i < gameState->ENTITY_BOUNDING_BOX_VERTEX_NORMALS.Num(); ++i)
+            {
+                OutCenterAndVertices3D->Emplace(centerBase + baseTransform.GetRotation().RotateVector(GetDirectedExtent(
+                                                                 gameState->GetEntityBBVertexNormal(i), extentsWorld)));
+            }
+        }
+        else
+        {
+            // [0]: centerWorld
+            OutCenterAndVertices3D->Emplace(centerWorld);
+
+            // [1-8]: verticesWorld
+            // Calculate global vertices as : [centerWorld] + Rotated [extentsWorld]
+            for (auto i = 0; i < gameState->ENTITY_BOUNDING_BOX_VERTEX_NORMALS.Num(); ++i)
+            {
+                OutCenterAndVertices3D->Emplace(centerWorld +
+                                                GetDirectedExtent(gameState->GetEntityBBVertexNormal(i), extentsWorld));
+            }
+        }
+    }
+
     static FVector GetActorExtent(AActor* InActor, bool bOnlyCollidingComponents = true, bool bIncludeFromChildActors = false)
     {
         FVector actorOrigin, actorExtent;
@@ -562,21 +677,76 @@ public:
     }
 
     template<typename T>
-    static FVector GetActorsGroupCenter(const TArray<T*>& InActors)
+    static FTransform GetHomoActorGroupTransform(const TArray<T*>& InActors)
+    {
+        return FTransform(InActors[0]->GetActorRotation(), GetActorGroupCenter(InActors));
+    }
+
+    template<typename T>
+    static FVector GetActorGroupCenter(const TArray<T*>& InActors)
     {
         FVector sumLocation = FVector::ZeroVector;
         for (const auto& actor : InActors)
         {
             sumLocation += actor->GetActorLocation();
         }
-        return sumLocation / InActors.Num();
+        return (InActors.Num() > 0) ? sumLocation / InActors.Num() : FVector::ZeroVector;
+    }
+
+    template<typename T>
+    static FVector GetActorGroupListCenter(const TArray<TArray<T*>>& InActorGroups)
+    {
+        FVector sumLocation = FVector::ZeroVector;
+        for (const auto& actorGroup : InActorGroups)
+        {
+            sumLocation += GetActorGroupCenter(actorGroup);
+        }
+        return (InActorGroups.Num() > 0) ? sumLocation / InActorGroups.Num() : FVector::ZeroVector;
+    }
+
+    static bool IsActorOverlapping(AActor* InActor)
+    {
+        for (UActorComponent* ownedComp : InActor->GetComponents())
+        {
+            if (UPrimitiveComponent* primComp = Cast<UPrimitiveComponent>(ownedComp))
+            {
+                TSet<UPrimitiveComponent*> overlapSet;
+                primComp->GetOverlappingComponents(overlapSet);
+                if (overlapSet.Num() > 0)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static bool IsEnvStaticMeshActorsOverlapEventEnabled(UWorld* InWorld)
+    {
+        for (TActorIterator<AStaticMeshActor> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (!actorItr->GetStaticMeshComponent()->GetGenerateOverlapEvents())
+            {
+                UE_LOG(LogTemp, Display, TEXT("%s GenerateOverlapEvents disabled"), *actorItr->GetName());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static void SetEnvStaticMeshActorsOverlapEventEnabled(UWorld* InWorld, bool bEnabled)
+    {
+        for (TActorIterator<AStaticMeshActor> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            actorItr->GetStaticMeshComponent()->SetGenerateOverlapEvents(bEnabled);
+        }
     }
 
     template<typename T>
     static void HuddleActors(const TArray<T*>& InActors)
     {
         // (NOTE) Actors should be not touching the floor so they could sweep
-        const FVector center = URRUObjectUtils::GetActorsGroupCenter(InActors);
+        const FVector center = URRUObjectUtils::GetActorGroupCenter(InActors);
         const auto actorsNum = InActors.Num();
         const auto actorsNumHalf = FMath::CeilToInt(0.5f * actorsNum);
         for (auto i = actorsNumHalf; i < actorsNum; ++i)
@@ -590,7 +760,7 @@ public:
             actor->AddActorWorldOffset(center - actor->GetActorLocation(), true);
         }
     }
-    static FString GetSegMaskDepthStencilsAsText(ARRMeshActor* InActor);
+    static FString GetSegMaskDepthStencilsAsText(AActor* InActor);
     static bool GetPhysicsActorHandles(FBodyInstance* InBody1,
                                        FBodyInstance* InBody2,
                                        FPhysicsActorHandle& OutActorRef1,
@@ -600,8 +770,13 @@ public:
     static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                     int32 InMaterialIndex,
                                                                     const FString& InMaterialInterfaceName);
+    static int32 GetActorMaterialsNum(AActor* InActor);
     static UMaterialInstanceDynamic* GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex = 0);
-    static bool ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo);
-    static void ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial, const FRRMaterialProperty& InMaterialInfo);
+    static bool ApplyMeshActorMaterialProps(AActor* InActor,
+                                            const FRRMaterialProperty& InMaterialInfo,
+                                            bool bApplyManufacturingAlbedo = true);
+    static void ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial, const FRRMaterialProperty& InMaterialInfo,
+                                   bool bApplyManufacturingAlbedo = true);
+    static bool SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor);
     static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);
 };

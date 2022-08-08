@@ -13,6 +13,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Core/RRConversionUtils.h"
 
 #include "RRGameState.generated.h"
 
@@ -49,7 +50,9 @@ public:
     URRGameInstance* GameInstance = nullptr;
 
     UPROPERTY(config)
-    float SCENE_INSTANCES_DISTANCE_INTERVAL = 200.f;
+    float SCENE_INSTANCES_DISTANCE_INTERVAL = 5000.f;
+    UPROPERTY()
+    int8 LastSceneInstanceId = URRActorCommon::DEFAULT_SCENE_INSTANCE_ID;
 
     UPROPERTY()
     TArray<URRSceneInstance*> SceneInstanceList;
@@ -74,11 +77,9 @@ public:
 
     virtual bool HaveAllSceneInstancesCompleted() const;
 
-    // ENV
+    // ENVIRONMENT
     UPROPERTY()
     AActor* MainEnvironment = nullptr;
-    UPROPERTY()
-    FVector MainEnvOriginalLocation = FVector::ZeroVector;
 
     UPROPERTY()
     AActor* MainFloor = nullptr;
@@ -88,9 +89,6 @@ public:
 
     UPROPERTY()
     TArray<ALight*> MainLights;
-
-    UPROPERTY()
-    TArray<AStaticMeshActor*> MainStaticMeshActors;
 
     // SIM OUTPUTS
     UPROPERTY(config)
@@ -107,18 +105,21 @@ public:
 
     // ENTITIES
     /* The vertex normals
+     * INI in ROS
       7 -- 4      Z
      /|   /|      |
     2-1--5 6      | Y
     |/   |/       |/
     0 -- 3         -----X
 
+     * UE
     4 -- 7         Z
     |\   |\     Y  |
     6 5--1 2     \ |
      \|   \|      \|
       3 -- 0  X----
      */
+    // NOTE: THESE ARE CONFIGURED BY USERS IN ROS RIGHT-HANDED COORD FOR CONVENIENCE, THUS THE INDEX ORDERING FOLLOWS CLOCK-WISE
     UPROPERTY(config)
     TArray<FVector> ENTITY_BOUNDING_BOX_VERTEX_NORMALS = {
         {0.f, 0.f, 0.f},    //[0]
@@ -130,12 +131,24 @@ public:
         {1.f, 1.f, 0.f},    //[6]
         {0.f, 1.f, 1.f},    //[7]
     };
-    ARRMeshActor* FindEntityByModel(const FString& InEntityModelName, bool bToActivate, bool bToTakeAway);
-    void SetAllEntitiesActivated(bool bIsActivated);
-    FORCEINLINE void AddEntity(ARRMeshActor* InEntity)
+
+    // UE LEFT-HANDED COUNTER-CLOCKWISE ORDERING
+    FORCEINLINE FVector GetEntityBBVertexNormal(int8 InVertexIdx)
     {
-        AllDynamicMeshEntities.AddUnique(InEntity);
+        static const TArray<FVector> bbVertexNormals = {ENTITY_BOUNDING_BOX_VERTEX_NORMALS[3],
+                                                        ENTITY_BOUNDING_BOX_VERTEX_NORMALS[6],
+                                                        ENTITY_BOUNDING_BOX_VERTEX_NORMALS[5],
+                                                        ENTITY_BOUNDING_BOX_VERTEX_NORMALS[0],
+                                                        ENTITY_BOUNDING_BOX_VERTEX_NORMALS[7],
+                                                        ENTITY_BOUNDING_BOX_VERTEX_NORMALS[2],
+                                                        ENTITY_BOUNDING_BOX_VERTEX_NORMALS[1],
+                                                        ENTITY_BOUNDING_BOX_VERTEX_NORMALS[4]};
+        return bbVertexNormals[InVertexIdx];
     }
+
+    void SetAllEntitiesActivated(bool bIsActivated);
+    ARRMeshActor* FindEntityByModel(const FString& InEntityModelName, bool bToActivate, bool bToTakeAway);
+    void AddEntity(ARRMeshActor* InEntity);
 
     template<typename T>
     void AddEntities(const TArray<T*> InEntityList)
@@ -146,23 +159,21 @@ public:
         }
     }
 
-    void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId);
+    virtual void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId);
 
 protected:
     virtual void CreateSceneInstance(int8 InSceneInstanceId);
     virtual void InitializeSim(int8 InSceneInstanceId);
     virtual void StartSubSim(int8 InSceneInstanceId);
     virtual void CreateServiceObjects(int8 InSceneInstanceId);
-    virtual void FetchEnvironmentActors();
+    virtual void SetupEnvironment();
+    virtual void FetchEnvStaticActors();
 
     virtual void FinalizeSim();
     virtual void PrintSimConfig() const;
     virtual void BeginPlay() override;
     virtual void BeginSubPlay();
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-    virtual void Tick(float DeltaTime) override;
-    virtual void OnTick(float DeltaTime);
 
 protected:
     UPROPERTY()

@@ -10,6 +10,7 @@
 #include "Core/RRGameMode.h"
 #include "Core/RRGameSingleton.h"
 #include "Core/RRGameState.h"
+#include "Core/RRMeshActor.h"
 #include "Core/RRPlayerController.h"
 #include "Core/RRSceneDirector.h"
 #include "Core/RRThreadUtils.h"
@@ -64,6 +65,24 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
     return true;
 }
 
+// ===================================================================================================================================
+// [FRRHomoMeshEntityGroup] --
+//
+FString FRRHomoMeshEntityGroup::GetGroupModelName() const
+{
+    const int32 num = Num();
+    return (num == 1) ? Entities[0]->EntityModelName
+         : (num > 1)  ? FString::Printf(TEXT("Merged%d_%s"), num, *Entities[0]->EntityModelName)
+                      : FString();
+}
+
+FString FRRHomoMeshEntityGroup::GetGroupName() const
+{
+    const int32 num = Num();
+    return (num == 1) ? Entities[0]->GetName()
+         : (num > 1)  ? FString::Printf(TEXT("Merged%d_%s"), num, *Entities[0]->GetName())
+                      : FString();
+}
 // ===================================================================================================================================
 // [FRRActorSpawnInfo] --
 //
@@ -142,6 +161,7 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
 //
 std::once_flag URRActorCommon::OnceFlag;
 uint64 URRActorCommon::SLatestSceneId = 0;
+TArray<int32> URRActorCommon::StaticCustomDepthStencilList;
 // This is used as a map due to the unequivalence of element order with [ARRGameState::SceneInstanceList]
 TMap<int8, URRActorCommon*> URRActorCommon::SActorCommonList;
 URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* InActorCommonClass, UObject* InOuter)

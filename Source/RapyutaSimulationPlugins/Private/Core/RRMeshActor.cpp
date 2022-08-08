@@ -6,6 +6,7 @@
 #include "Core/RRGameMode.h"
 #include "Core/RRGameState.h"
 #include "Core/RRMathUtils.h"
+#include "Core/RRSceneDirector.h"
 #include "Core/RRStaticMeshComponent.h"
 #include "Core/RRUObjectUtils.h"
 
@@ -105,19 +106,66 @@ void ARRMeshActor::SetCustomDepthEnabled(bool bIsCustomDepthEnabled)
     {
         // [RenderCustomDepth]
         meshComp->SetRenderCustomDepth(bIsCustomDepthEnabled);
+
+        // [CustomDepthStencilValue]
+        // Since deactivated actors do not appear in scene so their custom depth stencil values should be reused
+        if (bIsCustomDepthEnabled && IsDataSynthEntity())
+        {
+            auto* sceneDirector = GameState->GetSceneInstance<URRSceneInstance>(SceneInstanceId)->SceneDirector;
+            meshComp->SetCustomDepthStencilValue((sceneDirector->SceneEntityMaskValueList.Num() > 0)
+                                                     ? sceneDirector->SceneEntityMaskValueList.Pop()
+                                                     : ActorCommon->GenerateUniqueDepthStencilValue());
+        }
+        else
+        {
+            meshComp->SetCustomDepthStencilValue(URRActorCommon::DEFAULT_CUSTOM_DEPTH_STENCIL_VALUE_VOID);
+        }
     }
 }
+
+void ARRMeshActor::SetCustomDepthStencilValue(int32 InCustomDepthStencilValue)
+{
+    bool bCustomDepthEnabled = (InCustomDepthStencilValue >= 0);
+    for (auto& meshComp : MeshCompList)
+    {
+        // [RenderCustomDepth]
+        meshComp->SetRenderCustomDepth(bCustomDepthEnabled);
+
+        // [CustomDepthStencilValue]
+        if (bCustomDepthEnabled && IsDataSynthEntity())
+        {
+            auto* sceneDirector = GameState->GetSceneInstance<URRSceneInstance>(SceneInstanceId)->SceneDirector;
+            meshComp->SetCustomDepthStencilValue(InCustomDepthStencilValue);
+        }
+        else
+        {
+            meshComp->SetCustomDepthStencilValue(URRActorCommon::DEFAULT_CUSTOM_DEPTH_STENCIL_VALUE_VOID);
+        }
+    }
+}
+
 bool ARRMeshActor::IsCustomDepthEnabled() const
 {
     for (const auto& meshComp : MeshCompList)
     {
         if ((false == meshComp->bRenderCustomDepth) ||
-            (meshComp->CustomDepthStencilValue <= URRStaticMeshComponent::CUSTOM_DEPTH_STENCIL_VOID))
+            (meshComp->CustomDepthStencilValue <= URRActorCommon::DEFAULT_CUSTOM_DEPTH_STENCIL_VALUE_VOID))
         {
             return false;
         }
     }
     return true;
+}
+
+TArray<int32> ARRMeshActor::GetCustomDepthStencilValueList() const
+{
+    TArray<int32> customDepthStencilValueList;
+    for (const auto& meshComp : MeshCompList)
+    {
+        customDepthStencilValueList.AddUnique(BaseMeshComp->CustomDepthStencilValue);
+    }
+
+    return customDepthStencilValueList;
 }
 
 void ARRMeshActor::OnBodyComponentMeshCreationDone(bool bInCreationResult, UObject* InMeshBodyComponent)
@@ -148,11 +196,17 @@ void ARRMeshActor::DeclareFullCreation(bool bInCreationResult)
     // [ActorInfo]'s Override materials could only be set here once the full creation is done.
     if (ActorInfo.IsValid())
     {
-        for (auto i = 0; i < ActorInfo->MeshUniqueNameList.Num(); ++i)
+        for (auto& meshComp : MeshCompList)
         {
-            if (ActorInfo->MaterialNameList.IsValidIndex(i))
+            if (ActorInfo->MaterialNameList.Num() == 0)
             {
-                URRUObjectUtils::CreateMeshCompMaterialInstance(MeshCompList[i], 0, ActorInfo->MaterialNameList[i]);
+                continue;
+            }
+            for (auto j = 0; j < meshComp->GetMaterials().Num(); ++j)
+            {
+                const auto& matName =
+                    ActorInfo->MaterialNameList.IsValidIndex(j) ? ActorInfo->MaterialNameList[j] : ActorInfo->MaterialNameList[0];
+                URRUObjectUtils::CreateMeshCompMaterialInstance(meshComp, j, matName);
             }
         }
     }

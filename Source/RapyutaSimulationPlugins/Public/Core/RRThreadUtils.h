@@ -95,7 +95,7 @@ public:
     }
     template<typename TResult>
     static void AddAsyncTaskInThreadPool(FRRAsyncJob& OutAsyncJob,
-                                         const uint64& InCurrentCaptureBatchId,
+                                         const uint64 InCurrentCaptureBatchId,
                                          TFunction<TResult()> InTask,
                                          TFunction<void()> InCompletionCallback)
     {
@@ -112,7 +112,7 @@ public:
 
     template<typename TResult>
     static void AddAsyncTaskToJob(FRRAsyncJob& OutAsyncJob,
-                                  const uint64& InCurrentCaptureBatchId,
+                                  const uint64 InCurrentCaptureBatchId,
                                   TFunction<TResult()> InTask,
                                   TFunction<void()> InCompletionCallback,
                                   const EAsyncExecution InExecutionThread = EAsyncExecution::ThreadPool)

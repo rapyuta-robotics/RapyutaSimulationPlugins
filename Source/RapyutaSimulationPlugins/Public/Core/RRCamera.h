@@ -12,6 +12,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRBaseActor.h"
+#include "Core/RRMathUtils.h"
 #include "Core/RRUObjectUtils.h"
 
 #include "RRCamera.generated.h"
@@ -37,11 +38,11 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRCameraProperties
     {
         UE_LOG(LogRapyutaCore, Display, TEXT("CameraProperties:"));
         UE_LOG(LogRapyutaCore, Display, TEXT("- DistanceRangeInCm: %s"), *DistanceRangeInCm.ToString());
-        verify(FMath::IsWithinInclusive(DistanceRangeInCm.X, 0.f, DistanceRangeInCm.Y));
+        verify(FMath::IsWithinInclusive(double(DistanceRangeInCm.X), double(0), double(DistanceRangeInCm.Y)));
         UE_LOG(LogRapyutaCore, Display, TEXT("- HeightRangeInCm: %s"), *HeightRangeInCm.ToString());
-        verify(FMath::IsWithinInclusive(HeightRangeInCm.X, 0.f, HeightRangeInCm.Y));
+        verify(FMath::IsWithinInclusive(double(HeightRangeInCm.X), double(0), double(HeightRangeInCm.Y)));
         UE_LOG(LogRapyutaCore, Display, TEXT("- HFoVRangeInDegree: %s"), *HFoVRangeInDegree.ToString());
-        verify(FMath::IsWithinInclusive(HFoVRangeInDegree.X, 0.f, HFoVRangeInDegree.Y));
+        verify(FMath::IsWithinInclusive(double(HFoVRangeInDegree.X), double(0), double(HFoVRangeInDegree.Y)));
     }
 };
 
@@ -63,15 +64,55 @@ public:
     FRRCameraProperties CameraProperties;
 
     virtual bool Initialize() override;
-    void LookAt(const FVector& InTargetLocation);
-    template<typename T>
-    void LookAt(const TArray<T*>& InTargetActors)
+    void LookAt(const FVector& InTargetLocation,
+                const FVector& InTargetNormal,
+                const FVector2f& InDistanceRange,
+                const FVector2f& InHeightRange,
+                const FVector2f& InAngleRange,
+                bool bMoveToNearTarget)
     {
-        LookAt(URRUObjectUtils::GetActorsGroupCenter(InTargetActors));
+        if (bMoveToNearTarget)
+        {
+            // In [Target]'s coordinate, rotate XAxis around its ZAxis a random angle in [InAngleRange]
+            FVector randomDelta =
+                FQuat(FVector::ZAxisVector, URRMathUtils::GetRandomFloatInRange(InAngleRange)).RotateVector(FVector::XAxisVector);
+
+            // Determinate [randomDelta]'s corresponding self of [Target]'s XAxis
+            randomDelta = FQuat::FindBetweenNormals(FVector::XAxisVector, InTargetNormal.GetSafeNormal()).RotateVector(randomDelta);
+
+            randomDelta *= URRMathUtils::GetRandomFloatInRange(InDistanceRange);
+            randomDelta.Z = URRMathUtils::GetRandomFloatInRange(InHeightRange);
+            SetActorLocation(InTargetLocation + randomDelta);
+        }
+        SetActorRotation((InTargetLocation - GetActorLocation()).ToOrientationQuat());
+    }
+    void LookAt(const FVector& InTargetLocation, bool bMoveToNearTarget);
+    template<typename T>
+    void LookAt(const TArray<T*>& InTargetActors, bool bMoveToNearTarget)
+    {
+        LookAt(URRUObjectUtils::GetActorGroupCenter(InTargetActors), bMoveToNearTarget);
+    }
+    template<typename T>
+    void LookAt(const TArray<TArray<T*>>& InTargetActorGroups, bool bMoveToNearTarget)
+    {
+        LookAt(URRUObjectUtils::GetActorGroupListCenter(InTargetActorGroups), bMoveToNearTarget);
     }
     void RandomizeFoV();
-    void RandomizePose(bool bIsRandomLocationOnly);
+    void RandomizePose(const FVector& InBaseLocation, bool bIsRandomLocationOnly);
+
     float GetDistanceToFloor() const;
+    template<typename T>
+    float GetDistanceToActorsGroup(const TArray<T*>& InActors) const
+    {
+        return FVector::Dist(CameraComponent->GetComponentLocation(), URRUObjectUtils::GetActorGroupCenter(InActors));
+    }
+
+    template<typename T>
+    float GetDistanceToActorGroupList(const TArray<TArray<T*>>& InActorGroups) const
+    {
+        return FVector::Dist(CameraComponent->GetComponentLocation(), URRUObjectUtils::GetActorGroupListCenter(InActorGroups));
+    }
+
     float GetFocalLength() const
     {
         // HFOV = 2 * arctan( width / 2f )

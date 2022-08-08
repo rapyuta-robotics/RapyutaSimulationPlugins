@@ -34,13 +34,7 @@ URRProceduralMeshComponent::URRProceduralMeshComponent(const FObjectInitializer&
 
 void URRProceduralMeshComponent::Initialize(bool bIsStaticBody, bool bInIsPhysicsEnabled)
 {
-    // CustomDepthStencilValue
-    ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
-    if (ownerActor->GameMode->IsDataSynthSimType() && ownerActor->IsDataSynthEntity())
-    {
-        verify(IsValid(ownerActor->ActorCommon));
-        SetCustomDepthStencilValue(ownerActor->ActorCommon->GenerateUniqueDepthStencilValue());
-    }
+    // CustomDepthStencil will be actively set by stakeholders or ARRMeshActor if needs be
 }
 
 bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
@@ -132,10 +126,16 @@ bool URRProceduralMeshComponent::CreateMeshBody(const FRRMeshData& InBodyMeshDat
         // (NOTE) This also invoke UpdateCollision() but without collision info yet
         CreateMeshSection(node.Meshes);
     }
-    for (auto matIndex = 0; matIndex < InBodyMeshData.MaterialInstances.Num(); ++matIndex)
+
+    ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
+    if (false == ownerActor->GameMode->IsDataSynthSimType())
     {
-        SetMaterial(matIndex, InBodyMeshData.MaterialInstances[matIndex]);
+        for (auto i = 0; i < InBodyMeshData.MaterialInstances.Num(); ++i)
+        {
+            SetMaterial(i, InBodyMeshData.MaterialInstances[i]);
+        }
     }
+
     // These should have been marked by PMC itself
     // MarkRenderStateDirty();
     // MarkRenderDynamicDataDirty();

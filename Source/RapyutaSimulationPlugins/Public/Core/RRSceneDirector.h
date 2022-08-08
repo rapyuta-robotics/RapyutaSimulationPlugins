@@ -63,9 +63,11 @@ public:
     UPROPERTY()
     double DataCollectionTimeStamp = 0.f;
 
+    UPROPERTY()
+    TArray<int32> SceneEntityMaskValueList;
+
 protected:
     virtual bool Initialize() override;
-    virtual void Tick(float DeltaTime) override;
 
     // Start (Initialize + Run) Operation
     virtual bool InitializeOperation();
@@ -76,6 +78,9 @@ protected:
 
     virtual void OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhase);
     virtual void EndSceneInstance();
+
+    UPROPERTY()
+    FTimerHandle InitializationTimerHandle;
 
     UPROPERTY()
     FTimerHandle DataCollectionTimerHandle;

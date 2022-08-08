@@ -20,22 +20,14 @@ ARRSceneDirector::ARRSceneDirector()
     bIsOperating = false;
 }
 
-void ARRSceneDirector::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-    if (!bSceneInitialized)
-    {
-        TryInitializeOperation();
-    }
-}
-
 bool ARRSceneDirector::Initialize()
 {
     if (false == Super::Initialize())
     {
         return false;
     }
-    SetTickEnabled(true);
+    URRCoreUtils::RegisterRepeatedExecution(
+        this, InitializationTimerHandle, [this] { TryInitializeOperation(); }, 0.1f);
 
     // Run [TryInitializeOperation()] until succeeded!
     UE_LOG(LogRapyutaCore, Display, TEXT("[%d:SCENE DIRECTOR]::[%s] TRYING TO INTIALIZE..."), SceneInstanceId, *GetName());
@@ -60,6 +52,7 @@ void ARRSceneDirector::TryInitializeOperation()
                         "OPERATION!============="),
                    SceneInstanceId,
                    elapsedTime);
+            URRCoreUtils::StopRegisteredExecution(GetWorld(), InitializationTimerHandle);
         }
         else
         {
@@ -137,7 +130,8 @@ void ARRSceneDirector::OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhas
 
 void ARRSceneDirector::ResetScene()
 {
-    GameState->SetAllEntitiesActivated(false);
+    ActorCommon->LatestCustomDepthStencilValue = 0;
+    SceneEntityMaskValueList.Reset();
 }
 
 void ARRSceneDirector::EndSceneInstance()

@@ -16,6 +16,9 @@
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRMeshActor.generated.h"
+
+DECLARE_DELEGATE_OneParam(FOnMeshActorDeactivated, ARRMeshActor*);
+
 /**
  * @brief Mesh actor.
  *
@@ -27,7 +30,6 @@ class RAPYUTASIMULATIONPLUGINS_API ARRMeshActor : public ARRBaseActor
 public:
     /**
      * @brief Construct a new ARRMeshActor object
-     *
      */
     ARRMeshActor();
 
@@ -44,33 +46,54 @@ public:
     virtual bool Initialize() override;
     virtual bool HasInitialized(bool bIsLogged = false) const override;
     virtual void Reset() override;
+    void DrawTransform();
 
 public:
+    //! Body mesh component list
     UPROPERTY(VisibleAnywhere)
     TArray<UMeshComponent*> MeshCompList;
+    //! Created mesh components num up to the moment
     UPROPERTY()
     int32 CreatedMeshesNum = 0;
+    //! Planned num of mesh components to be created
     UPROPERTY()
     int32 ToBeCreatedMeshesNum = 0;
 
+    //! Base mesh comp, normally also as the root comp
     UPROPERTY(VisibleAnywhere)
     UMeshComponent* BaseMeshComp = nullptr;
+    /**
+     * @brief Get #BaseMeshComp's material
+     * @param InMaterialIndex
+     */
     UMaterialInterface* GetBaseMeshMaterial(int32 InMaterialIndex = 0) const
     {
         return BaseMeshComp ? BaseMeshComp->GetMaterial(InMaterialIndex) : nullptr;
     }
 
-    UPROPERTY()
-    TArray<ARRMeshActor*> PartnerList;
-    UPROPERTY()
-    FIntVector CellIdx = FIntVector::ZeroValue;
-
+    /**
+     * @brief Declare mesh actor full creation with all meshes created
+     */
     virtual void DeclareFullCreation(bool bInCreationResult);
 
 public:
-    void DrawTransform();
+    //! Cell index if arranged in a grid
+    UPROPERTY()
+    FIntVector CellIdx = FIntVector::ZeroValue;
 
+    /**
+     * @brief Get body mesh component
+     * @param Index
+     */
     UMeshComponent* GetMeshComponent(int32 Index = 0) const;
+    /**
+     * @brief Create mesh component list
+     * @tparam TMeshComp
+     * @param InParentComp
+     * @param InMeshUniqueNameList
+     * @param InMeshRelTransf
+     * @param InMaterialNameList
+     */
     template<typename TMeshComp>
     TArray<TMeshComp*> CreateMeshComponentList(USceneComponent* InParentComp,
                                                const TArray<FString>& InMeshUniqueNameList,
@@ -162,33 +185,73 @@ public:
         return addedMeshCompList;
     }
 
+    /**
+     * @brief Callback as a body mesh is created
+     * @param bInCreationResult
+     * @param InMeshBodyComponent
+     */
     virtual void OnBodyComponentMeshCreationDone(bool bInCreationResult, UObject* InMeshBodyComponent);
+    /**
+     * @brief Enable/Disable Custom Depth rendering pass
+     */
     void SetCustomDepthEnabled(bool bIsCustomDepthEnabled);
+    /**
+     * @brief Set Custom Depth Stencil value uniformly for all child mesh comps
+     */
+    void SetCustomDepthStencilValue(int32 InCustomDepthStencilValue);
+    /**
+     * @brief Whether Custom depth rendering is enabled
+     */
     bool IsCustomDepthEnabled() const;
 
-    FORCEINLINE void SetActivated(bool bInIsActivated)
+    /**
+     * @brief Get mesh comps' custom depth stencil values
+     */
+    TArray<int32> GetCustomDepthStencilValueList() const;
+
+    //! Delegate on mesh actor being deactivated
+    FOnMeshActorDeactivated OnDeactivated;
+    /**
+     * @brief Activate/Deactivate mesh actor
+     */
+    FORCEINLINE virtual void SetActivated(bool bInIsActivated)
     {
 #if RAPYUTA_SIM_VISUAL_DEBUG
         // Visible/Invisibile
         SetActorHiddenInGame(!bInIsActivated);
-
-        // RenderCustomDepth
-        SetCustomDepthEnabled(bInIsActivated);
 #endif
 
         // Then teleport itself to a camera-blind location if being deactivated,
         // so when it get activated back, it would not happen to appear at an unintended pose
         if (false == bInIsActivated)
         {
-            AddActorWorldOffset(FVector(0.f, 0.f, -500.f));
+            CellIdx = FIntVector::NoneValue;
+            SetActorLocation(FVector(0.f, 0.f, -5000.f));
+            OnDeactivated.ExecuteIfBound(this);
+        }
+        else if (CellIdx == FIntVector::NoneValue)
+        {
             CellIdx = FIntVector::ZeroValue;
         }
+
+        // RenderCustomDepth (must be after [OnDeactivated], thus its current CustomDepthStencilValue could be stored)
+        SetCustomDepthEnabled(bInIsActivated);
+    }
+
+    /**
+     * @brief Whether mesh actor is activated
+     */
+    bool IsActivated() const
+    {
+        return (CellIdx != FIntVector::NoneValue);
     }
 
 protected:
+    //! Last body mesh creation result
     UPROPERTY(VisibleAnywhere)
     uint8 bLastMeshCreationResult : 1;
 
+    //! Whether all body meshes are fully created
     UPROPERTY(VisibleAnywhere)
     uint8 bFullyCreated : 1;
 };
