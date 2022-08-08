@@ -232,6 +232,7 @@ public:
     }
 
     // SIM WORLDS --
+    static constexpr const TCHAR* PIXEL_STREAMER_PLAYER_NAME = TEXT("pixelstreamer");
     template<typename T>
     static T* GetGameMode(const UObject* InContextObject = nullptr)
     {

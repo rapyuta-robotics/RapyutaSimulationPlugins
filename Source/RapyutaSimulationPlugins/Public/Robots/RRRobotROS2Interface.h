@@ -30,11 +30,22 @@ class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
 
 public:
     //! Target robot
-    UPROPERTY(Transient)
+    UPROPERTY(Transient, Replicated)
     ARRBaseRobot* Robot = nullptr;
 
+    virtual bool IsSupportedForNetworking() const override
+    {
+        return true;
+    }
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
+    void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
     //! Target ROS2 node of this interface
-    UPROPERTY(Transient)
+    UPROPERTY(Transient, Replicated)
     AROS2Node* RobotROS2Node = nullptr;
 
     /**
@@ -60,21 +71,21 @@ public:
     UFUNCTION()
     virtual void JointStateCallback(const UROS2GenericMsg* Msg);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdom = true;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdomTf = false;
 
     //! Movement command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(BlueprintReadWrite, Replicated)
     FString CmdVelTopicName = TEXT("cmd_vel");
 
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(BlueprintReadWrite, Replicated)
     FString JointsCmdTopicName = TEXT("joint_states");
 
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(BlueprintReadWrite, Replicated)
     bool bWarnAboutMissingLink = true;
 
     /**
@@ -84,7 +95,7 @@ public:
     virtual void SetupROSParams();
 
     //! Odom publisher
-    UPROPERTY(Transient, BlueprintReadWrite)
+    UPROPERTY(Transient, BlueprintReadWrite, Replicated)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
 
     /**

@@ -15,8 +15,16 @@ std::once_flag ARRBaseActor::OnceFlag;
 int8 ARRBaseActor::SSceneInstanceId = URRActorCommon::DEFAULT_SCENE_INSTANCE_ID;
 ARRBaseActor::ARRBaseActor()
 {
-    SceneInstanceId = ARRBaseActor::SSceneInstanceId;
+    SetupDefaultBase();
+}
 
+ARRBaseActor::ARRBaseActor(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+    SetupDefaultBase();
+}
+
+void ARRBaseActor::SetupDefaultBase()
+{
     // UE HAS A VERY SPECIAL WAY OF HAVING [AActor] INSTANTIATED, IN WHICH
     // DEFAULT OBJECT IS ALWAYS CREATED AS THE EDITOR IS LOADED UP.
     // HENCE, IT'S RECOMMENDED NOT TO PUT PARTICULAR ACTOR'S CONTENT INSTANTIATION OR INITIALIZATION INSIDE CTOR,
@@ -24,11 +32,10 @@ ARRBaseActor::ARRBaseActor()
     // SIM START-UP!
     //
     // Please put them in [Initialize()] instead!
-}
-
-ARRBaseActor::ARRBaseActor(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
-{
     SceneInstanceId = ARRBaseActor::SSceneInstanceId;
+    bReplicates = true;
+    // Needs to be set to relevant otherwise it won't consistantly replicate
+    bAlwaysRelevant = true;
 }
 
 // (NOTE) This method, if being called, could only go with a RRGameMode-inheriting game mode setup!
@@ -63,8 +70,11 @@ bool ARRBaseActor::Initialize()
     GameSingleton = URRGameSingleton::Get();
     check(GameSingleton);
 
-    PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
-    check(PlayerController);
+    if (IsNetMode(NM_Standalone))
+    {
+        PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
+        check(PlayerController);
+    }
 
     ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
     return true;

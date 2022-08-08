@@ -4,7 +4,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -25,17 +24,19 @@ class RAPYUTASIMULATIONPLUGINS_API UROS2Spawnable : public UActorComponent
     GENERATED_BODY()
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString ActorName;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString ActorNamespace;
 
-public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    TArray<FString> ActorTags;
+
     /**
      * @brief Set Actor name and ROS2 namespace from SpawnEntity service request.
      * @sa [ue_msgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
-     * @param InRequest 
+     * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
     virtual void InitializeParameters(const FROSSpawnEntityRequest& InRequest);
@@ -47,8 +48,14 @@ public:
     virtual void SetNamespace(const FString& InNamespace);
 
     UFUNCTION(BlueprintCallable)
+    virtual void AddTag(const FString& InTag);
+
+    UFUNCTION(BlueprintCallable)
     virtual FString GetName();
 
     UFUNCTION(BlueprintCallable)
     virtual FString GetNamespace();
+
+protected:
+    virtual void OnComponentCreated() override;
 };
