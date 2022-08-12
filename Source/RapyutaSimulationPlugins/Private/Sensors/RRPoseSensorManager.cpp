@@ -38,8 +38,7 @@ void URRPoseSensorManager::InitalizeWithROS2(AROS2Node* InROS2Node,
     MapOriginPoseSensor->InitalizeWithROS2(InROS2Node);
     if (IsNetMode(NM_Standalone))
     {
-        ServerSimState =
-            CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
+        ServerSimState = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this)->MainSimState;
     }
 }
 
