@@ -1,6 +1,6 @@
 /**
  * @file RRNetworkPlayerController.h
- * @todo add doc
+ * @brief AMR Network Player controller to possess ARRBaseRobot in a client-server application
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 #pragma once

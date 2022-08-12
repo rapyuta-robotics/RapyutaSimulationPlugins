@@ -1,5 +1,5 @@
 /**
- * @file RRRobotPoseSensorManager.h
+ * @file RRPoseSensorManager.h
  * @brief Robot pose sensor manager. If #RefActorSelectMode=AUTO, RefActor is automatically updated with nearlest actor with Tag
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -14,7 +14,7 @@
 #include "Sensors/RRROS2EntityStateSensorComponent.h"
 #include "Tools/SimulationState.h"
 
-#include "RRRobotPoseSensorManager.generated.h"
+#include "RRPoseSensorManager.generated.h"
 
 /**
  * @brief Reference actor selection mode. AUTO means it is automatically updated to the nearlest actor along Z axis with Tag
@@ -30,15 +30,15 @@ enum class ERRRefActorSelectMode : uint8
  * @brief Robot pose sensor manager
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRRobotPoseSensorManager : public URRROS2EntityStateSensorComponent
+class RAPYUTASIMULATIONPLUGINS_API URRPoseSensorManager : public URRROS2EntityStateSensorComponent
 {
     GENERATED_BODY()
 
 public:
     /**
-     * @brief Construct a new URRRobotPoseSensorManager object, configuring sensor default property values
+     * @brief Construct a new URRPoseSensorManager object, configuring sensor default property values
      */
-    URRRobotPoseSensorManager();
+    URRPoseSensorManager();
 
     //! Handle to server's main sim state
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated)

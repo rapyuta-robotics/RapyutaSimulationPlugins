@@ -1,11 +1,15 @@
 // Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
 
-#include "Robots/RRRobotPoseSensorManager.h"
+#include "Sensors/RRPoseSensorManager.h"
 
 // UE
 #include "Net/UnrealNetwork.h"
 
-URRRobotPoseSensorManager::URRRobotPoseSensorManager()
+// RapyutaSimulationPlugins
+#include "Core/RRCoreUtils.h"
+#include "Core/RRROS2GameMode.h"
+
+URRPoseSensorManager::URRPoseSensorManager()
 {
     MapOriginPoseSensor = CreateDefaultSubobject<URRROS2EntityStateSensorComponent>(TEXT("MapTFPublisher"));
     MapOriginPoseSensor->SetupAttachment(this);
@@ -19,48 +23,54 @@ URRRobotPoseSensorManager::URRRobotPoseSensorManager()
     MapOriginPoseSensor->FrameId = MapFrameId;
 }
 
-void URRRobotPoseSensorManager::OnComponentCreated()
+void URRPoseSensorManager::OnComponentCreated()
 {
     Super::OnComponentCreated();
     SetIsReplicated(true);
 }
 
-void URRRobotPoseSensorManager::InitalizeWithROS2(AROS2Node* InROS2Node,
-                                                  const FString& InPublisherName,
-                                                  const FString& InTopicName,
-                                                  const TEnumAsByte<UROS2QoS> InQoS)
+void URRPoseSensorManager::InitalizeWithROS2(AROS2Node* InROS2Node,
+                                             const FString& InPublisherName,
+                                             const FString& InTopicName,
+                                             const TEnumAsByte<UROS2QoS> InQoS)
 {
     Super::InitalizeWithROS2(InROS2Node, InPublisherName, InTopicName, InQoS);
     MapOriginPoseSensor->InitalizeWithROS2(InROS2Node);
-    ServerSimState = CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
+    if (IsNetMode(NM_Standalone))
+    {
+        ServerSimState =
+            CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
+    }
 }
 
-void URRRobotPoseSensorManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void URRPoseSensorManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(URRRobotPoseSensorManager, ServerSimState);
-    DOREPLIFETIME(URRRobotPoseSensorManager, ReferenceTag);
-    DOREPLIFETIME(URRRobotPoseSensorManager, RefActorSelectMode);
-    DOREPLIFETIME(URRRobotPoseSensorManager, MapFrameId);
-    DOREPLIFETIME(URRRobotPoseSensorManager, MapOriginPoseSensor);
+    DOREPLIFETIME(URRPoseSensorManager, ServerSimState);
+    DOREPLIFETIME(URRPoseSensorManager, ReferenceTag);
+    DOREPLIFETIME(URRPoseSensorManager, RefActorSelectMode);
+    DOREPLIFETIME(URRPoseSensorManager, MapFrameId);
+    DOREPLIFETIME(URRPoseSensorManager, MapOriginPoseSensor);
 }
 
-void URRRobotPoseSensorManager::UpdateReferenceActorWithTag()
+void URRPoseSensorManager::UpdateReferenceActorWithTag()
 {
     if (ReferenceTag.IsEmpty())
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[URRRobotPoseSensorManager] RefActorSelectMode is AUTO but reference tag %s is empty."),
+               TEXT("[URRPoseSensorManager] RefActorSelectMode is AUTO but reference tag %s is empty."),
                *ReferenceTag);
         return;
     }
 
     if (ServerSimState == nullptr)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[URRRobotPoseSensorManager]ServerSimState is null."));
-        ServerSimState =
-            CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[URRPoseSensorManager]ServerSimState is null."));
+        if (IsNetMode(NM_Standalone))
+        {
+            ServerSimState = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this)->MainSimState;
+        }
         return;
     }
 
@@ -90,7 +100,7 @@ void URRRobotPoseSensorManager::UpdateReferenceActorWithTag()
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[URRRobotPoseSensorManager] ServerSimState's EntitiesWithTag for [%s] tag is empty"),
+               TEXT("[URRPoseSensorManager] ServerSimState's EntitiesWithTag for [%s] tag is empty"),
                *ReferenceTag);
     }
 
@@ -108,13 +118,13 @@ void URRRobotPoseSensorManager::UpdateReferenceActorWithTag()
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[URRRobotPoseSensorManager] No Actor with [%s] tag found in ServerSimState's "
+               TEXT("[URRPoseSensorManager] No Actor with [%s] tag found in ServerSimState's "
                     "EntitiesWithTag."),
                *ReferenceTag);
     }
 }
 
-void URRRobotPoseSensorManager::SensorUpdate()
+void URRPoseSensorManager::SensorUpdate()
 {
     if (RefActorSelectMode == ERRRefActorSelectMode::AUTO)
     {
