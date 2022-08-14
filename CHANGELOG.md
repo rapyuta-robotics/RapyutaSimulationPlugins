@@ -1,8 +1,13 @@
 # Changelog for RapyutaSimulationPlugins repository
+
+## 0.0.13 ##
+* Add Sensors/URRPoseSensorManager, which locates the nearest actor along Z axis with tag as its pose sensor's reference actor
+
 ## 0.0.12 ##
 * `URRRobotROS2Interface::CreatePublisher()` Add QoS param to init publisher's frequent msg publishing callback
 * Add `ARRCrowdROSController`, inheriting from `ARRCrowdAIController`, to init possessed robot's ROS2Interface
 * `ARRRobotROS2Interface` add virtual `SetupROSParams()`, overridable in child classes (eg with bPublishOdom off if not used)
+
 ## 0.0.11 ##
 * `ASimulationState`: Add `Server~` for service callbacks called on server only. There is a single instance owned by GameMode, which is server-only.
 * Add replicatble `URRROS2SimulationStateClient` as UActorComponent, moving setup of ROS2 servicesthere from `ASimulationState`. One is created for each client's network player controller.
