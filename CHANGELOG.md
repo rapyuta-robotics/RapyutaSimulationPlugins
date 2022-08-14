@@ -1,7 +1,7 @@
 # Changelog for RapyutaSimulationPlugins repository
 
 ## 0.0.13 ##
-* Add RRRobotVehiclePoseSensorManager, which locates the nearest actor along Z axis with tag as its pose sensor's reference actor
+* Add Sensors/URRPoseSensorManager, which locates the nearest actor along Z axis with tag as its pose sensor's reference actor
 
 ## 0.0.12 ##
 * `URRRobotROS2Interface::CreatePublisher()` Add QoS param to init publisher's frequent msg publishing callback
