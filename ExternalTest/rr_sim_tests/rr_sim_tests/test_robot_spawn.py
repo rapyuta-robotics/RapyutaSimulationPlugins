@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 # Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-import time
 import unittest
 
 import launch
@@ -9,15 +8,12 @@ import launch_testing.actions
 import launch_testing.markers
 
 import rclpy
-from rclpy.node import Node
 
-from ue_msgs.msg import EntityState
-from ue_msgs.srv import SpawnEntity
-from geometry_msgs.msg import Pose, Quaternion
+from geometry_msgs.msg import Pose
 from tf_transformations import quaternion_from_euler
 
-from rr_sim_tests.utils.wait_for_service import wait_for_service
 from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
+from rr_sim_tests.utils.utils import spawn_robot
 
 import pytest
 
@@ -70,38 +66,6 @@ def generate_test_description():
             description="Robot initial rotation (roll, pitch, yaw). Eg:'0.0, 0.0, 0.0'"),
         launch_testing.actions.ReadyToTest()
     ])
-
-def spawn_robot(in_robot_model, in_robot_name, in_robot_namespace, in_robot_ref_frame, in_robot_pose, in_timeout=5.0):
-    # https://github.com/rapyuta-robotics/rr_simulation/blob/rr_devel/rr_common_ue/scripts/spawn_model.py#L6 \
-    # https://discourse.ubuntu.com/t/call-services-in-ros-2/15261
-    assert(len(in_robot_model) > 0)
-    assert(len(in_robot_name) > 0)
-    node = rclpy.create_node(f'spawn_{in_robot_name}')
-    cli = wait_for_service(node, SpawnEntity, SERVICE_NAME_SPAWN_ENTITY)
-    if not cli.service_is_ready():
-        return False
-
-    # Prepare SpawnEntity request
-    req = SpawnEntity.Request()
-    req.xml = in_robot_model
-    req.robot_namespace = in_robot_namespace
-    req.state = EntityState()
-    req.state.name = in_robot_name
-    req.state.reference_frame = in_robot_ref_frame
-    req.state.pose = in_robot_pose
-
-    # Async invoke SpawnEntity service
-    future = cli.call_async(req)
-    try:
-        start = time.time()
-        while (time.time() - start < in_timeout):
-            rclpy.spin_once(node)
-            if future.done():
-                break
-    finally:
-        node.destroy_node()
-    return True
-
 class TestRobotSpawn(unittest.TestCase):
     def test_spawn_robot(self, proc_output, test_args):
         rclpy.init()
