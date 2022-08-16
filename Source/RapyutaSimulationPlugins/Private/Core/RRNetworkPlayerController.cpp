@@ -247,11 +247,6 @@ void ARRNetworkPlayerController::ClientInitPawn_Implementation(AActor* InActor)
         robot->CreateROS2Interface();
         robot->ROS2Interface->Initialize(robot);
     }
-
-    if (ARRRobotBaseVehicle* robotVehicle = Cast<ARRRobotBaseVehicle>(InActor))
-    {
-        robotVehicle->InitMoveComponent();
-    }
 }
 
 void ARRNetworkPlayerController::BeginPlay()
