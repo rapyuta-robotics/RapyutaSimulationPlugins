@@ -48,6 +48,7 @@ def spawn_robot(in_robot_model, in_robot_name, in_robot_namespace, in_robot_ref_
             rclpy.spin_once(node)
             if future.done():
                 break
+            time.sleep(0.5)
     finally:
         node.destroy_node()
     return True
