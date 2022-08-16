@@ -248,6 +248,19 @@ UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshC
         InMaterialIndex, URRGameSingleton::Get()->GetMaterial(InMaterialInterfaceName), FName(*dynamicMaterialName));
 }
 
+int32 URRUObjectUtils::GetActorMaterialsNum(AActor* InActor)
+{
+    if (auto* meshActor = Cast<ARRMeshActor>(InActor))
+    {
+        return meshActor->BaseMeshComp->GetMaterials().Num();
+    }
+    else if (auto* staticMeshActor = Cast<AStaticMeshActor>(InActor))
+    {
+        return staticMeshActor->GetStaticMeshComponent()->GetMaterials().Num();
+    }
+    return 0;
+}
+
 UMaterialInstanceDynamic* URRUObjectUtils::GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex)
 {
     UMaterialInstanceDynamic* baseMaterial = nullptr;
@@ -262,49 +275,55 @@ UMaterialInstanceDynamic* URRUObjectUtils::GetActorBaseMaterial(AActor* InActor,
     return baseMaterial;
 }
 
-bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo)
+void URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor,
+                                                  const FRRMaterialProperty& InMaterialInfo,
+                                                  bool bApplyManufacturingAlbedo)
 {
-    UMaterialInstanceDynamic* baseMaterial = GetActorBaseMaterial(InActor);
-    if (baseMaterial)
+    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
+    for (auto i = 0; i < GetActorMaterialsNum(InActor); ++i)
     {
-        URRGameSingleton* gameSingleton = URRGameSingleton::Get();
-        // Albedo texture
-        if (InMaterialInfo.AlbedoTextureNameList.Num() > 0)
+        UMaterialInstanceDynamic* baseMaterial = GetActorBaseMaterial(InActor, i);
+        if (baseMaterial)
         {
+            if (bApplyManufacturingAlbedo)
+            {
+                // Albedo texture
+                baseMaterial->SetTextureParameterValue(
+                    FRRMaterialProperty::PROP_NAME_ALBEDO,
+                    (InMaterialInfo.AlbedoTextureNameList.Num() > 0)
+                        ? gameSingleton->GetTexture(URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoTextureNameList))
+                        : nullptr);
+
+                // Albedo color
+                baseMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO,
+                                                      (InMaterialInfo.AlbedoColorList.Num() > 0)
+                                                          ? URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoColorList)
+                                                          : FLinearColor::Transparent);
+
+                // Mask Texture: default White
+                //baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
+                //                                       InMaterialInfo.MaskTextureName.IsEmpty()
+                //                                           ? gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK)
+                //                                           : gameSingleton->GetTexture(InMaterialInfo.MaskTextureName));
+            }
+            else
+            {
+                // Mask Texture: default Black
+                //baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
+                //                                       gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK));
+            }
+
+            // Normal Texture
             baseMaterial->SetTextureParameterValue(
-                FRRMaterialProperty::PROP_NAME_ALBEDO,
-                gameSingleton->GetTexture(URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoTextureNameList)));
-        }
+                FRRMaterialProperty::PROP_NAME_NORMAL,
+                InMaterialInfo.NormalTextureName.IsEmpty() ? nullptr : gameSingleton->GetTexture(InMaterialInfo.NormalTextureName));
 
-        // Albedo color
-        baseMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO,
-                                              (InMaterialInfo.AlbedoColorList.Num() > 0)
-                                                  ? URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoColorList)
-                                                  : URRMathUtils::GetRandomColor());
-
-        // ORM Texture
-        if (false == InMaterialInfo.ORMTextureName.IsEmpty())
-        {
-            baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_ORM,
-                                                   gameSingleton->GetTexture(InMaterialInfo.ORMTextureName));
+            // ORM Texture
+            baseMaterial->SetTextureParameterValue(
+                FRRMaterialProperty::PROP_NAME_ORM,
+                InMaterialInfo.ORMTextureName.IsEmpty() ? nullptr : gameSingleton->GetTexture(InMaterialInfo.ORMTextureName));
         }
-
-        // Normal Texture
-        if (false == InMaterialInfo.NormalTextureName.IsEmpty())
-        {
-            baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_NORMAL,
-                                                   gameSingleton->GetTexture(InMaterialInfo.NormalTextureName));
-        }
-
-        // Mask Texture
-        if (false == InMaterialInfo.MaskTextureName.IsEmpty())
-        {
-            baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
-                                                   gameSingleton->GetTexture(InMaterialInfo.MaskTextureName));
-        }
-        return true;
     }
-    return false;
 }
 
 void URRUObjectUtils::RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData)

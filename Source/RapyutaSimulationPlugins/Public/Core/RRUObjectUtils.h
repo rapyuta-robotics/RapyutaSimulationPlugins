@@ -566,6 +566,64 @@ public:
     }
 
     template<typename T>
+    static TArray<T*> FindActorListBySubname(UWorld* InWorld,
+                                             const FString& InSubname,
+                                             const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        TArray<T*> actors;
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (actorItr->GetName().Contains(InSubname, InCaseType))
+            {
+                actors.Add(*actorItr);
+            }
+        }
+        return actors;
+    }
+
+    static bool IsActorOverlapping(AActor* InActor)
+    {
+        for (UActorComponent* ownedComp : InActor->GetComponents())
+        {
+            if (UPrimitiveComponent* primComp = Cast<UPrimitiveComponent>(ownedComp))
+            {
+                TSet<UPrimitiveComponent*> overlapSet;
+                primComp->GetOverlappingComponents(overlapSet);
+                if (overlapSet.Num() > 0)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static bool IsEnvStaticMeshActorsOverlapEventEnabled(UWorld* InWorld)
+    {
+        for (TActorIterator<AStaticMeshActor> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (!actorItr->GetStaticMeshComponent()->GetGenerateOverlapEvents())
+            {
+                UE_LOG(LogTemp, Display, TEXT("%s GenerateOverlapEvents disabled"), *actorItr->GetName());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static void SetEnvStaticMeshActorsOverlapEventEnabled(UWorld* InWorld, bool bEnabled)
+    {
+        for (TActorIterator<AStaticMeshActor> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            actorItr->GetStaticMeshComponent()->SetGenerateOverlapEvents(bEnabled);
+            if (bEnabled)
+            {
+                actorItr->SetActorEnableCollision(true);
+            }
+        }
+    }
+
+    template<typename T>
     static void HuddleActors(const TArray<T*>& InActors)
     {
         // (NOTE) Actors should be not touching the floor so they could sweep
@@ -591,7 +649,8 @@ public:
     static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                     int32 InMaterialIndex,
                                                                     const FString& InMaterialInterfaceName);
+    static int32 GetActorMaterialsNum(AActor* InActor);
     static UMaterialInstanceDynamic* GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex = 0);
-    static bool ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo);
+    static void ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo, bool bApplyManufacturingAlbedo = true);
     static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);
 };

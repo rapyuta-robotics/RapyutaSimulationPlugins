@@ -68,6 +68,9 @@ public:
     {
         return SceneInstanceList.IsValidIndex(InSceneInstanceId) && SceneInstanceList[InSceneInstanceId];
     }
+    void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId)
+    {
+    }
 
     virtual bool HasSceneInstanceListBeenCreated(bool bIsLogged = false) const;
     virtual bool HasInitialized(bool bIsLogged = false) const;

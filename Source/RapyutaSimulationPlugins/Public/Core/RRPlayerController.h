@@ -47,7 +47,7 @@ public:
     URRActorCommon* ActorCommon = nullptr;
 
     UPROPERTY()
-    ARRCamera* MainCamera = nullptr;
+    ARRCamera* SceneCamera = nullptr;
 
     UPROPERTY()
     FPostProcessSettings PostProcessSettings;

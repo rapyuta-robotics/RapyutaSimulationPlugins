@@ -74,6 +74,7 @@ FRRActorSpawnInfo::FRRActorSpawnInfo()
     bIsPhysicsEnabled = true;
     bIsCollisionEnabled = true;
     bIsSelfCollision = false;
+    bIsOverlapEventEnabled = false;
     bIsDataSynthEntity = false;
 }
 
@@ -85,7 +86,8 @@ FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
                                      const TArray<FString>& InMaterialNameList,
                                      bool bInIsStationary,
                                      bool bInIsPhysicsEnabled,
-                                     bool bInIsCollisionEnabled)
+                                     bool bInIsCollisionEnabled,
+                                     bool bInIsOverlapEventEnabled)
     : EntityModelName(InEntityModelName),
       UniqueName(InUniqueName),
       ActorTransform(InActorTransform),
@@ -94,7 +96,8 @@ FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
       MaterialNameList(InMaterialNameList),
       bIsStationary(bInIsStationary),
       bIsPhysicsEnabled(bInIsPhysicsEnabled),
-      bIsCollisionEnabled(bInIsCollisionEnabled)
+      bIsCollisionEnabled(bInIsCollisionEnabled),
+      bIsOverlapEventEnabled(bInIsOverlapEventEnabled)
 {
     bIsTickEnabled = false;
     bIsSelfCollision = false;
@@ -109,7 +112,8 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
                                    const TArray<FString>& InMaterialNameList,
                                    bool bInIsStationary,
                                    bool bInIsPhysicsEnabled,
-                                   bool bInIsCollisionEnabled)
+                                   bool bInIsCollisionEnabled,
+                                   bool bInIsOverlapEventEnabled)
 {
     EntityModelName = InEntityModelName;
     UniqueName = InUniqueName;
@@ -127,6 +131,7 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
     bIsStationary = bInIsStationary;
     bIsPhysicsEnabled = bInIsPhysicsEnabled;
     bIsCollisionEnabled = bInIsCollisionEnabled;
+    bIsOverlapEventEnabled = bInIsOverlapEventEnabled;
     bIsTickEnabled = false;
     bIsSelfCollision = false;
     bIsDataSynthEntity = false;
@@ -217,8 +222,8 @@ void URRActorCommon::SetupEnvironment()
         // Not all maps has MainWall setup
     }
 
-    // Spawn MainCamera
-    MainCamera =
+    // Spawn SceneCamera
+    SceneCamera =
         Cast<ARRCamera>(URRUObjectUtils::SpawnSimActor(GetWorld(),
                                                        SceneInstanceId,
                                                        ARRCamera::StaticClass(),
@@ -226,16 +231,16 @@ void URRActorCommon::SetupEnvironment()
                                                        FString::Printf(TEXT("%d_MainCamera"), SceneInstanceId),
                                                        FTransform(SceneInstanceLocation),
                                                        ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn));
-    verify(MainCamera);
+    verify(SceneCamera);
 }
 
 bool URRActorCommon::HasInitialized(bool bIsLogged) const
 {
-    if (!MainCamera)
+    if (!SceneCamera)
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[URRActorCommon]:: MainCamera is NULL!"))
+            UE_LOG(LogRapyutaCore, Display, TEXT("[URRActorCommon]:: SceneCamera is NULL!"))
         }
         return false;
     }

@@ -48,7 +48,7 @@ public:
     APostProcessVolume* MainPostProcessVolume = nullptr;
 
     UPROPERTY()
-    ARRCamera* MainCamera = nullptr;
+    ARRCamera* SceneCamera = nullptr;
 
     UFUNCTION()
     bool HasSceneInitialized()

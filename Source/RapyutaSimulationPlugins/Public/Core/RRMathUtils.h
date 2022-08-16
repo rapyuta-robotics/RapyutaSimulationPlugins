@@ -144,6 +144,15 @@ public:
         return color.HSVToLinearRGB();
     }
 
+    FORCEINLINE static FLinearColor GetRandomColorFromHSV(const TArray<FVector2D>& InHSVRange)
+    {
+        FLinearColor color(GetRandomFloatInRange(InHSVRange[0].X, InHSVRange[0].Y),     // Hue
+                           GetRandomFloatInRange(InHSVRange[1].X, InHSVRange[1].Y),     // Saturation
+                           GetRandomFloatInRange(InHSVRange[2].X, InHSVRange[2].Y));    // Value
+
+        return color.HSVToLinearRGB();
+    }
+
     FORCEINLINE static FLinearColor GetRandomColor()
     {
         return FLinearColor(GetRandomBias(), GetRandomBias(), GetRandomBias(), GetRandomBias());
