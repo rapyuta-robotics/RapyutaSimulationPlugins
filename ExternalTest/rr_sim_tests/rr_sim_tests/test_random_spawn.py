@@ -50,7 +50,7 @@ def main(args=None):
         return
 
     is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0)
-    if is_robot_spawned
+    if is_robot_spawned:
         print(robot_name + 'is already exists.')
         return
 
