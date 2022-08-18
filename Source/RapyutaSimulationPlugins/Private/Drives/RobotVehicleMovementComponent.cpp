@@ -25,6 +25,7 @@ void URobotVehicleMovementComponent::Initialize()
 
 void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 {
+    /*
     const FQuat oldRotation = UpdatedComponent->GetComponentQuat();
 
     FVector position = UpdatedComponent->ComponentVelocity * InDeltaTime;
@@ -165,6 +166,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             }
         }
     }
+    */
 }
 
 void URobotVehicleMovementComponent::SetFrameIds(const FString& InFrameId, const FString& InChildFrameId)
@@ -293,6 +295,7 @@ FTransform URobotVehicleMovementComponent::GetOdomTF() const
 
 void URobotVehicleMovementComponent::InitMovementComponent()
 {
+    /*
     InitOdom();
 
     ContactPoints.Empty();
@@ -332,6 +335,7 @@ void URobotVehicleMovementComponent::InitMovementComponent()
            Warning,
            TEXT("URobotVehicleMovementComponent::InitMovementComponent - Min Distance To Floor = %f"),
            MinDistanceToFloor);
+           */
 }
 
 void URobotVehicleMovementComponent::SetMovingPlatform(AActor* InPlatform)

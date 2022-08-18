@@ -15,6 +15,7 @@
 
 // rclUE
 #include "Msgs/ROS2OdometryMsg.h"
+#include "ChaosWheeledVehicleMovementComponent.h"
 
 #include "RobotVehicleMovementComponent.generated.h"
 
@@ -46,7 +47,7 @@ enum class EOdomSource : uint8
  * @todo Expose odom covariance parameter.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URobotVehicleMovementComponent : public UPawnMovementComponent
+class RAPYUTASIMULATIONPLUGINS_API URobotVehicleMovementComponent : public UActorComponent
 {
     GENERATED_BODY()
 
@@ -70,6 +71,12 @@ private:
     TArray<USceneComponent*> ContactPoints;
 
 public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UChaosWheeledVehicleMovementComponent* ChaosMovementComponent;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Velocity)
+    FVector Velocity;
+    
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
     FVector AngularVelocity = FVector::ZeroVector;
 
