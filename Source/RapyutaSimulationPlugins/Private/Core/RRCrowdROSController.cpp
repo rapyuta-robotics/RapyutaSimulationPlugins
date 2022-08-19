@@ -15,17 +15,19 @@ void ARRCrowdROSController::OnPossess(APawn* InPawn)
     // instantiated yet
     // + InPawn's child class' ros2-related accessories (ROS2 node, sensors, publishers/subscribers)
     //  may have not been fully accessible until now
-    auto* robot = CastChecked<ARRBaseRobot>(InPawn);
-    verify(IsValid(robot->ROS2Interface));
-    ROS2Interface = robot->ROS2Interface;
-    ROS2Interface->Initialize(robot);
+    auto* robotVehicle = GetPawn<ARRBaseRobot>();
+    if(robotVehicle)
+    {
+        robotVehicle->InitROS2Interface();
+    }
 }
 
 void ARRCrowdROSController::OnUnPossess()
 {
-    if (ROS2Interface)
+    auto* robotVehicle = GetPawn<ARRBaseRobot>();
+    if (robotVehicle)
     {
-        ROS2Interface->StopPublishers();
+        robotVehicle->StopROS2Interface();
     }
     Super::OnUnPossess();
 }

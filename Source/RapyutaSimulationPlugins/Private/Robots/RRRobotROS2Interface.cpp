@@ -27,6 +27,14 @@ void URRRobotROS2Interface::SetupROSParams()
 
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
+    if(nullptr == InRobot)
+    {
+        UE_LOG(LogRapyutaCore,
+                Warning,
+                TEXT("[%s] [URRRobotROS2Interface::Initialize] No pawn is given."), *GetName()); 
+        return;
+    }
+    
     Robot = InRobot;
     Robot->ROS2Interface = this;
 
@@ -38,6 +46,8 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 
     // Refresh TF, Odom publishers
     verify(InitPublishers());
+
+    // cmd_vel, joint state, and other ROS topic inputs.
     InitSubscriptions();
 }
 
@@ -46,6 +56,7 @@ void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(URRRobotROS2Interface, Robot);
     DOREPLIFETIME(URRRobotROS2Interface, RobotROS2Node);
+    DOREPLIFETIME(URRRobotROS2Interface, ROSSpawnParameters);
     DOREPLIFETIME(URRRobotROS2Interface, OdomPublisher);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdom);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdomTf);
@@ -65,10 +76,9 @@ void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
     RobotROS2Node->Name = URRGeneralUtils::GetNewROS2NodeName(Robot->GetName());
 
     // Set robot's [ROS2Node] namespace from spawn parameters if existing
-    UROS2Spawnable* rosSpawnParameters = InRobot->FindComponentByClass<UROS2Spawnable>();
-    if (rosSpawnParameters)
+    if (ROSSpawnParameters)
     {
-        RobotROS2Node->Namespace = rosSpawnParameters->GetNamespace();
+        RobotROS2Node->Namespace = ROSSpawnParameters->GetNamespace();
     }
     else
     {

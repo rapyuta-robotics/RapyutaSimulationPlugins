@@ -19,7 +19,6 @@
 #include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotBaseVehicle.h"
 #include "Robots/RRRobotROS2Interface.h"
-#include "Tools/ROS2Spawnable.h"
 #include "Tools/RRROS2SimulationStateClient.h"
 #include "Tools/SimulationState.h"
 
@@ -34,28 +33,21 @@ ARRNetworkPlayerController::ARRNetworkPlayerController()
 void ARRNetworkPlayerController::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-#if WITH_EDITOR
-    if (PlayerName == URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME)
-    {
-        FRotator InitRot = FRotator(-50, -90, 0);
-        SetControlRotation(InitRot);
-    }
-#endif
     UpdateLocalClock(DeltaSeconds);
 }
 
 void ARRNetworkPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ARRNetworkPlayerController, SimStateClientROS2Node);
-    DOREPLIFETIME(ARRNetworkPlayerController, SimStateClientClockPublisher);
+    // DOREPLIFETIME(ARRNetworkPlayerController, SimStateClientROS2Node);
+    // DOREPLIFETIME(ARRNetworkPlayerController, SimStateClientClockPublisher);
     DOREPLIFETIME(ARRNetworkPlayerController, ServerSimState);
     DOREPLIFETIME(ARRNetworkPlayerController, ROS2SimStateClient);
     DOREPLIFETIME(ARRNetworkPlayerController, PlayerName);
 
     // After pawn possession, PossessedPawn & Super::Pawn are actually referring to the same one.
     // But we could not setup replication for Pawn here due to its being private in Super
-    DOREPLIFETIME(ARRNetworkPlayerController, PossessedPawn);
+    // DOREPLIFETIME(ARRNetworkPlayerController, PossessedPawn);
 }
 
 void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass)
@@ -67,24 +59,36 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
 
     ROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(
         this, InSimStateClientClass, FName(*FString::Printf(TEXT("%s_ROS2SimStateClient"), *PlayerName)));
+    ROS2SimStateClient->SetNetworkPlayerId(GetPlayerState<APlayerState>()->GetPlayerId());
     ROS2SimStateClient->RegisterComponent();
     AddOwnedComponent(ROS2SimStateClient);
 
     UE_LOG(LogRapyutaCore,
            Warning,
-           TEXT("[PC:%u] ROS2SimStateClient[%s:%u] created"),
+           TEXT("[PC:%u][NetworkPlayerId:%d] ROS2SimStateClient[%s:%u] created"),
            this,
+           ROS2SimStateClient->GetNetworkPlayerId(),
            *ROS2SimStateClient->GetName(),
            ROS2SimStateClient);
 }
 
-void ARRNetworkPlayerController::InitSimStateClientROS2()
+void ARRNetworkPlayerController::InitSimStateClientROS2_Implementation()
 {
-    if (SimStateClientROS2Node || (false == IsNetMode(NM_Client)))
+    if (SimStateClientROS2Node)
     {
         return;
     }
-
+    
+    if (nullptr == ROS2SimStateClient)
+    {
+         UE_LOG(LogRapyutaCore,
+           Warning,
+           TEXT("[%s][ARRNetworkPlayerController::InitSimStateClientROS2] ROS2SimStateClient not found."),
+           *GetName()
+           );
+        return;
+    }
+    
     // Init SimStateClient's [ROS2Node] & [ClockPublisher]
     UWorld* currentWorld = GetWorld();
     SimStateClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
@@ -92,6 +96,9 @@ void ARRNetworkPlayerController::InitSimStateClientROS2()
     SimStateClientROS2Node->Namespace.Reset();
     // NOTE: Its NameSpace will be set to [PlayerName] in [ServerSetPlayerName()]
     SimStateClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
+#if WITH_EDITOR
+    SimStateClientROS2Node->Namespace = PlayerName;
+#endif
     SimStateClientROS2Node->Init();
 
     // Init [ROS2SimStateClient] with [SimStateClientROS2Node]
@@ -103,183 +110,48 @@ void ARRNetworkPlayerController::InitSimStateClientROS2()
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
     SimStateClientClockPublisher->InitializeWithROS2(SimStateClientROS2Node);
 
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] SimStateClient ROS2Node[%s] created"), *PlayerName, *SimStateClientROS2Node->Name);
+    UE_LOG(LogRapyutaCore, Error, TEXT("[%s] SimStateClient ROS2Node[%s] created"), *PlayerName, *SimStateClientROS2Node->Name);
 }
 
-void ARRNetworkPlayerController::WaitToPossessPawn()
+void ARRNetworkPlayerController::OnRep_SimStateClient()
 {
-#if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("ARRNetworkPlayerController::WaitToPossessPawn[%u:%s] %s NM_Client(%d) ROS2SimStateClient(%u)"),
-           this,
-           *GetName(),
-           *PlayerName,
-           IsNetMode(NM_Client),
-           ROS2SimStateClient);
-#endif
-
-    if ((false == IsNetMode(NM_Client)) || (PlayerName == URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME))
+    if (IsLocalController())
     {
-        return;
-    }
+        UE_LOG(LogRapyutaCore,
+            Warning,
+            TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient()] %d %d"), *GetName(), (true == IsNetMode(NM_Client)), (PlayerName != URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME));
 
-    // 1- Init [SimStateClientROS2Node] only once [ROS2SimStateClient] is created
-    TInlineComponentArray<URRROS2SimulationStateClient*> simStateComponents(this);
-    ROS2SimStateClient = (simStateComponents.Num() > 0) ? simStateComponents[0] : nullptr;
-    if (ROS2SimStateClient)
-    {
-        InitSimStateClientROS2();
-    }
-
-    // 2- Keep waiting for a spawned entity with a matching player name in [ServerSimState->EntityList]
-    if (PlayerState && !PossessedPawn)
-    {
-        if (nullptr == ServerSimState)
+        if ((true == IsNetMode(NM_Client)) && (PlayerName != URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME))
         {
-            return;
-        }
-
-        // 2.1- Possess any newly spawned entity that is not possessed yet by this controller
-        APawn* matchingPawn = FindPawnToPossess();
-        if (IsValid(matchingPawn))
-        {
-            // 2.2- Possess [matchingEntity] + Init its ROS2Inteface + MoveComp if as a robot
-            ServerPossessPawn(matchingPawn);
-            // NOTE: [ClientInitPawn(matchingPawn)] will be done at its own Client side only at [AcknowledgePossession()],
-            // when it is sure it has been possessed by Server
-
-            // 2.3 - Stop [PossessTimerHandle]
-            GetWorld()->GetTimerManager().ClearTimer(PossessTimerHandle);
-
-            PossessedPawn = matchingPawn;
-            UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] possessed pawn %s"), *PlayerName, *PossessedPawn->GetName());
-
-#if WITH_EDITOR
-            // 2.4- Set Controller's PlayerName -> entity's Name
-            FString prevPlayerName = PlayerName;
-            PlayerName = matchingPawn->GetName();
-            ServerSetPlayerName(PlayerName);
+            // 1- Init [SimStateClientROS2Node] only once [ROS2SimStateClient] is created
+            TInlineComponentArray<URRROS2SimulationStateClient*> simStateComponents(this);
+            ROS2SimStateClient = (simStateComponents.Num() > 0) ? simStateComponents[0] : nullptr;
             UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("Player[%s] possessed pawn %s and renamed to same name as pawn name"),
-                   *prevPlayerName,
-                   *PossessedPawn->GetName());
-#else
-            // PlayerName is provided from [robotname] param passed to Sim client executor for to-be-possesed robot matching
-#endif
+                Warning,
+                TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient()] %d "), *GetName(), (ROS2SimStateClient == nullptr));
+
+            InitSimStateClientROS2();
         }
-#if RAPYUTA_SIM_DEBUG
-        else
-        {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("NetworkPlayerController [%s] found no Pawn of its matching name to possess yet"),
-                   *PlayerName);
-        }
-#endif
-    }
-}
-
-APawn* ARRNetworkPlayerController::FindPawnToPossess()
-{
-    APawn* matchingPawn = nullptr;
-#if WITH_EDITOR
-    for (auto& entity : ServerSimState->EntityList)
-    {
-        ARRBaseRobot* robot = Cast<ARRBaseRobot>(entity);
-        //! robot->GetController() checks whether pawn is controlled by AIController or not
-        //! robot->GetPlayerState() checks whether pawn is controlled by PlayerController or not
-        if (IsValid(robot) && (nullptr == robot->GetPlayerState() && nullptr == robot->GetController()) && (GetPawn() != robot))
-        {
-            matchingPawn = Cast<APawn>(entity);
-            break;
-        }
-    }
-#else
-    for (AActor* entity : ServerSimState->EntityList)
-    {
-        // [entity->GetName()] is not reliable due to UObject::NamePrivate is not replicated by default
-        ARRBaseRobot* robot = Cast<ARRBaseRobot>(entity);
-        if (IsValid(robot) && (robot->RobotUniqueName == PlayerName))
-        {
-            matchingPawn = Cast<APawn>(entity);
-            if (!matchingPawn)
-            {
-                UE_LOG(LogRapyutaCore,
-                       Error,
-                       TEXT("Player [%s] found an entity of matching name %s BUT it's not a pawn. "
-                            "Please recheck [robotname] param value."),
-                       *PlayerName);
-            }
-            break;
-        }
-    }
-#endif
-    return matchingPawn;
-}
-
-void ARRNetworkPlayerController::ServerPossessPawn_Implementation(APawn* InPawn)
-{
-    Possess(InPawn);
-}
-
-void ARRNetworkPlayerController::AcknowledgePossession(APawn* InPawn)
-{
-    // NOTE: [AcknowledgePossession] runs on Client only
-    Super::AcknowledgePossession(InPawn);
-
-    if (false == PlayerName.IsEmpty())
-    {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("Player[%s] AcknowledgePossession %s"), *PlayerName, *InPawn->GetName());
-        // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
-        ClientInitPawn(InPawn);
-    }
-}
-
-void ARRNetworkPlayerController::ClientInitPawn_Implementation(AActor* InActor)
-{
-    ARRBaseRobot* robot = Cast<ARRBaseRobot>(InActor);
-    if (robot)
-    {
-        // Instantiate ROS2 interface, of which the instance is not replicated, for each possessed robot
-        verify(nullptr == robot->ROS2Interface);
-        robot->CreateROS2Interface();
-        robot->ROS2Interface->Initialize(robot);
     }
 }
 
 void ARRNetworkPlayerController::BeginPlay()
 {
     Super::BeginPlay();
-
-#if !WITH_EDITOR
-    // Set PlayerName to [robotname] if specified as an Sim executor arg
-    FString robotName;
-    if (URRCoreUtils::GetCommandLineArgumentValue<FString>(CMDLINE_ARG_NET_CLIENT_ROBOT_NAME, robotName))
-    {
-        // Remove '"' & '=' in Robot Name
-        robotName = robotName.Replace(TEXT("="), TEXT("")).Replace(TEXT("\""), TEXT(""));
-        if (false == robotName.IsEmpty())
-        {
-            PlayerName = robotName;
-            SimStateClientROS2Node->Namespace = robotName;
-            SetName(robotName);
-            ServerSetPlayerName(robotName);
-        }
-    }
-#endif
-
-    if (PlayerName == URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME)
-    {
-        SetControlRotation(FRotator(-50.f, -90.f, 0));
-    }
+    UE_LOG(LogRapyutaCore,
+                Warning,
+                TEXT("[%s] [ARRNetworkPlayerController::BeginPlay]"), *GetName());
 
     if (IsLocalController())
     {
         FTimerManager& timerManager = GetWorld()->GetTimerManager();
-        timerManager.SetTimer(PossessTimerHandle, this, &ARRNetworkPlayerController::WaitToPossessPawn, 1.f, true);
+        // timerManager.SetTimer(PossessTimerHandle, this, &ARRNetworkPlayerController::WaitToPossessPawn, 1.f, true);
         timerManager.SetTimer(ClockRequestTimerHandle, this, &ARRNetworkPlayerController::RequestServerTimeUpdate, 5.f, true);
+    }
+
+    if(IsNetMode(NM_Standalone))
+    {
+        InitSimStateClientROS2();
     }
 }
 
@@ -326,5 +198,60 @@ void ARRNetworkPlayerController::ReceivedPlayer()
     if (IsLocalController())
     {
         ClientRequestLocalClockUpdate(LocalTime);
+    }
+}
+
+void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot* InServerRobot,
+                                                            float InClientTimeStamp,
+                                                            const FVector& InClientRobotPosition,
+                                                            const FQuat& InClientRobotQuat,
+                                                            const FVector& InLinearVel)
+{
+    //todo: donot work with physics model. GetActoLocaion return constant values.
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore,
+            Warning,
+            TEXT("[%s] [ServerSetLinearVel_Implementation] %s %s"),
+            *GetName(),
+            *InClientRobotPosition.ToString(),
+            *InServerRobot->GetActorLocation().ToString()
+            );
+#endif
+    auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
+    if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
+    {
+        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+        robot->SetActorLocation(InClientRobotPosition + InClientRobotQuat * InLinearVel * (serverCurrentTime - InClientTimeStamp));
+        robot->RobotVehicleMoveComponent->Velocity = InLinearVel;
+    }
+}
+
+void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot* InServerRobot,
+                                                             float InClientTimeStamp,
+                                                             const FRotator& InClientRobotRotation,
+                                                             const FVector& InAngularVel)
+{
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore,
+            Warning,
+            TEXT("[%s] [ServerSetLinearVel_Implementation] %s %s"),
+            *GetName(),
+            *InClientRobotPosition.ToString(),
+            *InServerRobot->GetActorLocation().ToString()
+            );
+#endif
+    UE_LOG(LogRapyutaCore,
+            Warning,
+            TEXT("[%s] [ServerSetAngularVel_Implementation] %s %s"),
+            *GetName(),
+            *InClientRobotRotation.ToString(),
+            *InServerRobot->GetActorRotation().ToString()
+            );
+    auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
+    if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
+    {
+        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+        robot->SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
+        robot->RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
     }
 }

@@ -146,7 +146,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest);
+    AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest, const int32& NetworkPlayerId);
 
     //! Cached the previous [SpawnEntity] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
@@ -244,9 +244,11 @@ private:
      * @param InROSSpawnRequest (FROSSpawnEntityRequest)
      * @param InEntityClass
      * @param InEntityTransform
+     * @param InNetworkPlayerId
      * @return AActor*
      */
     AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InROSSpawnRequest,
                               const TSubclassOf<AActor>& InEntityClass,
-                              const FTransform& InEntityTransform);
+                              const FTransform& InEntityTransform,
+                              const int32& InNetworkPlayerId);
 };

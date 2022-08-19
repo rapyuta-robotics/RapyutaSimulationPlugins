@@ -16,6 +16,8 @@ void URRROS2ClockPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
 void URRROS2ClockPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-    // Noted: Elapsed time: time in seconds since world was brought up for play
-    CastChecked<UROS2ClockMsg>(InMessage)->Update(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
+    // Noted: Elapsed time: time in seconds since world was brought up for play    
+    if (GetWorld()->GetGameState() != nullptr) {
+        CastChecked<UROS2ClockMsg>(InMessage)->Update(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
+    }
 }

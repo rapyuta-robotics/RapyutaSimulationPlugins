@@ -10,19 +10,19 @@ void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
 
-    // NOTE: in case of NetworkGameMode, this will be done by [ARRNetworkPlayerController]
-    // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
-    auto* robotVehicle = CastChecked<ARRRobotBaseVehicle>(InPawn);
-    verify(IsValid(robotVehicle->ROS2Interface));
-    ROS2Interface = robotVehicle->ROS2Interface;
-    ROS2Interface->Initialize(robotVehicle);
+    auto* robotVehicle = GetPawn<ARRRobotBaseVehicle>();
+    if(robotVehicle)
+    {
+        robotVehicle->InitROS2Interface();
+    }
 }
 
 void ARRRobotVehicleROSController::OnUnPossess()
 {
-    if (ROS2Interface)
+    auto* robotVehicle = GetPawn<ARRBaseRobot>();
+    if (robotVehicle)
     {
-        ROS2Interface->StopPublishers();
+        robotVehicle->StopROS2Interface();
     }
     Super::OnUnPossess();
 }

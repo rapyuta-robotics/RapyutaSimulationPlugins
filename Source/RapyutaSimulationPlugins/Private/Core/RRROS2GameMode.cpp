@@ -48,6 +48,13 @@ void ARRROS2GameMode::InitSim()
     {
         InitROS2();
     }
+#if WITH_EDITOR //Since ROSNode in each client is namespaced for witheditor in network mode, need clock publsiher without namespace 
+    else if (nullptr != Cast<ARRNetworkGameMode>(this))
+    {
+        UE_LOG(LogRapyutaCore, Display, TEXT("Init ROS2 Node with editor in gamemode"));
+        InitROS2();
+    }
+#endif
 }
 
 void ARRROS2GameMode::InitROS2()

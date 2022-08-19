@@ -28,12 +28,7 @@ UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public AAIController
 {
     GENERATED_BODY()
-
 protected:
-    //! ROS2 Interface handle, which must be null as ROS Controller is created
-    UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite)
-    URRRobotROS2Interface* ROS2Interface = nullptr;
-
     /**
      * @brief Initialize by calling #InitRobotROS2Node, #ARobotVehicle's InitSensors and #InitPublishers.
      *

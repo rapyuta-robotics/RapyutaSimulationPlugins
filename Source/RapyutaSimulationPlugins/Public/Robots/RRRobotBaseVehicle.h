@@ -115,29 +115,33 @@ public:
      * @param InClientTimeStamp
      * @param InClientRobotPosition
      * @param InLinearVel
+     * @note can't use rpc since this is not controlled by Paleyr. should add (Server, Reliable)
      */
-    UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void ServerSetLinearVel(float InClientTimeStamp, const FVector& InClientRobotPosition, const FVector& InLinearVel);
+    UFUNCTION(BlueprintCallable)
+    virtual void ServerSetLinearVel(float InClientTimeStamp, const FVector& InClientRobotPosition, const FQuat& InClientRobotQuat, const FVector& InLinearVel);
 
     /**
      * @brief Set server angular velocity to #RobotVehicleMoveComponent
      * @param InClientTimeStamp
      * @param InClientRobotRotation
      * @param InAngularVel
+     * @note can't use rpc since this is not controlled by Paleyr. should add (Server, Reliable)
      */
-    UFUNCTION(BlueprintCallable, Server, Reliable)
+    UFUNCTION(BlueprintCallable)
     virtual void ServerSetAngularVel(float InClientTimeStamp, const FRotator& InClientRobotRotation, const FVector& InAngularVel);
 
     /**
      * @brief Set client linear velocity to #RobotVehicleMoveComponent
+     * @note can't use rpc since this is not controlled by Paleyr. should add (Client, Reliable)
      */
-    UFUNCTION(BlueprintCallable, Client, Reliable)
+    UFUNCTION(BlueprintCallable)
     virtual void ClientSetLinearVel(const FVector& InLinearVel);
 
     /**
      * @brief Set server angular velocity to #RobotVehicleMoveComponent
+     * @note can't use rpc since this is not controlled by Paleyr. should add (Client, Reliable)
      */
-    UFUNCTION(BlueprintCallable, Client, Reliable)
+    UFUNCTION(BlueprintCallable)
     virtual void ClientSetAngularVel(const FVector& InAngularVel);
 
 protected:

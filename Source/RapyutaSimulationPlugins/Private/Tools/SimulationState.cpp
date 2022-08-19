@@ -296,7 +296,8 @@ bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InR
 
 AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSSpawnRequest,
                                             const TSubclassOf<AActor>& InEntityClass,
-                                            const FTransform& InEntityTransform)
+                                            const FTransform& InEntityTransform,
+                                            const int32& InNetworkPlayerId)
 {
     if (false == VerifyIsServerCall(TEXT("ServerSpawnEntity")))
     {
@@ -309,13 +310,15 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     {
         return nullptr;
     }
-
+    
     // Wrap [InROSSpawnRequest] into a ROS2 spawnable component
     UROS2Spawnable* spawnableComponent = NewObject<UROS2Spawnable>(newEntity, TEXT("ROS2 Spawn Parameters"));
+    spawnableComponent->SetIsReplicated(true);
     spawnableComponent->RegisterComponent();
+    spawnableComponent->SetNetworkPlayerId(InNetworkPlayerId);
     spawnableComponent->InitializeParameters(InROSSpawnRequest);
 
-    newEntity->AddInstanceComponent(spawnableComponent);
+    // newEntity->AddInstanceComponent(spawnableComponent);
     newEntity->Rename(*InROSSpawnRequest.StateName);
 #if WITH_EDITOR
     newEntity->SetActorLabel(*InROSSpawnRequest.StateName);
@@ -324,11 +327,16 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     if (robot)
     {
         robot->RobotUniqueName = InROSSpawnRequest.StateName;
+
+        // todo child actor component is not replicated.
+        // https://forums.unrealengine.com/t/child-actor-component-never-replicated/23497/18
+        robot->ROSSpawnParameters = spawnableComponent;
+        robot->ServerRobot = robot;
     }
 
     // Add tags
     UE_LOG(LogRapyutaCore,
-           Warning,
+           Log,
            TEXT("[%s] tag from spawn spawn request %s"),
            *newEntity->GetName(),
            *FString::Join(InROSSpawnRequest.Tags, TEXT(",")));
@@ -346,7 +354,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     return newEntity;
 }
 
-AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest)
+AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest, const int32& InNetworkPlayerId)
 {
     if (false == VerifyIsServerCall(TEXT("ServerSpawnEntity")))
     {
@@ -376,7 +384,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
                    *worldTransf.ToString());
 
             // Spawn entity
-            newEntity = ServerSpawnEntity(InRequest, SpawnableEntityTypes[entityModelName], worldTransf);
+            newEntity = ServerSpawnEntity(InRequest, SpawnableEntityTypes[entityModelName], worldTransf, InNetworkPlayerId);
             if (nullptr == newEntity)
             {
                 // todo: need pass response to SimulationStateClient
@@ -389,6 +397,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
                        TEXT("[ASimulationState] Failed to spawn entity named %s, probably out collision!"),
                        *entityName);
             }
+
         }
         else
         {
