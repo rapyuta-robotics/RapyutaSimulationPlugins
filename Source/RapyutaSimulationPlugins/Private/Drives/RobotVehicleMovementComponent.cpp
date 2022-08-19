@@ -272,18 +272,20 @@ void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
                                                    enum ELevelTick TickType,
                                                    FActorComponentTickFunction* ThisTickFunction)
 {
-    if (!ShouldSkipUpdate(InDeltaTime))
+
+    Super::TickComponent(InDeltaTime, TickType, ThisTickFunction);
+    
+ //   if (!ShouldSkipUpdate(InDeltaTime))
     {
-        Super::TickComponent(InDeltaTime, TickType, ThisTickFunction);
 
         // Make sure that everything is still valid, and that we are allowed to move.
-        if (IsValid(UpdatedComponent))
+        //if (IsValid(UpdatedComponent))
         {
             UpdateMovement(InDeltaTime);
             UpdateOdom(InDeltaTime);
         }
 
-        UpdateComponentVelocity();
+        //UpdateComponentVelocity();
     }
 }
 

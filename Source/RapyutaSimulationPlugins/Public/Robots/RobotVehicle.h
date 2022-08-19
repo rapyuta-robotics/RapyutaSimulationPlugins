@@ -43,8 +43,8 @@ public:
     ARobotVehicle(const FObjectInitializer& ObjectInitializer);
 
     //! Robot Mesh
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    USkeletalMeshComponent* SkeletalMeshComp = nullptr;
+    //UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    //USkeletalMeshComponent* SkeletalMeshComp = nullptr;
 
     /**
      * @brief Initialize #SkeletalMeshComp.

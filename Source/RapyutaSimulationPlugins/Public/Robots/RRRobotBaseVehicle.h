@@ -62,7 +62,7 @@ public:
     //
     //! Main robot vehicle move component
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
+    URobotVehicleMovementComponent* RobotVehicleMoveComponent;
 
     //! Class of the main robot vehicle move component, configurable in child class
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)

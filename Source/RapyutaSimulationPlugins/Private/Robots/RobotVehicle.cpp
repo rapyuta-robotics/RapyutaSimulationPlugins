@@ -23,6 +23,9 @@ ARobotVehicle::ARobotVehicle(const FObjectInitializer& ObjectInitializer) : Supe
 
 void ARobotVehicle::SetupDefaultRootSkeletal()
 {
+    /*
+     *TODO: replace SkeletalMeshComp with AWheeledVehiclePawn::GetMesh
+     *
     // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
@@ -35,12 +38,13 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
     SkeletalMeshComp->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
     AddOwnedComponent(SkeletalMeshComp);
     RootComponent = SkeletalMeshComp;
-
+*/
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
 }
 
 void ARobotVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ARobotVehicle, SkeletalMeshComp);
+    
+   // DOREPLIFETIME(ARobotVehicle, SkeletalMeshComp);
 }

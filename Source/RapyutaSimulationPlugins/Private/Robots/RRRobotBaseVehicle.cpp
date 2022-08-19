@@ -16,6 +16,7 @@
 #include "Robots/RRRobotVehicleROSController.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/SimulationState.h"
+#include "Drives/RRTricycleDriveComponent.h"
 
 ARRRobotBaseVehicle::ARRRobotBaseVehicle()
 {
@@ -29,6 +30,10 @@ ARRRobotBaseVehicle::ARRRobotBaseVehicle(const FObjectInitializer& ObjectInitial
 
 void ARRRobotBaseVehicle::SetupDefaultVehicle()
 {
+    RobotVehicleMoveComponent = CreateDefaultSubobject<URRTricycleDriveComponent>(TEXT("RRTricycleDriveComponent"));
+    RobotVehicleMoveComponent->RegisterComponent();
+    RobotVehicleMoveComponent->PrimaryComponentTick.bCanEverTick = true;
+    RobotVehicleMoveComponent->SetComponentTickEnabled(true);
     // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
