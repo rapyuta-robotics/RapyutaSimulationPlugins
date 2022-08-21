@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
+import os
 import time
 import random
 import numpy as np
@@ -26,7 +27,8 @@ class ParamsNode(Node):
             ('y_lim', [4.0, -4.0]),
             ('linear_vel_lim', [1.0, -1.0]),
             ('angular_vel_lim', [np.pi*0.5, -np.pi*0.5]),
-            ('robot_name', None)
+            ('robot_name', None),
+            ('service_namespace', '')
         ]
     )
 def main(args=None):
@@ -43,13 +45,14 @@ def main(args=None):
     linear_vel_lim = param_node.get_parameter('linear_vel_lim').value
     angular_vel_lim = param_node.get_parameter('angular_vel_lim').value
     robot_name = param_node.get_parameter('robot_name').value
+    service_namespace = param_node.get_parameter('service_namespace').value
 
     # sanity check
     if robot_name is None:
         print('You need to provide robot name with `--ros-args -p robot_name:=<name>`')
         return
 
-    is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0)
+    is_robot_spawned, _ = wait_for_spawned_entity(robot_name, service_namespace, 10.0)
     if is_robot_spawned:
         print(robot_name + 'is already exists.')
         return
@@ -70,12 +73,12 @@ def main(args=None):
         robot_pose.orientation.y = q[1]
         robot_pose.orientation.z = q[2]
         robot_pose.orientation.w = q[3]
-        is_srv_available = spawn_robot(robot_model, robot_name, robot_namespace, reference_frame, robot_pose)
+        is_srv_available = spawn_robot(robot_model, robot_name, robot_namespace, reference_frame, robot_pose, service_namespace)
         if is_srv_available:
             count = 0
             while count < 20:
                 time.sleep(1)
-                is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0)
+                is_robot_spawned, _ = wait_for_spawned_entity(robot_name, service_namespace, 10.0)
                 if is_robot_spawned:
                     res = False
                     break

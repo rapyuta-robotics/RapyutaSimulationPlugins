@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
+import os
 import asyncio
 import time
 
@@ -23,11 +24,11 @@ from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
 
 SERVICE_NAME_SPAWN_ENTITY = 'SpawnEntity'
 
-def spawn_robot(in_robot_model, in_robot_name, in_robot_namespace, in_robot_ref_frame, in_robot_pose, in_timeout=5.0):
+def spawn_robot(in_robot_model, in_robot_name, in_robot_namespace, in_robot_ref_frame, in_robot_pose, service_namespace='', in_timeout=5.0):
     assert(len(in_robot_model) > 0)
     assert(len(in_robot_name) > 0)
     node = rclpy.create_node(f'spawn_{in_robot_name}')
-    cli = wait_for_service(node, SpawnEntity, SERVICE_NAME_SPAWN_ENTITY)
+    cli = wait_for_service(node, SpawnEntity, os.path.join(service_namespace, SERVICE_NAME_SPAWN_ENTITY))
     if not cli.service_is_ready():
         return False
 
