@@ -1,5 +1,8 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.15 ##
+* ASimulationState::ServerAttach() entity2 ignores entity1 during attachment
+
 ## 0.0.14 ##
 * `rr_sim_tests` Add `test_robot_model_state_published.py`
 
