@@ -223,22 +223,29 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* Service)
             Entity2->AttachToActor(Entity1, FAttachmentTransformRules::KeepWorldTransform);
 
             // disable collision check with attached actor (Entity2) when Entity1 moves
-            for( auto component : Entity1->GetComponents() )
+            for (auto component : Entity1->GetComponents())
             {
-                auto primitiveComp = Cast<UPrimitiveComponent>( component );
-                if ( !primitiveComp ) continue;
-                primitiveComp->IgnoreActorWhenMoving( Entity2, true );
+                auto primitiveComp = Cast<UPrimitiveComponent>(component);
+                if (!primitiveComp)
+                {
+                    continue;
+                }
+                primitiveComp->IgnoreActorWhenMoving(Entity2, true);
             }
         }
         else
         {
             Entity2->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-            for( auto component : Entity1->GetComponents() )
+            // enable collisions between the 2 actors when Entity1 moves
+            for (auto component : Entity1->GetComponents())
             {
-                auto primitiveComp = Cast<UPrimitiveComponent>( component );
-                if ( !primitiveComp ) continue;
-                primitiveComp->IgnoreActorWhenMoving( Entity2, false );
+                auto primitiveComp = Cast<UPrimitiveComponent>(component);
+                if (!primitiveComp)
+                {
+                    continue;
+                }
+                primitiveComp->IgnoreActorWhenMoving(Entity2, false);
             }
         }
     }
