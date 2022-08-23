@@ -251,29 +251,29 @@ void ASimulationState::ServerAttach(const FROSAttach_Request& InRequest)
 
         if (!entity2->IsAttachedTo(entity1))
         {
-            Entity2->AttachToActor(Entity1, FAttachmentTransformRules::KeepWorldTransform);
+            entity2->AttachToActor(entity1, FAttachmentTransformRules::KeepWorldTransform);
 
-            // disable collision check with attached actor (Entity2) when Entity1 moves
-            for (auto component : Entity1->GetComponents())
+            // disable collision check with attached actor (Entity2) when entity1 moves
+            for (auto component : entity1->GetComponents())
             {
                 auto primitiveComp = Cast<UPrimitiveComponent>(component);
                 if (primitiveComp)
                 {
-                    primitiveComp->IgnoreActorWhenMoving(Entity2, true);
+                    primitiveComp->IgnoreActorWhenMoving(entity2, true);
                 }
             }
         }
         else
         {
-            Entity2->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+            entity2->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-            // enable collisions between the 2 actors when Entity1 moves
-            for (auto component : Entity1->GetComponents())
+            // enable collisions between the 2 actors when entity1 moves
+            for (auto component : entity1->GetComponents())
             {
                 auto primitiveComp = Cast<UPrimitiveComponent>(component);
                 if (primitiveComp)
                 {
-                    primitiveComp->IgnoreActorWhenMoving(Entity2, false);
+                    primitiveComp->IgnoreActorWhenMoving(entity2, false);
                 }
             }
         }
