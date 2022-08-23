@@ -2,29 +2,20 @@
 
 #include "Robots/RRRobotVehicleROSController.h"
 
-// UE
-#include "Kismet/GameplayStatics.h"
-
-// rclUE
-#include "ROS2Node.h"
-
 // RapyutaSimulationPlugins
+#include "Robots/RRRobotBaseVehicle.h"
 #include "Robots/RRRobotROS2Interface.h"
-#include "Robots/RobotVehicle.h"
 
 void ARRRobotVehicleROSController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
 
-    // Create ROS2 interface
-    if (nullptr == ROS2Interface)
-    {
-        ARobotVehicle* robot = CastChecked<ARobotVehicle>(InPawn);
-        verify(robot->ROS2InterfaceClass);
-        ROS2Interface = CastChecked<URRRobotROS2Interface>(URRUObjectUtils::CreateSelfSubobject(
-            this, robot->ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
-    }
-    ROS2Interface->Initialize(CastChecked<ARobotVehicle>(InPawn));
+    // NOTE: in case of NetworkGameMode, this will be done by [ARRNetworkPlayerController]
+    // Refer to ARRBaseRobot::CreateROS2Interface() for reasons why it is inited here but not earlier
+    auto* robotVehicle = CastChecked<ARRRobotBaseVehicle>(InPawn);
+    verify(IsValid(robotVehicle->ROS2Interface));
+    ROS2Interface = robotVehicle->ROS2Interface;
+    ROS2Interface->Initialize(robotVehicle);
 }
 
 void ARRRobotVehicleROSController::OnUnPossess()

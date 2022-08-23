@@ -7,10 +7,7 @@
 #pragma once
 
 // UE
-#include "Components/SkeletalMeshComponent.h"
 #include "CoreMinimal.h"
-#include "Engine/TargetPoint.h"
-#include "GameFramework/Pawn.h"
 
 // RapyutaSimulationPlugins
 #include "Drives/RRJointComponent.h"
@@ -23,7 +20,6 @@
 
 #include "RRRobotBaseVehicle.generated.h"
 
-class URRRobotROS2Interface;
 class URobotVehicleMovementComponent;
 
 /**
@@ -51,15 +47,25 @@ public:
      */
     ARRRobotBaseVehicle(const FObjectInitializer& ObjectInitializer);
 
+    /**
+     * @brief Initialize vehicle default
+     *
+     */
+    void SetupDefaultVehicle();
+
     //! reference actor for odometry.
     //! @todo is this still necessary?
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     AActor* Map = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    // KINEMATIC MOVEMENT --
+    //
+    //! Main robot vehicle move component
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    //! Class of the main robot vehicle move component, configurable in child class
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
 
     /**
@@ -71,10 +77,12 @@ public:
     virtual bool InitMoveComponent();
 
     /**
-     * @brief Initialize vehicle default
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
      *
+     * @param OutLifetimeProps Output lifetime properties
      */
-    void SetupDefaultVehicle();
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 
     /**
      * @brief Set the root offset for #RobotVehicleMoveComponent
@@ -90,17 +98,47 @@ public:
     /**
      * @brief Set velocity to #RobotVehicleMoveComponent
      *
-     * @param InLinearVelocity
+     * @param InLinearVel
      */
     UFUNCTION(BlueprintCallable)
-    virtual void SetLinearVel(const FVector& InLinearVelocity);
+    virtual void SetLinearVel(const FVector& InLinearVel);
 
     /**
      * @brief Set angular velocity to #RobotVehicleMoveComponent
-     *
+     * @param InAngularVel
      */
     UFUNCTION(BlueprintCallable)
-    virtual void SetAngularVel(const FVector& InAngularVelocity);
+    virtual void SetAngularVel(const FVector& InAngularVel);
+
+    /**
+     * @brief Set server linear velocity to #RobotVehicleMoveComponent
+     * @param InClientTimeStamp
+     * @param InClientRobotPosition
+     * @param InLinearVel
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    virtual void ServerSetLinearVel(float InClientTimeStamp, const FVector& InClientRobotPosition, const FVector& InLinearVel);
+
+    /**
+     * @brief Set server angular velocity to #RobotVehicleMoveComponent
+     * @param InClientTimeStamp
+     * @param InClientRobotRotation
+     * @param InAngularVel
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    virtual void ServerSetAngularVel(float InClientTimeStamp, const FRotator& InClientRobotRotation, const FVector& InAngularVel);
+
+    /**
+     * @brief Set client linear velocity to #RobotVehicleMoveComponent
+     */
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    virtual void ClientSetLinearVel(const FVector& InLinearVel);
+
+    /**
+     * @brief Set server angular velocity to #RobotVehicleMoveComponent
+     */
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    virtual void ClientSetAngularVel(const FVector& InAngularVel);
 
 protected:
     /**
@@ -109,7 +147,6 @@ protected:
      * @sa[PostInitializeComponents](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
      */
     virtual void PostInitializeComponents() override;
-
     /**
      * @brief This method is called inside #PostInitializeComponents.
      * Custom initialization of child class can be done by overwritting this method.

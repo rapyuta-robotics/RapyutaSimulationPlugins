@@ -40,6 +40,7 @@ def wait_for_spawned_entity(in_entity_name, in_timeout=10.0):
                 assert(result.state.name == req.name)
                 is_spawned = result.success
                 break
+            time.sleep(0.5)
     finally:
         node.destroy_node()
     return is_spawned, entity_pose

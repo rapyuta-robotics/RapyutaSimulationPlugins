@@ -11,9 +11,7 @@
 
 // UE
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "GameFramework/FloatingPawnMovement.h"
-#include "Kismet/GameplayStatics.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 // rclUE
 #include "Msgs/ROS2OdometryMsg.h"
@@ -48,7 +46,7 @@ enum class EOdomSource : uint8
  * @todo Expose odom covariance parameter.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class RCLUE_API URobotVehicleMovementComponent : public UPawnMovementComponent
+class RAPYUTASIMULATIONPLUGINS_API URobotVehicleMovementComponent : public UPawnMovementComponent
 {
     GENERATED_BODY()
 
@@ -175,7 +173,10 @@ public:
 
 protected:
     virtual void BeginPlay() override;
-
+    virtual bool IsSupportedForNetworking() const override
+    {
+        return true;
+    }
     /**
      * @brief Move actor by using SafeMoveUpdatedComponent and SlideAlongSurface.
      * Calculate #DesiredMovement and #DesiredRotation from deltatime, UpdatedComponent and #AngularVelocity.

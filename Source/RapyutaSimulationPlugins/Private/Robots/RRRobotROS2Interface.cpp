@@ -2,6 +2,9 @@
 
 #include "Robots/RRRobotROS2Interface.h"
 
+// UE
+#include "Net/UnrealNetwork.h"
+
 // rclUE
 #include "Msgs/ROS2JointStateMsg.h"
 #include "Msgs/ROS2TwistMsg.h"
@@ -10,13 +13,24 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
-#include "Robots/RobotVehicle.h"
+#include "Robots/RRBaseRobot.h"
+#include "Robots/RRRobotBaseVehicle.h"
 
-void URRRobotROS2Interface::Initialize(ARobotVehicle* InRobot)
+void URRRobotROS2Interface::SetupROSParams()
+{
+    bPublishOdom = true;
+    bPublishOdomTf = false;
+    CmdVelTopicName = TEXT("cmd_vel");
+    JointsCmdTopicName = TEXT("joint_states");
+    bWarnAboutMissingLink = true;
+}
+
+void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
     Robot = InRobot;
+    Robot->ROS2Interface = this;
 
-    // Instantiate a ROS2 node for each possessed [InPawn]
+    // Instantiate a ROS2 node for InRobot
     InitRobotROS2Node(InRobot);
 
     // Initialize Robot's sensors (lidar, etc.)
@@ -27,7 +41,20 @@ void URRRobotROS2Interface::Initialize(ARobotVehicle* InRobot)
     InitSubscriptions();
 }
 
-void URRRobotROS2Interface::InitRobotROS2Node(ARobotVehicle* InRobot)
+void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(URRRobotROS2Interface, Robot);
+    DOREPLIFETIME(URRRobotROS2Interface, RobotROS2Node);
+    DOREPLIFETIME(URRRobotROS2Interface, OdomPublisher);
+    DOREPLIFETIME(URRRobotROS2Interface, bPublishOdom);
+    DOREPLIFETIME(URRRobotROS2Interface, bPublishOdomTf);
+    DOREPLIFETIME(URRRobotROS2Interface, CmdVelTopicName);
+    DOREPLIFETIME(URRRobotROS2Interface, JointsCmdTopicName);
+    DOREPLIFETIME(URRRobotROS2Interface, bWarnAboutMissingLink);
+}
+
+void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
 {
     if (nullptr == RobotROS2Node)
     {
@@ -67,7 +94,8 @@ bool URRRobotROS2Interface::InitPublishers()
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
-        OdomPublisher->RobotVehicle = Robot;
+        // If publishing odom, it must be an [ARRRobotBaseVehicle]
+        OdomPublisher->RobotVehicle = CastChecked<ARRRobotBaseVehicle>(Robot);
     }
     return true;
 }
@@ -76,6 +104,7 @@ void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
                                             const TSubclassOf<UROS2Publisher>& InPublisherClass,
                                             const TSubclassOf<UROS2GenericMsg>& InMsgClass,
                                             int32 InPubFrequency,
+                                            uint8 InQoS,
                                             UROS2Publisher*& OutPublisher)
 {
     if (nullptr == OutPublisher)
@@ -83,6 +112,7 @@ void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
         OutPublisher = UROS2Publisher::CreatePublisher(this, InTopicName, InPublisherClass, InMsgClass, InPubFrequency);
     }
     OutPublisher->InitializeWithROS2(RobotROS2Node);
+    OutPublisher->Init(TEnumAsByte<UROS2QoS>(InQoS));
 }
 
 void URRRobotROS2Interface::StopPublishers()
@@ -122,9 +152,10 @@ void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)
         AsyncTask(ENamedThreads::GameThread,
                   [this, linear, angular]
                   {
-                      check(IsValid(Robot));
-                      Robot->SetLinearVel(linear);
-                      Robot->SetAngularVel(angular);
+                      ARRRobotBaseVehicle* robotVehicle = CastChecked<ARRRobotBaseVehicle>(Robot);
+                      check(IsValid(robotVehicle));
+                      robotVehicle->SetLinearVel(linear);
+                      robotVehicle->SetAngularVel(angular);
                   });
     }
 }

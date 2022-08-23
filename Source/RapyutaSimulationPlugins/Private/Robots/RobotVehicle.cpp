@@ -2,9 +2,14 @@
 
 #include "Robots/RobotVehicle.h"
 
+#include "Net/UnrealNetwork.h"
+
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
+
+// RapyutaSimulationPlugins
+#include "Robots/RRRobotVehicleROSController.h"
 
 ARobotVehicle::ARobotVehicle()
 {
@@ -30,4 +35,12 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
     SkeletalMeshComp->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
     AddOwnedComponent(SkeletalMeshComp);
     RootComponent = SkeletalMeshComp;
+
+    AIControllerClass = ARRRobotVehicleROSController::StaticClass();
+}
+
+void ARobotVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ARobotVehicle, SkeletalMeshComp);
 }

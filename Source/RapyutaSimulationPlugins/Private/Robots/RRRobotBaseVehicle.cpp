@@ -1,12 +1,17 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
 
 #include "Robots/RRRobotBaseVehicle.h"
+
+// UE
+#include "GameFramework/GameState.h"
+#include "Net/UnrealNetwork.h"
 
 // rclUE
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRUObjectUtils.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Robots/RRRobotVehicleROSController.h"
 #include "Tools/ROS2Spawnable.h"
@@ -28,7 +33,17 @@ void ARRRobotBaseVehicle::SetupDefaultVehicle()
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
-    AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+    // NOTE: Any custom object class (eg ROS2Interface Class, VehicleMoveComponentClass) that is required to be configurable by
+    // this class' child BP ones & if its object needs to be created before BeginPlay(),
+    // -> The class must be left NULL here, so its object (eg RobotVehicleMoveComponent) is not created by default in
+    // [PostInitializeComponents()]
+}
+
+void ARRRobotBaseVehicle::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+    InitMoveComponent();
 }
 
 void ARRRobotBaseVehicle::SetRootOffset(const FTransform& InRootOffset)
@@ -44,8 +59,8 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
     if (VehicleMoveComponentClass)
     {
         // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
-        RobotVehicleMoveComponent = NewObject<URobotVehicleMovementComponent>(
-            this, VehicleMoveComponentClass, *FString::Printf(TEXT("%s_MoveComp"), *GetName()));
+        RobotVehicleMoveComponent = CastChecked<URobotVehicleMovementComponent>(
+            URRUObjectUtils::CreateSelfSubobject(this, VehicleMoveComponentClass, FString::Printf(TEXT("%sMoveComp"), *GetName())));
         RobotVehicleMoveComponent->RegisterComponent();
 
         // Configure custom properties (frameids, etc.)
@@ -60,24 +75,84 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
     }
     else
     {
-        // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [VehicleMoveComponentClass] has not been configured!"), *GetName());
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s] [VehicleMoveComponentClass] has not been configured, probably later in child BP class!"),
+               *GetName());
         return false;
     }
 }
 
-void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVelocity)
+void ARRRobotBaseVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-    RobotVehicleMoveComponent->Velocity = InLinearVelocity;
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ARRRobotBaseVehicle, Map);
+    DOREPLIFETIME(ARRRobotBaseVehicle, RobotVehicleMoveComponent);
+    DOREPLIFETIME(ARRRobotBaseVehicle, VehicleMoveComponentClass);
 }
 
-void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVelocity)
+void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVel)
 {
-    RobotVehicleMoveComponent->AngularVelocity = InAngularVelocity;
+    ServerSetLinearVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), InLinearVel);
+    ClientSetLinearVel(InLinearVel);
 }
 
-void ARRRobotBaseVehicle::PostInitializeComponents()
+void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
 {
-    Super::PostInitializeComponents();
-    InitMoveComponent();
+    ServerSetAngularVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
+    ClientSetAngularVel(InAngularVel);
+}
+
+void ARRRobotBaseVehicle::ServerSetLinearVel_Implementation(float InClientTimeStamp,
+                                                            const FVector& InClientRobotPosition,
+                                                            const FVector& InLinearVel)
+{
+    if (RobotVehicleMoveComponent)
+    {
+        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+        SetActorLocation(InClientRobotPosition + InLinearVel * (serverCurrentTime - InClientTimeStamp));
+        RobotVehicleMoveComponent->Velocity = InLinearVel;
+    }
+}
+
+void ARRRobotBaseVehicle::ServerSetAngularVel_Implementation(float InClientTimeStamp,
+                                                             const FRotator& InClientRobotRotation,
+                                                             const FVector& InAngularVel)
+{
+    if (RobotVehicleMoveComponent)
+    {
+        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+        SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
+        RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+    }
+}
+
+void ARRRobotBaseVehicle::ClientSetLinearVel_Implementation(const FVector& InLinearVel)
+{
+    if (RobotVehicleMoveComponent)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("PLAYER [%s] ClientSetLinearVel %s"),
+               *PlayerController->PlayerState->GetPlayerName(),
+               *InLinearVel.ToString());
+#endif
+        RobotVehicleMoveComponent->Velocity = InLinearVel;
+    }
+}
+
+void ARRRobotBaseVehicle::ClientSetAngularVel_Implementation(const FVector& InAngularVel)
+{
+    if (RobotVehicleMoveComponent)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("PLAYER [%s] ClientSetAngularVel %s"),
+               *PlayerController->PlayerState->GetPlayerName(),
+               *InAngularVel.ToString());
+#endif
+        RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+    }
 }

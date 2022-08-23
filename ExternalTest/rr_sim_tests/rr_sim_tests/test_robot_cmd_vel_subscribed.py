@@ -1,8 +1,6 @@
 #! /usr/bin/env python3
 # Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-import asyncio
-import time
 import unittest
 
 import launch
@@ -10,66 +8,12 @@ import launch_testing.actions
 import launch_testing.markers
 
 import rclpy
-from rclpy.node import Node
-from rclpy.executors import SingleThreadedExecutor
 from geometry_msgs.msg import Twist
 
-from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
 import pytest
 
-TOPIC_NAME_CMD_VEL = 'cmd_vel'
-PUBLISHING_NUM = 1
-
-class CmdVelPublisher(Node):
-    def __init__(self, in_robot_namespace:str, in_robot_twist:Twist):
-        super().__init__('cmd_vel_publisher')
-        self._cmd_vel_topic = f'/{in_robot_namespace}/{TOPIC_NAME_CMD_VEL}'\
-                                if ((in_robot_namespace != None) and len(in_robot_namespace.strip()) > 0)\
-                                else f'/{TOPIC_NAME_CMD_VEL}'
-        self._twist_pub = self.create_publisher(Twist, self._cmd_vel_topic, 10)
-        self._twist = in_robot_twist
-        
-        self._twist_pub_count = 0
-        self._is_pub_finished = False
-
-        self._executor = SingleThreadedExecutor(context=self.context)
-        self._executor.add_node(self)
-        self._timer = self.create_timer(0.1, self.twist_robot)
-
-        while rclpy.ok() and not self._is_pub_finished:
-            self._executor.spin_once(timeout_sec = 0)
-        print(f'Finished publishing Twist to {self._cmd_vel_topic}')
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exep_type, exep_value, trace):
-        if exep_type is not None:
-            raise Exception('Exception occured, value: ', exep_value)
-        self._executor.shutdown(timeout_sec = 0.5)
-        self.destroy_node()
-
-    @property
-    def cmd_vel_topic(self):
-        return self._cmd_vel_topic
-
-    async def twist_robot(self):
-        if (self._twist_pub_count < PUBLISHING_NUM):
-            self.get_logger().info(f'Publishing to {self._cmd_vel_topic}: {self._twist}')
-            self._twist_pub.publish(self._twist)
-            self._twist_pub_count += 1
-        else:
-            self._is_pub_finished = True
-            self._timer.cancel()
-        await asyncio.sleep(0)
-
-    def wait_for_robot_twisted(self, in_robot_name, in_robot_prev_pose, in_timeout=5.0):
-        assert self._is_pub_finished
-        # Wait a while for robot to receive Twist message
-        time.sleep(1.0)
-        is_robot_found, robot_pose = wait_for_spawned_entity(in_robot_name, in_timeout)
-        assert is_robot_found, f'wait_for_robot_twisted(): {in_robot_name} unavailable!'
-        return (robot_pose != in_robot_prev_pose)
+from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
+from rr_sim_tests.utils.utils import CmdVelPublisher
 
 """
 Test robot cmd_vel subscription
@@ -136,7 +80,7 @@ class TestRobotTwist(unittest.TestCase):
         robot_twist.angular.z = float(rot[2])
         
         # Command the robot to move with twist data
-        with CmdVelPublisher(argstr(LAUNCH_ARG_ROBOT_NAMESPACE), robot_twist) as cmd_vel_publisher:
+        with CmdVelPublisher(in_robot_namespace=argstr(LAUNCH_ARG_ROBOT_NAMESPACE), in_robot_twist=robot_twist) as cmd_vel_publisher:
             # Check for the robot having been twisted if it does susbcribe to /cmd_vel
             assert cmd_vel_publisher.wait_for_robot_twisted(robot_name, robot_current_pose, in_timeout=5.0)
         rclpy.shutdown()

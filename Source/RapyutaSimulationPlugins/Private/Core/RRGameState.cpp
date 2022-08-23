@@ -92,14 +92,18 @@ void ARRGameState::CreateSceneInstance(int8 InSceneInstanceId)
     newSceneInstance->ConfigureStaticClasses();
     SceneInstanceList.Add(newSceneInstance);
 
-    // Create SceneDirector's own PlayerController, which actually creates its instance based on PlayerControllerClass configured in
-    // [GameMode]'s ctor! !
-    // [PlayerController] MUST BE CREATED EARLIER THAN ALL OTHER SIM SCENE'S ACTORS AND OBJECTS
-    newSceneInstance->PlayerController =
-        (0 == InSceneInstanceId) ?    // This must be checked explicitly versus [0], NOT [URRActorCommon::DEFAULT_SCENE_INSTANCE_ID]
-            URRCoreUtils::GetPlayerController<ARRPlayerController>(0, this)
-                                 : URRCoreUtils::CreatePlayerController<ARRPlayerController>(InSceneInstanceId, this);
-    newSceneInstance->PlayerController->SceneInstanceId = InSceneInstanceId;
+    if (IsNetMode(NM_Standalone))
+    {
+        // Create SceneDirector's own PlayerController, which actually creates its instance based on PlayerControllerClass
+        // configured in [GameMode]'s ctor! ! [PlayerController] MUST BE CREATED EARLIER THAN ALL OTHER SIM SCENE'S ACTORS AND
+        // OBJECTS
+        newSceneInstance->PlayerController =
+            (0 == InSceneInstanceId)
+                ?    // This must be checked explicitly versus [0], NOT [URRActorCommon::DEFAULT_SCENE_INSTANCE_ID]
+                URRCoreUtils::GetPlayerController<ARRPlayerController>(0, this)
+                : URRCoreUtils::CreatePlayerController<ARRPlayerController>(InSceneInstanceId, this);
+        newSceneInstance->PlayerController->SceneInstanceId = InSceneInstanceId;
+    }
 }
 
 void ARRGameState::CreateServiceObjects(int8 InSceneInstanceId)

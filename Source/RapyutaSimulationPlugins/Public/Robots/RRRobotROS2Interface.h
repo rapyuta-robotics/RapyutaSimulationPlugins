@@ -15,7 +15,7 @@
 
 #include "RRRobotROS2Interface.generated.h"
 
-class ARobotVehicle;
+class ARRBaseRobot;
 /**
  * @brief  Base Robot ROS2 interface class.
  * This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
@@ -30,11 +30,22 @@ class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
 
 public:
     //! Target robot
-    UPROPERTY(Transient)
-    ARobotVehicle* Robot = nullptr;
+    UPROPERTY(Transient, Replicated)
+    ARRBaseRobot* Robot = nullptr;
 
+    virtual bool IsSupportedForNetworking() const override
+    {
+        return true;
+    }
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
+    void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
     //! Target ROS2 node of this interface
-    UPROPERTY(Transient)
+    UPROPERTY(Transient, Replicated)
     AROS2Node* RobotROS2Node = nullptr;
 
     /**
@@ -42,16 +53,49 @@ public:
      *
      * @param InRobot
      */
-    virtual void Initialize(ARobotVehicle* InRobot);
+    virtual void Initialize(ARRBaseRobot* InRobot);
 
     /**
      * @brief Spawn ROS2Node and initialize it. This method is mainly used by #ASimulationState to spawn from ROS2 service.
      *
      * @param InPawn
      */
-    void InitRobotROS2Node(ARobotVehicle* InRobot);
+    void InitRobotROS2Node(ARRBaseRobot* InRobot);
 
-    UPROPERTY(Transient, BlueprintReadWrite)
+    /**
+     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS2 msg.
+     * Supports only 1 DOF joints.
+     * Effort control is not supported.
+     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
+     */
+    UFUNCTION()
+    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    bool bPublishOdom = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    bool bPublishOdomTf = false;
+
+    //! Movement command topic. If empty is given, subscriber will not be initiated.
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    FString CmdVelTopicName = TEXT("cmd_vel");
+
+    //! Joint control command topic. If empty is given, subscriber will not be initiated.
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    FString JointsCmdTopicName = TEXT("joint_states");
+
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    bool bWarnAboutMissingLink = true;
+
+    /**
+     * @brief Setup ROS Params, overridable by child classes to config custom ROS2 Interface's params
+     */
+    UFUNCTION()
+    virtual void SetupROSParams();
+
+    //! Odom publisher
+    UPROPERTY(Transient, BlueprintReadWrite, Replicated)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
 
     /**
@@ -82,32 +126,6 @@ public:
     UFUNCTION()
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
 
-    /**
-     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS2 msg.
-     * Supports only 1 DOF joints.
-     * Effort control is not supported.
-     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
-     */
-    UFUNCTION()
-    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bPublishOdom = true;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bPublishOdomTf = false;
-
-    //! Movement command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite)
-    FString CmdVelTopicName = TEXT("cmd_vel");
-
-    //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite)
-    FString JointsCmdTopicName = TEXT("joint_states");
-
-    UPROPERTY(BlueprintReadWrite)
-    bool bWarnAboutMissingLink = true;
-
 protected:
     /**
      * @brief Create a ROS2 publisher
@@ -122,5 +140,32 @@ protected:
                          const TSubclassOf<UROS2Publisher>& InPublisherClass,
                          const TSubclassOf<UROS2GenericMsg>& InMsgClass,
                          int32 InPubFrequency,
+                         uint8 InQoS,
                          UROS2Publisher*& OutPublisher);
+
+    template<typename TROS2Message,
+             typename TROS2MessageData,
+             typename TRobot,
+             typename TRobotMemFuncType = void (TRobot::*)(const TROS2MessageData&)>
+    FORCEINLINE void OnMessageReceived(const TROS2Message* InMsg, const TRobotMemFuncType& InMemFunc)
+    {
+        const auto* msg = Cast<TROS2Message>(InMsg);
+        if (IsValid(msg))
+        {
+            TROS2MessageData msgData;
+            msg->GetMsg(msgData);
+
+            // (Note) In this callback, which could be invoked from a ROS working thread,
+            // thus any direct referencing to its member in this GameThread lambda needs to be verified.
+            AsyncTask(ENamedThreads::GameThread,
+                      [this, InMemFunc, msgData]
+                      {
+                          auto* robot = CastChecked<TRobot>(Robot);
+                          if (IsValid(Cast<UObject>(robot)))
+                          {
+                              ::Invoke(InMemFunc, robot, msgData);
+                          }
+                      });
+        }
+    }
 };
