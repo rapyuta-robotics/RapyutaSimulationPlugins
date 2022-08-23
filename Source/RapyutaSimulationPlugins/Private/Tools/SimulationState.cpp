@@ -226,11 +226,10 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* Service)
             for (auto component : Entity1->GetComponents())
             {
                 auto primitiveComp = Cast<UPrimitiveComponent>(component);
-                if (!primitiveComp)
+                if (primitiveComp)
                 {
-                    continue;
+                    primitiveComp->IgnoreActorWhenMoving(Entity2, true);
                 }
-                primitiveComp->IgnoreActorWhenMoving(Entity2, true);
             }
         }
         else
@@ -241,11 +240,10 @@ void ASimulationState::AttachSrv(UROS2GenericSrv* Service)
             for (auto component : Entity1->GetComponents())
             {
                 auto primitiveComp = Cast<UPrimitiveComponent>(component);
-                if (!primitiveComp)
+                if (primitiveComp)
                 {
-                    continue;
+                    primitiveComp->IgnoreActorWhenMoving(Entity2, false);
                 }
-                primitiveComp->IgnoreActorWhenMoving(Entity2, false);
             }
         }
     }
