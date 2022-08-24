@@ -83,6 +83,12 @@ public:
      * @param OutLifetimeProps Output lifetime properties
      */
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+    
+    /**
+     * @brief Allows a component to replicate other subobject on the actor
+     *
+     */
+    virtual bool ReplicateSubobjects(UActorChannel *Channel, FOutBunch *Bunch, FReplicationFlags *RepFlags) override;
 
     /**
      * @brief Set the root offset for #RobotVehicleMoveComponent

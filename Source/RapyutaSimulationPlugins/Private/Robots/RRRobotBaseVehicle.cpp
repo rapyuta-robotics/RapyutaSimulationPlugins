@@ -90,6 +90,16 @@ void ARRRobotBaseVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     DOREPLIFETIME(ARRRobotBaseVehicle, VehicleMoveComponentClass);
 }
 
+bool ARRRobotBaseVehicle::ReplicateSubobjects(UActorChannel *Channel, FOutBunch *Bunch, FReplicationFlags *RepFlags) 
+{
+    bool bWroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+    
+    // Single Object
+    bWroteSomething |= Channel->ReplicateSubobject(RobotVehicleMoveComponent, *Bunch, *RepFlags);
+        
+    return bWroteSomething;
+}
+
 void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVel)
 {
     ServerSetLinearVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), GetActorQuat(), InLinearVel);

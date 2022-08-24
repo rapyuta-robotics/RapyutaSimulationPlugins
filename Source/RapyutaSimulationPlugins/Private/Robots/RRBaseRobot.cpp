@@ -205,6 +205,10 @@ void ARRBaseRobot::InitROS2Interface()
     if (IsNetMode(NM_Standalone) || (IsNetMode(NM_Client) && IsAutorizedInThisClient()))
     {
         ROS2Interface->Initialize(this);
+        if (NetworkAuthorityType==ERRNetworkAuthorityType::CLIENT)
+        {
+            SetReplicatingMovement(false);
+        }
     }
     else
     {
