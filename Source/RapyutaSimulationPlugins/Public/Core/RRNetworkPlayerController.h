@@ -123,7 +123,7 @@ public:
 
     /**
      * @brief Set server linear velocity to #RobotVehicleMoveComponent. Non player object can use this method to call RPC.
-     * @param InServerRobot target robot
+     * @param InServerRobot target server-owned robot
      * @param InClientTimeStamp
      * @param InClientRobotPosition
      * @param InLinearVel
