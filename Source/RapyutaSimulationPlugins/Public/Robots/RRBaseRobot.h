@@ -97,7 +97,7 @@ public:
     UROS2Spawnable* ROSSpawnParameters = nullptr;
 
     /**
-     * @brief Pointer to the robot in the server
+     * @brief Pointer to the robot's server-owned version
      * @note Owner can't be used since non-player pawn don't have that.
      */
     UPROPERTY(VisibleAnywhere, Replicated)
