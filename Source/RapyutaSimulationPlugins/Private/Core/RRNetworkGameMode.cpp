@@ -43,8 +43,7 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
            TEXT("ARRNetworkGameMode::PostLogin Logged-in PC[%d] Name=%s, Id=%d"),
            NetworkClientControllerList.Num(),
            *networkPlayerController->GetName(),
-           networkPlayerController->GetPlayerState<APlayerState>()->GetPlayerId()
-           );
+           networkPlayerController->GetPlayerState<APlayerState>()->GetPlayerId());
 
     // Add to [ClientControllerList]
     NetworkClientControllerList.Add(networkPlayerController);

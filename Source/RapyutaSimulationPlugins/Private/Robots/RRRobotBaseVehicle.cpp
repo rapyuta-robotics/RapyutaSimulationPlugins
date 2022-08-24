@@ -90,19 +90,20 @@ void ARRRobotBaseVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     DOREPLIFETIME(ARRRobotBaseVehicle, VehicleMoveComponentClass);
 }
 
-bool ARRRobotBaseVehicle::ReplicateSubobjects(UActorChannel *Channel, FOutBunch *Bunch, FReplicationFlags *RepFlags) 
+bool ARRRobotBaseVehicle::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
 {
     bool bWroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
-    
+
     // Single Object
     bWroteSomething |= Channel->ReplicateSubobject(RobotVehicleMoveComponent, *Bunch, *RepFlags);
-        
+
     return bWroteSomething;
 }
 
 void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVel)
 {
-    SyncServerLinearMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), GetActorQuat(), InLinearVel);
+    SyncServerLinearMovement(
+        GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), GetActorQuat(), InLinearVel);
     SetLocalLinearVel(InLinearVel);
 }
 
@@ -113,9 +114,9 @@ void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
 }
 
 void ARRRobotBaseVehicle::SyncServerLinearMovement(float InClientTimeStamp,
-                                                            const FVector& InClientRobotPosition,
-                                                            const FQuat& InClientRobotQuat,
-                                                            const FVector& InLinearVel)
+                                                   const FVector& InClientRobotPosition,
+                                                   const FQuat& InClientRobotQuat,
+                                                   const FVector& InLinearVel)
 {
     // todo: following block is used for RPC in server, which will be used if RPC from non player can be supported.
     // if (RobotVehicleMoveComponent)
@@ -132,8 +133,8 @@ void ARRRobotBaseVehicle::SyncServerLinearMovement(float InClientTimeStamp,
 }
 
 void ARRRobotBaseVehicle::SyncServerAngularMovement(float InClientTimeStamp,
-                                                             const FRotator& InClientRobotRotation,
-                                                             const FVector& InAngularVel)
+                                                    const FRotator& InClientRobotRotation,
+                                                    const FVector& InAngularVel)
 {
     // todo: following block is used for RPC in server, which will be used if RPC from non player can be supported.
     // if (RobotVehicleMoveComponent)

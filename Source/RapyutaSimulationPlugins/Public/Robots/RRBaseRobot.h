@@ -23,7 +23,6 @@ class ARRNetworkGameState;
 class URRRobotROS2Interface;
 class ARRNetworkPlayerController;
 
-
 /**
  * @brief Which server or client has robot movement authority.
  * Server: robot moves in server first and movement replicates to clients.
@@ -73,13 +72,13 @@ public:
     //! Robot's ROS2 Interface
     UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
     URRRobotROS2Interface* ROS2Interface = nullptr;
-    
+
     UFUNCTION(BlueprintCallable)
     virtual void OnRep_ROS2Interface();
 
     /**
      * @brief Flag to start/stop ROS2Interfaces. Since RPC can't be used, use replication to trigger initialization.
-     */   
+     */
     UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_bStartStopROS2Interface)
     bool bStartStopROS2Interface = false;
 
@@ -92,7 +91,7 @@ public:
      */
     bool IsAutorizedInThisClient();
 
-    //!ROSSpawn parameters which is passed to ROS2Interface
+    //! ROSSpawn parameters which is passed to ROS2Interface
     UPROPERTY(VisibleAnywhere, Replicated)
     UROS2Spawnable* ROSSpawnParameters = nullptr;
 
@@ -112,7 +111,9 @@ public:
 
     /**
      * @brief Initialize ROS2 Interface
-     * @note This is meant to be called in server only, but can't be an RPC since the robot is not always owned by the same [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the client's PlayerController.
+     * @note This is meant to be called in server only, but can't be an RPC since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
      */
     UFUNCTION(BlueprintCallable)
     void InitROS2Interface();
@@ -227,14 +228,13 @@ public:
      * @brief Allows a component to replicate other subobject on the actor
      *
      */
-    virtual bool ReplicateSubobjects(UActorChannel *Channel, FOutBunch *Bunch, FReplicationFlags *RepFlags) override;
+    virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
     /**
      * @brief Set Joints state to #Joints
      */
     // UFUNCTION(BlueprintCallable)
     virtual void SetJointState(const TMap<FString, TArray<float>>& InJointState, const ERRJointControlType InJointControlType);
-
 
     /**
      * @brief Network Authority.

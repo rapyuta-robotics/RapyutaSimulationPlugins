@@ -15,10 +15,10 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Robots/RRBaseRobot.h"
 #include "Tools/RRROS2ClockPublisher.h"
 #include "Tools/RRROS2SimulationStateClient.h"
 #include "Tools/SimulationState.h"
-#include "Robots/RRBaseRobot.h"
 
 #include "RRNetworkPlayerController.generated.h"
 
@@ -32,7 +32,7 @@ class RAPYUTASIMULATIONPLUGINS_API ARRNetworkPlayerController : public APlayerCo
     GENERATED_BODY()
 public:
     ARRNetworkPlayerController();
-    
+
     virtual void Tick(float DeltaSeconds) override;
 
     /**
@@ -121,7 +121,6 @@ public:
      */
     void UpdateLocalClock(float InDeltaSeconds);
 
-
     /**
      * @brief Set server linear velocity to #RobotVehicleMoveComponent. Non player object can use this method to call RPC.
      * @param InServerRobot target robot
@@ -131,7 +130,11 @@ public:
      * @note can't use rpc since this is not controlled by Paleyr. should add (Server, Reliable)
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void ServerSetLinearVel(ARRBaseRobot* InServerRobot,float InClientTimeStamp, const FVector& InClientRobotPosition, const FQuat& InClientRobotQuat, const FVector& InLinearVel);
+    virtual void ServerSetLinearVel(ARRBaseRobot* InServerRobot,
+                                    float InClientTimeStamp,
+                                    const FVector& InClientRobotPosition,
+                                    const FQuat& InClientRobotQuat,
+                                    const FVector& InLinearVel);
 
     /**
      * @brief Set server angular velocity to #RobotVehicleMoveComponent. Non player object can use this method to call RPC.
@@ -142,8 +145,10 @@ public:
      * @note can't use rpc since this is not controlled by Paleyr. should add (Server, Reliable)
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void ServerSetAngularVel(ARRBaseRobot* InServerRobot,float InClientTimeStamp, const FRotator& InClientRobotRotation, const FVector& InAngularVel);
-
+    virtual void ServerSetAngularVel(ARRBaseRobot* InServerRobot,
+                                     float InClientTimeStamp,
+                                     const FRotator& InClientRobotRotation,
+                                     const FVector& InAngularVel);
 
 protected:
     virtual void BeginPlay() override;

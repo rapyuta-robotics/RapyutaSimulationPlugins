@@ -21,7 +21,6 @@ class RAPYUTASIMULATIONPLUGINS_API ARRCrowdROSController : public ARRCrowdAICont
     GENERATED_BODY()
 
 protected:
-
     /**
      * @brief Initialize by calling #InitRobotROS2Node, #ARRBaseRobot's InitSensors and #InitPublishers.
      *

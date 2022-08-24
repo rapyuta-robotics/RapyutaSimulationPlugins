@@ -310,7 +310,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     {
         return nullptr;
     }
-    
+
     // Wrap [InROSSpawnRequest] into a ROS2 spawnable component
     UROS2Spawnable* spawnableComponent = NewObject<UROS2Spawnable>(newEntity, TEXT("ROS2 Spawn Parameters"));
     spawnableComponent->SetIsReplicated(true);
@@ -397,7 +397,6 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequ
                        TEXT("[ASimulationState] Failed to spawn entity named %s, probably out collision!"),
                        *entityName);
             }
-
         }
         else
         {

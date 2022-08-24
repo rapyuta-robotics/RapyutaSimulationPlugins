@@ -31,7 +31,7 @@ enum class ERRSimType : uint8
 
 /**
  * @brief GameMode with specific setting, asset loading and ROS2 interface via #ClockPublisher and #ASimulationState.
- * 
+ *
  */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRGameMode : public ARRROS2GameMode
@@ -95,7 +95,7 @@ public:
     virtual void InitGameState() override;
 
     /**
-     * @brief Set benchmark, fixed time step via FApp if running without editor. 
+     * @brief Set benchmark, fixed time step via FApp if running without editor.
      * Call #ConfigureSimInPlay and #StartSim
      * @sa [FApp](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FApp/)
      */
@@ -107,13 +107,14 @@ public:
     virtual void ConfigureSimInPlay();
 
     /**
-     * @brief 
-     * 1. LOAD [ImageWrapperModule].  This must be loaded this early for possible external image-based texture loading at Sim initialization!
+     * @brief
+     * 1. LOAD [ImageWrapperModule].  This must be loaded this early for possible external image-based texture loading at Sim
+     * initialization!
      * 2. LOAD SIM STATIC GLOBAL RESOURCES
      * 3. START SIM ONCE RESOURCES ARE LOADED
      *  The reason for this scheduled delegate is some essential operation, which facilitates sim startup activities like
      *  asynchronous resource loading, could only run after this [ARRGameState::BeginPlay()] ends!
-     */ 
+     */
     virtual void StartSim();
     UPROPERTY(config)
     bool bBenchmark = true;

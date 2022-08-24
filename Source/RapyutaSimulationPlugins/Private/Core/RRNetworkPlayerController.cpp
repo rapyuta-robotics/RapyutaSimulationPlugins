@@ -72,17 +72,16 @@ void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
     {
         return;
     }
-    
+
     if (nullptr == ROS2SimStateClient)
     {
-         UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("[%s][ARRNetworkPlayerController::ClientInitSimStateClientROS2] ROS2SimStateClient not found."),
-           *GetName()
-           );
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s][ARRNetworkPlayerController::ClientInitSimStateClientROS2] ROS2SimStateClient not found."),
+               *GetName());
         return;
     }
-    
+
     // Init SimStateClient's [ROS2Node] & [ClockPublisher]
     UWorld* currentWorld = GetWorld();
     SimStateClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
@@ -111,11 +110,10 @@ void ARRNetworkPlayerController::OnRep_SimStateClient()
 {
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore,
-        Warning,
-        TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient] Playername: %s, IsNetMode(NM_Client):%d."), 
-        *GetName(), 
-        (true == IsNetMode(NM_Client)),
-        );
+           Warning,
+           TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient] Playername: %s, IsNetMode(NM_Client):%d."),
+           *GetName(),
+           (true == IsNetMode(NM_Client)), );
 
 #endif
     if (IsLocalController())
@@ -125,9 +123,7 @@ void ARRNetworkPlayerController::OnRep_SimStateClient()
             // 1- Init [SimStateClientROS2Node] only once [ROS2SimStateClient] is created
             TInlineComponentArray<URRROS2SimulationStateClient*> simStateComponents(this);
             ROS2SimStateClient = (simStateComponents.Num() > 0) ? simStateComponents[0] : nullptr;
-            UE_LOG(LogRapyutaCore,
-                Log,
-                TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient"), *GetName());
+            UE_LOG(LogRapyutaCore, Log, TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient"), *GetName());
 
             ClientInitSimStateClientROS2();
         }
@@ -137,9 +133,7 @@ void ARRNetworkPlayerController::OnRep_SimStateClient()
 void ARRNetworkPlayerController::BeginPlay()
 {
     Super::BeginPlay();
-    UE_LOG(LogRapyutaCore,
-                Warning,
-                TEXT("[%s] [ARRNetworkPlayerController::BeginPlay]"), *GetName());
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRNetworkPlayerController::BeginPlay]"), *GetName());
 
     if (IsLocalController())
     {
@@ -147,7 +141,7 @@ void ARRNetworkPlayerController::BeginPlay()
         timerManager.SetTimer(ClockRequestTimerHandle, this, &ARRNetworkPlayerController::RequestServerTimeUpdate, 5.f, true);
     }
 
-    if(IsNetMode(NM_Standalone))
+    if (IsNetMode(NM_Standalone))
     {
         ClientInitSimStateClientROS2();
     }
@@ -200,20 +194,19 @@ void ARRNetworkPlayerController::ReceivedPlayer()
 }
 
 void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot* InServerRobot,
-                                                            float InClientTimeStamp,
-                                                            const FVector& InClientRobotPosition,
-                                                            const FQuat& InClientRobotQuat,
-                                                            const FVector& InLinearVel)
+                                                                   float InClientTimeStamp,
+                                                                   const FVector& InClientRobotPosition,
+                                                                   const FQuat& InClientRobotQuat,
+                                                                   const FVector& InLinearVel)
 {
-    //todo: donot work with physics model. GetActoLocaion return constant values.
+    // todo: donot work with physics model. GetActoLocaion return constant values.
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore,
-            Warning,
-            TEXT("[%s] [ServerSetLinearVel_Implementation] %s %s"),
-            *GetName(),
-            *InClientRobotPosition.ToString(),
-            *InServerRobot->GetActorLocation().ToString()
-            );
+           Warning,
+           TEXT("[%s] [ServerSetLinearVel_Implementation] %s %s"),
+           *GetName(),
+           *InClientRobotPosition.ToString(),
+           *InServerRobot->GetActorLocation().ToString());
 #endif
     auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
     if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
@@ -225,26 +218,24 @@ void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot*
 }
 
 void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot* InServerRobot,
-                                                             float InClientTimeStamp,
-                                                             const FRotator& InClientRobotRotation,
-                                                             const FVector& InAngularVel)
+                                                                    float InClientTimeStamp,
+                                                                    const FRotator& InClientRobotRotation,
+                                                                    const FVector& InAngularVel)
 {
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore,
-            Warning,
-            TEXT("[%s] [ServerSetLinearVel_Implementation] %s %s"),
-            *GetName(),
-            *InClientRobotPosition.ToString(),
-            *InServerRobot->GetActorLocation().ToString()
-            );
+           Warning,
+           TEXT("[%s] [ServerSetLinearVel_Implementation] %s %s"),
+           *GetName(),
+           *InClientRobotPosition.ToString(),
+           *InServerRobot->GetActorLocation().ToString());
 #endif
     UE_LOG(LogRapyutaCore,
-            Warning,
-            TEXT("[%s] [ServerSetAngularVel_Implementation] %s %s"),
-            *GetName(),
-            *InClientRobotRotation.ToString(),
-            *InServerRobot->GetActorRotation().ToString()
-            );
+           Warning,
+           TEXT("[%s] [ServerSetAngularVel_Implementation] %s %s"),
+           *GetName(),
+           *InClientRobotRotation.ToString(),
+           *InServerRobot->GetActorRotation().ToString());
     auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
     if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
     {

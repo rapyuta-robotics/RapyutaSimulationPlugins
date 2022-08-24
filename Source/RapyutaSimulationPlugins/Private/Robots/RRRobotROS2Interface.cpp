@@ -27,14 +27,12 @@ void URRRobotROS2Interface::SetupROSParams()
 
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
-    if(nullptr == InRobot)
+    if (nullptr == InRobot)
     {
-        UE_LOG(LogRapyutaCore,
-                Warning,
-                TEXT("[%s] [URRRobotROS2Interface::Initialize] No pawn is given."), *GetName()); 
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [URRRobotROS2Interface::Initialize] No pawn is given."), *GetName());
         return;
     }
-    
+
     Robot = InRobot;
     Robot->ROS2Interface = this;
 

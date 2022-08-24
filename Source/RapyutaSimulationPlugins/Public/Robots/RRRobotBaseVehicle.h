@@ -83,12 +83,12 @@ public:
      * @param OutLifetimeProps Output lifetime properties
      */
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
-    
+
     /**
      * @brief Allows a component to replicate other subobject on the actor
      *
      */
-    virtual bool ReplicateSubobjects(UActorChannel *Channel, FOutBunch *Bunch, FReplicationFlags *RepFlags) override;
+    virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
     /**
      * @brief Set the root offset for #RobotVehicleMoveComponent
@@ -124,7 +124,10 @@ public:
      * @note can't use rpc since this is not controlled by Paleyr. should add (Server, Reliable)
      */
     UFUNCTION(BlueprintCallable)
-    virtual void SyncServerLinearMovement(float InClientTimeStamp, const FVector& InClientRobotPosition, const FQuat& InClientRobotQuat, const FVector& InLinearVel);
+    virtual void SyncServerLinearMovement(float InClientTimeStamp,
+                                          const FVector& InClientRobotPosition,
+                                          const FQuat& InClientRobotQuat,
+                                          const FVector& InLinearVel);
 
     /**
      * @brief Set server rotation and angular velocity to #RobotVehicleMoveComponent
@@ -134,7 +137,9 @@ public:
      * @note can't use rpc since this is not controlled by Paleyr. should add (Server, Reliable)
      */
     UFUNCTION(BlueprintCallable)
-    virtual void SyncServerAngularMovement(float InClientTimeStamp, const FRotator& InClientRobotRotation, const FVector& InAngularVel);
+    virtual void SyncServerAngularMovement(float InClientTimeStamp,
+                                           const FRotator& InClientRobotRotation,
+                                           const FVector& InAngularVel);
 
     /**
      * @brief Set client linear velocity to #RobotVehicleMoveComponent

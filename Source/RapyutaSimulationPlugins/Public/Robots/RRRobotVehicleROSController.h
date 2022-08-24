@@ -25,5 +25,4 @@ class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public ARRBase
 {
     GENERATED_BODY()
 protected:
-
 };

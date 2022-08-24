@@ -11,8 +11,8 @@
 
 // rclUE
 #include "ROS2Node.h"
-#include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/ROS2Spawnable.h"
+#include "Tools/RRROS2OdomPublisher.h"
 
 #include "RRRobotROS2Interface.generated.h"
 
@@ -45,7 +45,7 @@ public:
      * @param OutLifetimeProps Output lifetime properties
      */
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-    
+
     //! Target ROS2 node of this interface
     UPROPERTY(Transient, Replicated)
     AROS2Node* RobotROS2Node = nullptr;
