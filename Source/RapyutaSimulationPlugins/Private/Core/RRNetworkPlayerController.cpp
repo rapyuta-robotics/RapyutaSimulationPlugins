@@ -39,15 +39,9 @@ void ARRNetworkPlayerController::Tick(float DeltaSeconds)
 void ARRNetworkPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    // DOREPLIFETIME(ARRNetworkPlayerController, SimStateClientROS2Node);
-    // DOREPLIFETIME(ARRNetworkPlayerController, SimStateClientClockPublisher);
     DOREPLIFETIME(ARRNetworkPlayerController, ServerSimState);
     DOREPLIFETIME(ARRNetworkPlayerController, ROS2SimStateClient);
     DOREPLIFETIME(ARRNetworkPlayerController, PlayerName);
-
-    // After pawn possession, PossessedPawn & Super::Pawn are actually referring to the same one.
-    // But we could not setup replication for Pawn here due to its being private in Super
-    // DOREPLIFETIME(ARRNetworkPlayerController, PossessedPawn);
 }
 
 void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass)
@@ -72,7 +66,7 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
            ROS2SimStateClient);
 }
 
-void ARRNetworkPlayerController::InitSimStateClientROS2_Implementation()
+void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
 {
     if (SimStateClientROS2Node)
     {
@@ -83,7 +77,7 @@ void ARRNetworkPlayerController::InitSimStateClientROS2_Implementation()
     {
          UE_LOG(LogRapyutaCore,
            Warning,
-           TEXT("[%s][ARRNetworkPlayerController::InitSimStateClientROS2] ROS2SimStateClient not found."),
+           TEXT("[%s][ARRNetworkPlayerController::ClientInitSimStateClientROS2] ROS2SimStateClient not found."),
            *GetName()
            );
         return;
@@ -115,22 +109,27 @@ void ARRNetworkPlayerController::InitSimStateClientROS2_Implementation()
 
 void ARRNetworkPlayerController::OnRep_SimStateClient()
 {
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore,
+        Warning,
+        TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient] Playername: %s, IsNetMode(NM_Client):%d."), 
+        *GetName(), 
+        (true == IsNetMode(NM_Client)),
+        );
+
+#endif
     if (IsLocalController())
     {
-        UE_LOG(LogRapyutaCore,
-            Warning,
-            TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient()] %d %d"), *GetName(), (true == IsNetMode(NM_Client)), (PlayerName != URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME));
-
         if ((true == IsNetMode(NM_Client)) && (PlayerName != URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME))
         {
             // 1- Init [SimStateClientROS2Node] only once [ROS2SimStateClient] is created
             TInlineComponentArray<URRROS2SimulationStateClient*> simStateComponents(this);
             ROS2SimStateClient = (simStateComponents.Num() > 0) ? simStateComponents[0] : nullptr;
             UE_LOG(LogRapyutaCore,
-                Warning,
-                TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient()] %d "), *GetName(), (ROS2SimStateClient == nullptr));
+                Log,
+                TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient"), *GetName());
 
-            InitSimStateClientROS2();
+            ClientInitSimStateClientROS2();
         }
     }
 }
@@ -145,13 +144,12 @@ void ARRNetworkPlayerController::BeginPlay()
     if (IsLocalController())
     {
         FTimerManager& timerManager = GetWorld()->GetTimerManager();
-        // timerManager.SetTimer(PossessTimerHandle, this, &ARRNetworkPlayerController::WaitToPossessPawn, 1.f, true);
         timerManager.SetTimer(ClockRequestTimerHandle, this, &ARRNetworkPlayerController::RequestServerTimeUpdate, 5.f, true);
     }
 
     if(IsNetMode(NM_Standalone))
     {
-        InitSimStateClientROS2();
+        ClientInitSimStateClientROS2();
     }
 }
 

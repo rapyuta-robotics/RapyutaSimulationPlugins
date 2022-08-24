@@ -102,17 +102,17 @@ bool ARRRobotBaseVehicle::ReplicateSubobjects(UActorChannel *Channel, FOutBunch 
 
 void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVel)
 {
-    ServerSetLinearVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), GetActorQuat(), InLinearVel);
-    ClientSetLinearVel(InLinearVel);
+    SyncServerLinearMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), GetActorQuat(), InLinearVel);
+    SetLocalLinearVel(InLinearVel);
 }
 
 void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
 {
-    ServerSetAngularVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
-    ClientSetAngularVel(InAngularVel);
+    SyncServerAngularMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
+    SetLocalAngularVel(InAngularVel);
 }
 
-void ARRRobotBaseVehicle::ServerSetLinearVel(float InClientTimeStamp,
+void ARRRobotBaseVehicle::SyncServerLinearMovement(float InClientTimeStamp,
                                                             const FVector& InClientRobotPosition,
                                                             const FQuat& InClientRobotQuat,
                                                             const FVector& InLinearVel)
@@ -131,7 +131,7 @@ void ARRRobotBaseVehicle::ServerSetLinearVel(float InClientTimeStamp,
     }
 }
 
-void ARRRobotBaseVehicle::ServerSetAngularVel(float InClientTimeStamp,
+void ARRRobotBaseVehicle::SyncServerAngularMovement(float InClientTimeStamp,
                                                              const FRotator& InClientRobotRotation,
                                                              const FVector& InAngularVel)
 {
@@ -152,14 +152,14 @@ void ARRRobotBaseVehicle::ServerSetAngularVel(float InClientTimeStamp,
     }
 }
 
-void ARRRobotBaseVehicle::ClientSetLinearVel(const FVector& InLinearVel)
+void ARRRobotBaseVehicle::SetLocalLinearVel(const FVector& InLinearVel)
 {
     if (RobotVehicleMoveComponent)
     {
 #if RAPYUTA_SIM_DEBUG
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("PLAYER [%s] ClientSetLinearVel %s"),
+               TEXT("PLAYER [%s] SetLocalLinearVel %s"),
                *PlayerController->PlayerState->GetPlayerName(),
                *InLinearVel.ToString());
 #endif
@@ -167,14 +167,14 @@ void ARRRobotBaseVehicle::ClientSetLinearVel(const FVector& InLinearVel)
     }
 }
 
-void ARRRobotBaseVehicle::ClientSetAngularVel(const FVector& InAngularVel)
+void ARRRobotBaseVehicle::SetLocalAngularVel(const FVector& InAngularVel)
 {
     if (RobotVehicleMoveComponent)
     {
 #if RAPYUTA_SIM_DEBUG
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("PLAYER [%s] ClientSetAngularVel %s"),
+               TEXT("PLAYER [%s] SetLocalAngularVel %s"),
                *PlayerController->PlayerState->GetPlayerName(),
                *InAngularVel.ToString());
 #endif

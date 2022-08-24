@@ -36,8 +36,8 @@ def main(args=None):
 
     param_node = ParamsNode()
 
-    # robot_models = ['kinematic_burger', 'kinematic_waffle'] #kinematics model
-    robot_models = ['burger', 'waffle'] #physics model
+    robot_models = ['kinematic_burger', 'kinematic_waffle'] #kinematics model
+    # robot_models = ['burger', 'waffle'] #physics model
 
     # parameters
     x_lim = param_node.get_parameter('x_lim').value

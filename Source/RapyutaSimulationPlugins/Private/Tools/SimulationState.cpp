@@ -318,7 +318,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     spawnableComponent->SetNetworkPlayerId(InNetworkPlayerId);
     spawnableComponent->InitializeParameters(InROSSpawnRequest);
 
-    // newEntity->AddInstanceComponent(spawnableComponent);
+    newEntity->AddInstanceComponent(spawnableComponent);
     newEntity->Rename(*InROSSpawnRequest.StateName);
 #if WITH_EDITOR
     newEntity->SetActorLabel(*InROSSpawnRequest.StateName);

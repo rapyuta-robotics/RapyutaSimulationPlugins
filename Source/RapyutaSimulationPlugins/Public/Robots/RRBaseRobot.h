@@ -80,11 +80,11 @@ public:
     /**
      * @brief Flag to start/stop ROS2Interfaces. Since RPC can't be used, use replication to trigger initialization.
      */   
-    UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_StartStopROS2Interface)
-    bool StartStopROS2Interface = false;
+    UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_bStartStopROS2Interface)
+    bool bStartStopROS2Interface = false;
 
     UFUNCTION(BlueprintCallable)
-    virtual void OnRep_StartStopROS2Interface();
+    virtual void OnRep_bStartStopROS2Interface();
 
     /**
      * @brief Check necessary variables has initialized and PlayerId which spaned robot is match the this client PlayerId

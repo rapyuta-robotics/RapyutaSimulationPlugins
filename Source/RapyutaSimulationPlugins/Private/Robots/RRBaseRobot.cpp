@@ -75,25 +75,25 @@ void ARRBaseRobot::OnRep_ROS2Interface()
             Warning,
             TEXT("[%s] [ARRBaseRobot::OnRep_ROS2Interface]."), *GetName()); 
 #endif
-    // Since Replication order of ROS2Interface, StartStopROS2Interface, ROSSpawnParameters can be shuffled,
+    // Since Replication order of ROS2Interface, bStartStopROS2Interface, ROSSpawnParameters can be shuffled,
     // Trigger init ROS2 interface in each OnRep function.
     // need to initialize here as well.
     // https://forums.unrealengine.com/t/replication-ordering-guarantees/264974
-    if(StartStopROS2Interface)
+    if(bStartStopROS2Interface)
     {
         InitROS2Interface();
     }
 
 }
 
-void ARRBaseRobot::OnRep_StartStopROS2Interface()
+void ARRBaseRobot::OnRep_bStartStopROS2Interface()
 {
 #if RAPYUTA_SIM_DEBUG  
     UE_LOG(LogRapyutaCore,
         Warning,
-        TEXT("[%s] [ARRBaseRobot::OnRep_StartStopROS2Interface]"), *GetName()); 
+        TEXT("[%s] [ARRBaseRobot::OnRep_bStartStopROS2Interface]"), *GetName()); 
 #endif
-    if(StartStopROS2Interface)
+    if(bStartStopROS2Interface)
     {
         InitROS2Interface();
     }
@@ -179,7 +179,7 @@ void ARRBaseRobot::CreateROS2Interface()
     ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;
     ROS2Interface->SetupROSParams();
 
-    if(StartStopROS2Interface)
+    if(bStartStopROS2Interface)
     {
         InitROS2Interface();
     }
@@ -214,7 +214,7 @@ void ARRBaseRobot::InitROS2Interface()
     {
         //Use replication to triggerto this function in client.
         //Since RPC can't be used from non-player controller
-        StartStopROS2Interface = true;
+        bStartStopROS2Interface = true;
     }
 }
 
@@ -234,7 +234,7 @@ void ARRBaseRobot::StopROS2Interface()
     {
         //Use replication to triggerto this function in client.
         //Since RPC can't be used from non-player controller
-        StartStopROS2Interface = false;
+        bStartStopROS2Interface = false;
     }
 }
 
@@ -273,7 +273,7 @@ void ARRBaseRobot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ARRBaseRobot, ROS2Interface);
     DOREPLIFETIME(ARRBaseRobot, ROS2InterfaceClass);
     DOREPLIFETIME(ARRBaseRobot, ROSSpawnParameters);
-    DOREPLIFETIME(ARRBaseRobot, StartStopROS2Interface);
+    DOREPLIFETIME(ARRBaseRobot, bStartStopROS2Interface);
 }
 
 bool ARRBaseRobot::ReplicateSubobjects(UActorChannel *Channel, FOutBunch *Bunch, FReplicationFlags *RepFlags) 

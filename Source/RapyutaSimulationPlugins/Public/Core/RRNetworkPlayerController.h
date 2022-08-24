@@ -34,6 +34,13 @@ public:
     ARRNetworkPlayerController();
     
     virtual void Tick(float DeltaSeconds) override;
+
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     // ROS2
@@ -71,7 +78,7 @@ public:
      * @brief Init SimStateClient's ROS2 (Node, ClockPublisher, etc.)
      */
     UFUNCTION(Client, Reliable)
-    void InitSimStateClientROS2();
+    void ClientInitSimStateClientROS2();
 
     /**
      * @brief Possess a pawn on server

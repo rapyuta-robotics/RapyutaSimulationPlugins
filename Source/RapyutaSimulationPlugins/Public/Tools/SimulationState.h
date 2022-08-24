@@ -146,7 +146,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest, const int32& NetworkPlayerId);
+    AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest, const int32 NetworkPlayerId);
 
     //! Cached the previous [SpawnEntity] request for duplicated incoming request filtering
     UPROPERTY(BlueprintReadOnly)
