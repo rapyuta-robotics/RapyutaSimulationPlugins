@@ -102,8 +102,7 @@ bool ARRRobotBaseVehicle::ReplicateSubobjects(UActorChannel* Channel, FOutBunch*
 
 void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVel)
 {
-    SyncServerLinearMovement(
-        GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), GetActorQuat(), InLinearVel);
+    SyncServerLinearMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetTransform(), InLinearVel);
     SetLocalLinearVel(InLinearVel);
 }
 
@@ -114,8 +113,7 @@ void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
 }
 
 void ARRRobotBaseVehicle::SyncServerLinearMovement(float InClientTimeStamp,
-                                                   const FVector& InClientRobotPosition,
-                                                   const FQuat& InClientRobotQuat,
+                                                   const FTransform& InClientRobotTransform,
                                                    const FVector& InLinearVel)
 {
     // todo: following block is used for RPC in server, which will be used if RPC from non player can be supported.
@@ -128,7 +126,7 @@ void ARRRobotBaseVehicle::SyncServerLinearMovement(float InClientTimeStamp,
     auto* npc = Cast<ARRNetworkPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
     if (npc != nullptr)
     {
-        npc->ServerSetLinearVel(ServerRobot, InClientTimeStamp, InClientRobotPosition, InClientRobotQuat, InLinearVel);
+        npc->ServerSetLinearVel(ServerRobot, InClientTimeStamp, InClientRobotTransform, InLinearVel);
     }
 }
 

@@ -125,8 +125,7 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void SyncServerLinearMovement(float InClientTimeStamp,
-                                          const FVector& InClientRobotPosition,
-                                          const FQuat& InClientRobotQuat,
+                                          const FTransform& InClientRobotTransform,
                                           const FVector& InLinearVel);
 
     /**

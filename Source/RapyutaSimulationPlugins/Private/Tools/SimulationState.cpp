@@ -313,7 +313,6 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
 
     // Wrap [InROSSpawnRequest] into a ROS2 spawnable component
     UROS2Spawnable* spawnableComponent = NewObject<UROS2Spawnable>(newEntity, TEXT("ROS2 Spawn Parameters"));
-    spawnableComponent->SetIsReplicated(true);
     spawnableComponent->RegisterComponent();
     spawnableComponent->SetNetworkPlayerId(InNetworkPlayerId);
     spawnableComponent->InitializeParameters(InROSSpawnRequest);

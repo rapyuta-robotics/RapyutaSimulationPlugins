@@ -195,8 +195,7 @@ void ARRNetworkPlayerController::ReceivedPlayer()
 
 void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot* InServerRobot,
                                                                    float InClientTimeStamp,
-                                                                   const FVector& InClientRobotPosition,
-                                                                   const FQuat& InClientRobotQuat,
+                                                                   const FTransform& InClientRobotTransform,
                                                                    const FVector& InLinearVel)
 {
     // todo: donot work with physics model. GetActoLocaion return constant values.
@@ -212,7 +211,8 @@ void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot*
     if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-        robot->SetActorLocation(InClientRobotPosition + InClientRobotQuat * InLinearVel * (serverCurrentTime - InClientTimeStamp));
+        robot->SetActorLocation(InClientRobotTransform.GetTranslation() +
+                                InClientRobotTransform.GetRotation() * InLinearVel * (serverCurrentTime - InClientTimeStamp));
         robot->RobotVehicleMoveComponent->Velocity = InLinearVel;
     }
 }
