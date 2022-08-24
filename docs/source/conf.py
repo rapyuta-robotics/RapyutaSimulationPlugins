@@ -44,7 +44,8 @@ extensions = [
     'sphinx.ext.todo', 
     'breathe', 
     'sphinx.ext.graphviz',
-    'myst_parser'
+    'myst_parser',
+    'sphinxcontrib.video'
 ]
 
 intersphinx_mapping = {
