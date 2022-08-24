@@ -354,7 +354,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     return newEntity;
 }
 
-AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest, const int32& InNetworkPlayerId)
+AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest, const int32 InNetworkPlayerId)
 {
     if (false == VerifyIsServerCall(TEXT("ServerSpawnEntity")))
     {
