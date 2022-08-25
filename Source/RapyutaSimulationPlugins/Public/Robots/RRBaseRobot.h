@@ -89,7 +89,7 @@ public:
      * @brief Check necessary variables has initialized and PlayerId which spaned robot is match the this client PlayerId
      * @return true if playerId matches robot spawn playerId
      */
-    bool IsAutorizedInThisClient();
+    bool IsAuthorizedInThisClient();
 
     //! ROSSpawn parameters which is passed to ROS2Interface
     UPROPERTY(VisibleAnywhere, Replicated)
@@ -110,8 +110,9 @@ public:
     void CreateROS2Interface();
 
     /**
-     * @brief Initialize ROS2 Interface
-     * @note This is meant to be called in server only, but can't be an RPC since the robot is not always owned by the same
+     * @brief Initialize ROS2 Interface. Directly call #URRRobotROS2Interface::Initialize or execute in client via
+     * #OnRep_bStartStopROS2Interface.
+     * @note Not uses RPC but replication since the robot is not always owned by the same
      * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
      * client's PlayerController.
      */
@@ -119,11 +120,14 @@ public:
     void InitROS2Interface();
 
     /**
-     * @brief Stop ROS2 Interface
-     * @note can't use rpc since this is not controlled by Paleyr. should add (Client, Reliable)
+     * @brief Stop ROS2 Interface. Directly call #URRRobotROS2Interface::DeInitialize or execute in client via
+     * #OnRep_bStartStopROS2Interface.
+     * @note Not uses RPC but replication since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
      */
     UFUNCTION(BlueprintCallable)
-    void StopROS2Interface();
+    void DeInitROS2Interface();
 
     /**
      * @brief

@@ -103,7 +103,7 @@ void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
     SimStateClientClockPublisher->InitializeWithROS2(SimStateClientROS2Node);
 
-    UE_LOG(LogRapyutaCore, Error, TEXT("[%s] SimStateClient ROS2Node[%s] created"), *PlayerName, *SimStateClientROS2Node->Name);
+    UE_LOG(LogRapyutaCore, Log, TEXT("[%s] SimStateClient ROS2Node[%s] created"), *PlayerName, *SimStateClientROS2Node->Name);
 }
 
 void ARRNetworkPlayerController::OnRep_SimStateClient()

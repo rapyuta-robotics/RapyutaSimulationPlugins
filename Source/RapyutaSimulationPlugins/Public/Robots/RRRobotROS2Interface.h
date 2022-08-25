@@ -61,6 +61,13 @@ public:
     virtual void Initialize(ARRBaseRobot* InRobot);
 
     /**
+     * @brief DeInitialize robot's ROS2 interface
+     *
+     * @param InRobot
+     */
+    virtual void DeInitialize();
+
+    /**
      * @brief Spawn ROS2Node and initialize it. This method is mainly used by #ASimulationState to spawn from ROS2 service.
      *
      * @param InPawn

@@ -13,7 +13,7 @@ SERVICE_NAME_GET_ENTITY_STATE = 'GetEntityState'
 def wait_for_spawned_entity(in_entity_name, service_namespace='', in_timeout=10.0):
     print(f'Waiting for entity [{in_entity_name}]...')
     node = rclpy.create_node(f'wait_for_{in_entity_name}')
-    cli = wait_for_service(node,GetEntityState,  os.path.join(service_namespace, SERVICE_NAME_GET_ENTITY_STATE), in_timeout)
+    cli = wait_for_service(node,GetEntityState,  service_namespace + '/' + SERVICE_NAME_GET_ENTITY_STATE, in_timeout)
     if not cli.service_is_ready():
         return False
 

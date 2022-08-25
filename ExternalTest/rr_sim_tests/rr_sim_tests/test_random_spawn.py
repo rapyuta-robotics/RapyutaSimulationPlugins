@@ -63,8 +63,8 @@ def main(args=None):
     reference_frame = ''
     robot_pose = Pose()
 
-    res = True
-    while res:
+    is_robot_spawned = False
+    while not is_robot_spawned:
         q = quaternion_from_euler(0.0, 0.0, random.uniform(-np.pi, np.pi))
         robot_pose.position.x = float(random.uniform(x_lim[0], x_lim[1]))
         robot_pose.position.y = float(random.uniform(y_lim[0], y_lim[1]))
@@ -80,7 +80,6 @@ def main(args=None):
                 time.sleep(1)
                 is_robot_spawned, _ = wait_for_spawned_entity(robot_name, service_namespace, 10.0)
                 if is_robot_spawned:
-                    res = False
                     break
                 count += 1
     

@@ -47,6 +47,23 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 
     // cmd_vel, joint state, and other ROS topic inputs.
     InitSubscriptions();
+
+    // todo: initialize service and action as well.
+}
+
+void URRRobotROS2Interface::DeInitialize()
+{
+    if (nullptr == RobotROS2Node)
+    {
+        return;
+    }
+
+    Robot->ROS2Interface = nullptr;
+    Robot = nullptr;
+
+    StopPublishers();
+
+    // todo: deinitialize subscriber, service and action as well.
 }
 
 void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

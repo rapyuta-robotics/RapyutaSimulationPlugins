@@ -93,11 +93,11 @@ void ARRBaseRobot::OnRep_bStartStopROS2Interface()
     }
     else
     {
-        StopROS2Interface();
+        DeInitROS2Interface();
     }
 }
 
-bool ARRBaseRobot::IsAutorizedInThisClient()
+bool ARRBaseRobot::IsAuthorizedInThisClient()
 {
     // Get networkplayer controller
     auto* npc = Cast<ARRNetworkPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
@@ -106,7 +106,7 @@ bool ARRBaseRobot::IsAutorizedInThisClient()
     if (nullptr == ROS2Interface)
     {
 #if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::IsAutorizedInThisClient] No ROS2Controller found"), *GetName());
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ROS2Controller found"), *GetName());
 #endif
         res = false;
     }
@@ -119,7 +119,7 @@ bool ARRBaseRobot::IsAutorizedInThisClient()
 #if RAPYUTA_SIM_DEBUG
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[%s] [ARRBaseRobot::IsAutorizedInThisClient] No ROS2Controller->ROSSpawnParameters found"),
+               TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ROS2Controller->ROSSpawnParameters found"),
                *GetName());
 #endif
         res = false;
@@ -129,7 +129,7 @@ bool ARRBaseRobot::IsAutorizedInThisClient()
 #if RAPYUTA_SIM_DEBUG
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[%s] [ARRBaseRobot::IsAutorizedInThisClient] No ARRNetworkPlayerController found"),
+               TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ARRNetworkPlayerController found"),
                *GetName());
 #endif
         res = false;
@@ -138,7 +138,7 @@ bool ARRBaseRobot::IsAutorizedInThisClient()
     {
         UE_LOG(LogRapyutaCore,
                Log,
-               TEXT("[%s] [ARRBaseRobot::IsAutorizedInThisClient()] PlayerId is matched. PlayerId=%d."),
+               TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient()] PlayerId is matched. PlayerId=%d."),
                *GetName(),
                npc->GetPlayerState<APlayerState>()->GetPlayerId());
         res = true;
@@ -148,7 +148,7 @@ bool ARRBaseRobot::IsAutorizedInThisClient()
 #if RAPYUTA_SIM_DEBUG
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[%s] [ARRBaseRobot::IsAutorizedInThisClient()] PlayerId is mismatched. This robot spawned by PlaeyrId=%d. "
+               TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient()] PlayerId is mismatched. This robot spawned by PlaeyrId=%d. "
                     "This Client's PlayerId=%d. "),
                *GetName(),
                ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId(),
@@ -186,10 +186,10 @@ void ARRBaseRobot::CreateROS2Interface()
 void ARRBaseRobot::InitROS2Interface()
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::InitROS2Interface] %d"), *GetName(), IsAutorizedInThisClient());
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::InitROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
 #endif
 
-    if (IsNetMode(NM_Standalone) || (IsNetMode(NM_Client) && IsAutorizedInThisClient()))
+    if (IsNetMode(NM_Standalone) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
     {
         ROS2Interface->Initialize(this);
         if (NetworkAuthorityType == ERRNetworkAuthorityType::CLIENT)
@@ -205,15 +205,15 @@ void ARRBaseRobot::InitROS2Interface()
     }
 }
 
-void ARRBaseRobot::StopROS2Interface()
+void ARRBaseRobot::DeInitROS2Interface()
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::StopROS2Interface] %d"), *GetName(), IsAutorizedInThisClient());
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::StopROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
 #endif
 
-    if (IsNetMode(NM_Standalone) || (IsNetMode(NM_Client) && IsAutorizedInThisClient()))
+    if (IsNetMode(NM_Standalone) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
     {
-        ROS2Interface->StopPublishers();
+        ROS2Interface->DeInitialize();
     }
     else
     {

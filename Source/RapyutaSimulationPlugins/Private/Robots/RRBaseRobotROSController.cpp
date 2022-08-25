@@ -10,10 +10,10 @@ void ARRBaseRobotROSController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
 
-    auto* robotVehicle = Cast<ARRBaseRobot>(InPawn);
-    if (robotVehicle)
+    auto* robot = Cast<ARRBaseRobot>(InPawn);
+    if (robot)
     {
-        robotVehicle->InitROS2Interface();
+        robot->InitROS2Interface();
     }
     else
     {
@@ -26,10 +26,10 @@ void ARRBaseRobotROSController::OnPossess(APawn* InPawn)
 
 void ARRBaseRobotROSController::OnUnPossess()
 {
-    auto* robotVehicle = GetPawn<ARRBaseRobot>();
-    if (robotVehicle)
+    auto* robot = GetPawn<ARRBaseRobot>();
+    if (robot)
     {
-        robotVehicle->StopROS2Interface();
+        robot->DeInitROS2Interface();
     }
     else
     {
