@@ -139,6 +139,13 @@ void ARRNetworkPlayerController::BeginPlay()
     {
         FTimerManager& timerManager = GetWorld()->GetTimerManager();
         timerManager.SetTimer(ClockRequestTimerHandle, this, &ARRNetworkPlayerController::RequestServerTimeUpdate, 5.f, true);
+
+        // Temporaryr hack to sync CameraManager to PlayerStarts sinc camera pose become (0,0,0) for multiplayer.
+        if (IsNetMode(NM_Client))
+        {
+            auto* playerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
+            SetControlRotation(playerStart->GetActorRotation());
+        }
     }
 
     if (IsNetMode(NM_Standalone))
