@@ -197,7 +197,7 @@ public:
     TMap<FString, AActor*> Entities;
 
     //! Entities with tags which can be manipulated by this class via ROS2 services.
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     TMap<FName, FRREntities> EntitiesWithTag;
 
     //! Replicatable copy of #Entities

@@ -232,17 +232,11 @@ void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore,
            Warning,
-           TEXT("[%s] [ServerSetLinearVel_Implementation] %s %s"),
-           *GetName(),
-           *InClientRobotPosition.ToString(),
-           *InServerRobot->GetActorLocation().ToString());
-#endif
-    UE_LOG(LogRapyutaCore,
-           Warning,
            TEXT("[%s] [ServerSetAngularVel_Implementation] %s %s"),
            *GetName(),
            *InClientRobotRotation.ToString(),
            *InServerRobot->GetActorRotation().ToString());
+#endif
     auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
     if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
     {

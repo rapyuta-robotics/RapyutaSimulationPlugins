@@ -336,7 +336,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     // Add tags
     UE_LOG(LogRapyutaCore,
            Log,
-           TEXT("[%s] tag from spawn spawn request %s"),
+           TEXT("[%s] tag from spawn request %s"),
            *newEntity->GetName(),
            *FString::Join(InROSSpawnRequest.Tags, TEXT(",")));
     for (const auto& tag : InROSSpawnRequest.Tags)
