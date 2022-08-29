@@ -127,7 +127,7 @@ public:
      * @param InClientTimeStamp
      * @param InClientRobotPosition
      * @param InLinearVel
-     * @note can't use rpc since this is not controlled by Paleyr. should add (Server, Reliable)
+     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player. 
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
     virtual void ServerSetLinearVel(ARRBaseRobot* InServerRobot,
