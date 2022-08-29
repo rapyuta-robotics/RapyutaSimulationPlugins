@@ -104,7 +104,9 @@ public:
 
     /**
      * @brief Instantiate ROS2 Interface without initializing yet
-     * @note can't use rpc since this is not controlled by Paleyr. should add (Server, Reliable)
+@note Not uses RPC since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
      */
     UFUNCTION(BlueprintCallable)
     void CreateROS2Interface();
