@@ -141,7 +141,7 @@ public:
      * @param InClientTimeStamp
      * @param InClientRobotRotation
      * @param InAngularVel
-     * @note can't use rpc since this is not controlled by Paleyr. should add (Server, Reliable)
+     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player. 
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
     virtual void ServerSetAngularVel(ARRBaseRobot* InServerRobot,
