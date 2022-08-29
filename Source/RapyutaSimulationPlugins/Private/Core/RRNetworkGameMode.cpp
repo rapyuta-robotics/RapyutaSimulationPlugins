@@ -5,14 +5,12 @@
 // RapyutaSimulationPlugins
 #include "Core/RRNetworkGameState.h"
 #include "Core/RRNetworkPlayerController.h"
-#include "Tools/GhostPlayerPawn.h"
 #include "Tools/RRROS2SimulationStateClient.h"
 
 ARRNetworkGameMode::ARRNetworkGameMode()
 {
     GameStateClass = ARRNetworkGameState::StaticClass();
     PlayerControllerClass = ARRNetworkPlayerController::StaticClass();
-    DefaultPawnClass = AGhostPlayerPawn::StaticClass();
 }
 
 void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)

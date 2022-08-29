@@ -11,7 +11,13 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRNetworkGameMode.h"
+#include "Tools/RRGhostPlayerPawn.h"
 #include "Tools/RRROS2ClockPublisher.h"
+
+ARRROS2GameMode::ARRROS2GameMode()
+{
+    DefaultPawnClass = ARRGhostPlayerPawn::StaticClass();
+}
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
 {
