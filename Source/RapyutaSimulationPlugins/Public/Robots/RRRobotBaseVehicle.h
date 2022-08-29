@@ -152,8 +152,10 @@ public:
     virtual void SetLocalLinearVel(const FVector& InLinearVel);
 
     /**
-     * @brief Set server angular velocity to #RobotVehicleMoveComponent
-     * @note can't use rpc since this is not controlled by Paleyr. should add (Client, Reliable)
+     * @brief Set local angular velocity to #RobotVehicleMoveComponent
+     * @note Not uses RPC since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetLocalAngularVel(const FVector& InAngularVel);
