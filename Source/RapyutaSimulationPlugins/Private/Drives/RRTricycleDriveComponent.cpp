@@ -133,8 +133,14 @@ void URRTricycleDriveComponent::UpdateMovement(float DeltaTime)
     {
         VelocityCurrent = Velocity;
         AngularVelocityCurrent = AngularVelocity;
-        
-        ChaosMovementComponent->SetThrottleInput(FMath::IsNearlyZero(VelocityCurrent.X) ? 0.0f : 1.0f);
+
         ChaosMovementComponent->SetMaxEngineTorque(VelocityCurrent.X);
+        ChaosMovementComponent->SetThrottleInput(FMath::IsNearlyZero(VelocityCurrent.X) ? 0.0f : 1.0f);
+
+        if (!FMath::IsNearlyZero(AngularVelocityCurrent.Z))
+        {
+            float steeringDeg = FMath::Clamp(FMath::RadiansToDegrees(AngularVelocityCurrent.Z), -90.0f, 90.0f);
+            ChaosMovementComponent->SetSteeringInput(steeringDeg/90.0f);
+        }
     }
 }

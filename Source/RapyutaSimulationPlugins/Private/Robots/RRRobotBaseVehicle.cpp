@@ -31,7 +31,7 @@ ARRRobotBaseVehicle::ARRRobotBaseVehicle(const FObjectInitializer& ObjectInitial
 void ARRRobotBaseVehicle::SetupDefaultVehicle()
 {
     RobotVehicleMoveComponent = CreateDefaultSubobject<URRTricycleDriveComponent>(TEXT("RRTricycleDriveComponent"));
-    RobotVehicleMoveComponent->RegisterComponent();
+    //RobotVehicleMoveComponent->RegisterComponent();
     RobotVehicleMoveComponent->PrimaryComponentTick.bCanEverTick = true;
     RobotVehicleMoveComponent->SetComponentTickEnabled(true);
     // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
