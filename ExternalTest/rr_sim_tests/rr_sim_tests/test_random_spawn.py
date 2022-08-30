@@ -78,7 +78,7 @@ def main(args=None):
             count = 0
             while count < 20:
                 time.sleep(1)
-                is_robot_spawned, _ = wait_for_spawned_entity(robot_name, service_namespace, 10.0)
+                is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0, service_namespace)
                 if is_robot_spawned:
                     break
                 count += 1
