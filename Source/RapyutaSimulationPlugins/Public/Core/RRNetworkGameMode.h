@@ -19,7 +19,7 @@
 class ARRNetworkPlayerController;
 
 /**
- * @brief ROS2 GameMode which have Clock publisher and RoS2 services to interact with ROS2.
+ * @brief ROS2 GameMode which have Clock publisher and ROS2 services to interact with ROS2.
  * @sa [AGameMode](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
  */
 UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameMode : public ARRROS2GameMode

@@ -17,8 +17,7 @@ class URRRobotROS2Interface;
 
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
- * This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
- * You can find example at #ATurtlebotROSController.
+ * This class has authority to start ROS2 Component in pausses robot.
  *
  * @sa [AAIController](https://docs.unrealengine.com/4.27/en-US/API/Runtime/AIModule/AAIController/)
  * @sa https://answers.unrealengine.com/questions/871116/view.html
@@ -30,12 +29,17 @@ class RAPYUTASIMULATIONPLUGINS_API ARRBaseRobotROSController : public AAIControl
     GENERATED_BODY()
 protected:
     /**
-     * @brief Initialize by calling #InitRobotROS2Node, #ARobotVehicle's InitSensors and #InitPublishers.
+     * @brief Initialize robot pawn by calling #ARRBaseRobot::InitROS2Interface.
      *
      * @sa [OnPossess](https://docs.unrealengine.com/4.27/en-US/API/Runtime/AIModule/AAIController/OnPossess/)
      * @param InPawn
      */
     virtual void OnPossess(APawn* InPawn) override;
 
+    /**
+     * @brief Deinitialize robot pawn by calling #ARRBaseRobot::DeInitROS2Interface.
+     *
+     * @sa [OnUnPossess](https://docs.unrealengine.com/4.27/en-US/API/Runtime/AIModule/AAIController/OnUnPossess/)
+     */
     virtual void OnUnPossess() override;
 };

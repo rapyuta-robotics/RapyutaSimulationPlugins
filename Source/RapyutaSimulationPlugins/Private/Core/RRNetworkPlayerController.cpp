@@ -160,13 +160,13 @@ void ARRNetworkPlayerController::ServerSetPlayerName_Implementation(const FStrin
 }
 
 // Client Requesting Server to send time, Client Clock at time of request is sent as well
-void ARRNetworkPlayerController::ClientRequestLocalClockUpdate_Implementation(float InClientRequestTime)
+void ARRNetworkPlayerController::ServerRequestLocalClockUpdate_Implementation(float InClientRequestTime)
 {
     float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-    ServerSendLocalClockUpdate(serverCurrentTime, InClientRequestTime);
+    ClientSendLocalClockUpdate(serverCurrentTime, InClientRequestTime);
 }
 
-void ARRNetworkPlayerController::ServerSendLocalClockUpdate_Implementation(float InServerCurrentTime, float InClientRequestTime)
+void ARRNetworkPlayerController::ClientSendLocalClockUpdate_Implementation(float InServerCurrentTime, float InClientRequestTime)
 {
     float clientRequestRoundTrip = LocalTime - InClientRequestTime;
     float latencyAdjustedTime = InServerCurrentTime + (clientRequestRoundTrip * 0.5f);
@@ -179,7 +179,7 @@ void ARRNetworkPlayerController::RequestServerTimeUpdate()
 {
     if (IsLocalController())
     {
-        ClientRequestLocalClockUpdate(LocalTime);
+        ServerRequestLocalClockUpdate(LocalTime);
     }
 }
 
@@ -196,7 +196,7 @@ void ARRNetworkPlayerController::ReceivedPlayer()
     Super::ReceivedPlayer();
     if (IsLocalController())
     {
-        ClientRequestLocalClockUpdate(LocalTime);
+        ServerRequestLocalClockUpdate(LocalTime);
     }
 }
 
