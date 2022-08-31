@@ -28,6 +28,6 @@ public:
 
     bool IsReadyForNewMovementOrder() const
     {
-        return IsIdle() && DidMoveReachGoal();
+        return IsIdle();
     }
 };
