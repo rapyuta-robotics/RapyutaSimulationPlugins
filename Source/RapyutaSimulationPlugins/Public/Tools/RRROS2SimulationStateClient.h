@@ -30,13 +30,8 @@ class UROS2GenericSrv;
 class ASimulationState;
 
 /**
- * @brief Provide ROS2 interfaces to interact with UE4.
+ * @brief Provide ROS2 interfaces to interact with UE4. This provide only ROS2 interfaces and implementation is in #ASimulationState
  * Supported interactions: GetEntityState, SetEntityState, Attach, SpawnEntity, DeleteEntity
- *
- * URRROS2SimulationStateClient can manipulate only actors in #Entities and #EntitiesWithTag. All actors in the world are added to
- * #Entities and #EntitiesWithTag with #Init method and actors can be added to those list by #AddEntity method individually as well.
- *
- * URRROS2SimulationStateClient can spawn only actors in #SpawnableEntities which actors can be added to by #AddSpawnableEntities.
  *
  */
 UCLASS()
@@ -49,7 +44,7 @@ public:
     UPROPERTY(BlueprintReadOnly, Replicated)
     AROS2Node* ROS2Node = nullptr;
 
-    //! Handle to server's main sim state
+    //! Handle to server's main sim state which has ROS2 interface implementation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     ASimulationState* ServerSimState = nullptr;
 

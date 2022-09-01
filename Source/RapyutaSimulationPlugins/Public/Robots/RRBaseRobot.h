@@ -25,15 +25,13 @@ class ARRNetworkPlayerController;
 
 /**
  * @brief Which server or client has robot movement authority.
- * - Server: robot moves in server first and movement replicates to clients.
- * - Client: robot moves in client first and use rpc to apply movement to server.
  * @todo Implement Server authority.
  */
 UENUM(BlueprintType)
 enum class ERRNetworkAuthorityType : uint8
 {
-    SERVER UMETA(DisplayName = "Server"),
-    CLIENT UMETA(DisplayName = "Client"),
+    SERVER UMETA(DisplayName = "Server", ToolTip = "robot moves in server first and movement replicates to clients."),
+    CLIENT UMETA(DisplayName = "Client", ToolTip = "robot moves in client first and use rpc to apply movement to server.")
 };
 
 /**

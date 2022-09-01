@@ -19,10 +19,11 @@
 class ARRNetworkPlayerController;
 
 /**
- * @brief ROS2 GameMode which have Clock publisher and ROS2 services to interact with ROS2.
+ * @brief GameMode for client-server. This class handles #ANetworkPlayerController initialization from #PostLogin.
  * @sa [AGameMode](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
  */
-UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameMode : public ARRROS2GameMode
+UCLASS()
+class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameMode : public ARRROS2GameMode
 {
     GENERATED_BODY()
 
@@ -35,6 +36,7 @@ public:
 protected:
     /**
      * @brief Called after a successful login
+     * Create #ANetworkPlayerController::ROS2SimStateClient for each client.
      */
     virtual void PostLogin(APlayerController* InPlayer) override;
 };

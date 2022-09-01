@@ -76,16 +76,16 @@ Basic flows between client and server
 
 
 | **Game start and NetworkPlayer Spawning**
-| **(a-1)** Server starts first and create GameMode.
-| **(a-2)** When Clients login, GameMode spawn the NetworkPlayerController on the server.
-| **(a-3)** NetworkPlayerController is replicated to the client.
-| **(a-4)** Replicated NetworkPlayer create ROS2 node and start ROS2 service server and clock publisher, then ROS2 application can start requesting spawn robots.
+| **(a-1)** Server starts first and create `ARRNetworkGameMode <doxygen_generated/html/d0/d30/class_a_r_r_network_game_mode.html>`_.
+| **(a-2)** When Clients login, ARRNetworkGameMode spawn the `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_ on the server.
+| **(a-3)** ARRNetworkPlayerController is replicated to the client.
+| **(a-4)** Replicated ARRNetworkPlayerController create ROS2 node and start ROS2 service server and clock publisher, then ROS2 application can start requesting spawn robots.
 
 
 | **Robot Spawning flow**
 | **(b-1)** ROS2 application call /SpawnEntity srv
-| **(b-2)** SimulationStateClient in the client pass the request to the server via RPC
-| **(b-3)** SimulationStateClient in the server pass the request to the SimulationState
+| **(b-2)** `URRROS2SimulationstateClient <doxygen_generated/html/d7/d6a/class_u_r_r_r_o_s2_simulation_state_client.html>`_ in the client pass the request to the server via RPC
+| **(b-3)** SimulationStateClient in the server pass the request to the `ASimulationState <doxygen_generated/html/d2/dde/class_a_simulation_state.html>`_
 | **(b-4)** SimulationState spawn the robot in the server.
 | **(b-5)** Spawned robot is replicated to the clients. Only In the client which send spawn request, robot create/initiate ROS2 compoenent. No ROS components are created/initiated in other clients.
 
@@ -93,7 +93,7 @@ Basic flows between client and server
 | **Robot Movement flow**
 | **(c-1)** ROS2 application publish command topic such as /cmd_vel
 | **(c-2)** Robot in the client moves to follow command.
-| **(c-3)** Set server robot movement is requested to NetworkPlayerController
+| **(c-3)** Set server robot movement is requested to  `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_ 
 | **(c-4)** NetworkPlayerController in the client pass the request to the server via RPC
 | **(c-5)** NetworkPlayerController in the server request robot to follow the command 
 | **(c-6)** Robot movement is replicated to the other clients.
@@ -105,7 +105,7 @@ Server will compensate network delay by comparing current server timestamp and c
 
 | **Time synchronization**
 | **(d-1)** Client start `Timer <https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Timers/>`_ to sync simulation time between server and client when it is replicated to the client.
-| **(d-2)** NetworkPlayerController in the client send current local time to the server via RPC.
+| **(d-2)**  `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_  in the client send current local time to the server via RPC.
 | **(d-3)** NetworkPlayerController in the server received client local time and send client the current server time and received client local time to the client via RPC.
 | **(d-4)** NetworkPlayerController in the client compare the received client local time(send at d-2) at that time and current client local time to estimate latency. Set local simulation time as received server time + estimated latency.
 
