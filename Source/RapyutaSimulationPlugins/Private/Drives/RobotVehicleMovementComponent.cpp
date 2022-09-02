@@ -12,15 +12,15 @@
 void URobotVehicleMovementComponent::BeginPlay()
 {
     Super::BeginPlay();
+
+    GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
+    GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
+
     InitMovementComponent();
 }
 
 void URobotVehicleMovementComponent::Initialize()
 {
-    GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
-    GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
-
-    InitOdom();
 }
 
 void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)

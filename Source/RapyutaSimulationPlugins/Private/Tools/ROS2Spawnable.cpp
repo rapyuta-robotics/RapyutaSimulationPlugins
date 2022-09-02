@@ -17,6 +17,7 @@ void UROS2Spawnable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(UROS2Spawnable, ActorName);
     DOREPLIFETIME(UROS2Spawnable, ActorNamespace);
     DOREPLIFETIME(UROS2Spawnable, ActorTags);
+    DOREPLIFETIME(UROS2Spawnable, NetworkPlayerId);
 }
 
 void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityRequest& InRequest)
@@ -45,12 +46,22 @@ void UROS2Spawnable::AddTag(const FString& InTag)
     ActorTags.Emplace(InTag);
 }
 
-FString UROS2Spawnable::GetName()
+FString UROS2Spawnable::GetName() const
 {
     return ActorName;
 }
 
-FString UROS2Spawnable::GetNamespace()
+FString UROS2Spawnable::GetNamespace() const
 {
     return ActorNamespace;
+}
+
+int32 UROS2Spawnable::GetNetworkPlayerId() const
+{
+    return NetworkPlayerId;
+}
+
+void UROS2Spawnable::SetNetworkPlayerId(const int32 InNetworkPlayerId)
+{
+    NetworkPlayerId = InNetworkPlayerId;
 }

@@ -40,9 +40,10 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     networkPlayerController->ServerSimState = MainSimState;
     UE_LOG(LogRapyutaCore,
            Warning,
-           TEXT("ARRNetworkGameMode::PostLogin Logged-in PC[%d] %s"),
+           TEXT("ARRNetworkGameMode::PostLogin Logged-in PC[%d] Name=%s, Id=%d"),
            NetworkClientControllerList.Num(),
-           *networkPlayerController->GetName());
+           *networkPlayerController->GetName(),
+           networkPlayerController->GetPlayerState<APlayerState>()->GetPlayerId());
 
     // Add to [ClientControllerList]
     NetworkClientControllerList.Add(networkPlayerController);

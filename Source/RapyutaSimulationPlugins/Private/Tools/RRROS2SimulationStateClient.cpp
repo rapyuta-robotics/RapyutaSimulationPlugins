@@ -62,6 +62,7 @@ void URRROS2SimulationStateClient::GetLifetimeReplicatedProps(TArray<FLifetimePr
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(URRROS2SimulationStateClient, ROS2Node);
     DOREPLIFETIME(URRROS2SimulationStateClient, ServerSimState);
+    DOREPLIFETIME(URRROS2SimulationStateClient, NetworkPlayerId);
 }
 
 template<typename T>
@@ -218,7 +219,6 @@ void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
 
     FROSSpawnEntityResponse response;
     response.bSuccess = CheckSpawnableEntity(request.Xml, false) && CheckEntity(request.StateReferenceFrame, true);
-
     if (response.bSuccess)
     {
         const FString& entityModelName = request.Xml;
@@ -318,7 +318,7 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
 
 void URRROS2SimulationStateClient::ServerSpawnEntity_Implementation(const FROSSpawnEntityRequest& InRequest)
 {
-    ServerSimState->ServerSpawnEntity(InRequest);
+    ServerSimState->ServerSpawnEntity(InRequest, NetworkPlayerId);
 }
 
 // Currently this code doesnt seem to trigger the ROS2 Service Response... keeping this in since if

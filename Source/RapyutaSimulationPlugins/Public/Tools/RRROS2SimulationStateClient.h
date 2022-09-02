@@ -162,8 +162,32 @@ public:
     UFUNCTION(BlueprintCallable, Server, Reliable)
     void ServerAddEntity(AActor* InEntity);
 
+    /**
+     * @brief Set Player Id
+     * @param InNetworkPlayerId
+     */
+    UFUNCTION(BlueprintCallable)
+    void SetNetworkPlayerId(const int32 InNetworkPlayerId)
+    {
+        NetworkPlayerId = InNetworkPlayerId;
+    }
+
+    /**
+     * @brief Get Player Id
+     * @param InEntity
+     */
+    UFUNCTION(BlueprintCallable)
+    int32 GetNetworkPlayerId() const
+    {
+        return NetworkPlayerId;
+    }
+
 protected:
     virtual void OnComponentCreated() override;
+
+    //! NetworkPlayerId which is used to differenciate client in server.
+    UPROPERTY(BlueprintReadOnly, Replicated)
+    int32 NetworkPlayerId;
 
 private:
     template<typename T>

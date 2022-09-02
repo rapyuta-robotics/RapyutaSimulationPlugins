@@ -34,12 +34,10 @@ void URRPoseSensorManager::InitalizeWithROS2(AROS2Node* InROS2Node,
                                              const FString& InTopicName,
                                              const TEnumAsByte<UROS2QoS> InQoS)
 {
+    UE_LOG(LogRapyutaCore, Error, TEXT("[%s][URRPoseSensorManager][InitalizeWithROS2] %s"), *GetName(), *ReferenceTag);
     Super::InitalizeWithROS2(InROS2Node, InPublisherName, InTopicName, InQoS);
     MapOriginPoseSensor->InitalizeWithROS2(InROS2Node);
-    if (IsNetMode(NM_Standalone))
-    {
-        ServerSimState = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this)->MainSimState;
-    }
+    ServerSimState = CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
 }
 
 void URRPoseSensorManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -66,10 +64,8 @@ void URRPoseSensorManager::UpdateReferenceActorWithTag()
     if (ServerSimState == nullptr)
     {
         UE_LOG(LogRapyutaCore, Warning, TEXT("[URRPoseSensorManager]ServerSimState is null."));
-        if (IsNetMode(NM_Standalone))
-        {
-            ServerSimState = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this)->MainSimState;
-        }
+        ServerSimState =
+            CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
         return;
     }
 

@@ -15,17 +15,33 @@ void ARRCrowdROSController::OnPossess(APawn* InPawn)
     // instantiated yet
     // + InPawn's child class' ros2-related accessories (ROS2 node, sensors, publishers/subscribers)
     //  may have not been fully accessible until now
-    auto* robot = CastChecked<ARRBaseRobot>(InPawn);
-    verify(IsValid(robot->ROS2Interface));
-    ROS2Interface = robot->ROS2Interface;
-    ROS2Interface->Initialize(robot);
+    auto* robot = Cast<ARRBaseRobot>(InPawn);
+    if (robot)
+    {
+        robot->InitROS2Interface();
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s][ARRCrowdROSController::OnPossess] Pawn is not child class of ARRBaseRobot "),
+               *GetName());
+    }
 }
 
 void ARRCrowdROSController::OnUnPossess()
 {
-    if (ROS2Interface)
+    auto* robot = GetPawn<ARRBaseRobot>();
+    if (robot)
     {
-        ROS2Interface->StopPublishers();
+        robot->DeInitROS2Interface();
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s][ARRCrowdROSController::OnUnPossess] Pawn is not child class of ARRBaseRobot "),
+               *GetName());
     }
     Super::OnUnPossess();
 }
