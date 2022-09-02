@@ -9,6 +9,9 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 
+// rclUE
+#include "rclcUtilities.h"
+
 void URobotVehicleMovementComponent::BeginPlay()
 {
     Super::BeginPlay();
@@ -227,10 +230,9 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     }
 
     // time
-    float timeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
-    OdomData.HeaderStampSec = static_cast<int32>(timeNow);
-    uint64 ns = (uint64)(timeNow * 1e+09f);
-    OdomData.HeaderStampNanosec = static_cast<uint32>(ns - (OdomData.HeaderStampSec * 1e+09));
+    auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
+    OdomData.HeaderStampSec = stamp.sec;
+    OdomData.HeaderStampNanosec = stamp.nanosec;
 
     // previous estimated data (with noise)
     FVector previousEstimatedPos = PreviousNoisyTransform.GetTranslation();

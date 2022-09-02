@@ -2,6 +2,8 @@
 
 #include "Sensors/RR2DLidarComponent.h"
 
+#include "rclcUtilities.h"
+
 URR2DLidarComponent::URR2DLidarComponent()
 {
     SensorPublisherClass = URRROS2LaserScanPublisher::StaticClass();
@@ -276,9 +278,11 @@ float URR2DLidarComponent::GetMaxAngleRadians() const
 FROSLaserScan URR2DLidarComponent::GetROS2Data()
 {
     FROSLaserScan retValue;
-    retValue.HeaderStampSec = (int32)TimeOfLastScan;
-    uint64 ns = (uint64)(TimeOfLastScan * 1e+09f);
-    retValue.HeaderStampNanosec = (uint32)(ns - (retValue.HeaderStampSec * 1e+09));
+
+    // time
+    auto stamp = UROS2Utils::FloatToROSStamp(TimeOfLastScan);
+    retValue.HeaderStampSec = stamp.sec;
+    retValue.HeaderStampNanosec = stamp.nanosec;
 
     retValue.HeaderFrameId = FrameId;
 

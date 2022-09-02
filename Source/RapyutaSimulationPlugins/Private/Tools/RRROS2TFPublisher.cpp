@@ -4,6 +4,7 @@
 
 // rclUE
 #include "Msgs/ROS2TFMessageMsg.h"
+#include "rclcUtilities.h"
 
 URRROS2TFPublisher::URRROS2TFPublisher()
 {
@@ -41,10 +42,11 @@ void URRROS2TFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
     TArray<FROSTFMessage> tfarray;
 
     FROSTFMessage tfdata;
-    float TimeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
-    tfdata.TransformsHeaderStampSec.Add((int32)TimeNow);
-    uint64 ns = (uint64)(TimeNow * 1e+09f);
-    tfdata.TransformsHeaderStampNanosec.Add((uint32)(ns - (tfdata.TransformsHeaderStampSec.Last() * 1e+09)));
+    
+    // time
+    auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
+    tfdata.TransformsHeaderStampSec.Add(stamp.sec);
+    tfdata.TransformsHeaderStampNanosec.Add(stamp.nanosec);
 
     tfdata.TransformsHeaderFrameId.Add(FrameId);
     tfdata.TransformsChildFrameId.Add(ChildFrameId);

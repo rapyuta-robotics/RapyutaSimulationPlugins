@@ -2,6 +2,8 @@
 
 #include "Sensors/RR3DLidarComponent.h"
 
+#include "rclcUtilities.h"
+
 URR3DLidarComponent::URR3DLidarComponent()
 {
     SensorPublisherClass = URRROS2PointCloud2Publisher::StaticClass();
@@ -274,9 +276,11 @@ bool URR3DLidarComponent::Visible(AActor* TargetActor)
 FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
 {
     FROSPointCloud2 retValue;
-    retValue.HeaderStampSec = (int32)TimeOfLastScan;
-    uint64 ns = (uint64)(TimeOfLastScan * 1e+09f);
-    retValue.HeaderStampNanosec = (uint32)(ns - (retValue.HeaderStampSec * 1e+09));
+
+    // time
+    auto stamp = UROS2Utils::FloatToROSStamp(TimeOfLastScan);
+    retValue.HeaderStampSec = stamp.sec;
+    retValue.HeaderStampNanosec = stamp.nanosec;
 
     retValue.HeaderFrameId = FrameId;
 
