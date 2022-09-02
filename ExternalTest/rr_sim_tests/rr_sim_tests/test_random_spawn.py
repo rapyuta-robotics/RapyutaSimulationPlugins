@@ -52,7 +52,7 @@ def main(args=None):
         print('You need to provide robot name with `--ros-args -p robot_name:=<name>`')
         return
 
-    is_robot_spawned, _ = wait_for_spawned_entity(robot_name, service_namespace, 10.0)
+    is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0, service_namespace)
     if is_robot_spawned:
         print(robot_name + ' already exists.')
         return
