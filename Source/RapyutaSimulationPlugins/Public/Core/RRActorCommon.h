@@ -481,7 +481,7 @@ public:
     static constexpr const TCHAR* SCRIPT_INI_PATH = TEXT("/Script/RapyutaSimulationPlugins.RRActorCommon");
     static std::once_flag OnceFlag;
 
-    static void OnPostWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources);
+    static void OnPostWorldCleanup(UWorld* InWorld, bool /*bInSessionEnded*/, bool /*bInCleanupResources*/);
 
 public:
 #define EMPTY_STR (TEXT(""))    // Using TCHAR* = TEXT("") -> could causes linking error in some case!
