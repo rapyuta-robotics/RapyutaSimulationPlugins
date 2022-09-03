@@ -110,7 +110,8 @@ bool URRRobotROS2Interface::InitPublishers()
     }
 
     // OdomPublisher (with TF)
-    if (bPublishOdom)
+    auto* robotVehicle = Cast<ARRRobotBaseVehicle>(Robot);
+    if (bPublishOdom && robotVehicle != nullptr)
     {
         if (nullptr == OdomPublisher)
         {
@@ -119,8 +120,10 @@ bool URRRobotROS2Interface::InitPublishers()
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
+
         // If publishing odom, it must be an [ARRRobotBaseVehicle]
-        OdomPublisher->RobotVehicle = CastChecked<ARRRobotBaseVehicle>(Robot);
+        // todo separate ROS2Interface for mobile robot.
+        OdomPublisher->RobotVehicle = robotVehicle;
     }
     return true;
 }
