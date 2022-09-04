@@ -119,17 +119,17 @@ public:
         Output.Set(Input.X * 100.f, -Input.Y * 100.f, Input.Z * 100.f);
     }
 
-    // FORCEINLINE static void VectorROSToUE(const double& InputX,
-    //                                       const double& InputY,
-    //                                       const double& InputZ,
-    //                                       double& OutputX,
-    //                                       double& OutputY,
-    //                                       double& OutputZ)
-    // {
-    //     OutputX = InputX * 100.f;
-    //     OutputY = -InputY * 100.f;
-    //     OutputZ = InputZ * 100.f;
-    // }
+    FORCEINLINE static void VectorROSToUE(const double& InputX,
+                                          const double& InputY,
+                                          const double& InputZ,
+                                          double& OutputX,
+                                          double& OutputY,
+                                          double& OutputZ)
+    {
+        OutputX = InputX * 100.f;
+        OutputY = -InputY * 100.f;
+        OutputZ = InputZ * 100.f;
+    }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FVector RotationROSToUE(const FVector& Input)
