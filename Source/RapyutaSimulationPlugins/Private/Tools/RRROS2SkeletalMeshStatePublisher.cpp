@@ -65,29 +65,29 @@ void URRROS2SkeletalMeshStatePublisher::UpdateMessage(UROS2GenericMsg* InMessage
     const FTransform& robotTransform = Robot->GetTransform();
 
     FROSEntityState data;
-    data.name = FrameId;
+    data.Name = FrameId;
 
     const FVector& robotLocation = robotTransform.GetLocation();
     const FQuat& robotRotation = robotTransform.GetRotation();
-    data.pose_position_x = 0.01f * robotLocation.X;
-    data.pose_position_y = 0.01f * robotLocation.Y;
-    data.pose_position_z = 0.01f * robotLocation.Z;
-    data.pose_orientation = robotRotation;
+    data.PosePosition.X = 0.01f * robotLocation.X;
+    data.PosePosition.Y = 0.01f * robotLocation.Y;
+    data.PosePosition.Z = 0.01f * robotLocation.Z;
+    data.PoseOrientation = robotRotation;
     if (Robot->Map != nullptr)
     {
         const FQuat mapInverseQuat = Robot->Map->GetActorQuat().Inverse();
         const FVector mapPos = 0.01f * mapInverseQuat.RotateVector(robotLocation - Robot->Map->GetActorLocation());
-        data.pose_position_x = mapPos.X;
-        data.pose_position_y = mapPos.Y;
-        data.pose_position_z = mapPos.Z;
-        data.pose_orientation = robotRotation * mapInverseQuat;
+        data.PosePosition.X = mapPos.X;
+        data.PosePosition.Y = mapPos.Y;
+        data.PosePosition.Z = mapPos.Z;
+        data.PoseOrientation = robotRotation * mapInverseQuat;
     }
-    data.pose_position_y = -data.pose_position_y;
-    data.pose_orientation.X = -data.pose_orientation.X;
-    data.pose_orientation.Z = -data.pose_orientation.Z;
-    data.twist_linear = FVector::ZeroVector;
-    data.twist_angular = FVector::ZeroVector;
-    data.reference_frame = ReferenceFrameId;
+    data.PosePosition.Y = -data.PosePosition.Y;
+    data.PoseOrientation.X = -data.PoseOrientation.X;
+    data.PoseOrientation.Z = -data.PoseOrientation.Z;
+    data.TwistLinear = FVector::ZeroVector;
+    data.TwistAngular = FVector::ZeroVector;
+    data.ReferenceFrame = ReferenceFrameId;
     stateMsg->SetMsg(data);
 
 #if 0

@@ -19,12 +19,12 @@ void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
 {
     UROS2SetBoolSrv* TriggerPublishService = Cast<UROS2SetBoolSrv>(Service);
 
-    FROSSetBool_Request Request;
+    FROSSetBoolRequest Request;
     TriggerPublishService->GetRequest(Request);
-    bPublish = Request.data;
+    bPublish = Request.bData;
 
-    FROSSetBool_Response Response;
-    Response.success = true;
+    FROSSetBoolResponse Response;
+    Response.bSuccess = true;
     TriggerPublishService->SetResponse(Response);
 }
 

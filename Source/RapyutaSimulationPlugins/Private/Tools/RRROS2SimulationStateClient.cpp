@@ -123,28 +123,28 @@ void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
 {
     UROS2GetEntityStateSrv* GetEntityStateService = Cast<UROS2GetEntityStateSrv>(InService);
 
-    FROSGetEntityState_Request request;
+    FROSGetEntityStateRequest request;
     GetEntityStateService->GetRequest(request);
 
-    FROSGetEntityState_Response response;
-    response.state_name = request.name;
-    response.success = CheckEntity(request.name, false) && CheckEntity(request.reference_frame, true);
+    FROSGetEntityStateResponse response;
+    response.StateName = request.Name;
+    response.bSuccess = CheckEntity(request.Name, false) && CheckEntity(request.ReferenceFrame, true);
 
-    if (response.success)
+    if (response.bSuccess)
     {
         FTransform relativeTransf;
-        FTransform worldTransf = ServerSimState->Entities[request.name]->GetTransform();
+        FTransform worldTransf = ServerSimState->Entities[request.Name]->GetTransform();
         URRGeneralUtils::GetRelativeTransform(
-            request.reference_frame, ServerSimState->Entities.FindRef(request.reference_frame), worldTransf, relativeTransf);
+            request.ReferenceFrame, ServerSimState->Entities.FindRef(request.ReferenceFrame), worldTransf, relativeTransf);
         relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
-        response.state_pose_position_x = relativeTransf.GetTranslation().X;
-        response.state_pose_position_y = relativeTransf.GetTranslation().Y;
-        response.state_pose_position_z = relativeTransf.GetTranslation().Z;
-        response.state_pose_orientation = relativeTransf.GetRotation();
+        response.StatePosePosition.X = relativeTransf.GetTranslation().X;
+        response.StatePosePosition.Y = relativeTransf.GetTranslation().Y;
+        response.StatePosePosition.Z = relativeTransf.GetTranslation().Z;
+        response.StatePoseOrientation = relativeTransf.GetRotation();
 
-        response.state_twist_linear = FVector::ZeroVector;
-        response.state_twist_angular = FVector::ZeroVector;
+        response.StateTwistLinear = FVector::ZeroVector;
+        response.StateTwistAngular = FVector::ZeroVector;
     }
 
     GetEntityStateService->SetResponse(response);
@@ -154,13 +154,13 @@ void URRROS2SimulationStateClient::SetEntityStateSrv(UROS2GenericSrv* InService)
 {
     UROS2SetEntityStateSrv* setEntityStateService = Cast<UROS2SetEntityStateSrv>(InService);
 
-    FROSSetEntityState_Request request;
+    FROSSetEntityStateRequest request;
     setEntityStateService->GetRequest(request);
 
-    FROSSetEntityState_Response response;
-    response.success = CheckEntity(request.state_name, false) && CheckEntity(request.state_reference_frame, true);
+    FROSSetEntityStateResponse response;
+    response.bSuccess = CheckEntity(request.StateName, false) && CheckEntity(request.StateReferenceFrame, true);
 
-    if (response.success)
+    if (response.bSuccess)
     {
         // RPC to Server
         ServerSetEntityState(request);
@@ -169,7 +169,7 @@ void URRROS2SimulationStateClient::SetEntityStateSrv(UROS2GenericSrv* InService)
     setEntityStateService->SetResponse(response);
 }
 
-void URRROS2SimulationStateClient::ServerSetEntityState_Implementation(const FROSSetEntityState_Request& InRequest)
+void URRROS2SimulationStateClient::ServerSetEntityState_Implementation(const FROSSetEntityStateRequest& InRequest)
 {
     ServerSimState->ServerSetEntityState(InRequest);
 }
@@ -178,12 +178,12 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
 {
     UROS2AttachSrv* attachService = Cast<UROS2AttachSrv>(InService);
 
-    FROSAttach_Request request;
+    FROSAttachRequest request;
     attachService->GetRequest(request);
 
-    FROSAttach_Response response;
-    response.success = CheckEntity(request.name1, false) && CheckEntity(request.name2, false);
-    if (response.success)
+    FROSAttachResponse response;
+    response.bSuccess = CheckEntity(request.Name1, false) && CheckEntity(request.Name2, false);
+    if (response.bSuccess)
     {
         // RPC to server
         ServerAttach(request);
@@ -198,14 +198,14 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
                 "Actors "
                 "under SimulationState control."),
             *GetName(),
-            *request.name1,
-            *request.name2);
+            *request.Name1,
+            *request.Name2);
     }
 
     attachService->SetResponse(response);
 }
 
-void URRROS2SimulationStateClient::ServerAttach_Implementation(const FROSAttach_Request& InRequest)
+void URRROS2SimulationStateClient::ServerAttach_Implementation(const FROSAttachRequest& InRequest)
 {
     ServerSimState->ServerAttach(InRequest);
 }
@@ -266,26 +266,25 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
 
     int32 numEntitySpawned = 0;
     FString statusMessage;
-    for (uint32 i = 0; i < entityListRequest.NameList.Num(); ++i)
+    for (uint32 i = 0; i < entityListRequest.StateName.Num(); ++i)
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[%s] Spawning Entity : %s (name: %s)"),
-               *GetName(),
-               *entityListRequest.TypeList[i],
-               *entityListRequest.NameList[i]);
+               TEXT("Spawning Entity : %s (name: %s)"),
+               *entityListRequest.Type[i],
+               *entityListRequest.StateName[i]);
         FROSSpawnEntityRequest entityRequest;
-        entityRequest.Xml = entityListRequest.TypeList[i];
+        entityRequest.Xml = entityListRequest.Type[i];
         entityRequest.RobotNamespace = EMPTY_STR;
-        entityRequest.StateName = entityListRequest.NameList[i];
-        entityRequest.StatePosePositionX = entityListRequest.PositionList[i].X;
-        entityRequest.StatePosePositionY = entityListRequest.PositionList[i].Y;
-        entityRequest.StatePosePositionZ = entityListRequest.PositionList[i].Z;
-        entityRequest.StatePoseOrientation = entityListRequest.OrientationList[i];
-        entityRequest.StateTwistLinear = entityListRequest.TwistLinearList[i];
-        entityRequest.StateTwistAngular = entityListRequest.TwistAngularList[i];
-        entityRequest.StateReferenceFrame = entityListRequest.ReferenceFrameList[i];
-        entityRequest.Tags.Add(entityListRequest.TagsList[i]);
+        entityRequest.StateName = entityListRequest.StateName[i];
+        entityRequest.StatePosePosition.X = entityListRequest.StatePosePosition[i].X;
+        entityRequest.StatePosePosition.Y = entityListRequest.StatePosePosition[i].Y;
+        entityRequest.StatePosePosition.Z = entityListRequest.StatePosePosition[i].Z;
+        entityRequest.StatePoseOrientation = entityListRequest.StatePoseOrientation[i];
+        entityRequest.StateTwistLinear = entityListRequest.StateTwistLinear[i];
+        entityRequest.StateTwistAngular = entityListRequest.StateTwistAngular[i];
+        entityRequest.StateReferenceFrame = entityListRequest.StateReferenceFrame[i];
+        entityRequest.Tags.Add(entityListRequest.Tags[i]);
 
         if (CheckSpawnableEntity(entityRequest.Xml, false) && CheckEntity(entityRequest.StateReferenceFrame, true))
         {
@@ -308,7 +307,7 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
     }
 
     FROSSpawnEntitiesResponse entityListResponse;
-    entityListResponse.bSuccess = (numEntitySpawned == entityListRequest.NameList.Num());
+    entityListResponse.bSuccess = (numEntitySpawned == entityListRequest.StateName.Num());
     entityListResponse.StatusMessage = entityListResponse.bSuccess
                                          ? FString::Printf(TEXT("Newly spawned entities: [%s]"), *statusMessage)
                                          : FString::Printf(TEXT("Failed to be spawned entities: [%s]"), *statusMessage);
@@ -376,32 +375,32 @@ void URRROS2SimulationStateClient::DeleteEntitySrv(UROS2GenericSrv* InService)
 {
     UROS2DeleteEntitySrv* deleteEntityService = Cast<UROS2DeleteEntitySrv>(InService);
 
-    FROSDeleteEntity_Request request;
+    FROSDeleteEntityRequest request;
     deleteEntityService->GetRequest(request);
 
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] Deleting %s"), *GetName(), *request.name);
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] Deleting %s"), *GetName(), *request.Name);
 
-    FROSDeleteEntity_Response response;
-    response.success = false;
-    if (ServerSimState->Entities.Contains(request.name))
+    FROSDeleteEntityResponse response;
+    response.bSuccess = false;
+    if (ServerSimState->Entities.Contains(request.Name))
     {
         // RPC to server
         ServerDeleteEntity(request);
-        response.success = true;
-        response.status_message = FString::Printf(TEXT("[%s] Deleted Entity named %s"), *GetName(), *request.name);
-        UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *response.status_message);
+        response.bSuccess = true;
+        response.StatusMessage = FString::Printf(TEXT("[%s] Deleted Entity named %s"), *GetName(), *request.Name);
+        UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *response.StatusMessage);
     }
     else
     {
-        response.status_message = FString::Printf(
-            TEXT("[%s] Failed to delete entity named %s. %s do not exist."), *GetName(), *request.name, *request.name);
-        UE_LOG(LogRapyutaCore, Error, TEXT("%s"), *response.status_message);
+        response.StatusMessage = FString::Printf(
+            TEXT("[%s] Failed to delete entity named %s. %s do not exist."), *GetName(), *request.Name, *request.Name);
+        UE_LOG(LogRapyutaCore, Error, TEXT("%s"), *response.StatusMessage);
     }
 
     deleteEntityService->SetResponse(response);
 }
 
-void URRROS2SimulationStateClient::ServerDeleteEntity_Implementation(const FROSDeleteEntity_Request& InRequest)
+void URRROS2SimulationStateClient::ServerDeleteEntity_Implementation(const FROSDeleteEntityRequest& InRequest)
 {
     ServerSimState->ServerDeleteEntity(InRequest);
 }

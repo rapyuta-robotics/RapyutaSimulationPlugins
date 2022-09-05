@@ -7,7 +7,6 @@
 #include "Net/UnrealNetwork.h"
 
 // rclUE
-#include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
@@ -110,10 +109,6 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
 #endif
         res = false;
     }
-    else if (IsNetMode(NM_Standalone))    // Standalone
-    {
-        res = true;
-    }
     else if (nullptr == ROS2Interface->ROSSpawnParameters)
     {
 #if RAPYUTA_SIM_DEBUG
@@ -189,7 +184,7 @@ void ARRBaseRobot::InitROS2Interface()
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::InitROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
 #endif
 
-    if (IsNetMode(NM_Standalone) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
+    if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
     {
         ROS2Interface->Initialize(this);
         if (NetworkAuthorityType == ERRNetworkAuthorityType::CLIENT)
@@ -211,7 +206,7 @@ void ARRBaseRobot::DeInitROS2Interface()
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::StopROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
 #endif
 
-    if (IsNetMode(NM_Standalone) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
+    if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
     {
         ROS2Interface->DeInitialize();
     }

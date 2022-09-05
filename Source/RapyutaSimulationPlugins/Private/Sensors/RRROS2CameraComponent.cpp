@@ -24,12 +24,12 @@ void URRROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const
     SceneCaptureComponent->TextureTarget = RenderTarget;
 
     // Initialize image data
-    Data.header_frame_id = FrameId;
-    Data.width = Width;
-    Data.height = Height;
-    Data.encoding = Encoding;
-    Data.step = Width * 3;    // todo should be variable based on encoding
-    Data.data.AddUninitialized(Width * Height * 3);
+    Data.HeaderFrameId = FrameId;
+    Data.Width = Width;
+    Data.Height = Height;
+    Data.Encoding = Encoding;
+    Data.Step = Width * 3;    // todo should be variable based on encoding
+    Data.Data.AddUninitialized(Width * Height * 3);
 
     QueueSize = QueueSize < 1 ? 1 : QueueSize;    // QueueSize should be more than 1
 
@@ -106,9 +106,9 @@ FROSImage URRROS2CameraComponent::GetROS2Data()
             {    // Check if rendering is done, indicated by RenderFence
                 for (int I = 0; I < nextRenderRequest->Image.Num(); I++)
                 {
-                    Data.data[I * 3 + 0] = nextRenderRequest->Image[I].R;
-                    Data.data[I * 3 + 1] = nextRenderRequest->Image[I].G;
-                    Data.data[I * 3 + 2] = nextRenderRequest->Image[I].B;
+                    Data.Data[I * 3 + 0] = nextRenderRequest->Image[I].R;
+                    Data.Data[I * 3 + 1] = nextRenderRequest->Image[I].G;
+                    Data.Data[I * 3 + 2] = nextRenderRequest->Image[I].B;
                 }
 
                 // Delete the first element from RenderQueue
