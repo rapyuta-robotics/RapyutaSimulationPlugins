@@ -164,6 +164,13 @@ public:
         return Output;
     }
 
+    /**
+     * @brief Convert Odom from ROS system to UE system.
+     * @note pose is cast double to float. it will be resolved in UE5 since FVector uses double as default in UE5
+     * @sa https://docs.unrealengine.com/5.0/en-US/large-world-coordinates-in-unreal-engine-5/#:~:text=Engine%205%2C%20the-,FVector,-casts%20will%20continue
+     * @param Input
+     * @return FROSOdometry
+     */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FROSOdometry OdomROSToUE(const FROSOdometry& Input)
     {
