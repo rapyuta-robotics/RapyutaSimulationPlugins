@@ -80,6 +80,8 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
     FVector AngularVelocity = FVector::ZeroVector;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
+    TMap<FString, float> JointsStates;
     //! Desired position calculated from deltatime and UpdatedComponent::ComponentVelocity
     //! @sa
     //! [UpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)

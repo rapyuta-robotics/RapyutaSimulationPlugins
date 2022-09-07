@@ -5,142 +5,136 @@
 // RapyutaRobotImporter
 //#include "Core/RRSkeletalMeshComponent.h"
 //#include "Robot/RRSkeletalRobot.h"
+#include "WheeledVehiclePawn.h"
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/PoseableMeshComponent.h"
+#include "PhysicsEngine/ConstraintInstanceBlueprintLibrary.h"
+#include "Robots/RobotVehicle.h"
 
 void URRTricycleDriveComponent::Setup()
 {
-    /*
-    SkeletalRobot = CastChecked<ARRSkeletalRobot>(GetOwner());
-    PoseableMeshComponent = CastChecked<UPoseableMeshComponent>(SkeletalRobot->GetComponentByClass(UPoseableMeshComponent::StaticClass()));
-    //int32 DriveWheelBoneIndex = skeletalMeshComponent->GetBoneIndex(FName(DriveWheelName));
-    //skeletalMeshComponent->GetBoneSpaceTransforms()[DriveWheelBoneIndex];
-    //skeletalMeshComponent->SetBoneRotationByName()
+    ARobotVehicle* vehicle = Cast<ARobotVehicle>(GetOwner());
+    SkeletalMeshComponent = vehicle->GetMesh();
+
+    // TODO: remove after fixing spawn. Change to model info joint names.
+    vehicle->Joints.Add("tilt_base_c", nullptr);
+    vehicle->Joints.Add("reach_base_c", nullptr);
+    vehicle->Joints.Add("fork_base_c", nullptr);
     
-    for (UPhysicsConstraintTemplate* t : PoseableMeshComponent->GetPhysicsAsset()->ConstraintSetup)
+    for(const auto& joint : vehicle->Joints)
     {
-        if (t->DefaultInstance.JointName.ToString() == DriveWheelName)
-        {
-            DriveWheelCI = &t->DefaultInstance;
-               
-            DriveWheelCI->SetAngularDriveMode(EAngularDriveMode::Type::TwistAndSwing);
-            DriveWheelCI->SetAngularVelocityDriveTwistAndSwing(true, true);
-            DriveWheelCI->SetLinearDriveParams(1000.0f, 1000.0f, 10000000.0f);
-           // DriveWheelCI->SetAngularDriveParams(100000.0f, 100000.0f, 10000000.0f);
-            //DriveWheelCI->SetAngularVelocityTarget(FVector::ZeroVector);
-            //DriveWheelCI->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Free, 180.0f);
-            //DriveWheelCI->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Free, 180.0f);
-            //DriveWheelCI->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Free, 180.0f);
-            //DriveWheelCI->SetAngularDriveMode(EAngularDriveMode::Type::SLERP);
-            //DriveWheelCI->SetOrientationDriveSLERP(true);
-            //DriveWheelCI->SetAngularVelocityDriveSLERP(true);
-
-            t->SetDefaultProfile(*DriveWheelCI);
-            
-            break;
-        }
-    }
-
-    PoseableMeshComponent->RecreatePhysicsState();
-    //DriveWheelCI = PoseableMeshComponent->FindConstraintInstance(*DriveWheelName);
-
-    
-    //FBodyInstance* bodyInstance = PoseableMeshComponent->GetBodyInstance(*DriveWheelName);
-    //bodyInstance->GetUnrealWorldTransform();
-    
-    UpdateFromCurrent();
-    */
-}
-
-// void URRTricycleDriveComponent::SetBoneTransformByName(FName BoneName, const FTransform& InTransform, EBoneSpaces::Type BoneSpace)
-// {
-//     // from UPoseableMeshComponent::SetBoneTransformByName
-//     int32 BoneIndex = PoseableMeshComponent->GetBoneIndex(BoneName);
-//     PoseableMeshComponent->BoneSpaceTransforms[BoneIndex] = FTransform::Identity; //InTransform;
-//     //
-//     // if(BoneIndex >=0 && BoneIndex < SkeletalMeshComponent->BoneSpaceTransforms.Num())
-//     // {
-//     //
-//     //     if(BoneSpace == EBoneSpaces::WorldSpace)
-//     //     {
-//     //         SkeletalMeshComponent->BoneSpaceTransforms[BoneIndex].SetToRelativeTransform(SkeletalMeshComponent->GetComponentToWorld());
-//     //     }
-//     //
-//     //     // int32 ParentIndex = SkeletalMeshComponent->RequiredBones.GetParentBoneIndex(BoneIndex);
-//     //     //
-//     //     // if(ParentIndex >=0)
-//     //     // {
-//     //     //     FA2CSPose CSPose;
-//     //     //     CSPose.AllocateLocalPoses(SkeletalMeshComponent->RequiredBones, SkeletalMeshComponent->BoneSpaceTransforms);
-//     //     //
-//     //     //     SkeletalMeshComponent->BoneSpaceTransforms[BoneIndex].SetToRelativeTransform(CSPose.GetComponentSpaceTransform(ParentIndex));
-//     //     // }
-//     // }
-// }
-
-void URRTricycleDriveComponent::UpdateFromCurrent()
-{
-    if(DriveWheelCI)
-    {
-        /*
-        PoseableMeshComponent->SetBoneRotationByName(*DriveWheelName, FRotator(0.0f, 45.0f * AngularVelocity.Z, 0.0f), EBoneSpaces::ComponentSpace);
-
-        DriveWheelCI->SetAngularVelocityTarget(FVector(-VelocityCurrent.X, 0.f, 0.0f));
-*/
-
-
-        //DriveWheelCI->SetAngularOrientationTarget(FQuat::MakeFromEuler(FVector(0.0f, 45.0f * AngularVelocity.Z, 0.0f)));
-
-        // if(FMath::IsNearlyZero(AngularVelocity.Z))
-        // {
-        //     if(DriveWheelCI->GetAngularSwing2Motion() == EAngularConstraintMotion::ACM_Limited)
-        //     {
-        //         DriveWheelCI->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 45.0f);
-        //     }
-        // }
-        // else
-        // {
-        //     if(DriveWheelCI->GetAngularSwing2Motion() == EAngularConstraintMotion::ACM_Locked)
-        //     {
-        //         DriveWheelCI->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, 45.0f);
-        //     }
-        // }
-        
-        DriveWheelCI->SetAngularVelocityDriveTwistAndSwing(true, false);
-
-        
-        /*
-        USkeletalMeshComponent* skeletalMeshComponent = CastChecked<USkeletalMeshComponent>(SkeletalRobot->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
-        
-        //int32 BoneIndex = SkeletalMeshComponent->GetBoneIndex(*DriveWheelName);
-        //SkeletalMeshComponent->BoneSpaceTransforms[BoneIndex] = FTransform::Identity; //InTransform;
-        //SkeletalMeshComponent->bRequiredBonesUpToDate = false;
-        FBodyInstance* bodyInstance = SkeletalMeshComponent->GetBodyInstance(*DriveWheelName);
-       // bodyInstance->GetRelativeBodyTransform();
-        FTransform newTransform = FTransform::Identity;
-        newTransform.SetRotation(FQuat(FRotator(30.0f, 0.0f, 0.0f)));
-        bodyInstance->SetBodyTransform(newTransform, ETeleportType::TeleportPhysics);
-        //DriveWheelCI->SetAngularVelocityTarget(FVector(0.0f, 0.f, 0.0f));
-        //DriveWheelCI->SetAngularVelocityDriveTwistAndSwing(false, true);
-        */
+        JointsStates.Add(joint.Key, 0.0f);
     }
 }
 
 void URRTricycleDriveComponent::UpdateMovement(float DeltaTime)
 {
-    if (!Velocity.Equals(VelocityCurrent) || !AngularVelocityCurrent.Equals(AngularVelocity))
+    bool isVelocityChanged = !Velocity.Equals(VelocityCurrent);
+    
+    if (isVelocityChanged)
     {
         VelocityCurrent = Velocity;
-        AngularVelocityCurrent = AngularVelocity;
+    }
 
-        ChaosMovementComponent->SetMaxEngineTorque(VelocityCurrent.X);
-        ChaosMovementComponent->SetThrottleInput(FMath::IsNearlyZero(VelocityCurrent.X) ? 0.0f : 1.0f);
-
-        if (!FMath::IsNearlyZero(AngularVelocityCurrent.Z))
+    bool isTransformChanged = false;
+    
+    for(const auto& jointState : JointsStates)
+    {
+        float* stateValue = JointsStatesCurrent.Find(jointState.Key);
+        
+        if(!stateValue || !FMath::IsNearlyEqual(jointState.Value, *stateValue))
         {
-            float steeringDeg = FMath::Clamp(FMath::RadiansToDegrees(AngularVelocityCurrent.Z), -90.0f, 90.0f);
-            ChaosMovementComponent->SetSteeringInput(steeringDeg/90.0f);
+            if(stateValue)
+            {
+                JointsStatesCurrent[jointState.Key] = jointState.Value;
+            }
+            else
+            {
+                JointsStatesCurrent.Add(jointState.Key, jointState.Value);
+            }
+
+            isTransformChanged = true;
+        }
+    }
+
+    bool isBackwardMove = VelocityCurrent.X > 0.0f && ChaosMovementComponent->GetForwardSpeed() <= 0.0f;
+    bool isAngularChanged = !FMath::IsNearlyZero(AngularVelocity.Z);
+    
+    if(isVelocityChanged || isTransformChanged || isBackwardMove || isAngularChanged)
+    {
+        ChaosMovementComponent->SetBrakeInput(VelocityCurrent.X < 0.0f ? 1.0f : 0.0f);
+        bool isSpeedEnoughForThrottle = VelocityCurrent.X > 0.0f && ChaosMovementComponent->GetForwardSpeed() >= -1.0f;
+        ChaosMovementComponent->SetThrottleInput(isSpeedEnoughForThrottle ? 1.0f : 0.0f);
+        bool IsNeedToStopMoving = FMath::IsNearlyZero(VelocityCurrent.X);
+        ChaosMovementComponent->SetMaxEngineTorque(IsNeedToStopMoving ? 0.0f : MaxEngineTorque);
+        SteerInputCurrent = FMath::Clamp(SteerInputCurrent - DeltaTime * AngularVelocity.Z, -1.0f, 1.0f);
+        ChaosMovementComponent->SetSteeringInput(SteerInputCurrent);
+        
+        for(const auto& jointState : JointsStatesCurrent)
+        {
+            // currently robot joints are always have 1D motion space, so we trying to understand is it translation or rotation and in what axis
+            FConstraintInstanceAccessor constraintInstanceAccessor = SkeletalMeshComponent->GetConstraintByName(*jointState.Key, false);
+
+            if(FConstraintInstance* constraintInstance = constraintInstanceAccessor.Get())
+            {
+                bool isLinearXMotion = constraintInstance->GetLinearXMotion() != ELinearConstraintMotion::LCM_Locked;
+                bool isLinearYMotion = constraintInstance->GetLinearYMotion() != ELinearConstraintMotion::LCM_Locked;
+                bool isLinearZMotion = constraintInstance->GetLinearZMotion() != ELinearConstraintMotion::LCM_Locked;
+
+                if(isLinearXMotion || isLinearYMotion || isLinearZMotion)
+                {
+                    FVector linearTarget;
+
+                    if(isLinearXMotion)
+                    {
+                        linearTarget.X = jointState.Value;
+                    }
+                    else if(isLinearYMotion)
+                    {
+                        linearTarget.Y = jointState.Value;
+                    }
+                    else if(isLinearZMotion)
+                    {
+                        linearTarget.Z = jointState.Value;
+                    }
+
+                    UConstraintInstanceBlueprintLibrary::SetLinearPositionTarget(constraintInstanceAccessor, linearTarget);
+                }
+
+                bool isAngularTwistMotion = constraintInstance->GetAngularTwistMotion() != EAngularConstraintMotion::ACM_Locked;
+                bool isAngularSwing2Motion = constraintInstance->GetAngularSwing2Motion() != EAngularConstraintMotion::ACM_Locked;
+                bool isAngularSwing1Motion = constraintInstance->GetAngularSwing1Motion() != EAngularConstraintMotion::ACM_Locked;
+
+                if(isAngularTwistMotion || isAngularSwing2Motion || isAngularSwing1Motion)
+                {
+                    FRotator angularTarget;
+
+                    if(isAngularTwistMotion)
+                    {
+                        angularTarget.Yaw =  FMath::RadiansToDegrees(jointState.Value);
+                    }
+                    else if(isAngularSwing2Motion)
+                    {
+                        angularTarget.Pitch =  FMath::RadiansToDegrees(jointState.Value);
+                    }
+                    else if(isAngularSwing1Motion)
+                    {
+                        angularTarget.Roll =  FMath::RadiansToDegrees(jointState.Value);
+                    }
+
+                    UConstraintInstanceBlueprintLibrary::SetAngularOrientationTarget(constraintInstanceAccessor, angularTarget);
+                }
+            }
+        }
+
+        bool anyInput = ChaosMovementComponent->GetBrakeInput() > 0.0f || ChaosMovementComponent->GetThrottleInput() > 0.0f;
+        
+        if((isAngularChanged || isTransformChanged) && !anyInput)
+        {
+            ChaosMovementComponent->SetThrottleInput(1.0f);
+            ChaosMovementComponent->SetBrakeInput(1.0f);
+            //ChaosMovementComponent->StopMovementImmediately();
         }
     }
 }

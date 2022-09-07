@@ -108,6 +108,14 @@ void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
     ClientSetAngularVel(InAngularVel);
 }
 
+void ARRRobotBaseVehicle::SetJointsStates(const TMap<FString, float>& InJointsStates)
+{
+    if(RobotVehicleMoveComponent)
+    {
+        RobotVehicleMoveComponent->JointsStates = InJointsStates;
+    }
+}
+
 void ARRRobotBaseVehicle::ServerSetLinearVel_Implementation(float InClientTimeStamp,
                                                             const FVector& InClientRobotPosition,
                                                             const FVector& InLinearVel)

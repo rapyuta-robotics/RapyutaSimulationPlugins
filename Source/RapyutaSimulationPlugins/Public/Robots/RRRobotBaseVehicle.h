@@ -110,6 +110,8 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetAngularVel(const FVector& InAngularVel);
 
+    UFUNCTION(BlueprintCallable)
+    virtual void SetJointsStates(const TMap<FString, float>& InJointsStates);
     /**
      * @brief Set server linear velocity to #RobotVehicleMoveComponent
      * @param InClientTimeStamp

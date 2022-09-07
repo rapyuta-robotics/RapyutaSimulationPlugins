@@ -26,36 +26,23 @@ UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRTricycleDriveComponent : public UDifferentialDriveComponent
 {
     GENERATED_BODY()
-
 public:
     UFUNCTION(BlueprintCallable)
     void Setup();
     
     virtual void UpdateMovement(float DeltaTime) override;
-    void UpdateFromCurrent();
 
-    //void SetBoneTransformByName(FName BoneName, const FTransform& InTransform, EBoneSpaces::Type BoneSpace);
-
-   // UPROPERTY()
-   // ARRSkeletalRobot* SkeletalRobot = nullptr;
-    
-    //USkeletalMeshComponent* SkeletalMeshComponent;
-    //UPoseableMeshComponent* PoseableMeshComponent;
-    
-    FConstraintInstance* DriveWheelCI = nullptr;
-    FConstraintInstance* CasterWheelCI = nullptr;
+    UPROPERTY()
+    USkeletalMeshComponent* SkeletalMeshComponent;
 
     UPROPERTY()
     FVector VelocityCurrent = FVector::ZeroVector;
     
     UPROPERTY()
-    FVector AngularVelocityCurrent = FVector::ZeroVector;
+    TMap<FString, float> JointsStatesCurrent;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString DriveWheelName;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString CasterWheelName;
-
-    int32 DriveWheelBoneIndex = INDEX_NONE;
+    UPROPERTY()
+    float MaxEngineTorque = 300.0f;
+    
+    float SteerInputCurrent = 0.0f;
 };

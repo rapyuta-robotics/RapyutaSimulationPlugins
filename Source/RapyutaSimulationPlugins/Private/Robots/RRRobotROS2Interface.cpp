@@ -15,6 +15,7 @@
 #include "Core/RRGeneralUtils.h"
 #include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotBaseVehicle.h"
+#include "Drives/RobotVehicleMovementComponent.h"
 
 void URRRobotROS2Interface::SetupROSParams()
 {
@@ -198,73 +199,89 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
                    *GetName());
             return;
         }
+        //
+        // // Calculate input, ROS to UE conversion.
+        // TMap<FString, TArray<float>> joints;
+        // for (auto i = 0; i < jointState.name.Num(); ++i)
+        // {
+        //     if (!Robot->Joints.Contains(jointState.name[i]))
+        //     {
+        //         if (bWarnAboutMissingLink)
+        //         {
+        //             UE_LOG(LogRapyutaCore,
+        //                    Warning,
+        //                    TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] vehicle do not have joint named %s."),
+        //                    *GetName(),
+        //                    *jointState.name[i]);
+        //         }
+        //         continue;
+        //     }
+        //
+        //     TArray<float> input;
+        //     if (ERRJointControlType::POSITION == jointControlType)
+        //     {
+        //         input.Add(jointState.position[i]);
+        //     }
+        //     else if (ERRJointControlType::VELOCITY == jointControlType)
+        //     {
+        //         input.Add(jointState.velocity[i]);
+        //     }
+        //     else
+        //     {
+        //         UE_LOG(LogRapyutaCore,
+        //                Warning,
+        //                TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] position, velocity or effort array must be same "
+        //                     "size of name array"),
+        //                *GetName());
+        //         continue;
+        //     }
+        //
+        //     // ROS To UE conversion
+        //     if (Robot->Joints[jointState.name[i]]->LinearDOF == 1)
+        //     {
+        //         input[0] *= 100;    // todo add conversion to conversion util
+        //     }
+        //     else if (Robot->Joints[jointState.name[i]]->RotationalDOF == 1)
+        //     {
+        //         input[0] *= 180 / M_PI;    // todo add conversion to conversion util
+        //     }
+        //     else
+        //     {
+        //         UE_LOG(LogRapyutaCore,
+        //                Warning,
+        //                TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] Supports only single DOF joint. %s has %d "
+        //                     "linear DOF and %d rotational DOF"),
+        //                *jointState.name[i],
+        //                Robot->Joints[jointState.name[i]]->LinearDOF,
+        //                Robot->Joints[jointState.name[i]]->RotationalDOF);
+        //     }
+        //
+        //     joints.Emplace(jointState.name[i], input);
+        // }
+        //
+        // // (Note) In this callback, which could be invoked from a ROS working thread,
+        // // thus any direct referencing to its member in this GameThread lambda needs to be verified.
+        // AsyncTask(ENamedThreads::GameThread,
+        //           [this, joints, jointControlType]
+        //           {
+        //               check(IsValid(Robot));
+        //               Robot->SetJointState(joints, jointControlType);
+        //           });
 
-        // Calculate input, ROS to UE conversion.
-        TMap<FString, TArray<float>> joints;
+        TMap<FString, float> jointsStates;
+        
         for (auto i = 0; i < jointState.name.Num(); ++i)
         {
-            if (!Robot->Joints.Contains(jointState.name[i]))
+            if (jointControlType == ERRJointControlType::POSITION)
             {
-                if (bWarnAboutMissingLink)
-                {
-                    UE_LOG(LogRapyutaCore,
-                           Warning,
-                           TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] vehicle do not have joint named %s."),
-                           *GetName(),
-                           *jointState.name[i]);
-                }
-                continue;
+                jointsStates.Add(jointState.name[i], jointState.position[i]);
             }
-
-            TArray<float> input;
-            if (ERRJointControlType::POSITION == jointControlType)
-            {
-                input.Add(jointState.position[i]);
-            }
-            else if (ERRJointControlType::VELOCITY == jointControlType)
-            {
-                input.Add(jointState.velocity[i]);
-            }
-            else
-            {
-                UE_LOG(LogRapyutaCore,
-                       Warning,
-                       TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] position, velocity or effort array must be same "
-                            "size of name array"),
-                       *GetName());
-                continue;
-            }
-
-            // ROS To UE conversion
-            if (Robot->Joints[jointState.name[i]]->LinearDOF == 1)
-            {
-                input[0] *= 100;    // todo add conversion to conversion util
-            }
-            else if (Robot->Joints[jointState.name[i]]->RotationalDOF == 1)
-            {
-                input[0] *= 180 / M_PI;    // todo add conversion to conversion util
-            }
-            else
-            {
-                UE_LOG(LogRapyutaCore,
-                       Warning,
-                       TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] Supports only single DOF joint. %s has %d "
-                            "linear DOF and %d rotational DOF"),
-                       *jointState.name[i],
-                       Robot->Joints[jointState.name[i]]->LinearDOF,
-                       Robot->Joints[jointState.name[i]]->RotationalDOF);
-            }
-
-            joints.Emplace(jointState.name[i], input);
         }
-
-        // (Note) In this callback, which could be invoked from a ROS working thread,
-        // thus any direct referencing to its member in this GameThread lambda needs to be verified.
-        AsyncTask(ENamedThreads::GameThread,
-                  [this, joints, jointControlType]
-                  {
-                      check(IsValid(Robot));
-                      Robot->SetJointState(joints, jointControlType);
-                  });
+        
+        AsyncTask(ENamedThreads::GameThread, [this, jointsStates]
+        {
+            ARRRobotBaseVehicle* robotVehicle = CastChecked<ARRRobotBaseVehicle>(Robot);
+            robotVehicle->SetJointsStates(jointsStates);
+        });
     }
 }
