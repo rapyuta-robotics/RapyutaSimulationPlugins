@@ -1,6 +1,6 @@
 /**
  * @file RRCrowdROSController.h
- * @brief Base Crowd ROS Controller for ARRBaseRobot descedent classes, utilizing UCrowdFollowingComponent
+ * @brief Base Crowd ROS Controller for ARRBaseRobot descedent classes, utilizing URRCrowdFollowingComponent
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -13,7 +13,7 @@
 class URRRobotROS2Interface;
 
 /**
- * @brief Base Crowd ROS Controller for ARRBaseRobot descedent classes, utilizing UCrowdFollowingComponent
+ * @brief Base Crowd ROS Controller for ARRBaseRobot descedent classes, utilizing URRCrowdFollowingComponent
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRCrowdROSController : public ARRCrowdAIController
