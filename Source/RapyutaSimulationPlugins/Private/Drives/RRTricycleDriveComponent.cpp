@@ -11,6 +11,7 @@
 #include "Components/PoseableMeshComponent.h"
 #include "PhysicsEngine/ConstraintInstanceBlueprintLibrary.h"
 #include "Robots/RobotVehicle.h"
+#include "Core/RRConversionUtils.h"
 
 void URRTricycleDriveComponent::Setup()
 {
@@ -18,10 +19,10 @@ void URRTricycleDriveComponent::Setup()
     SkeletalMeshComponent = vehicle->GetMesh();
 
     // TODO: remove after fixing spawn. Change to model info joint names.
-    vehicle->Joints.Add("tilt_base_c", nullptr);
-    vehicle->Joints.Add("reach_base_c", nullptr);
-    vehicle->Joints.Add("fork_base_c", nullptr);
-    
+    JointsStates.Add("tilt_base_c", -5.0f);
+    JointsStates.Add("reach_base_c", -10.0f);
+    JointsStates.Add("fork_base_c", 0.0872665f);
+        
     for(const auto& joint : vehicle->Joints)
     {
         JointsStates.Add(joint.Key, 0.0f);
@@ -70,6 +71,8 @@ void URRTricycleDriveComponent::UpdateMovement(float DeltaTime)
         ChaosMovementComponent->SetMaxEngineTorque(IsNeedToStopMoving ? 0.0f : MaxEngineTorque);
         SteerInputCurrent = FMath::Clamp(SteerInputCurrent - DeltaTime * AngularVelocity.Z, -1.0f, 1.0f);
         ChaosMovementComponent->SetSteeringInput(SteerInputCurrent);
+        //float rpmFactor = URRConversionUtils::VectorUEToROS(VelocityCurrent).X;
+        //ChaosMovementComponent->EngineSetup.MaxRPM = rpmFactor * MaxRPM;
         
         for(const auto& jointState : JointsStatesCurrent)
         {
