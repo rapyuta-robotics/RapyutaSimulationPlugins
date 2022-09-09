@@ -6,7 +6,7 @@
 
 #pragma once
 
-// UE
+ // UE
 #include "Engine/EngineTypes.h"
 #include "GameFramework/GameMode.h"
 
@@ -54,6 +54,22 @@ public:
     UPROPERTY(BlueprintReadOnly)
     TSubclassOf<URRROS2SimulationStateClient> ROS2SimStateClientClass = URRROS2SimulationStateClient::StaticClass();
 
+    /**
+     * @brief Set timestep
+     *
+     * @param InFrequency game time update frequency, timestep become 1/frequency.
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetFixedTimestep(float InStepSize);
+
+    /**
+     * @brief Get timestep
+     *
+     * @return fixed timestep.
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual float GetFixedTimestep();
+
 protected:
     /**
      * @brief Initialize Game and call #InitSim.
@@ -71,6 +87,11 @@ protected:
      *
      */
     virtual void InitSim();
+
+    /**
+     * @brief Set timestep with startplay.
+     */
+    virtual void StartPlay() override;
 
 private:
     /**

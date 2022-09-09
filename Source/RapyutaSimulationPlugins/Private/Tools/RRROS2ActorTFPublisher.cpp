@@ -21,7 +21,14 @@ void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
 
     FROSSetBoolRequest Request;
     TriggerPublishService->GetRequest(Request);
-    bPublish = Request.bData;
+    if (Request.bData)
+    {
+        StartPublishTimer();
+    }
+    else
+    {
+        StopPublishTimer();
+    }
 
     FROSSetBoolResponse Response;
     Response.bSuccess = true;

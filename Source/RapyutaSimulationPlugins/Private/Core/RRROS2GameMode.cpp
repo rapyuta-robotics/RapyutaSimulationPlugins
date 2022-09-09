@@ -91,3 +91,33 @@ void ARRROS2GameMode::InitROS2()
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
     ClockPublisher->InitializeWithROS2(MainROS2Node);
 }
+
+void ARRROS2GameMode::StartPlay()
+{
+    Super::StartPlay();
+    
+    UE_LOG(LogRapyutaCore, Display, TEXT("[ARRROS2GameMode]: START PLAY!"));
+
+#if !WITH_EDITOR
+    // The frequency is actually up to the Sim map purpose, which is for AI training or for user-watchable visualization
+    // Generally, it should be the same as ROS ClockPublisher's PublicationFrequencyHz
+    // (NOTE) Could only use fixed time step in non-Editor mode
+    FApp::SetUseFixedTimeStep(true);
+#endif
+}
+
+void ARRROS2GameMode::SetFixedTimestep(float InStepSize)
+{
+    if (InStepSize < 1e-10)
+    {
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRROS2GameMode][SetFixedTimestep]: Given step size is too small. Set to 0.001"));
+        InStepSize = 0.001;
+    }
+    FApp::SetUseFixedTimeStep(true);
+    FApp::SetFixedDeltaTime(InStepSize);
+}
+
+float ARRROS2GameMode::GetFixedTimestep()
+{
+    return FApp::GetFixedDeltaTime();
+}
