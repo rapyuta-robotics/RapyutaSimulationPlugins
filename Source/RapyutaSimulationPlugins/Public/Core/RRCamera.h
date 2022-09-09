@@ -11,6 +11,7 @@
 #include "CoreMinimal.h"
 
 // RapyutaSimulationPlugins
+#include "VectorTypes.h"
 #include "Core/RRBaseActor.h"
 #include "Core/RRUObjectUtils.h"
 
@@ -25,23 +26,23 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRCameraProperties
     GENERATED_BODY()
 
     UPROPERTY()
-    FVector2D DistanceRangeInCm = FVector2D(100.f, 300.f);
+    FVector2D DistanceRangeInCm = FVector2D(100.0, 300.0);
 
     UPROPERTY()
-    FVector2D HeightRangeInCm = FVector2D(5.f, 100.f);
+    FVector2D HeightRangeInCm = FVector2D(5.0, 100.0);
 
     UPROPERTY()
-    FVector2D HFoVRangeInDegree = FVector2D(80.f, 120.f);
+    FVector2D HFoVRangeInDegree = FVector2D(80.0, 120.0);
 
     FORCEINLINE void PrintSelf() const
     {
         UE_LOG(LogRapyutaCore, Display, TEXT("CameraProperties:"));
-        UE_LOG(LogRapyutaCore, Display, TEXT("- DistanceRangeInCm: %s"), *DistanceRangeInCm.ToString());
-        verify(FMath::IsWithinInclusive(DistanceRangeInCm.X, double(0), DistanceRangeInCm.Y));
-        UE_LOG(LogRapyutaCore, Display, TEXT("- HeightRangeInCm: %s"), *HeightRangeInCm.ToString());
-        verify(FMath::IsWithinInclusive(HeightRangeInCm.X, double(0), HeightRangeInCm.Y));
-        UE_LOG(LogRapyutaCore, Display, TEXT("- HFoVRangeInDegree: %s"), *HFoVRangeInDegree.ToString());
-        verify(FMath::IsWithinInclusive(HFoVRangeInDegree.X, double(0), HFoVRangeInDegree.Y));
+        UE_LOG(LogRapyutaCore, Display, TEXT("- DistanceRangeInCm: X=%3.3f Y=%3.3f"), DistanceRangeInCm.X, DistanceRangeInCm.Y);
+        verify(FMath::IsWithinInclusive(DistanceRangeInCm.X, 0.0, DistanceRangeInCm.Y));
+        UE_LOG(LogRapyutaCore, Display, TEXT("- HeightRangeInCm: X=%3.3f Y=%3.3f"), HeightRangeInCm.X, HeightRangeInCm.Y);
+        verify(FMath::IsWithinInclusive(HeightRangeInCm.X, 0.0, HeightRangeInCm.Y));
+        UE_LOG(LogRapyutaCore, Display, TEXT("- HFoVRangeInDegree: X=%3.3f Y=%3.3f"), HFoVRangeInDegree.X, HFoVRangeInDegree.Y);
+        verify(FMath::IsWithinInclusive(HFoVRangeInDegree.X, 0.0, HFoVRangeInDegree.Y));
     }
 };
 

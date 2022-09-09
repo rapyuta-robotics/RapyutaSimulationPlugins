@@ -23,6 +23,7 @@
 
 // RapyutaSimulationPlugins
 #include "RapyutaSimulationPlugins.h"
+#include "Core/RRCoreUtils.h"
 
 #include "RRMeshData.generated.h"
 
@@ -85,16 +86,14 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluence
  *	@brief Contains the vertices that are most dominated by that bone. Vertices are in Bone space.
  *	Not used at runtime, but useful for fitting physics assets etc.
  */
+
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
 {
     GENERATED_BODY()
 
-    // These must be of same length!
-    UPROPERTY()
-    TArray<FVector3f> Positions;
-    UPROPERTY()
-    TArray<FVector3f> Normals;
+    TArrayFVector Positions;
+    TArrayFVector Normals;
 };
 
 /**

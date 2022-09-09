@@ -9,9 +9,11 @@
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/PoseableMeshComponent.h"
-#include "PhysicsEngine/ConstraintInstanceBlueprintLibrary.h"
 #include "Robots/RobotVehicle.h"
 #include "Core/RRConversionUtils.h"
+#if ENGINE_MAJOR_VERSION >= 5
+#include "PhysicsEngine/ConstraintInstanceBlueprintLibrary.h"
+#endif
 
 void URRTricycleDriveComponent::Setup()
 {
@@ -31,6 +33,7 @@ void URRTricycleDriveComponent::Setup()
 
 void URRTricycleDriveComponent::UpdateMovement(float DeltaTime)
 {
+#if ENGINE_MAJOR_VERSION >= 5
     bool isVelocityChanged = !Velocity.Equals(VelocityCurrent);
     
     if (isVelocityChanged)
@@ -140,4 +143,5 @@ void URRTricycleDriveComponent::UpdateMovement(float DeltaTime)
             //ChaosMovementComponent->StopMovementImmediately();
         }
     }
+#endif
 }

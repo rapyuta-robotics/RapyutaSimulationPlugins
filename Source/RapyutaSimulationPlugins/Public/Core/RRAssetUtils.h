@@ -50,7 +50,11 @@ public:
 
         // Package's validity
         FString packageFileName;
-        if (false == FPackageName::DoesPackageExist(assetPackage->GetName(), &packageFileName))
+        if (false == FPackageName::DoesPackageExist(assetPackage->GetName(),
+#if ENGINE_MAJOR_VERSION < 5
+            nullptr,
+#endif
+            &packageFileName))
         {
             if (bIsLogged)
             {
@@ -77,10 +81,14 @@ public:
         *packageReader << packageSummary;
 
         // Package file UE version
-        const FPackageFileVersion packageFileVersionUE = packageSummary.GetFileVersionUE();
+#if ENGINE_MAJOR_VERSION < 5
+        const int32 packageFileVersionUE = packageSummary.GetFileVersionUE4();
+#else
+        const int32 packageFileVersionUE = packageSummary.GetFileVersionUE().ToValue();
+#endif
 
         // Check TOO OLD
-        if (packageFileVersionUE.ToValue() < static_cast<int32>(VER_UE4_OLDEST_LOADABLE_PACKAGE))
+        if (packageFileVersionUE < static_cast<int32>(VER_UE4_OLDEST_LOADABLE_PACKAGE))
         {
             if (bIsLogged)
             {
@@ -90,13 +98,19 @@ public:
                             "Min Required version: [%d] vs Package version: [%d]"),
                        *InAssetData.AssetName.ToString(),
                        static_cast<int32>(VER_UE4_OLDEST_LOADABLE_PACKAGE),
-                       packageFileVersionUE.ToValue());
+                       packageFileVersionUE);
             }
             return false;
         }
 
         // Check TOO NEW
-        if (packageFileVersionUE.ToValue() > GPackageFileUEVersion.ToValue())
+#if ENGINE_MAJOR_VERSION < 5
+        const int32 packageFileVersionUEGlobal = GPackageFileUE4Version;
+#else
+        const int32 packageFileVersionUEGlobal = GPackageFileUEVersion.ToValue();
+#endif
+            
+        if (packageFileVersionUE > packageFileVersionUEGlobal)
         {
             if (bIsLogged)
             {
@@ -105,8 +119,8 @@ public:
                        TEXT("[%s] asset was saved by a newer UE version [%d], which is not forward compatible "
                             "with the current one[%d]"),
                        *InAssetData.AssetName.ToString(),
-                       packageFileVersionUE.ToValue(),
-                       GPackageFileUEVersion.ToValue());
+                       packageFileVersionUE,
+                       packageFileVersionUEGlobal);
             }
             return false;
         }

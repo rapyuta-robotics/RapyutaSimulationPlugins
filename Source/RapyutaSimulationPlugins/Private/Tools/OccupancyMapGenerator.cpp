@@ -3,7 +3,6 @@
 #include "Tools/OccupancyMapGenerator.h"
 
 #include "DrawDebugHelpers.h"
-#include "HAL/PlatformFileManager.h"
 #include "Misc/Paths.h"
 
 // Sets default values
