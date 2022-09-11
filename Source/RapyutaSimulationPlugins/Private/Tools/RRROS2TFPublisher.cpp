@@ -12,7 +12,7 @@ URRROS2TFPublisher::URRROS2TFPublisher()
     MsgClass = UROS2TFMsgMsg::StaticClass();
 }
 
-void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
+void URRROS2TFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
 

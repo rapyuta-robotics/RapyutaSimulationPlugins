@@ -53,7 +53,7 @@ public:
      *
      * @param InROS2Node
      */
-    void InitializeWithROS2(AROS2Node* InROS2Node) override;
+    void InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
 
     /**
      * @brief Initialize.
@@ -61,7 +61,7 @@ public:
      * @param InROS2Node
      */
     UFUNCTION(BlueprintCallable)
-    void InitTFPublisher(AROS2Node* InROS2Node)
+    void InitTFPublisher(UROS2NodeComponent* InROS2Node)
     {
         InitializeWithROS2(InROS2Node);
     }

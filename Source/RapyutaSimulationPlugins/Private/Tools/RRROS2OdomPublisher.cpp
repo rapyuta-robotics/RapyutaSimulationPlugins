@@ -14,7 +14,7 @@ URRROS2OdomPublisher::URRROS2OdomPublisher()
     QoS = UROS2QoS::KeepLast;
 }
 
-void URRROS2OdomPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
+void URRROS2OdomPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
 
@@ -75,11 +75,11 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdom& OutOdomData) const
     }
 }
 
-void URRROS2OdomPublisher::RevokeUpdateCallback()
-{
-    Super::RevokeUpdateCallback();
-    if (bPublishOdomTf && TFPublisher)
-    {
-        TFPublisher->RevokeUpdateCallback();
-    }
-}
+// void URRROS2OdomPublisher::RevokeUpdateCallback()
+// {
+//     Super::RevokeUpdateCallback();
+//     if (bPublishOdomTf && TFPublisher)
+//     {
+//         TFPublisher->RevokeUpdateCallback();
+//     }
+// }

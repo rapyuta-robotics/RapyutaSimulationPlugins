@@ -8,7 +8,7 @@
 // RapyutaSimulationPlugins
 #include "Tools/SimulationState.h"
 
-void URRROS2StatePublisher::InitializeWithROS2(AROS2Node* InROS2Node)
+void URRROS2StatePublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
 

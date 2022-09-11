@@ -13,7 +13,7 @@
 #include "ROS2Publisher.h"
 //#include "DrawDebugHelpers.h"
 
-void URRROS2SkeletalMeshStatePublisher::InitializeWithROS2(AROS2Node* InROS2Node)
+void URRROS2SkeletalMeshStatePublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 {
     // (NOTE) Do not invoke [URRROS2StatePublisher::], which configures its own TopicName, PublicationFrequencyHz
     UROS2Publisher::InitializeWithROS2(InROS2Node);
