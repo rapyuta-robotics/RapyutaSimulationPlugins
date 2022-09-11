@@ -129,7 +129,7 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
 #endif
         res = false;
     }
-    else if (ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId() == npc->GetPlayerState<APlayerState>()->GetPlayerId())
+    else if (ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId() == npc->ROS2SimStateClient->GetNetworkPlayerId())
     {
         UE_LOG(LogRapyutaCore,
                Log,

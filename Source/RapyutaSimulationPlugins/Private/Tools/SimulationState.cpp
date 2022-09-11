@@ -338,10 +338,11 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     spawnableComponent->InitializeParameters(InROSSpawnRequest);
 
     newEntity->AddInstanceComponent(spawnableComponent);
-    newEntity->Rename(*InROSSpawnRequest.StateName);
-#if WITH_EDITOR
-    newEntity->SetActorLabel(*InROSSpawnRequest.StateName);
-#endif
+
+    // temporary solution to spawn
+    // if there is a option to catch the spawn failure, we should avoid this.
+    newEntity->SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
     ARRBaseRobot* robot = Cast<ARRBaseRobot>(newEntity);
     if (robot)
     {
@@ -366,10 +367,12 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityRequest& InROSS
     }
 
     // Finish spawning Entity
-    UGameplayStatics::FinishSpawningActor(newEntity, InEntityTransform);
+    // Destroy seems not make newEntity=nullptr evevn if it failed.
+    newEntity = UGameplayStatics::FinishSpawningActor(newEntity, InEntityTransform);
 
     // Add to [Entities]
     ServerAddEntity(newEntity);
+
     return newEntity;
 }
 

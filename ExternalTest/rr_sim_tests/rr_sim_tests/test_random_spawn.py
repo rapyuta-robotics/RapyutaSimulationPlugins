@@ -61,10 +61,12 @@ def SpawnRobotInArea(robot_name, x_lim, y_lim, service_namespace, robot_models):
         robot_pose.orientation.y = q[1]
         robot_pose.orientation.z = q[2]
         robot_pose.orientation.w = q[3]
+        print('Trying to spawn robot name=' + robot_name)
         is_srv_available = spawn_robot(robot_model, robot_name, robot_namespace, reference_frame, robot_pose, service_namespace)
         if is_srv_available:
             count = 0
-            while count < 20:
+            print('Checking robot entity: ' + robot_name)
+            while count < 10:
                 time.sleep(1)
                 is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0, service_namespace)
                 if is_robot_spawned:
@@ -112,6 +114,7 @@ def RandomSpawnAndSendCmdVel(args=None):
             robot_twist.linear.x = random.uniform(linear_vel_lim[0], linear_vel_lim[1])
             robot_twist.angular.z = random.uniform(angular_vel_lim[0], angular_vel_lim[1])
             spawned_robots[robot_name]._twist = robot_twist
+            print('Send cmd_vel to ' + robot_name + '. twist =', robot_twist)
 
         # publish same twist publishing_num times.
         pub_count = 0
