@@ -189,7 +189,6 @@ protected:
     UPROPERTY(BlueprintReadOnly, Replicated)
     int32 NetworkPlayerId;
 
-private:
     template<typename T>
     bool CheckEntity(TMap<FString, T>& InEntities, const FString& InEntityName, const bool bAllowEmpty = false);
     bool CheckEntity(const FString& InEntityName, const bool bAllowEmpty = false);
