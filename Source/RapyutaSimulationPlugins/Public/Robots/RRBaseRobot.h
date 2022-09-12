@@ -36,7 +36,7 @@ enum class ERRNetworkAuthorityType : uint8
     CLIENT UMETA(DisplayName = "Client"),
 };
 
-DECLARE_DELEGATE_OneParam(FOnRobotCreationDone, bool /* bCreationResult */);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnRobotCreationDone, bool /* bCreationResult */);
 
 /**
  * @brief Base Robot class. Other robot class should inherit from this class. This actor:
