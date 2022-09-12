@@ -7,14 +7,12 @@
 #include "Net/UnrealNetwork.h"
 
 // rclUE
-#include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Robots/RRRobotVehicleROSController.h"
-#include "Tools/ROS2Spawnable.h"
 #include "Tools/SimulationState.h"
 
 ARRRobotBaseVehicle::ARRRobotBaseVehicle()
@@ -91,50 +89,75 @@ void ARRRobotBaseVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     DOREPLIFETIME(ARRRobotBaseVehicle, VehicleMoveComponentClass);
 }
 
+bool ARRRobotBaseVehicle::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+    bool bWroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+    // Single Object
+    bWroteSomething |= Channel->ReplicateSubobject(RobotVehicleMoveComponent, *Bunch, *RepFlags);
+
+    return bWroteSomething;
+}
+
 void ARRRobotBaseVehicle::SetLinearVel(const FVector& InLinearVel)
 {
-    ServerSetLinearVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorLocation(), InLinearVel);
-    ClientSetLinearVel(InLinearVel);
+    SyncServerLinearMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetTransform(), InLinearVel);
+    SetLocalLinearVel(InLinearVel);
 }
 
 void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
 {
-    ServerSetAngularVel(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
-    ClientSetAngularVel(InAngularVel);
+    SyncServerAngularMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
+    SetLocalAngularVel(InAngularVel);
 }
 
-void ARRRobotBaseVehicle::ServerSetLinearVel_Implementation(float InClientTimeStamp,
-                                                            const FVector& InClientRobotPosition,
-                                                            const FVector& InLinearVel)
+void ARRRobotBaseVehicle::SyncServerLinearMovement(float InClientTimeStamp,
+                                                   const FTransform& InClientRobotTransform,
+                                                   const FVector& InLinearVel)
 {
-    if (RobotVehicleMoveComponent)
+    // todo: following block is used for RPC in server, which will be used if RPC from non player can be supported.
+    // if (RobotVehicleMoveComponent)
+    // {
+    //     float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+    //     SetActorLocation(InClientRobotPosition + InLinearVel * (serverCurrentTime - InClientTimeStamp));
+    //     RobotVehicleMoveComponent->Velocity = InLinearVel;
+    // }
+    auto* npc = Cast<ARRNetworkPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+    if (npc != nullptr)
     {
-        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-        SetActorLocation(InClientRobotPosition + InLinearVel * (serverCurrentTime - InClientTimeStamp));
-        RobotVehicleMoveComponent->Velocity = InLinearVel;
+        npc->ServerSetLinearVel(ServerRobot, InClientTimeStamp, InClientRobotTransform, InLinearVel);
     }
 }
 
-void ARRRobotBaseVehicle::ServerSetAngularVel_Implementation(float InClientTimeStamp,
-                                                             const FRotator& InClientRobotRotation,
-                                                             const FVector& InAngularVel)
+void ARRRobotBaseVehicle::SyncServerAngularMovement(float InClientTimeStamp,
+                                                    const FRotator& InClientRobotRotation,
+                                                    const FVector& InAngularVel)
 {
-    if (RobotVehicleMoveComponent)
+    // todo: following block is used for RPC in server, which will be used if RPC from non player can be supported.
+    // if (RobotVehicleMoveComponent)
+    // {
+    //     // GetPlayerController<APlayerController>(0, InContextObject)
+    //     float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+    //     SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
+    //     RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+    // }
+
+    // call rpc via NetworkPlayerController since can't call rpc directly from non-player pawn.
+    auto* npc = Cast<ARRNetworkPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+    if (npc != nullptr)
     {
-        float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-        SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
-        RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+        npc->ServerSetAngularVel(ServerRobot, InClientTimeStamp, InClientRobotRotation, InAngularVel);
     }
 }
 
-void ARRRobotBaseVehicle::ClientSetLinearVel_Implementation(const FVector& InLinearVel)
+void ARRRobotBaseVehicle::SetLocalLinearVel(const FVector& InLinearVel)
 {
     if (RobotVehicleMoveComponent)
     {
 #if RAPYUTA_SIM_DEBUG
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("PLAYER [%s] ClientSetLinearVel %s"),
+               TEXT("PLAYER [%s] SetLocalLinearVel %s"),
                *PlayerController->PlayerState->GetPlayerName(),
                *InLinearVel.ToString());
 #endif
@@ -142,14 +165,14 @@ void ARRRobotBaseVehicle::ClientSetLinearVel_Implementation(const FVector& InLin
     }
 }
 
-void ARRRobotBaseVehicle::ClientSetAngularVel_Implementation(const FVector& InAngularVel)
+void ARRRobotBaseVehicle::SetLocalAngularVel(const FVector& InAngularVel)
 {
     if (RobotVehicleMoveComponent)
     {
 #if RAPYUTA_SIM_DEBUG
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("PLAYER [%s] ClientSetAngularVel %s"),
+               TEXT("PLAYER [%s] SetLocalAngularVel %s"),
                *PlayerController->PlayerState->GetPlayerName(),
                *InAngularVel.ToString());
 #endif

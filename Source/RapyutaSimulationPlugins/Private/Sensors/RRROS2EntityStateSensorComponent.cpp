@@ -50,15 +50,15 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
 
     relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
-    Data.pose_position_x = relativeTransf.GetTranslation().X + RootOffset.GetTranslation().X;
-    Data.pose_position_y = relativeTransf.GetTranslation().Y + RootOffset.GetTranslation().Y;
-    Data.pose_position_z = relativeTransf.GetTranslation().Z + RootOffset.GetTranslation().Z;
-    Data.pose_orientation = relativeTransf.GetRotation() * RootOffset.GetRotation();
-    Data.reference_frame = ReferenceActorName;
+    Data.PosePosition.X = relativeTransf.GetTranslation().X + RootOffset.GetTranslation().X;
+    Data.PosePosition.Y = relativeTransf.GetTranslation().Y + RootOffset.GetTranslation().Y;
+    Data.PosePosition.Z = relativeTransf.GetTranslation().Z + RootOffset.GetTranslation().Z;
+    Data.PoseOrientation = relativeTransf.GetRotation() * RootOffset.GetRotation();
+    Data.ReferenceFrame = ReferenceActorName;
 
     // todo calc vel
-    Data.twist_linear = FVector::ZeroVector;
-    Data.twist_angular = FVector::ZeroVector;
+    Data.TwistLinear = FVector::ZeroVector;
+    Data.TwistAngular = FVector::ZeroVector;
 
     bIsValid = true;
 }

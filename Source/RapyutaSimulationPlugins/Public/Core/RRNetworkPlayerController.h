@@ -15,6 +15,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Robots/RRBaseRobot.h"
 #include "Tools/RRROS2ClockPublisher.h"
 #include "Tools/RRROS2SimulationStateClient.h"
 #include "Tools/SimulationState.h"
@@ -31,70 +32,53 @@ class RAPYUTASIMULATIONPLUGINS_API ARRNetworkPlayerController : public APlayerCo
     GENERATED_BODY()
 public:
     ARRNetworkPlayerController();
-    static constexpr const TCHAR* CMDLINE_ARG_NET_CLIENT_ROBOT_NAME = TEXT("robotname");
 
     virtual void Tick(float DeltaSeconds) override;
+
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     // ROS2
-    UPROPERTY(Transient, Replicated)
+    UPROPERTY(Transient)
     AROS2Node* SimStateClientROS2Node = nullptr;
 
-    UPROPERTY(BlueprintReadOnly, Replicated)
+    UPROPERTY(BlueprintReadOnly)
     URRROS2ClockPublisher* SimStateClientClockPublisher = nullptr;
-
-    /**
-     * @brief Init SimStateClient's ROS2 (Node, ClockPublisher, etc.)
-     */
-    void InitSimStateClientROS2();
 
     // SIM STATE & ROS2 STATE CLIENT
     //! Pointer to ServerSimState
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     ASimulationState* ServerSimState = nullptr;
+
     //! ROS2 Sim state client
-    UPROPERTY(Transient, Replicated)
+    UPROPERTY(Transient, Replicated, ReplicatedUsing = OnRep_SimStateClient)
     URRROS2SimulationStateClient* ROS2SimStateClient = nullptr;
-    /**
-     * @brief Create ROS2SimStateClient without initializing yet
-     */
-    void CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass);
 
-    // POSSESSED PAWN
-    //! Pawn that has been possessed by this controller
-    UPROPERTY(Transient, Replicated)
-    APawn* PossessedPawn = nullptr;
-
-    /**
-     * @brief Search for the targeted pawn to possess
-     */
-    APawn* FindPawnToPossess();
-
-    /**
-     * @brief Wait to possess the targeted pawn
-     */
-    UFUNCTION()
-    void WaitToPossessPawn();
-
-    /**
-     * @brief Possess a pawn on server
-     */
-    UFUNCTION(Server, Reliable)
-    void ServerPossessPawn(APawn* InPawn);
-
-    //! Timer handle used by WaitToPossessPawn()
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FTimerHandle PossessTimerHandle;
-
-    //! Client - Init possessed robot's ROS2Interface & MoveComponent, etc.
-    UFUNCTION(Client, Reliable)
-    void ClientInitPawn(AActor* InActor);
+    UFUNCTION(BlueprintCallable)
+    virtual void OnRep_SimStateClient();
 
     // PLAYER
     //! Controller's PlayerName, taken from [robotname] param in Engine build.
     //! In Editor build, it will be automatically set from #PossessedPawn's name upon possession
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString PlayerName;
+
+    /**
+     * @brief Create ROS2SimStateClient without initializing yet
+     */
+    UFUNCTION(BlueprintCallable)
+    void CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass);
+
+    /**
+     * @brief Init SimStateClient's ROS2 (Node, ClockPublisher, etc.)
+     */
+    UFUNCTION(Client, Reliable)
+    void ClientInitSimStateClientROS2();
 
     /**
      * @brief Possess a pawn on server
@@ -137,8 +121,35 @@ public:
      */
     void UpdateLocalClock(float InDeltaSeconds);
 
+    /**
+     * @brief Set server linear velocity to #RobotVehicleMoveComponent. Non player object can use this method to call RPC.
+     * @param InServerRobot target server-owned robot
+     * @param InClientTimeStamp
+     * @param InClientRobotPosition
+     * @param InLinearVel
+     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player. 
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    virtual void ServerSetLinearVel(ARRBaseRobot* InServerRobot,
+                                    float InClientTimeStamp,
+                                    const FTransform& InClientRobotTransform,
+                                    const FVector& InLinearVel);
+
+    /**
+     * @brief Set server angular velocity to #RobotVehicleMoveComponent. Non player object can use this method to call RPC.
+     * @param InServerRobot target server-owned robot
+     * @param InClientTimeStamp
+     * @param InClientRobotRotation
+     * @param InAngularVel
+     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player. 
+     */
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    virtual void ServerSetAngularVel(ARRBaseRobot* InServerRobot,
+                                     float InClientTimeStamp,
+                                     const FRotator& InClientRobotRotation,
+                                     const FVector& InAngularVel);
+
 protected:
     virtual void BeginPlay() override;
     virtual void ReceivedPlayer() override;
-    virtual void AcknowledgePossession(APawn* InPawn) override;
 };

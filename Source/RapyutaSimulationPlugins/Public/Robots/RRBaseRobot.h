@@ -12,6 +12,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRBaseActor.h"
 #include "Drives/RRJointComponent.h"
+#include "Tools/ROS2Spawnable.h"
 
 // rclUE
 #include "ROS2Node.h"
@@ -20,6 +21,20 @@
 
 class ARRNetworkGameState;
 class URRRobotROS2Interface;
+class ARRNetworkPlayerController;
+
+/**
+ * @brief Which server or client has robot movement authority.
+ * Server: robot moves in server first and movement replicates to clients.
+ * Client: robot moves in client first and use rpc to apply movement to server.
+ * @todo implement Server authority.
+ */
+UENUM(BlueprintType)
+enum class ERRNetworkAuthorityType : uint8
+{
+    SERVER UMETA(DisplayName = "Server"),
+    CLIENT UMETA(DisplayName = "Client"),
+};
 
 DECLARE_DELEGATE_OneParam(FOnRobotCreationDone, bool /* bCreationResult */);
 
@@ -60,13 +75,66 @@ public:
     TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass;
 
     //! Robot's ROS2 Interface
-    UPROPERTY(Replicated)
+    UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
     URRRobotROS2Interface* ROS2Interface = nullptr;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void OnRep_ROS2Interface();
+
+    /**
+     * @brief Flag to start/stop ROS2Interfaces. Since RPC can't be used, use replication to trigger initialization.
+     */
+    UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_bStartStopROS2Interface)
+    bool bStartStopROS2Interface = false;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void OnRep_bStartStopROS2Interface();
+
+    /**
+     * @brief Check necessary variables has initialized and PlayerId which spaned robot is match the this client PlayerId
+     * @return true if playerId matches robot spawn playerId
+     */
+    bool IsAuthorizedInThisClient();
+
+    //! ROSSpawn parameters which is passed to ROS2Interface
+    UPROPERTY(VisibleAnywhere, Replicated)
+    UROS2Spawnable* ROSSpawnParameters = nullptr;
+
+    /**
+     * @brief Pointer to the robot's server-owned version
+     * @note Owner can't be used since non-player pawn don't have that.
+     */
+    UPROPERTY(VisibleAnywhere, Replicated)
+    ARRBaseRobot* ServerRobot = nullptr;
 
     /**
      * @brief Instantiate ROS2 Interface without initializing yet
+@note Not uses RPC since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
      */
+    UFUNCTION(BlueprintCallable)
     void CreateROS2Interface();
+
+    /**
+     * @brief Initialize ROS2 Interface. Directly call #URRRobotROS2Interface::Initialize or execute in client via
+     * #OnRep_bStartStopROS2Interface.
+     * @note Not uses RPC but replication since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
+     */
+    UFUNCTION(BlueprintCallable)
+    void InitROS2Interface();
+
+    /**
+     * @brief Stop ROS2 Interface. Directly call #URRRobotROS2Interface::DeInitialize or execute in client via
+     * #OnRep_bStartStopROS2Interface.
+     * @note Not uses RPC but replication since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
+     */
+    UFUNCTION(BlueprintCallable)
+    void DeInitROS2Interface();
 
     /**
      * @brief
@@ -126,6 +194,7 @@ public:
     {
         return RobotID;
     }
+
     /**
      * @brief Set robot ID
      */
@@ -167,10 +236,22 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     /**
+     * @brief Allows a component to replicate other subobject on the actor
+     *
+     */
+    virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+
+    /**
      * @brief Set Joints state to #Joints
      */
     // UFUNCTION(BlueprintCallable)
     virtual void SetJointState(const TMap<FString, TArray<float>>& InJointState, const ERRJointControlType InJointControlType);
+
+    /**
+     * @brief Network Authority.
+     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite /*, Replicated*/)
+    ERRNetworkAuthorityType NetworkAuthorityType = ERRNetworkAuthorityType::CLIENT;
 
 protected:
     /**

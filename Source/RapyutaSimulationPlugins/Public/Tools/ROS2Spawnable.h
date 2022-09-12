@@ -51,11 +51,21 @@ public:
     virtual void AddTag(const FString& InTag);
 
     UFUNCTION(BlueprintCallable)
-    virtual FString GetName();
+    virtual FString GetName() const;
 
     UFUNCTION(BlueprintCallable)
-    virtual FString GetNamespace();
+    virtual FString GetNamespace() const;
+
+    UFUNCTION(BlueprintCallable)
+    virtual int32 GetNetworkPlayerId() const;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void SetNetworkPlayerId(const int32 InNetworkPlayerId);
 
 protected:
     virtual void OnComponentCreated() override;
+
+    //! Player ID No. This is used to check which network client posses this Robot.
+    UPROPERTY(Replicated)
+    int32 NetworkPlayerId;
 };

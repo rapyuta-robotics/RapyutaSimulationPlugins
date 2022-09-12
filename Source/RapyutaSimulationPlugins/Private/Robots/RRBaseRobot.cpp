@@ -3,10 +3,10 @@
 #include "Robots/RRBaseRobot.h"
 
 // UE
+#include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
 
 // rclUE
-#include "Msgs/ROS2TFMsg.h"
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
@@ -16,7 +16,6 @@
 #include "Drives/RRJointComponent.h"
 #include "Robots/RRRobotROS2Interface.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
-#include "Tools/ROS2Spawnable.h"
 #include "Tools/SimulationState.h"
 
 ARRBaseRobot::ARRBaseRobot()
@@ -36,10 +35,8 @@ void ARRBaseRobot::SetupDefault()
     // classes will automatically get invalidated.
     URRUObjectUtils::SetupDefaultRootComponent(this);
 
-    // By default, turn off to be possessed manually by possible a Network player controller.
-    // In case of non-NetworkGameMode, AI Controller could possess manually later.
     AutoPossessPlayer = EAutoReceiveInput::Disabled;
-    AutoPossessAI = EAutoPossessAI::Disabled;
+    AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // NOTE: Any custom object class (eg ROS2InterfaceClass) that is required to be configurable by this class' child BP ones
     // & IF its object needs to be created before BeginPlay(),
@@ -50,9 +47,8 @@ void ARRBaseRobot::PostInitializeComponents()
 {
     if (ROS2InterfaceClass)
     {
-        // Since [ROS2Interface] instance itself is not replicated,
-        // This is for standalone-server only
-        if (IsNetMode(NM_Standalone))
+        // ROS2Interface is created at server and replicated to client.
+        if (!IsNetMode(NM_Client))
         {
             CreateROS2Interface();
         }
@@ -66,20 +62,112 @@ void ARRBaseRobot::PostInitializeComponents()
                *GetName());
     }
 
-    if (nullptr == URRCoreUtils::GetGameMode<ARRNetworkGameMode>(this))
-    {
-        AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-    }
-    // Super::, for EAutoPossessAI::PlacedInWorldOrSpawned, spawn APawn's default controller,
     // which does the possessing, thus must be called afterwards
     Super::PostInitializeComponents();
 }
 
+void ARRBaseRobot::OnRep_ROS2Interface()
+{
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::OnRep_ROS2Interface]."), *GetName());
+#endif
+    // Since Replication order of ROS2Interface, bStartStopROS2Interface, ROSSpawnParameters can be shuffled,
+    // Trigger init ROS2 interface in each OnRep function.
+    // need to initialize here as well.
+    // https://forums.unrealengine.com/t/replication-ordering-guarantees/264974
+    if (bStartStopROS2Interface)
+    {
+        InitROS2Interface();
+    }
+}
+
+void ARRBaseRobot::OnRep_bStartStopROS2Interface()
+{
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::OnRep_bStartStopROS2Interface]"), *GetName());
+#endif
+    if (bStartStopROS2Interface)
+    {
+        InitROS2Interface();
+    }
+    else
+    {
+        DeInitROS2Interface();
+    }
+}
+
+bool ARRBaseRobot::IsAuthorizedInThisClient()
+{
+    // Get networkplayer controller
+    auto* npc = Cast<ARRNetworkPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+    bool res = false;
+    if (nullptr == ROS2Interface)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ROS2Controller found"), *GetName());
+#endif
+        res = false;
+    }
+    else if (nullptr == ROS2Interface->ROSSpawnParameters)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ROS2Controller->ROSSpawnParameters found"),
+               *GetName());
+#endif
+        res = false;
+    }
+    else if (nullptr == npc)
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ARRNetworkPlayerController found"),
+               *GetName());
+#endif
+        res = false;
+    }
+    else if (ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId() == npc->GetPlayerState<APlayerState>()->GetPlayerId())
+    {
+        UE_LOG(LogRapyutaCore,
+               Log,
+               TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient()] PlayerId is matched. PlayerId=%d."),
+               *GetName(),
+               npc->GetPlayerState<APlayerState>()->GetPlayerId());
+        res = true;
+    }
+    else
+    {
+#if RAPYUTA_SIM_DEBUG
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient()] PlayerId is mismatched. This robot spawned by PlaeyrId=%d. "
+                    "This Client's PlayerId=%d. "),
+               *GetName(),
+               ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId(),
+               npc->GetPlayerState<APlayerState>()->GetPlayerId());
+#endif
+        res = false;
+    }
+
+    return res;
+}
+
 void ARRBaseRobot::CreateROS2Interface()
 {
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::CreateROS2Interface] %d"), *GetName(), IsNetMode(NM_Client));
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
+    ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;
     ROS2Interface->SetupROSParams();
+
+    if (bStartStopROS2Interface)
+    {
+        InitROS2Interface();
+    }
+
     // NOTE: NOT call ROS2Interface->Initialize(this) here since robot's ros2-based accessories might not have been fully accessible
     // yet.
     // Thus, that would be done in Controller's OnPossess for reasons:
@@ -88,6 +176,46 @@ void ARRBaseRobot::CreateROS2Interface()
     // have been instantiated yet
     // + Child class' ros2-related accessories (ROS2 node, sensors, publishers/subscribers)
     //  may have not been fully accessible until then.
+}
+
+void ARRBaseRobot::InitROS2Interface()
+{
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::InitROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
+#endif
+
+    if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
+    {
+        ROS2Interface->Initialize(this);
+        if (NetworkAuthorityType == ERRNetworkAuthorityType::CLIENT)
+        {
+            SetReplicatingMovement(false);
+        }
+    }
+    else
+    {
+        // Use replication to triggerto this function in client.
+        // Since RPC can't be used from non-player controller
+        bStartStopROS2Interface = true;
+    }
+}
+
+void ARRBaseRobot::DeInitROS2Interface()
+{
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::StopROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
+#endif
+
+    if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
+    {
+        ROS2Interface->DeInitialize();
+    }
+    else
+    {
+        // Use replication to triggerto this function in client.
+        // Since RPC can't be used from non-player controller
+        bStartStopROS2Interface = false;
+    }
 }
 
 bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
@@ -121,8 +249,21 @@ void ARRBaseRobot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ARRBaseRobot, RobotModelName);
     DOREPLIFETIME(ARRBaseRobot, RobotID);
     DOREPLIFETIME(ARRBaseRobot, RobotUniqueName);
+    DOREPLIFETIME(ARRBaseRobot, ServerRobot);
     DOREPLIFETIME(ARRBaseRobot, ROS2Interface);
     DOREPLIFETIME(ARRBaseRobot, ROS2InterfaceClass);
+    DOREPLIFETIME(ARRBaseRobot, ROSSpawnParameters);
+    DOREPLIFETIME(ARRBaseRobot, bStartStopROS2Interface);
+}
+
+bool ARRBaseRobot::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+    bool bWroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+    // Single Object
+    bWroteSomething |= Channel->ReplicateSubobject(ROS2Interface, *Bunch, *RepFlags);
+
+    return bWroteSomething;
 }
 
 void ARRBaseRobot::SetJointState(const TMap<FString, TArray<float>>& InJointState, const ERRJointControlType InJointControlType)

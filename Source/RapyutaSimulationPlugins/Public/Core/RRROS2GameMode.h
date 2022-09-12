@@ -28,6 +28,8 @@ UCLASS() class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
     GENERATED_BODY()
 
 public:
+    ARRROS2GameMode();
+
     //! Sim's Main ROS2 node
     UPROPERTY(BlueprintReadOnly)
     AROS2Node* MainROS2Node = nullptr;

@@ -99,7 +99,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerSetEntityState(const FROSSetEntityState_Request& InRequest);
+    void ServerSetEntityState(const FROSSetEntityStateRequest& InRequest);
 
     /**
      * @brief Callback function of Attach ROS2 service.
@@ -115,7 +115,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerAttach(const FROSAttach_Request& InRequest);
+    void ServerAttach(const FROSAttachRequest& InRequest);
 
     /**
      * @brief Callback function of SpawnEntity ROS2 service.
@@ -153,7 +153,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerDeleteEntity(const FROSDeleteEntity_Request& InRequest);
+    void ServerDeleteEntity(const FROSDeleteEntityRequest& InRequest);
 
     /**
      * @brief RPC call to Server's AddEntity
@@ -162,10 +162,33 @@ public:
     UFUNCTION(BlueprintCallable, Server, Reliable)
     void ServerAddEntity(AActor* InEntity);
 
+    /**
+     * @brief Set Player Id
+     * @param InNetworkPlayerId
+     */
+    UFUNCTION(BlueprintCallable)
+    void SetNetworkPlayerId(const int32 InNetworkPlayerId)
+    {
+        NetworkPlayerId = InNetworkPlayerId;
+    }
+
+    /**
+     * @brief Get Player Id
+     * @param InEntity
+     */
+    UFUNCTION(BlueprintCallable)
+    int32 GetNetworkPlayerId() const
+    {
+        return NetworkPlayerId;
+    }
+
 protected:
     virtual void OnComponentCreated() override;
 
-private:
+    //! NetworkPlayerId which is used to differenciate client in server.
+    UPROPERTY(BlueprintReadOnly, Replicated)
+    int32 NetworkPlayerId;
+
     template<typename T>
     bool CheckEntity(TMap<FString, T>& InEntities, const FString& InEntityName, const bool bAllowEmpty = false);
     bool CheckEntity(const FString& InEntityName, const bool bAllowEmpty = false);
