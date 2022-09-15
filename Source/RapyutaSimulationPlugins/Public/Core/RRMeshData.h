@@ -120,8 +120,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
     UPROPERTY()
     TArray<FVector> Normals;
 
-    UPROPERTY()
-    TArray<FVector2D> UVs;
+    TArrayFVector2 UVs;
 
     UPROPERTY()
     TArray<FProcMeshTangent> ProcTangents;

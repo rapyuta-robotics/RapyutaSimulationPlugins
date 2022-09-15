@@ -11,6 +11,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "CoreMinimal.h"
 
+#include "Core/RRSkeletalMeshWrapper.h"
 // RapyutaSimulationPlugins
 #include "Robots/RRRobotBaseVehicle.h"
 
@@ -42,9 +43,7 @@ public:
      */
     ARobotVehicle(const FObjectInitializer& ObjectInitializer);
 
-    //! Robot Mesh
-    //UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    //USkeletalMeshComponent* SkeletalMeshComp = nullptr;
+    RRSkeletalMeshWrapper SkeletalMeshWrapper;
 
     /**
      * @brief Initialize #SkeletalMeshComp.

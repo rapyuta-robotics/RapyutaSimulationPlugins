@@ -68,13 +68,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
 
-    /**
-     * @brief Initialize #RobotVehicleMoveComponent
-     *
-     * @return true
-     * @return false
-     */
-    virtual bool InitMoveComponent();
+    void InitMoveComponent(TSubclassOf<URobotVehicleMovementComponent> moveComponentClass);
 
     /**
      * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
@@ -149,12 +143,4 @@ protected:
      * @sa[PostInitializeComponents](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
      */
     virtual void PostInitializeComponents() override;
-    /**
-     * @brief This method is called inside #PostInitializeComponents.
-     * Custom initialization of child class can be done by overwritting this method.
-     *
-     */
-    virtual void ConfigureVehicleMoveComponent()
-    {
-    }
 };

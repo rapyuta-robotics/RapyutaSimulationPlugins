@@ -30,25 +30,14 @@ ARRRobotBaseVehicle::ARRRobotBaseVehicle(const FObjectInitializer& ObjectInitial
 
 void ARRRobotBaseVehicle::SetupDefaultVehicle()
 {
-    RobotVehicleMoveComponent = CreateDefaultSubobject<URRTricycleDriveComponent>(TEXT("RRTricycleDriveComponent"));
-    //RobotVehicleMoveComponent->RegisterComponent();
-    RobotVehicleMoveComponent->PrimaryComponentTick.bCanEverTick = true;
-    RobotVehicleMoveComponent->SetComponentTickEnabled(true);
-    // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
-    // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
-    // classes will automatically get invalidated.
+    VehicleMoveComponentClass = URRTricycleDriveComponent::StaticClass();
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
-
-    // NOTE: Any custom object class (eg ROS2Interface Class, VehicleMoveComponentClass) that is required to be configurable by
-    // this class' child BP ones & if its object needs to be created before BeginPlay(),
-    // -> The class must be left NULL here, so its object (eg RobotVehicleMoveComponent) is not created by default in
-    // [PostInitializeComponents()]
 }
 
 void ARRRobotBaseVehicle::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-    InitMoveComponent();
+    InitMoveComponent(VehicleMoveComponentClass);
 }
 
 void ARRRobotBaseVehicle::SetRootOffset(const FTransform& InRootOffset)
@@ -59,32 +48,27 @@ void ARRRobotBaseVehicle::SetRootOffset(const FTransform& InRootOffset)
     }
 }
 
-bool ARRRobotBaseVehicle::InitMoveComponent()
+void ARRRobotBaseVehicle::InitMoveComponent(TSubclassOf<URobotVehicleMovementComponent> moveComponentClass)
 {
-    if (VehicleMoveComponentClass)
+    if(!RobotVehicleMoveComponent || RobotVehicleMoveComponent->GetClass() != moveComponentClass)
     {
-        // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
-        RobotVehicleMoveComponent = CastChecked<URobotVehicleMovementComponent>(
-            URRUObjectUtils::CreateSelfSubobject(this, VehicleMoveComponentClass, FString::Printf(TEXT("%sMoveComp"), *GetName())));
-        RobotVehicleMoveComponent->RegisterComponent();
-
-        // Configure custom properties (frameids, etc.)
-        ConfigureVehicleMoveComponent();
-
-        // Init
+        if(RobotVehicleMoveComponent)
+        {
+            RobotVehicleMoveComponent->DestroyComponent();
+        }
+    
+        RobotVehicleMoveComponent = CastChecked<URobotVehicleMovementComponent>(URRUObjectUtils::CreateSelfSubobject(this, moveComponentClass, FString::Printf(TEXT("%sMoveComp"), *moveComponentClass->GetName())));
+        //RobotVehicleMoveComponent = CreateDefaultSubobject<URRSkeletalRobotDiffDriveComponent>(TEXT("URRSkeletalRobotDiffDriveComponent"));
+   
+        RobotVehicleMoveComponent->PrimaryComponentTick.bCanEverTick = true;
+        RobotVehicleMoveComponent->SetComponentTickEnabled(true);
         RobotVehicleMoveComponent->Initialize();
-
-        // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
-        // to the owner actor's root
-        return true;
-    }
-    else
-    {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s] [VehicleMoveComponentClass] has not been configured, probably later in child BP class!"),
-               *GetName());
-        return false;
+        RobotVehicleMoveComponent->RegisterComponent();
+        
+        if(moveComponentClass != URRTricycleDriveComponent::StaticClass())
+        {
+            GetVehicleMovement()->UnregisterComponent();
+        }
     }
 }
 

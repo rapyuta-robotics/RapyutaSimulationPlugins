@@ -15,6 +15,16 @@
 #include "PhysicsEngine/ConstraintInstanceBlueprintLibrary.h"
 #endif
 
+URRTricycleDriveComponent::URRTricycleDriveComponent()
+{
+    volatile int a = 0;
+}
+URRTricycleDriveComponent::URRTricycleDriveComponent(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer)
+{
+    volatile int a = 0;
+}
+
 void URRTricycleDriveComponent::Setup()
 {
     ARobotVehicle* vehicle = Cast<ARobotVehicle>(GetOwner());

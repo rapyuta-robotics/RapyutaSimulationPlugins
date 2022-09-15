@@ -269,11 +269,18 @@ void URRProceduralMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>
 #endif
 
         // Create Mesh Section
+        TArray<FVector2D> uvs;
+
+        for(const auto& uv : mesh.UVs)
+        {
+            uvs.Add(FVector2D(uv));
+        }
+        
         Super::CreateMeshSection(meshSectionIndex,
                                  mesh.Vertices,
                                  mesh.TriangleIndices,
                                  mesh.Normals,
-                                 mesh.UVs,
+                                 uvs,
                                  mesh.VertexColors,
                                  mesh.ProcTangents,
                                  bUseComplexAsSimpleCollision);
@@ -324,9 +331,16 @@ bool URRProceduralMeshComponent::GetMeshData(FRRMeshData& OutMeshData, bool bFro
             for (auto i = 0; i < sectionsNum; ++i)
             {
                 FRRMeshNodeData section;
+                TArray<FVector2D> uvs;
+                
                 UKismetProceduralMeshLibrary::GetSectionFromProceduralMesh(
-                    this, i, section.Vertices, section.TriangleIndices, section.Normals, section.UVs, section.ProcTangents);
+                    this, i, section.Vertices, section.TriangleIndices, section.Normals, uvs, section.ProcTangents);
 
+                for(const auto& uv : uvs)
+                {
+                    section.UVs.Add(FVector2f(uv));
+                }
+                
                 for (auto& vertex : section.Vertices)
                 {
                     vertex = GetComponentTransform().TransformPosition(vertex);
@@ -347,12 +361,19 @@ void URRProceduralMeshComponent::SetMeshSize(const FVector& InSize)
         case ERRShapeType::PLANE:
         {
             FRRMeshNodeData newNodeData;
+            TArray<FVector2D> uvs;
+            
             UKismetProceduralMeshLibrary::GenerateBoxMesh(InSize / 2,
                                                           newNodeData.Vertices,
                                                           newNodeData.TriangleIndices,
                                                           newNodeData.Normals,
-                                                          newNodeData.UVs,
+                                                          uvs,
                                                           newNodeData.ProcTangents);
+
+            for(const auto& uv : uvs)
+            {
+                newNodeData.UVs.Add(FVector2f(uv));
+            }
 
             // Create new mesh section
             ClearAllMeshSections();

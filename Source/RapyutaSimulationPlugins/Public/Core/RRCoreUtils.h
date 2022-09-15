@@ -44,6 +44,8 @@ class UCameraComponent;
 #define TO_TRANSFORM3F
 #define TO_MATRIX
 #define TArrayFVector TArray<FVector>
+#define VECTOR2_TYPE FVector2D
+#define TArrayFVector2 TArray<FVector2D>
 #else
 #define TO_VECTOR3F FVector3f
 #define VECTOR4_TYPE FVector4f
@@ -51,6 +53,8 @@ class UCameraComponent;
 #define TO_TRANSFORM3F FTransform3f
 #define TO_MATRIX FMatrix
 #define TArrayFVector TArray<FVector3f>
+#define VECTOR2_TYPE FVector2f
+#define TArrayFVector2 TArray<FVector2f>
 #endif
 
 /**
