@@ -31,7 +31,7 @@ enum class ERRSimType : uint8
 
 /**
  * @brief GameMode with specific setting, asset loading and ROS2 interface via #ClockPublisher and #ASimulationState.
- *
+ * @sa [GameMode and GameState](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Framework/GameMode/
  */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRGameMode : public ARRROS2GameMode

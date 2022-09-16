@@ -47,11 +47,11 @@ public:
 
     /**
      * @brief Construct a new ARRBaseActor object
-     * UE HAS A VERY SPECIAL WAY OF HAVING [AActor] INSTANTIATED, IN WHICH
-     * DEFAULT OBJECT IS ALWAYS CREATED AS THE EDITOR IS LOADED UP.
-     * HENCE, IT'S RECOMMENDED NOT TO PUT PARTICULAR ACTOR'S CONTENT INSTANTIATION OR INITIALIZATION INSIDE CTOR,
-     * ESPECIALLY IF THOSE CONTENTS (eg CHILD MESH COMPONENTS) RELY ON SIM'S GLOBAL RESOURCES, WHICH ARE INITIALIZED LATER DURING
-     * SIM START-UP!
+     * UE has a very special way of having [AActor] instantiated, in which
+     * default object is always created as the editor is loaded up.
+     * Hence, it's recommended not to put particular Actor's content instantiation or initialization inside ctor,
+     * especially if those contents (eg child mesh components) rely on sim's global resources, which are initialized later during
+     * sim start-up!
      *
      * Please put them in [Initialize()] instead!
      */

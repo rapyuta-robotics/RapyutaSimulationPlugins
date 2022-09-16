@@ -11,6 +11,10 @@
 
 #include "RRNetworkGameState.generated.h"
 
+/**
+ * @brief Network Game State for client-server
+ * @sa [GameMode and GameState](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Framework/GameMode/
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameState : public AGameState
 {
@@ -19,5 +23,10 @@ class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameState : public AGameState
 public:
     ARRNetworkGameState();
 
+    /**
+     * @brief Get the Server World Time Seconds object
+     * 
+     * @return float 
+     */
     virtual float GetServerWorldTimeSeconds() const override;
 };

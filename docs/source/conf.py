@@ -44,7 +44,8 @@ extensions = [
     'sphinx.ext.todo', 
     'breathe', 
     'sphinx.ext.graphviz',
-    'myst_parser'
+    'myst_parser',
+    'sphinxcontrib.video'
 ]
 
 intersphinx_mapping = {
@@ -58,6 +59,8 @@ templates_path = ['_templates']
 # -- Options for HTML output
 
 html_theme = 'sphinx_rtd_theme'
+# html_style = 'css/style.css'
+html_static_path = ['_static'] 
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
@@ -68,3 +71,5 @@ source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',
 }
+def setup(app):
+    app.add_css_file('css/style.css')
