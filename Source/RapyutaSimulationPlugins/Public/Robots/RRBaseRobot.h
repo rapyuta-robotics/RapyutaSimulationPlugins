@@ -121,6 +121,12 @@ public:
     UFUNCTION(BlueprintCallable)
     void InitROS2Interface();
 
+    UFUNCTION(BlueprintCallable)
+    void TimerInitROS2Interface();
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTimerHandle ROS2InitTimer;
+
     /**
      * @brief Stop ROS2 Interface. Directly call #URRRobotROS2Interface::DeInitialize or execute in client via
      * #OnRep_bStartStopROS2Interface.
