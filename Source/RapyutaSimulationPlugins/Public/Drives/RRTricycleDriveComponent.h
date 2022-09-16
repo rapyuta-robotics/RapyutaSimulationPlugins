@@ -27,11 +27,6 @@ class RAPYUTASIMULATIONPLUGINS_API URRTricycleDriveComponent : public UDifferent
 {
     GENERATED_BODY()
 public:
-    URRTricycleDriveComponent();
-    URRTricycleDriveComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
-
-    
     UFUNCTION(BlueprintCallable)
     void Setup();
     
