@@ -68,7 +68,8 @@ void ARRBaseRobot::PostInitializeComponents()
 
     if (nullptr == URRCoreUtils::GetGameMode<ARRNetworkGameMode>(this))
     {
-        AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+        // TODO: if AutoPossessAI equals to PlacedInWorldOrSpawned and not Disabled by default - ARRCrowdROSController::OnPossess and ARRBaseRobot::InitSensors are called before sensor creation and dont init lidars
+        //AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
     }
     // Super::, for EAutoPossessAI::PlacedInWorldOrSpawned, spawn APawn's default controller,
     // which does the possessing, thus must be called afterwards
