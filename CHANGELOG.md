@@ -1,5 +1,16 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.17 ##
+* `URRActorCommon::OnPostWorldCleanup()` only reset actor common list upon matching world
+## 0.0.16 ##
+* Add multi-robot supports for one network client (#83)
+* Udpate source following ROS Msgs updates generated from the latest UE_tools #88
+## 0.0.15 ##
+* ASimulationState::ServerAttach() entity2 ignores entity1 during attachment
+
+## 0.0.14 ##
+* `rr_sim_tests` Add `test_robot_model_state_published.py`
+
 ## 0.0.13 ##
 * Add Sensors/URRPoseSensorManager, which locates the nearest actor along Z axis with tag as its pose sensor's reference actor
 

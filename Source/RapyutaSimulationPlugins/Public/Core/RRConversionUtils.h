@@ -89,16 +89,11 @@ public:
     {
         FROSOdometry Output = Input;
 
-        VectorUEToROS(Input.pose_pose_position_x,
-                      Input.pose_pose_position_y,
-                      Input.pose_pose_position_z,
-                      Output.pose_pose_position_x,
-                      Output.pose_pose_position_y,
-                      Output.pose_pose_position_z);
-        Output.pose_pose_orientation = QuatUEToROS(Output.pose_pose_orientation);
+        VectorROSToUE(Input.PosePosePosition, Output.PosePosePosition);
+        Output.PosePoseOrientation = QuatUEToROS(Output.PosePoseOrientation);
 
-        Output.twist_twist_linear = VectorUEToROS(Output.twist_twist_linear);
-        Output.twist_twist_angular = RotationUEToROS(Output.twist_twist_angular);
+        Output.TwistTwistLinear = VectorUEToROS(Output.TwistTwistLinear);
+        Output.TwistTwistAngular = RotationUEToROS(Output.TwistTwistAngular);
 
         return Output;
     }
@@ -118,6 +113,12 @@ public:
 
         return 100.f * Output;
     }
+    
+    FORCEINLINE static void VectorROSToUE(const FVector& Input, FVector& Output)
+    {
+        Output.Set(Input.X * 100.f, -Input.Y * 100.f, Input.Z * 100.f);
+    }
+
     FORCEINLINE static void VectorROSToUE(const double& InputX,
                                           const double& InputY,
                                           const double& InputZ,
@@ -163,21 +164,23 @@ public:
         return Output;
     }
 
+    /**
+     * @brief Convert Odom from ROS system to UE system.
+     * @note pose is cast double to float. it will be resolved in UE5 since FVector uses double as default in UE5
+     * @sa https://docs.unrealengine.com/5.0/en-US/large-world-coordinates-in-unreal-engine-5/#:~:text=Engine%205%2C%20the-,FVector,-casts%20will%20continue
+     * @param Input
+     * @return FROSOdometry
+     */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FROSOdometry OdomROSToUE(const FROSOdometry& Input)
     {
         FROSOdometry Output = Input;
 
-        VectorROSToUE(Input.pose_pose_position_x,
-                      Input.pose_pose_position_y,
-                      Input.pose_pose_position_z,
-                      Output.pose_pose_position_x,
-                      Output.pose_pose_position_y,
-                      Output.pose_pose_position_z);
-        Output.pose_pose_orientation = QuatROSToUE(Output.pose_pose_orientation);
+        VectorROSToUE(Input.PosePosePosition, Output.PosePosePosition);
+        Output.PosePoseOrientation = QuatROSToUE(Output.PosePoseOrientation);
 
-        Output.twist_twist_linear = VectorROSToUE(Output.twist_twist_linear);
-        Output.twist_twist_angular = RotationROSToUE(Output.twist_twist_angular);
+        Output.TwistTwistLinear = VectorROSToUE(Output.TwistTwistLinear);
+        Output.TwistTwistAngular = RotationROSToUE(Output.TwistTwistAngular);
 
         return Output;
     }

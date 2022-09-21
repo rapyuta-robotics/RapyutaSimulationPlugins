@@ -79,6 +79,12 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 
     /**
+     * @brief Allows a component to replicate other subobject on the actor
+     *
+     */
+    virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+
+    /**
      * @brief Set the root offset for #RobotVehicleMoveComponent
      * This will be added to the odometry data published in ros topic /odom
      * It is used, for example, to allow the robot root pose to remain constant even if we move the skeletal mesh root component for
@@ -107,34 +113,50 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetJointsStates(const TMap<FString, float>& InJointsStates);
     /**
-     * @brief Set server linear velocity to #RobotVehicleMoveComponent
+     * @brief Set server position and linear velocity to #RobotVehicleMoveComponent
      * @param InClientTimeStamp
      * @param InClientRobotPosition
      * @param InLinearVel
+@note Not uses RPC since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
      */
-    UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void ServerSetLinearVel(float InClientTimeStamp, const FVector& InClientRobotPosition, const FVector& InLinearVel);
+    UFUNCTION(BlueprintCallable)
+    virtual void SyncServerLinearMovement(float InClientTimeStamp,
+                                          const FTransform& InClientRobotTransform,
+                                          const FVector& InLinearVel);
 
     /**
-     * @brief Set server angular velocity to #RobotVehicleMoveComponent
+     * @brief Set server rotation and angular velocity to #RobotVehicleMoveComponent
      * @param InClientTimeStamp
      * @param InClientRobotRotation
      * @param InAngularVel
+@note Not uses RPC since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
      */
-    UFUNCTION(BlueprintCallable, Server, Reliable)
-    virtual void ServerSetAngularVel(float InClientTimeStamp, const FRotator& InClientRobotRotation, const FVector& InAngularVel);
+    UFUNCTION(BlueprintCallable)
+    virtual void SyncServerAngularMovement(float InClientTimeStamp,
+                                           const FRotator& InClientRobotRotation,
+                                           const FVector& InAngularVel);
 
     /**
-     * @brief Set client linear velocity to #RobotVehicleMoveComponent
+     * @brief Set local linear velocity to #RobotVehicleMoveComponent
+     * @note Not uses RPC since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
      */
-    UFUNCTION(BlueprintCallable, Client, Reliable)
-    virtual void ClientSetLinearVel(const FVector& InLinearVel);
+    UFUNCTION(BlueprintCallable)
+    virtual void SetLocalLinearVel(const FVector& InLinearVel);
 
     /**
-     * @brief Set server angular velocity to #RobotVehicleMoveComponent
+     * @brief Set local angular velocity to #RobotVehicleMoveComponent
+     * @note Not uses RPC since the robot is not always owned by the same
+     * [connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) with the
+     * client's PlayerController.
      */
-    UFUNCTION(BlueprintCallable, Client, Reliable)
-    virtual void ClientSetAngularVel(const FVector& InAngularVel);
+    UFUNCTION(BlueprintCallable)
+    virtual void SetLocalAngularVel(const FVector& InAngularVel);
 
 protected:
     /**

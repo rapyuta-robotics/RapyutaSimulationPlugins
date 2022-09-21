@@ -9,18 +9,21 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 
+// rclUE
+#include "rclcUtilities.h"
+
 void URobotVehicleMovementComponent::BeginPlay()
 {
     Super::BeginPlay();
+
+    GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
+    GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
+
     InitMovementComponent();
 }
 
 void URobotVehicleMovementComponent::Initialize()
 {
-    GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
-    GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
-
-    InitOdom();
 }
 
 void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
@@ -171,16 +174,16 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 
 void URobotVehicleMovementComponent::SetFrameIds(const FString& InFrameId, const FString& InChildFrameId)
 {
-    OdomData.header_frame_id = FrameId = InFrameId;
-    OdomData.child_frame_id = ChildFrameId = InChildFrameId;
+    OdomData.HeaderFrameId = FrameId = InFrameId;
+    OdomData.ChildFrameId = ChildFrameId = InChildFrameId;
 }
 
 // todo separate ROS
 void URobotVehicleMovementComponent::InitOdom()
 {
     AActor* owner = GetOwner();
-    OdomData.header_frame_id = FrameId;
-    OdomData.child_frame_id = ChildFrameId;
+    OdomData.HeaderFrameId = FrameId;
+    OdomData.ChildFrameId = ChildFrameId;
 
     if (OdomSource == EOdomSource::ENCODER)
     {    // odom source = encoder. Odom frame start from robot initial pose
@@ -193,30 +196,30 @@ void URobotVehicleMovementComponent::InitOdom()
         InitialTransform.SetRotation(FQuat::Identity);
     }
 
-    OdomData.pose_pose_position_x = InitialTransform.GetTranslation().X;
-    OdomData.pose_pose_position_y = InitialTransform.GetTranslation().Y;
-    OdomData.pose_pose_position_z = InitialTransform.GetTranslation().Z;
-    OdomData.pose_pose_orientation = InitialTransform.GetRotation();
+    OdomData.PosePosePosition.X = InitialTransform.GetTranslation().X;
+    OdomData.PosePosePosition.Y = InitialTransform.GetTranslation().Y;
+    OdomData.PosePosePosition.Z = InitialTransform.GetTranslation().Z;
+    OdomData.PosePoseOrientation = InitialTransform.GetRotation();
 
     PreviousTransform = InitialTransform;
     PreviousNoisyTransform = InitialTransform;
 
     // todo temporary hardcoded
-    OdomData.pose_covariance.Init(0, 36);
-    OdomData.pose_covariance[0] = 1e-05f;
-    OdomData.pose_covariance[7] = 1e-05f;
-    OdomData.pose_covariance[14] = 1e+12;
-    OdomData.pose_covariance[21] = 1e+12;
-    OdomData.pose_covariance[28] = 1e+12;
-    OdomData.pose_covariance[35] = 1e-03f;
+    OdomData.PoseCovariance.Init(0, 36);
+    OdomData.PoseCovariance[0] = 1e-05f;
+    OdomData.PoseCovariance[7] = 1e-05f;
+    OdomData.PoseCovariance[14] = 1e+12;
+    OdomData.PoseCovariance[21] = 1e+12;
+    OdomData.PoseCovariance[28] = 1e+12;
+    OdomData.PoseCovariance[35] = 1e-03f;
 
-    OdomData.twist_covariance.Init(0, 36);
-    OdomData.twist_covariance[0] = 1e-05f;
-    OdomData.twist_covariance[7] = 1e-05f;
-    OdomData.twist_covariance[14] = 1e+12;
-    OdomData.twist_covariance[21] = 1e+12;
-    OdomData.twist_covariance[28] = 1e+12;
-    OdomData.twist_covariance[35] = 1e-03f;
+    OdomData.TwistCovariance.Init(0, 36);
+    OdomData.TwistCovariance[0] = 1e-05f;
+    OdomData.TwistCovariance[7] = 1e-05f;
+    OdomData.TwistCovariance[14] = 1e+12;
+    OdomData.TwistCovariance[21] = 1e+12;
+    OdomData.TwistCovariance[28] = 1e+12;
+    OdomData.TwistCovariance[35] = 1e-03f;
 
     IsOdomInitialized = true;
 }
@@ -229,10 +232,9 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     }
 
     // time
-    float timeNow = UGameplayStatics::GetTimeSeconds(GetWorld());
-    OdomData.header_stamp_sec = static_cast<int32>(timeNow);
-    uint64 ns = (uint64)(timeNow * 1e+09f);
-    OdomData.header_stamp_nanosec = static_cast<uint32>(ns - (OdomData.header_stamp_sec * 1e+09));
+    auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
+    OdomData.HeaderStampSec = stamp.sec;
+    OdomData.HeaderStampNanosec = stamp.nanosec;
 
     // previous estimated data (with noise)
     FVector previousEstimatedPos = PreviousNoisyTransform.GetTranslation();
@@ -256,16 +258,16 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     PreviousNoisyTransform.SetTranslation(pos);
     PreviousNoisyTransform.SetRotation(rot);
 
-    OdomData.pose_pose_position_x = pos.X + RootOffset.GetTranslation().X;
-    OdomData.pose_pose_position_y = pos.Y + RootOffset.GetTranslation().Y;
-    OdomData.pose_pose_position_z = pos.Z + RootOffset.GetTranslation().Z;
-    OdomData.pose_pose_orientation = rot;
+    OdomData.PosePosePosition.X = pos.X + RootOffset.GetTranslation().X;
+    OdomData.PosePosePosition.Y = pos.Y + RootOffset.GetTranslation().Y;
+    OdomData.PosePosePosition.Z = pos.Z + RootOffset.GetTranslation().Z;
+    OdomData.PosePoseOrientation = rot;
 
-    OdomData.twist_twist_linear = OdomData.pose_pose_orientation.UnrotateVector(pos - previousEstimatedPos) / InDeltaTime;
-    OdomData.twist_twist_angular =
+    OdomData.TwistTwistLinear = OdomData.PosePoseOrientation.UnrotateVector(pos - previousEstimatedPos) / InDeltaTime;
+    OdomData.TwistTwistAngular =
         FMath::DegreesToRadians((rot * previousEstimatedRot.Inverse()).GetNormalized().Euler()) / InDeltaTime;
 
-    OdomData.pose_pose_orientation *= RootOffset.GetRotation();
+    OdomData.PosePoseOrientation *= RootOffset.GetRotation();
 }
 
 void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
@@ -291,8 +293,8 @@ void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
 
 FTransform URobotVehicleMovementComponent::GetOdomTF() const
 {
-    return FTransform(OdomData.pose_pose_orientation,
-                      FVector(OdomData.pose_pose_position_x, OdomData.pose_pose_position_y, OdomData.pose_pose_position_z));
+    return FTransform(OdomData.PosePoseOrientation,
+                      FVector(OdomData.PosePosePosition.X, OdomData.PosePosePosition.Y, OdomData.PosePosePosition.Z));
 }
 
 void URobotVehicleMovementComponent::InitMovementComponent()

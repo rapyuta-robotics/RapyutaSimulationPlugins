@@ -11,6 +11,7 @@
 
 // rclUE
 #include "ROS2Node.h"
+#include "Tools/ROS2Spawnable.h"
 #include "Tools/RRROS2OdomPublisher.h"
 
 #include "RRRobotROS2Interface.generated.h"
@@ -44,9 +45,13 @@ public:
      * @param OutLifetimeProps Output lifetime properties
      */
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
     //! Target ROS2 node of this interface
     UPROPERTY(Transient, Replicated)
     AROS2Node* RobotROS2Node = nullptr;
+
+    UPROPERTY(VisibleAnywhere, Replicated)
+    UROS2Spawnable* ROSSpawnParameters = nullptr;
 
     /**
      * @brief Initialize robot's ROS2 interface
@@ -54,6 +59,13 @@ public:
      * @param InRobot
      */
     virtual void Initialize(ARRBaseRobot* InRobot);
+
+    /**
+     * @brief DeInitialize robot's ROS2 interface
+     *
+     * @param InRobot
+     */
+    virtual void DeInitialize();
 
     /**
      * @brief Spawn ROS2Node and initialize it. This method is mainly used by #ASimulationState to spawn from ROS2 service.

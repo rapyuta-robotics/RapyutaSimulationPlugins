@@ -52,21 +52,21 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdometry& OutOdomData) const
 {
     const URobotVehicleMovementComponent* moveComponent =
         RobotVehicle.IsValid() ? RobotVehicle.Get()->RobotVehicleMoveComponent : nullptr;
-    if (moveComponent && moveComponent->OdomData.IsValid())
+    if (moveComponent)
     {
         
         OutOdomData = URRConversionUtils::OdomUEToROS(moveComponent->OdomData);
         if (bAppendNodeNamespace)
         {
-            OutOdomData.header_frame_id = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.header_frame_id);
-            OutOdomData.child_frame_id = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.child_frame_id);
+            OutOdomData.HeaderFrameId = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.HeaderFrameId);
+            OutOdomData.ChildFrameId = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.ChildFrameId);
         }
         
         if (bPublishOdomTf && TFPublisher)
         {
             TFPublisher->TF = moveComponent->GetOdomTF();
-            TFPublisher->FrameId = OutOdomData.header_frame_id;
-            TFPublisher->ChildFrameId = OutOdomData.child_frame_id;
+            TFPublisher->FrameId = OutOdomData.HeaderFrameId;
+            TFPublisher->ChildFrameId = OutOdomData.ChildFrameId;
         }
         
         return true;

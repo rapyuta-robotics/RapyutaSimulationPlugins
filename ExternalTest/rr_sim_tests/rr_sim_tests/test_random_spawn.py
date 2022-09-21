@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
+import os
 import time
 import random
 import numpy as np
@@ -26,7 +27,8 @@ class ParamsNode(Node):
             ('y_lim', [4.0, -4.0]),
             ('linear_vel_lim', [1.0, -1.0]),
             ('angular_vel_lim', [np.pi*0.5, -np.pi*0.5]),
-            ('robot_name', None)
+            ('robot_name', None),
+            ('service_namespace', '')
         ]
     )
 def main(args=None):
@@ -34,8 +36,8 @@ def main(args=None):
 
     param_node = ParamsNode()
 
-    # robot_models = ['kinematic_burger', 'kinematic_waffle'] #kinematics model
-    robot_models = ['burger', 'waffle'] #physics model
+    robot_models = ['kinematic_burger', 'kinematic_waffle'] #kinematics model
+    # robot_models = ['burger', 'waffle'] #physics model
 
     # parameters
     x_lim = param_node.get_parameter('x_lim').value
@@ -43,15 +45,16 @@ def main(args=None):
     linear_vel_lim = param_node.get_parameter('linear_vel_lim').value
     angular_vel_lim = param_node.get_parameter('angular_vel_lim').value
     robot_name = param_node.get_parameter('robot_name').value
+    service_namespace = param_node.get_parameter('service_namespace').value
 
     # sanity check
     if robot_name is None:
         print('You need to provide robot name with `--ros-args -p robot_name:=<name>`')
         return
 
-    is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0)
-    if is_robot_spawned
-        print(robot_name + 'is already exists.')
+    is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0, service_namespace)
+    if is_robot_spawned:
+        print(robot_name + ' already exists.')
         return
 
     # spawn robot
@@ -60,8 +63,8 @@ def main(args=None):
     reference_frame = ''
     robot_pose = Pose()
 
-    res = True
-    while res:
+    is_robot_spawned = False
+    while not is_robot_spawned:
         q = quaternion_from_euler(0.0, 0.0, random.uniform(-np.pi, np.pi))
         robot_pose.position.x = float(random.uniform(x_lim[0], x_lim[1]))
         robot_pose.position.y = float(random.uniform(y_lim[0], y_lim[1]))
@@ -70,14 +73,13 @@ def main(args=None):
         robot_pose.orientation.y = q[1]
         robot_pose.orientation.z = q[2]
         robot_pose.orientation.w = q[3]
-        is_srv_available = spawn_robot(robot_model, robot_name, robot_namespace, reference_frame, robot_pose)
+        is_srv_available = spawn_robot(robot_model, robot_name, robot_namespace, reference_frame, robot_pose, service_namespace)
         if is_srv_available:
             count = 0
             while count < 20:
                 time.sleep(1)
-                is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0)
+                is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 10.0, service_namespace)
                 if is_robot_spawned:
-                    res = False
                     break
                 count += 1
     
