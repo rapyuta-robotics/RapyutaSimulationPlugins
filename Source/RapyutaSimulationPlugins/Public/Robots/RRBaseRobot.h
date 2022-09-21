@@ -225,7 +225,7 @@ public:
      * @sa [TInlineComponentArray](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/GameFramework/TInlineComponentArray/)
      * @sa [GetComponents](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/GameFramework/AActor/GetComponents/2/)
      */
-    bool InitSensors(AROS2Node* InROS2Node);
+    virtual bool InitSensors(AROS2Node* InROS2Node);
 
     /**
      * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native

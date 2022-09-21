@@ -14,7 +14,6 @@
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Robots/RRRobotVehicleROSController.h"
 #include "Tools/SimulationState.h"
-#include "Drives/RRTricycleDriveComponent.h"
 
 ARRRobotBaseVehicle::ARRRobotBaseVehicle()
 {
@@ -28,14 +27,21 @@ ARRRobotBaseVehicle::ARRRobotBaseVehicle(const FObjectInitializer& ObjectInitial
 
 void ARRRobotBaseVehicle::SetupDefaultVehicle()
 {
-    VehicleMoveComponentClass = URRTricycleDriveComponent::StaticClass();
+    // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
+    // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
+    // classes will automatically get invalidated.
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
+
+    // NOTE: Any custom object class (eg ROS2Interface Class, VehicleMoveComponentClass) that is required to be configurable by
+    // this class' child BP ones & if its object needs to be created before BeginPlay(),
+    // -> The class must be left NULL here, so its object (eg RobotVehicleMoveComponent) is not created by default in
+    // [PostInitializeComponents()]
 }
 
 void ARRRobotBaseVehicle::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-    InitMoveComponent(VehicleMoveComponentClass);
+    InitMoveComponent();
 }
 
 void ARRRobotBaseVehicle::SetRootOffset(const FTransform& InRootOffset)
@@ -46,27 +52,38 @@ void ARRRobotBaseVehicle::SetRootOffset(const FTransform& InRootOffset)
     }
 }
 
-void ARRRobotBaseVehicle::InitMoveComponent(TSubclassOf<URobotVehicleMovementComponent> moveComponentClass)
+bool ARRRobotBaseVehicle::InitMoveComponent()
 {
-    if(!RobotVehicleMoveComponent || RobotVehicleMoveComponent->GetClass() != moveComponentClass)
+    if (VehicleMoveComponentClass)
     {
-        if(RobotVehicleMoveComponent)
-        {
-            RobotVehicleMoveComponent->DestroyComponent();
-        }
-    
-        RobotVehicleMoveComponent = CastChecked<URobotVehicleMovementComponent>(URRUObjectUtils::CreateSelfSubobject(this, moveComponentClass, FString::Printf(TEXT("%sMoveComp"), *moveComponentClass->GetName())));
-        //RobotVehicleMoveComponent = CreateDefaultSubobject<URRSkeletalRobotDiffDriveComponent>(TEXT("URRSkeletalRobotDiffDriveComponent"));
-   
-        RobotVehicleMoveComponent->PrimaryComponentTick.bCanEverTick = true;
-        RobotVehicleMoveComponent->SetComponentTickEnabled(true);
-        RobotVehicleMoveComponent->Initialize();
+        // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
+        RobotVehicleMoveComponent = CastChecked<URobotVehicleMovementComponent>(
+            URRUObjectUtils::CreateSelfSubobject(this, VehicleMoveComponentClass, FString::Printf(TEXT("%sMoveComp"), *GetName())));
         RobotVehicleMoveComponent->RegisterComponent();
-        
-        if(moveComponentClass != URRTricycleDriveComponent::StaticClass())
-        {
-            GetVehicleMovement()->UnregisterComponent();
-        }
+
+        // Configure custom properties (frameids, etc.)
+        ConfigureVehicleMoveComponent();
+
+        // Init
+        RobotVehicleMoveComponent->Initialize();
+
+        // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
+        // to the owner actor's root
+
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s] created from class %s!"),
+               *RobotVehicleMoveComponent->GetName(),
+               *VehicleMoveComponentClass->GetName());
+        return true;
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s] [VehicleMoveComponentClass] has not been configured, probably later in child BP class!"),
+               *GetName());
+        return false;
     }
 }
 
@@ -98,14 +115,6 @@ void ARRRobotBaseVehicle::SetAngularVel(const FVector& InAngularVel)
 {
     SyncServerAngularMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
     SetLocalAngularVel(InAngularVel);
-}
-
-void ARRRobotBaseVehicle::SetJointsStates(const TMap<FString, float>& InJointsStates)
-{
-    if(RobotVehicleMoveComponent)
-    {
-        RobotVehicleMoveComponent->JointsStates = InJointsStates;
-    }
 }
 
 void ARRRobotBaseVehicle::SyncServerLinearMovement(float InClientTimeStamp,

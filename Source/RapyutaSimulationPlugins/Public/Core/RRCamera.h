@@ -11,7 +11,6 @@
 #include "CoreMinimal.h"
 
 // RapyutaSimulationPlugins
-#include "VectorTypes.h"
 #include "Core/RRBaseActor.h"
 #include "Core/RRUObjectUtils.h"
 
@@ -26,23 +25,23 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRCameraProperties
     GENERATED_BODY()
 
     UPROPERTY()
-    FVector2D DistanceRangeInCm = FVector2D(100.0, 300.0);
+    FVector2f DistanceRangeInCm = FVector2f(100.f, 300.f);
 
     UPROPERTY()
-    FVector2D HeightRangeInCm = FVector2D(5.0, 100.0);
+    FVector2f HeightRangeInCm = FVector2f(5.f, 100.f);
 
     UPROPERTY()
-    FVector2D HFoVRangeInDegree = FVector2D(80.0, 120.0);
+    FVector2f HFoVRangeInDegree = FVector2f(80.f, 120.f);
 
     FORCEINLINE void PrintSelf() const
     {
         UE_LOG(LogRapyutaCore, Display, TEXT("CameraProperties:"));
-        UE_LOG(LogRapyutaCore, Display, TEXT("- DistanceRangeInCm: X=%3.3f Y=%3.3f"), DistanceRangeInCm.X, DistanceRangeInCm.Y);
-        verify(FMath::IsWithinInclusive(DistanceRangeInCm.X, 0.0, DistanceRangeInCm.Y));
-        UE_LOG(LogRapyutaCore, Display, TEXT("- HeightRangeInCm: X=%3.3f Y=%3.3f"), HeightRangeInCm.X, HeightRangeInCm.Y);
-        verify(FMath::IsWithinInclusive(HeightRangeInCm.X, 0.0, HeightRangeInCm.Y));
-        UE_LOG(LogRapyutaCore, Display, TEXT("- HFoVRangeInDegree: X=%3.3f Y=%3.3f"), HFoVRangeInDegree.X, HFoVRangeInDegree.Y);
-        verify(FMath::IsWithinInclusive(HFoVRangeInDegree.X, 0.0, HFoVRangeInDegree.Y));
+        UE_LOG(LogRapyutaCore, Display, TEXT("- DistanceRangeInCm: %s"), *DistanceRangeInCm.ToString());
+        verify(FMath::IsWithinInclusive(DistanceRangeInCm.X, 0.f, DistanceRangeInCm.Y));
+        UE_LOG(LogRapyutaCore, Display, TEXT("- HeightRangeInCm: %s"), *HeightRangeInCm.ToString());
+        verify(FMath::IsWithinInclusive(HeightRangeInCm.X, 0.f, HeightRangeInCm.Y));
+        UE_LOG(LogRapyutaCore, Display, TEXT("- HFoVRangeInDegree: %s"), *HFoVRangeInDegree.ToString());
+        verify(FMath::IsWithinInclusive(HFoVRangeInDegree.X, 0.f, HFoVRangeInDegree.Y));
     }
 };
 

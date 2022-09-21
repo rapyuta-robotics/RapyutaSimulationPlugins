@@ -62,13 +62,19 @@ public:
     //
     //! Main robot vehicle move component
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    URobotVehicleMovementComponent* RobotVehicleMoveComponent;
+    URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
     //! Class of the main robot vehicle move component, configurable in child class
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
 
-    void InitMoveComponent(TSubclassOf<URobotVehicleMovementComponent> moveComponentClass);
+    /**
+     * @brief Initialize #RobotVehicleMoveComponent
+     *
+     * @return true
+     * @return false
+     */
+    virtual bool InitMoveComponent();
 
     /**
      * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
@@ -110,8 +116,6 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetAngularVel(const FVector& InAngularVel);
 
-    UFUNCTION(BlueprintCallable)
-    virtual void SetJointsStates(const TMap<FString, float>& InJointsStates);
     /**
      * @brief Set server position and linear velocity to #RobotVehicleMoveComponent
      * @param InClientTimeStamp
@@ -165,4 +169,12 @@ protected:
      * @sa[PostInitializeComponents](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
      */
     virtual void PostInitializeComponents() override;
+    /**
+     * @brief This method is called inside #PostInitializeComponents.
+     * Custom initialization of child class can be done by overwritting this method.
+     *
+     */
+    virtual void ConfigureVehicleMoveComponent()
+    {
+    }
 };

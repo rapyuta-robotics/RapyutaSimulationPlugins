@@ -14,7 +14,6 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
-#include "WheeledVehiclePawn.h"
 
 #include "RRBaseActor.generated.h"
 
@@ -30,7 +29,7 @@ class ARRPlayerController;
  * - Does not necessarily have a USceneComponent, which is only required for spatially wise or mesh-based actors, as Root!
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARRBaseActor : public AWheeledVehiclePawn
+class RAPYUTASIMULATIONPLUGINS_API ARRBaseActor : public APawn
 {
     GENERATED_BODY()
 public:

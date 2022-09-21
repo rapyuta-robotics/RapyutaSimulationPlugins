@@ -15,7 +15,6 @@
 #include "Core/RRGeneralUtils.h"
 #include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotBaseVehicle.h"
-#include "Drives/RobotVehicleMovementComponent.h"
 
 void URRRobotROS2Interface::SetupROSParams()
 {
@@ -227,6 +226,7 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
                    *GetName());
             return;
         }
+
         // Calculate input, ROS to UE conversion.
         TMap<FString, TArray<float>> joints;
         for (auto i = 0; i < jointState.Name.Num(); ++i)
@@ -243,6 +243,7 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
                 }
                 continue;
             }
+
             TArray<float> input;
             if (ERRJointControlType::POSITION == jointControlType)
             {
@@ -261,6 +262,7 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
                        *GetName());
                 continue;
             }
+
             // ROS To UE conversion
             if (Robot->Joints[jointState.Name[i]]->LinearDOF == 1)
             {
@@ -280,8 +282,10 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
                        Robot->Joints[jointState.Name[i]]->LinearDOF,
                        Robot->Joints[jointState.Name[i]]->RotationalDOF);
             }
+
             joints.Emplace(jointState.Name[i], input);
         }
+
         // (Note) In this callback, which could be invoked from a ROS working thread,
         // thus any direct referencing to its member in this GameThread lambda needs to be verified.
         AsyncTask(ENamedThreads::GameThread,

@@ -72,7 +72,7 @@ public:
         return RandomStream.FRandRange(InValueA, InValueB);
     }
 
-    FORCEINLINE static float GetRandomFloatInRange(const FVector2D& InValueRange)
+    FORCEINLINE static float GetRandomFloatInRange(const FVector2f& InValueRange)
     {
         return RandomStream.FRandRange(InValueRange.X, InValueRange.Y);
     }
@@ -132,8 +132,8 @@ public:
     }
 
     static FVector GetRandomSphericalPosition(const FVector& InCenter,
-                                              const FVector2D& InDistanceRange,
-                                              const FVector2D& InHeightRange);
+                                              const FVector2f& InDistanceRange,
+                                              const FVector2f& InHeightRange);
 
     FORCEINLINE static FLinearColor GetRandomColorFromHSV()
     {

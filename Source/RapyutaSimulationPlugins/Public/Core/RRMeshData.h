@@ -22,8 +22,8 @@
 #include "assimp/scene.h"
 
 // RapyutaSimulationPlugins
-#include "RapyutaSimulationPlugins.h"
 #include "Core/RRCoreUtils.h"
+#include "RapyutaSimulationPlugins.h"
 
 #include "RRMeshData.generated.h"
 
@@ -92,8 +92,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
 {
     GENERATED_BODY()
 
-    TArrayFVector Positions;
-    TArrayFVector Normals;
+    UPROPERTY()
+    TArray<FVector3f> Positions;
+    UPROPERTY()
+    TArray<FVector3f> Normals;
 };
 
 /**
@@ -120,7 +122,11 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
     UPROPERTY()
     TArray<FVector> Normals;
 
-    TArrayFVector2 UVs;
+    UPROPERTY()
+    TArray<FVector2f> UV2fs;
+
+    UPROPERTY()
+    TArray<FVector2D> UVs;
 
     UPROPERTY()
     TArray<FProcMeshTangent> ProcTangents;

@@ -10,8 +10,8 @@ void URRMathUtils::InitializeRandomStream()
 }
 
 FVector URRMathUtils::GetRandomSphericalPosition(const FVector& InCenter,
-                                                 const FVector2D& InDistanceRange,
-                                                 const FVector2D& InHeightRange)
+                                                 const FVector2f& InDistanceRange,
+                                                 const FVector2f& InHeightRange)
 {
     // Spherical coordinate (r, θ, φ)
     const float randRadialDistance = URRMathUtils::GetRandomFloatInRange(InDistanceRange);

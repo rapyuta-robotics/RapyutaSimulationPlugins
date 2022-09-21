@@ -31,13 +31,15 @@ void FRRMeshNodeData::PrintSelf() const
            TEXT("- Vertices num: %d\n"
                 "- Triangles num: %d\n"
                 "- Normals num: %d\n"
-                "- UVs num: %d\n"
+                "- UVs num: %d UV2fs %d\n"
                 "- ProcTangents num: %d\n"
                 "- BoneInfluences num: %d\n"),
            Vertices.Num(),
            TriangleIndices.Num(),
            Normals.Num(),
            UVs.Num(),
+           UV2fs.Num(),
            ProcTangents.Num(),
            BoneInfluences.Num());
+    verify(UVs.Num() == UV2fs.Num());
 }

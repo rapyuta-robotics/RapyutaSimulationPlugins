@@ -105,9 +105,10 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
         // [UVs] --
         // UVs have already been flipped with [aiProcess_FlipUVs] flag
         const aiVector3D* textureCoords = InMesh->mTextureCoords[0];
-        outMeshNodeData.UVs.Emplace(textureCoords
-                                        ? FVector2D(static_cast<float>(textureCoords[i].x), static_cast<float>(textureCoords[i].y))
-                                        : FVector2D::ZeroVector);
+        outMeshNodeData.UVs.Emplace(
+            textureCoords ? FVector2D(static_cast<double>(textureCoords[i].x), static_cast<double>(textureCoords[i].y))
+                          : FVector2D::ZeroVector);
+        outMeshNodeData.UV2fs.Emplace(FVector2f(outMeshNodeData.UVs.Last()));
 
         // [Tangents] --
         outMeshNodeData.ProcTangents.Emplace(

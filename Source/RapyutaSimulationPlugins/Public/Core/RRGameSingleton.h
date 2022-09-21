@@ -338,10 +338,15 @@ public:
     // Here we only define specially used materials for some specific purpose!
     static constexpr const TCHAR* MATERIAL_NAME_ASSET_MASTER = TEXT("M_RapyutaAssetMaster");
     static constexpr const TCHAR* MATERIAL_NAME_PROP_MASTER = TEXT("M_RapyutaPropMaster");
+    static constexpr const TCHAR* MATERIAL_NAME_PHYSICS_WHEEL = TEXT("PM_Wheel");
 
     FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName) const
     {
         return GetSimResource<UMaterialInterface>(ERRResourceDataType::UE_MATERIAL, InMaterialName);
+    }
+    FORCEINLINE UPhysicalMaterial* GetPhysicalMaterial(const FString& InPhysicalMaterialName)
+    {
+        return GetSimResource<UPhysicalMaterial>(ERRResourceDataType::UE_MATERIAL, InPhysicalMaterialName);
     }
 
     // TEXTURES --
