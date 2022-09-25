@@ -13,12 +13,12 @@
 
 // rclUE
 #include "ROS2Node.h"
-#include "Srvs/ROS2AttachSrv.h"
-#include "Srvs/ROS2DeleteEntitySrv.h"
-#include "Srvs/ROS2GetEntityStateSrv.h"
-#include "Srvs/ROS2SetEntityStateSrv.h"
-#include "Srvs/ROS2SpawnEntitiesSrv.h"
-#include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Srvs/ROS2Attach.h"
+#include "Srvs/ROS2DeleteEntity.h"
+#include "Srvs/ROS2GetEntityState.h"
+#include "Srvs/ROS2SetEntityState.h"
+#include "Srvs/ROS2SpawnEntities.h"
+#include "Srvs/ROS2SpawnEntity.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
@@ -94,7 +94,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerSetEntityState(const FROSSetEntityStateRequest& InRequest);
+    void ServerSetEntityState(const FROSSetEntityStateReq& InRequest);
 
     /**
      * @brief Callback function of Attach ROS2 service.
@@ -110,7 +110,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerAttach(const FROSAttachRequest& InRequest);
+    void ServerAttach(const FROSAttachReq& InRequest);
 
     /**
      * @brief Callback function of SpawnEntity ROS2 service.
@@ -133,7 +133,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest);
+    void ServerSpawnEntity(const FROSSpawnEntityReq& InRequest);
 
     /**
      * @brief Callback function of DeleteEntity ROS2 service.
@@ -148,7 +148,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerDeleteEntity(const FROSDeleteEntityRequest& InRequest);
+    void ServerDeleteEntity(const FROSDeleteEntityReq& InRequest);
 
     /**
      * @brief RPC call to Server's AddEntity

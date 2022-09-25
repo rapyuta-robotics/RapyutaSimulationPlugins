@@ -8,8 +8,8 @@
 #include "Sensors/RRBaseLidarComponent.h"
 
 // rclUE
-#include "Msgs/ROS2LaserScanMsg.h"
-#include "Msgs/ROS2PointCloud2Msg.h"
+#include "Msgs/ROS2LaserScan.h"
+#include "Msgs/ROS2PointCloud2.h"
 
 URRROS2LaserScanPublisher::URRROS2LaserScanPublisher()
 {

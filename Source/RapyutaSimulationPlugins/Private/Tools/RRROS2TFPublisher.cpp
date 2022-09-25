@@ -3,13 +3,13 @@
 #include "Tools/RRROS2TFPublisher.h"
 
 // rclUE
-#include "Msgs/ROS2TFMessageMsg.h"
+#include "Msgs/ROS2TFMsg.h"
 #include "rclcUtilities.h"
 
 URRROS2TFPublisher::URRROS2TFPublisher()
 {
     PublicationFrequencyHz = 50;
-    MsgClass = UROS2TFMessageMsg::StaticClass();
+    MsgClass = UROS2TFMsgMsg::StaticClass();
 }
 
 void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
@@ -39,22 +39,24 @@ void URRROS2TFPublisher::SetTransform(const FVector& Translation, const FQuat& R
 
 void URRROS2TFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-    TArray<FROSTFMessage> tfarray;
 
-    FROSTFMessage tfdata;
-    
+    FROSTFMsg tf;
+
+    FROSTFStamped tfData;
+
     // time
     auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
-    tfdata.TransformsHeaderStampSec.Add(stamp.sec);
-    tfdata.TransformsHeaderStampNanosec.Add(stamp.nanosec);
+    tfData.Header.Stamp.Sec = stamp.sec;
+    tfData.Header.Stamp.Nanosec = stamp.nanosec;
 
-    tfdata.TransformsHeaderFrameId.Add(FrameId);
-    tfdata.TransformsChildFrameId.Add(ChildFrameId);
+    tfData.Header.FrameId = FrameId;
+    tfData.ChildFrameId = ChildFrameId;
 
     FTransform transfROS = URRConversionUtils::TransformUEToROS(TF);
+    tfData.Transform.Translation = transfROS.GetTranslation();
+    tfData.Transform.Rotation = transfROS.GetRotation();
 
-    tfdata.TransformsTransformTranslation.Add(transfROS.GetTranslation());
-    tfdata.TransformsTransformRotation.Add(transfROS.GetRotation());
+    tf.Transforms.Add(tfData);
 
-    CastChecked<UROS2TFMessageMsg>(InMessage)->SetMsg(tfdata);
+    CastChecked<UROS2TFMsgMsg>(InMessage)->SetMsg(tf);
 }

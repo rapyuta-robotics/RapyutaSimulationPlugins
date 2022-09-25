@@ -6,8 +6,8 @@
 #include "Net/UnrealNetwork.h"
 
 // rclUE
-#include "Msgs/ROS2JointStateMsg.h"
-#include "Msgs/ROS2TwistMsg.h"
+#include "Msgs/ROS2JointState.h"
+#include "Msgs/ROS2Twist.h"
 #include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins

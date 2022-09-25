@@ -11,7 +11,7 @@
 #pragma once
 
 // rclUE
-#include <Msgs/ROS2OdometryMsg.h>
+#include <Msgs/ROS2Odom.h>
 
 #include "RRConversionUtils.generated.h"
 
@@ -85,15 +85,15 @@ public:
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FROSOdometry OdomUEToROS(const FROSOdometry& Input)
+    static FROSOdom OdomUEToROS(const FROSOdom& Input)
     {
-        FROSOdometry Output = Input;
+        FROSOdom Output = Input;
 
-        VectorROSToUE(Input.PosePosePosition, Output.PosePosePosition);
-        Output.PosePoseOrientation = QuatUEToROS(Output.PosePoseOrientation);
+        VectorROSToUE(Input.Pose.Pose.Position, Output.Pose.Pose.Position);
+        Output.Pose.Pose.Orientation = QuatUEToROS(Output.Pose.Pose.Orientation);
 
-        Output.TwistTwistLinear = VectorUEToROS(Output.TwistTwistLinear);
-        Output.TwistTwistAngular = RotationUEToROS(Output.TwistTwistAngular);
+        Output.Twist.Twist.Linear = VectorUEToROS(Output.Twist.Twist.Linear);
+        Output.Twist.Twist.Angular = RotationUEToROS(Output.Twist.Twist.Angular);
 
         return Output;
     }
@@ -169,18 +169,18 @@ public:
      * @note pose is cast double to float. it will be resolved in UE5 since FVector uses double as default in UE5
      * @sa https://docs.unrealengine.com/5.0/en-US/large-world-coordinates-in-unreal-engine-5/#:~:text=Engine%205%2C%20the-,FVector,-casts%20will%20continue
      * @param Input
-     * @return FROSOdometry
+     * @return FROSOdom
      */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FROSOdometry OdomROSToUE(const FROSOdometry& Input)
+    static FROSOdom OdomROSToUE(const FROSOdom& Input)
     {
-        FROSOdometry Output = Input;
+        FROSOdom Output = Input;
 
-        VectorROSToUE(Input.PosePosePosition, Output.PosePosePosition);
-        Output.PosePoseOrientation = QuatROSToUE(Output.PosePoseOrientation);
+        VectorROSToUE(Input.Pose.Pose.Position, Output.Pose.Pose.Position);
+        Output.Pose.Pose.Orientation = QuatROSToUE(Output.Pose.Pose.Orientation);
 
-        Output.TwistTwistLinear = VectorROSToUE(Output.TwistTwistLinear);
-        Output.TwistTwistAngular = RotationROSToUE(Output.TwistTwistAngular);
+        Output.Twist.Twist.Linear = VectorROSToUE(Output.Twist.Twist.Linear);
+        Output.Twist.Twist.Angular = RotationROSToUE(Output.Twist.Twist.Angular);
 
         return Output;
     }

@@ -6,10 +6,10 @@
 #include "Sensors/RRROS2CameraComponent.h"
 
 // rclUE
-#include "Msgs/ROS2ImageMsg.h"
+#include "Msgs/ROS2Img.h"
 
 URRROS2ImagePublisher::URRROS2ImagePublisher()
 {
    TopicName = TEXT("raw_image");
-   MsgClass = UROS2ImageMsg::StaticClass();
+   MsgClass = UROS2ImgMsg::StaticClass();
 }

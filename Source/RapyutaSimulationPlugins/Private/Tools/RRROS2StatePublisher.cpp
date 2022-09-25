@@ -46,12 +46,12 @@ void URRROS2StatePublisher::AddEntityToPublish(const FString& InName,
 {
     FROSEntityState BodyState;
     BodyState.Name = InName;
-    BodyState.PosePosition.X = InPosition.X;
-    BodyState.PosePosition.Y = -InPosition.Y;
-    BodyState.PosePosition.Z = InPosition.Z;
-    BodyState.PoseOrientation = InOrientation.Quaternion();
-    BodyState.PoseOrientation.X = -BodyState.PoseOrientation.X;
-    BodyState.PoseOrientation.Z = -BodyState.PoseOrientation.Z;
+    BodyState.Pose.Position.X = InPosition.X;
+    BodyState.Pose.Position.Y = -InPosition.Y;
+    BodyState.Pose.Position.Z = InPosition.Z;
+    BodyState.Pose.Orientation = InOrientation.Quaternion();
+    BodyState.Pose.Orientation.X = -BodyState.Pose.Orientation.X;
+    BodyState.Pose.Orientation.Z = -BodyState.Pose.Orientation.Z;
     BodyState.ReferenceFrame = InRefFrame;
     StatesToPublish.Emplace(MoveTemp(BodyState));
 }

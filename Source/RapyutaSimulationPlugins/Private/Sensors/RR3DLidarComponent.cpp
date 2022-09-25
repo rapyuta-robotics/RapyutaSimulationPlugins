@@ -279,39 +279,32 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
 
     // time
     auto stamp = UROS2Utils::FloatToROSStamp(TimeOfLastScan);
-    retValue.HeaderStampSec = stamp.sec;
-    retValue.HeaderStampNanosec = stamp.nanosec;
+    retValue.Header.Stamp.Sec = stamp.sec;
+    retValue.Header.Stamp.Nanosec = stamp.nanosec;
 
-    retValue.HeaderFrameId = FrameId;
+    retValue.Header.FrameId = FrameId;
 
     retValue.Height = NChannelsPerScan;
     retValue.Width = NSamplesPerScan;
 
-    retValue.FieldsName.Add("x");
-    retValue.FieldsName.Add("y");
-    retValue.FieldsName.Add("z");
-    retValue.FieldsName.Add("distance");
-    retValue.FieldsName.Add("intensity");
+    TArray<FString> fields = {
+        TEXT("x"),
+        TEXT("y"),
+        TEXT("z"),
+        TEXT("distance"),
+        TEXT("intensity")
+    };
 
-    // what's the measure? bytes?
-    retValue.FieldsOffset.Add(0);
-    retValue.FieldsOffset.Add(4);
-    retValue.FieldsOffset.Add(8);
-    retValue.FieldsOffset.Add(12);
-    retValue.FieldsOffset.Add(16);
+    for(int32 Index = 0; Index != fields.Num(); ++Index)
+    {
+        FROSPointField f;
+        f.Name = fields[Index];
+        f.Offset = Index * 4;
+        f.Datatype = 7;
+        f.Count = 1;
+        retValue.Fields.Add(f);
+    }
 
-    // 7: float
-    retValue.FieldsDatatype.Add(7);
-    retValue.FieldsDatatype.Add(7);
-    retValue.FieldsDatatype.Add(7);
-    retValue.FieldsDatatype.Add(7);
-    retValue.FieldsDatatype.Add(7);
-
-    retValue.FieldsCount.Add(1);
-    retValue.FieldsCount.Add(1);
-    retValue.FieldsCount.Add(1);
-    retValue.FieldsCount.Add(1);
-    retValue.FieldsCount.Add(1);
 
     retValue.bIsBigendian = false;
 

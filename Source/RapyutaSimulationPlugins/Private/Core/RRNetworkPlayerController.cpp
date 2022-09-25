@@ -8,8 +8,8 @@
 #include "Net/UnrealNetwork.h"
 
 // rclUE
-#include "Msgs/ROS2ClockMsg.h"
-#include "Msgs/ROS2TwistMsg.h"
+#include "Msgs/ROS2Clock.h"
+#include "Msgs/ROS2Twist.h"
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
