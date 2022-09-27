@@ -58,6 +58,18 @@ public:
         return EnumPtr->GetDisplayNameTextByIndex(static_cast<int32>(InEnumValue)).ToString();    // Or GetNameByValue
     }
 
+    template<typename TEnum>
+    FORCEINLINE static FString GetEnumNameByValue(const FString& InTypeName, TEnum InEnumValue)
+    {
+        const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, *InTypeName, true);
+        if (!EnumPtr)
+        {
+            return "Invalid";
+        }
+
+        return EnumPtr->GetNameByValue(static_cast<int32>(InEnumValue)).ToString();    // Or GetNameByValue
+    }
+
     FORCEINLINE static int8 GetEnumValueFromString(const FString& InTypeName, const FString& InEnumStringValue)
     {
         UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, *InTypeName, true);

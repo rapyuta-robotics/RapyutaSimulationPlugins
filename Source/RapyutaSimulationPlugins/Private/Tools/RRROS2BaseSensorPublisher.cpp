@@ -13,8 +13,8 @@ void URRROS2BaseSensorPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
     if (nullptr != DataSourceComponent && DataSourceComponent->bIsValid)
     {
-        DataSourceComponent->SetROS2Msg(InMessage);
         StartPublishTimer();
+        DataSourceComponent->SetROS2Msg(InMessage);
     }
     else
     {

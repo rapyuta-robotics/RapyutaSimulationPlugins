@@ -39,7 +39,7 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     networkPlayerController->ROS2SimStateClient->ServerSimState = MainSimState;
     networkPlayerController->ServerSimState = MainSimState;
     UE_LOG(LogRapyutaCore,
-           Warning,
+           Log,
            TEXT("ARRNetworkGameMode::PostLogin Logged-in PC[%d] Name=%s, Id=%d"),
            NetworkClientControllerList.Num(),
            *networkPlayerController->GetName(),

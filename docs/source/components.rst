@@ -14,9 +14,11 @@ Drives
 
 .. image:: doxygen_generated/html/d9/d8d/class_u_differential_drive_component__coll__graph.png
 
+.. image:: doxygen_generated/html/db/dc5/class_u_r_r_joint_component__inherit__graph.png
+
 **main C++ classes**
 
-- `URobotVehicleMovementComponent <doxygen_generated/html/d7/d01/class_u_robot_vehicle_movement_component.html>`_:  Base Robot vehicle movement class which is used as part of #ARobotVehicle. Move robot without considering physics and publish odometry. This supports adapting the robot pose to floor complex surfaces, and following moving platforms such as elevators.
+- `URobotVehicleMovementComponent <doxygen_generated/html/d7/d01/class_u_robot_vehicle_movement_component.html>`_:  Base Robot vehicle movement class which is used as part of `ARRRobotBaseVehicle <doxygen_generated/html/d9/d52/class_a_r_r_robot_base_vehicle.html>`_. Move robot without considering physics and publish odometry. This supports adapting the robot pose to floor complex surfaces, and following moving platforms such as elevators.
 - `UDifferentialDriveComponent <doxygen_generated/html/db/df5/class_u_differential_drive_component.html>`_: Simulate differential drive with 2 wheels considering physics.
 - `URRJointComponent <doxygen_generated/html/de/dfa/class_u_r_r_joint_component.html>`_: Base Joint class which is used as part of #ARobotVehicle.
 - `URRKinematicJointComponent <doxygen_generated/html/d2/d69/class_u_r_r_kinematic_joint_component.html>`_: Kinematics Joint Component which has pose and velocity control interface.
@@ -47,22 +49,24 @@ Sensors
 Robots
 ------
 
-| Robots has robot vehicle class and controller class.
-| Custom robot class should be created as child class of *RobotVehicle* or *RobotBaseVehicle* class. 
-| *RRRobotVehicleROSController* create ROS2Node and control all drive and sensor components in the *RobotVehicle* class.
+| Robots has robot vehicle class, ROS2 interface class and controller class.
+| Custom robot class should be created by creating child classes of those classes.
+| RobotVehicle has movement component, joints, and sensors.
+| RobotROS2Interface has ROS2 subscribers and publsihers and control RobotVehicle from ROS2Interface.
+| Robot controller controls start/stop ROS2Node. 
 
 **main C++ classes**
 
-- `ARobotBaseVehicle <doxygen_generated/html/df/dbc/class_a_robot_base_vehicle.html>`_: Base RobotBaseVehicle class. Most robot classes should inherit from this class. Has URobotVehicleMovementComponent and initializes sensors.
+- `ARRRobotBaseVehicle <doxygen_generated/html/d9/d52/class_a_r_r_robot_base_vehicle.html>`_: Base RobotBaseVehicle class. Most robot classes should inherit from this class. Has URobotVehicleMovementComponent and initializes sensors.
 - `ARobotVehicle <doxygen_generated/html/d7/d80/class_a_robot_vehicle.html>`_: RobotVehicle class that inherits from RobotBaseVehicle and uses a Skeletal Mesh as root component. Other robot class can inherit from this class.
-- `ARRRobotVehicleROSController <doxygen_generated/html/d6/d83/class_a_r_r_robot_vehicle_r_o_s_controller.html>`_: Base Robot ROS controller class. Other robot controller class should inherit from this class. This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
+- `URRRobotROS2Interface <doxygen_generated/html/d6/d64/class_u_r_r_robot_r_o_s2_interface.html>`_  Class provides ROS2Interfaces.  This class has `AROS2Node <https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html>`_ and provide ROS2 interfaces to control robot such as Twist msg.
+- `ARRRobotVehicleROSController <doxygen_generated/html/d6/d83/class_a_r_r_robot_vehicle_r_o_s_controller.html>`_: Base Robot ROS controller class. Other robot controller class should inherit from this class. 
 - `ATurtlebotBurger <doxygen_generated/html/de/d76/class_a_turtlebot_burger.html>`_: Example of ARobotVehicle
-- `ATurtlebotROSController <doxygen_generated/html/dd/d8f/class_a_turtlebot_r_o_s_controller.html>`_: Example of ARRRobotVehicleROSController
+- `URRTurtlebotROS2Interface <doxygen_generated/html/d6/d7d/class_u_r_r_turtlebot_r_o_s2_interface.html>`_: Example of URRRobotROS2Interface
 
 **main Blueprint classes classes**
 
 - Turtlebot3: example of mobile robot.
-    - BP_TurtlebotROSController.uasset: inherit from C++ ARRRobotVehicleROSController. Example of construct robot controller with Blueprint.  
     - Models: Static and skeletal meshes and materials.
     - Physics: physics model with UDifferentialDriveComponent
         - BP_TurtlebotBurger: inherit from C++ ATurtlebotBurger and set static meshes and parameters.
@@ -91,13 +95,17 @@ Core
 
 | Core has base classes which are directly or indirectly used by other components in RapyutaSimulationPlugins Plugins.
 | Core also has util classes as well. 
+**example of class relations**
+
+.. image:: doxygen_generated/html/de/d5e/class_a_r_r_r_o_s2_game_mode__coll__graph.png
 
 **main C++ classes(todo)**
 
 - `ARRBaseActor <doxygen_generated/html/d9/d3d/class_a_r_r_base_actor.html>`_: Base actor class for all Rapyuta Sim actors
 - `URRActorCommon <doxygen_generated/html/df/d29/class_u_r_r_actor_common.html>`_: todo
 - Game objects
-    - `ARRGameMode <doxygen_generated/html/d1/dbb/class_a_r_r_game_mode.html>`_: GameMode with specific setting, asset loading and ROS2 interface via ClockPublisher and ASimulationState.
+    - `ARRROS2GameMode <doxygen_generated/html/dc/dfa/class_a_r_r_r_o_s2_game_mode.html>`_: Basic GameMode which provides basic ROS2 interfaces such as clock publisher and spawn services.
+    - `ARRGameMode <doxygen_generated/html/d1/dbb/class_a_r_r_game_mode.html>`_: GameMode with specific setting, asset loading.
     - `ARRGameState <doxygen_generated/html/d5/d01/class_a_r_r_game_state.html>`_: todo
     - `URRGameInstance <doxygen_generated/html/d1/d8e/class_u_r_r_game_instance.html>`_: This is a globally accessible instanced UObject that can store run-time data to be commonly accessed between levels and Scene instances.
     - `URRGameSingleton <doxygen_generated/html/d8/def/class_u_r_r_game_singleton.html>`_: todo
@@ -111,7 +119,9 @@ Core
     - `URRCoreUtils <doxygen_generated/html/de/db6/class_u_r_r_core_utils.html>`_: todo
     - `URRConversionUtils <doxygen_generated/html/d4/dc1/class_u_r_r_conversion_utils.html>`_: Data Conversion between ROS and UE. m <-> cm and Left handed <-> Right handed.
     - `URRGeneralUtils <doxygen_generated/html/d5/d98/class_u_r_r_general_utils.html>`_: Other utils which do not belong to other utils.
-
+- Network(Pleae chec :doc:`distributed_simulation`)
+    - `ARRNetworkGameMode <doxygen_generated/html/d0/d30/class_a_r_r_network_game_mode.html>`_: Provides feature to post login procesure for ARRNetworkPlayerController.
+    - `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_: provides functionality for client-server such as sync clock, RPC call to sync robot movement and create ROS2 Node in the each clients.
 Tools
 -----
 
@@ -120,7 +130,8 @@ Tools
 
 **main C++ classes**
 
-- `ASimulationState <doxygen_generated/html/d2/dde/class_a_simulation_state.html>`_: Provide spawn/delete/attach/set/get ROS2 interfaces. Typically this class is initialized from GameMode.
+- `URRROS2SimulationstateClient <doxygen_generated/html/d7/d6a/class_u_r_r_r_o_s2_simulation_state_client.html>`_: Provide spawn/delete/attach/set/get ROS2 interfaces. Typically this class is initialized from GameMode.
+- `ASimulationState <doxygen_generated/html/d2/dde/class_a_simulation_state.html>`_: Has implementation of spawn/delete/attach/set/get ROS2 interfaces. Communicate with URRROS2SimulationstateClient to execute manipulation.
 - `URRROS2ClockPublisher <doxygen_generated/html/d5/dc2/class_u_r_r_r_o_s2_clock_publisher.html>`_: Publish /clock topic. Typically this class is initialized from GameMode.
 - `OccupancyMapGenerator <doxygen_generated/html/d2/dde/class_a_occupancy_map_generator.html>`_: Generate 2D occupancy map for navigation/localization.
 - `URRROS2BaseSensorPublisher <doxygen_generated/html/d5/d69/class_u_r_r_r_o_s2_base_sensor_publisher.html>`_: Base Sensor Publisher class. Other sensor publisher class should inherit from this class.
