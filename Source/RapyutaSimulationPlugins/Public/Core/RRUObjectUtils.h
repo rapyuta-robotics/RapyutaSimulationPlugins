@@ -593,5 +593,6 @@ public:
                                                                     const FString& InMaterialInterfaceName);
     static UMaterialInstanceDynamic* GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex = 0);
     static bool ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo);
+    static void ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial, const FRRMaterialProperty& InMaterialInfo);
     static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);
 };

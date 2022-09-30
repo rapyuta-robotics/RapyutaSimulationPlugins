@@ -12,18 +12,18 @@
 // rclUE
 #include "rclcUtilities.h"
 
-void URobotVehicleMovementComponent::BeginPlay()
+void URobotVehicleMovementComponent::Initialize()
 {
-    Super::BeginPlay();
-
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 
-    InitMovementComponent();
+    InitData();
 }
 
-void URobotVehicleMovementComponent::Initialize()
+void URobotVehicleMovementComponent::BeginPlay()
 {
+    Super::BeginPlay();
+    Initialize();
 }
 
 void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
@@ -219,12 +219,12 @@ void URobotVehicleMovementComponent::InitOdom()
     OdomData.TwistCovariance[28] = 1e+12;
     OdomData.TwistCovariance[35] = 1e-03f;
 
-    IsOdomInitialized = true;
+    bIsOdomInitialized = true;
 }
 
 void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
 {
-    if (!IsOdomInitialized)
+    if (!bIsOdomInitialized)
     {
         InitOdom();
     }
@@ -293,32 +293,29 @@ FTransform URobotVehicleMovementComponent::GetOdomTF() const
                       FVector(OdomData.PosePosePosition.X, OdomData.PosePosePosition.Y, OdomData.PosePosePosition.Z));
 }
 
-void URobotVehicleMovementComponent::InitMovementComponent()
+void URobotVehicleMovementComponent::InitData()
 {
     InitOdom();
 
+    AActor* owner = GetOwner();
     ContactPoints.Empty();
-    TArray<UActorComponent*> actorContactPoints = PawnOwner->GetComponentsByTag(USceneComponent::StaticClass(), "ContactPoint");
-    for (auto acp : actorContactPoints)
+    TArray<UActorComponent*> actorContactPoints = owner->GetComponentsByTag(USceneComponent::StaticClass(), TEXT("ContactPoint"));
+    for (const auto& acp : actorContactPoints)
     {
-        USceneComponent* scp = Cast<USceneComponent>(acp);
-        ContactPoints.Add(scp);
+        ContactPoints.Add(Cast<USceneComponent>(acp));
     }
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("URobotVehicleMovementComponent::InitMovementComponent - Nb Contact Points : %d"),
-           ContactPoints.Num());
+    UE_LOG(LogRapyutaCore, Warning, TEXT("URobotVehicleMovementComponent::InitData - Nb Contact Points : %d"), ContactPoints.Num());
 
     // Compute the starting distance between the robot root and the floor
     // We consider that the robot is on a horizontal floor at the beginning
-    FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
+    FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, owner);
     traceParams.bReturnPhysicalMaterial = true;
     traceParams.bTraceComplex = true;
     traceParams.bReturnFaceIndex = true;
-    traceParams.AddIgnoredActor(PawnOwner);
+    traceParams.AddIgnoredActor(owner);
 
-    FVector startPos = PawnOwner->GetActorLocation() + FVector(0.f, 0.f, 10.f);
-    FVector endPos = PawnOwner->GetActorLocation() - FVector(0.f, 0.f, 50.f);
+    FVector startPos = owner->GetActorLocation() + FVector(0.f, 0.f, 10.f);
+    FVector endPos = owner->GetActorLocation() - FVector(0.f, 0.f, 50.f);
     FHitResult hitResult;
     bool bIsFloorHit = GetWorld()->LineTraceSingleByChannel(hitResult,
                                                             startPos,
@@ -330,10 +327,8 @@ void URobotVehicleMovementComponent::InitMovementComponent()
     {
         MinDistanceToFloor = hitResult.Distance;
     }
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("URobotVehicleMovementComponent::InitMovementComponent - Min Distance To Floor = %f"),
-           MinDistanceToFloor);
+    UE_LOG(
+        LogRapyutaCore, Warning, TEXT("URobotVehicleMovementComponent::InitData - Min Distance To Floor = %f"), MinDistanceToFloor);
 }
 
 void URobotVehicleMovementComponent::SetMovingPlatform(AActor* InPlatform)

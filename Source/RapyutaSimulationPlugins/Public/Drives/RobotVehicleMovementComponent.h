@@ -146,7 +146,7 @@ public:
      *
      */
     UFUNCTION(BlueprintCallable)
-    virtual void InitMovementComponent();
+    virtual void InitData();
 
     UFUNCTION(BlueprintCallable)
     void SetMovingPlatform(AActor* platform);
@@ -204,7 +204,8 @@ protected:
      */
     virtual void UpdateOdom(float InDeltaTime);
 
-    bool IsOdomInitialized = false;
+    UPROPERTY(VisibleAnywhere)
+    bool bIsOdomInitialized = false;
 
     UPROPERTY()
     FTransform PreviousTransform = FTransform::Identity;

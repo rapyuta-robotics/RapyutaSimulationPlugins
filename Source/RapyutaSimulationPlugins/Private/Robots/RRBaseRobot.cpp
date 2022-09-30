@@ -255,6 +255,7 @@ void ARRBaseRobot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ARRBaseRobot, ROS2InterfaceClass);
     DOREPLIFETIME(ARRBaseRobot, ROSSpawnParameters);
     DOREPLIFETIME(ARRBaseRobot, bStartStopROS2Interface);
+    DOREPLIFETIME(ARRBaseRobot, NetworkAuthorityType);
 }
 
 bool ARRBaseRobot::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)

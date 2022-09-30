@@ -62,7 +62,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 {
     // need to add noise!
 
-    if (!IsOdomInitialized)
+    if (!bIsOdomInitialized)
     {
         InitOdom();
         PoseEncoderX = 0;
@@ -74,7 +74,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
     OdomData.HeaderStampSec = stamp.sec;
     OdomData.HeaderStampNanosec = stamp.nanosec;
-    
+
     // vl and vr as computed here is ok for kinematics
     // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is
     // wheel rotations per unit time [rad/s]) together with the wheel radius or perimeter, the displacement can be computed:
