@@ -36,6 +36,10 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
     DesiredRotation = oldRotation * deltaRotation;
     DesiredMovement = (oldRotation * position);
 
+    // DEBUG ...
+    bAdaptToSurfaceBelow = false;
+    // ...DEBUG
+
     // if Robot is on a moving platform, add the platform motion
     if (MovingPlatform != nullptr && bAdaptToSurfaceBelow)
     {
@@ -252,6 +256,11 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     PreviousTransform.SetRotation(rot);
     rot = noiseRot.Quaternion() * previousEstimatedRot * previousRot.Inverse() * rot;
     rot.Normalize();
+
+    // DEBUG ...
+    pos = owner->GetActorLocation() - InitialTransform.GetTranslation();
+    rot = owner->GetActorQuat() * InitialTransform.GetRotation().Inverse();
+    // ... DEBUG
 
     PreviousNoisyTransform.SetTranslation(pos);
     PreviousNoisyTransform.SetRotation(rot);
