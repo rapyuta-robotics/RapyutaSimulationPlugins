@@ -230,9 +230,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     }
 
     // time
-    auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
-    OdomData.Header.Stamp.Sec = stamp.sec;
-    OdomData.Header.Stamp.Nanosec = stamp.nanosec;
+    OdomData.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
 
     // previous estimated data (with noise)
     FVector previousEstimatedPos = PreviousNoisyTransform.GetTranslation();

@@ -280,9 +280,7 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
     FROSLaserScan retValue;
 
     // time
-    auto stamp = UROS2Utils::FloatToROSStamp(TimeOfLastScan);
-    retValue.Header.Stamp.Sec = stamp.sec;
-    retValue.Header.Stamp.Nanosec = stamp.nanosec;
+    retValue.Header.Stamp = URRConversionUtils::FloatToROSStamp(TimeOfLastScan);
 
     retValue.Header.FrameId = FrameId;
 

@@ -45,16 +45,11 @@ void URRROS2TFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
     FROSTFStamped tfData;
 
     // time
-    auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
-    tfData.Header.Stamp.Sec = stamp.sec;
-    tfData.Header.Stamp.Nanosec = stamp.nanosec;
-
+    tfData.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
     tfData.Header.FrameId = FrameId;
     tfData.ChildFrameId = ChildFrameId;
 
-    FTransform transfROS = URRConversionUtils::TransformUEToROS(TF);
-    tfData.Transform.Translation = transfROS.GetTranslation();
-    tfData.Transform.Rotation = transfROS.GetRotation();
+    tfData.Transform = URRConversionUtils::TransformUEToROS(TF);
 
     tf.Transforms.Add(tfData);
 

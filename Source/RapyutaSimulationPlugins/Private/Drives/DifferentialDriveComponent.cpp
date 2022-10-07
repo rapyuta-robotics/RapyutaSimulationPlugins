@@ -71,9 +71,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     }
 
     // time
-    auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
-    OdomData.Header.Stamp.Sec = stamp.sec;
-    OdomData.Header.Stamp.Nanosec = stamp.nanosec;
+    OdomData.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
     
     // vl and vr as computed here is ok for kinematics
     // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is

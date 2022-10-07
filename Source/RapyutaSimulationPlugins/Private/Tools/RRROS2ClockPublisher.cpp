@@ -24,11 +24,9 @@ void URRROS2ClockPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
     auto* gameState = GetWorld()->GetGameState();
     if (gameState)
     {
-        auto stamp = UROS2Utils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
 
         FROSClock msg;
-        msg.Clock.Sec = stamp.sec;
-        msg.Clock.Nanosec = stamp.nanosec;
+        msg.Clock = URRConversionUtils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
         CastChecked<UROS2ClockMsg>(InMessage)->SetMsg(msg);
     }
 }

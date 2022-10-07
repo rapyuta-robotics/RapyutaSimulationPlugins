@@ -12,6 +12,7 @@
 
 // rclUE
 #include <Msgs/ROS2Odom.h>
+#include <Msgs/ROS2Time.h>
 
 #include "RRConversionUtils.generated.h"
 
@@ -183,5 +184,25 @@ public:
         Output.Twist.Twist.Angular = RotationROSToUE(Output.Twist.Twist.Angular);
 
         return Output;
+    }
+
+    // time to ROS stamp
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FROSTime FloatToROSStamp(const float InTimeSec)
+    {
+        FROSTime stamp;
+        stamp.Sec = static_cast<int32>(InTimeSec);
+        stamp.Nanosec = uint32((InTimeSec - stamp.Sec) * 1e+09f);
+        return stamp;
+    }
+
+    static FROSTime GetCurrentROS2Time(const UObject* InContextObject)
+    {
+        return FloatToROSStamp(UGameplayStatics::GetTimeSeconds(InContextObject->GetWorld()));
+    }
+
+    static float ROSStampToFloat(const FROSTime& InTimeStamp)
+    {
+        return InTimeStamp.Sec + InTimeStamp.Nanosec * 1e-09f;
     }
 };
