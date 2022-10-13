@@ -194,9 +194,7 @@ void URobotVehicleMovementComponent::InitOdom()
         InitialTransform.SetRotation(FQuat::Identity);
     }
 
-    OdomData.Pose.Pose.Position.X = InitialTransform.GetTranslation().X;
-    OdomData.Pose.Pose.Position.Y = InitialTransform.GetTranslation().Y;
-    OdomData.Pose.Pose.Position.Z = InitialTransform.GetTranslation().Z;
+    OdomData.Pose.Pose.Position = InitialTransform.GetTranslation()
     OdomData.Pose.Pose.Orientation = InitialTransform.GetRotation();
 
     PreviousTransform = InitialTransform;
