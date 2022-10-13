@@ -191,9 +191,7 @@ bool ASimulationState::ServerCheckSetEntityStateRequest(const FROSSetEntityState
 {
     if (PrevSetEntityStateRequest.State.Name == InRequest.State.Name &&
         PrevSetEntityStateRequest.State.ReferenceFrame == InRequest.State.ReferenceFrame &&
-        PrevSetEntityStateRequest.State.Pose.Position.X == InRequest.State.Pose.Position.X &&
-        PrevSetEntityStateRequest.State.Pose.Position.Y == InRequest.State.Pose.Position.Y &&
-        PrevSetEntityStateRequest.State.Pose.Position.Z == InRequest.State.Pose.Position.Z &&
+        PrevSetEntityStateRequest.State.Pose.Position == InRequest.State.Pose.Position &&
         PrevSetEntityStateRequest.State.Pose.Orientation == InRequest.State.Pose.Orientation)
     {
         return false;
