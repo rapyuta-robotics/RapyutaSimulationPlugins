@@ -213,8 +213,7 @@ void ASimulationState::ServerSetEntityState(const FROSSetEntityStateReq& InReque
 
     if (ServerCheckSetEntityStateRequest(InRequest))
     {
-        FVector pos(InRequest.State.Pose.Position.X, InRequest.State.Pose.Position.Y, InRequest.State.Pose.Position.Z);
-        FTransform relativeTransf(InRequest.State.Pose.Orientation, pos);
+        FTransform relativeTransf(InRequest.State.Pose.Orientation, InRequest.State.Pose.Position);
         relativeTransf = URRConversionUtils::TransformROSToUE(relativeTransf);
         FTransform worldTransf;
         URRGeneralUtils::GetWorldTransform(
