@@ -77,9 +77,7 @@ void URRROS2SkeletalMeshStatePublisher::UpdateMessage(UROS2GenericMsg* InMessage
     {
         const FQuat mapInverseQuat = Robot->Map->GetActorQuat().Inverse();
         const FVector mapPos = 0.01f * mapInverseQuat.RotateVector(robotLocation - Robot->Map->GetActorLocation());
-        data.Pose.Position.X = mapPos.X;
-        data.Pose.Position.Y = mapPos.Y;
-        data.Pose.Position.Z = mapPos.Z;
+        data.Pose.Position = mapPos;
         data.Pose.Orientation = robotRotation * mapInverseQuat;
     }
     data.Pose.Position.Y = -data.Pose.Position.Y;
