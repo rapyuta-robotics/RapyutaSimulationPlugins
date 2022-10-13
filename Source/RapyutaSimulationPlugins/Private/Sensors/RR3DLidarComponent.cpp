@@ -285,7 +285,7 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
     retValue.Height = NChannelsPerScan;
     retValue.Width = NSamplesPerScan;
 
-    TArray<FString> fields = {
+    static TArray<const TCHAR*> FIELDS = {
         TEXT("x"),
         TEXT("y"),
         TEXT("z"),
