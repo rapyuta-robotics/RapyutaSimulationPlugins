@@ -300,9 +300,7 @@ bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityReq& InReque
 
     if (PrevSpawnEntityRequest.Xml == InRequest.Xml && PrevSpawnEntityRequest.RobotNamespace == InRequest.RobotNamespace &&
         PrevSpawnEntityRequest.State.Name == InRequest.State.Name &&
-        PrevSpawnEntityRequest.State.Pose.Position.X == InRequest.State.Pose.Position.X &&
-        PrevSpawnEntityRequest.State.Pose.Position.Y == InRequest.State.Pose.Position.Y &&
-        PrevSpawnEntityRequest.State.Pose.Position.Z == InRequest.State.Pose.Position.Z &&
+        PrevSpawnEntityRequest.State.Pose.Position == InRequest.State.Pose.Position &&
         PrevSpawnEntityRequest.State.Pose.Orientation == InRequest.State.Pose.Orientation &&
         PrevSpawnEntityRequest.State.ReferenceFrame == InRequest.State.ReferenceFrame)
     {
