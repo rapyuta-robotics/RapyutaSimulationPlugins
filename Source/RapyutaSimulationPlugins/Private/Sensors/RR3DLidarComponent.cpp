@@ -293,10 +293,10 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
         TEXT("intensity")
     };
 
-    for(int32 Index = 0; Index != fields.Num(); ++Index)
+    for(int32 Index = 0; Index != FIELDS.Num(); ++Index)
     {
         FROSPointField f;
-        f.Name = fields[Index];
+        f.Name = FIELDS[Index];
         f.Offset = Index * 4;
         f.Datatype = 7;
         f.Count = 1;

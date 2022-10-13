@@ -51,7 +51,7 @@ void URRROS2TFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 
     tfData.Transform = URRConversionUtils::TransformUEToROS(TF);
 
-    tf.Transforms.Emplace(MoveTemp(tfData))
+    tf.Transforms.Emplace(MoveTemp(tfData));
 
     CastChecked<UROS2TFMsgMsg>(InMessage)->SetMsg(tf);
 }

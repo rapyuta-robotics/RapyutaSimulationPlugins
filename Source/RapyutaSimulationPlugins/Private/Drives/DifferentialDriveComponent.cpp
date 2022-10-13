@@ -111,24 +111,19 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     OdomData.Pose.Pose.Position.Y = PoseEncoderY;
     OdomData.Pose.Pose.Position.Z = 0;
 
-    OdomData.Pose.Pose.Orientation.X = qt.X;
-    OdomData.Pose.Pose.Orientation.Y = qt.Y;
-    OdomData.Pose.Pose.Orientation.Z = qt.Z;
-    OdomData.Pose.Pose.Orientation.W = qt.W;
+    OdomData.Pose.Pose.Orientation = qt;
 
     OdomData.Twist.Twist.Angular.Z = w;
     OdomData.Twist.Twist.Linear.X = v;
     OdomData.Twist.Twist.Linear.Y = 0;
     OdomData.Twist.Twist.Linear.Z = 0;
 
-    OdomData.Pose.Covariance.Init(0, 36);
     OdomData.Pose.Covariance[0] = 0.01;
     OdomData.Pose.Covariance[7] = 0.01;
     OdomData.Pose.Covariance[14] = 1e+12;
     OdomData.Pose.Covariance[21] = 1e+12;
     OdomData.Pose.Covariance[28] = 1e+12;
     OdomData.Pose.Covariance[35] = 0.01;
-    OdomData.Twist.Covariance.Init(0, 36);
     OdomData.Twist.Covariance[0] = 0.01;
     OdomData.Twist.Covariance[7] = 0.01;
     OdomData.Twist.Covariance[14] = 1e+12;

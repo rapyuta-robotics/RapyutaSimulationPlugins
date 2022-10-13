@@ -384,9 +384,8 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InRequest,
         if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
             // Calculate to-be-spawned entity's [world transf]
-            FVector relLocation(InRequest.State.Pose.Position.X, InRequest.State.Pose.Position.Y, InRequest.State.Pose.Position.Z);
             FTransform relativeTransf =
-                URRConversionUtils::TransformROSToUE(FTransform(InRequest.State.Pose.Orientation, relLocation));
+                URRConversionUtils::TransformROSToUE(FTransform(InRequest.State.Pose.Orientation, InRequest.State.Pose.Position));
             FTransform worldTransf;
             URRGeneralUtils::GetWorldTransform(
                 InRequest.State.ReferenceFrame, Entities.FindRef(InRequest.State.ReferenceFrame), relativeTransf, worldTransf);

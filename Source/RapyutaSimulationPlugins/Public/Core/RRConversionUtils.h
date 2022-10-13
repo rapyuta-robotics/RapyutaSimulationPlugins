@@ -31,13 +31,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FVector VectorUEToROS(const FVector& Input)
     {
-        FVector Output = Input;
-
-        Output.X = Output.X;
-        Output.Y = -Output.Y;
-        Output.Z = Output.Z;
-
-        return 0.01f * Output;
+        return 0.01f * ConvertHandedness(Input);
     }
 
     FORCEINLINE static void VectorUEToROS(const double& InputX,

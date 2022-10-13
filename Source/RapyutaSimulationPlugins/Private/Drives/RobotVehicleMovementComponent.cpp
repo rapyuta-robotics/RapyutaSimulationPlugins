@@ -194,14 +194,13 @@ void URobotVehicleMovementComponent::InitOdom()
         InitialTransform.SetRotation(FQuat::Identity);
     }
 
-    OdomData.Pose.Pose.Position = InitialTransform.GetTranslation()
+    OdomData.Pose.Pose.Position = InitialTransform.GetTranslation();
     OdomData.Pose.Pose.Orientation = InitialTransform.GetRotation();
 
     PreviousTransform = InitialTransform;
     PreviousNoisyTransform = InitialTransform;
 
     // todo temporary hardcoded
-    OdomData.Pose.Covariance.Init(0, 36);
     OdomData.Pose.Covariance[0] = 1e-05f;
     OdomData.Pose.Covariance[7] = 1e-05f;
     OdomData.Pose.Covariance[14] = 1e+12;
@@ -209,7 +208,6 @@ void URobotVehicleMovementComponent::InitOdom()
     OdomData.Pose.Covariance[28] = 1e+12;
     OdomData.Pose.Covariance[35] = 1e-03f;
 
-    OdomData.Twist.Covariance.Init(0, 36);
     OdomData.Twist.Covariance[0] = 1e-05f;
     OdomData.Twist.Covariance[7] = 1e-05f;
     OdomData.Twist.Covariance[14] = 1e+12;
