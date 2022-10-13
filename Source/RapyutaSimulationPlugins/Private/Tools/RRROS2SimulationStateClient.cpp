@@ -138,9 +138,7 @@ void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
             request.ReferenceFrame, ServerSimState->Entities.FindRef(request.ReferenceFrame), worldTransf, relativeTransf);
         relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
-        response.State.Pose.Position.X = relativeTransf.GetTranslation().X;
-        response.State.Pose.Position.Y = relativeTransf.GetTranslation().Y;
-        response.State.Pose.Position.Z = relativeTransf.GetTranslation().Z;
+        response.State.Pose.Position = relativeTransf.GetTranslation();
         response.State.Pose.Orientation = relativeTransf.GetRotation();
 
         response.State.Twist.Linear = FVector::ZeroVector;
