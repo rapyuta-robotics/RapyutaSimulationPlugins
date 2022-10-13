@@ -283,8 +283,7 @@ void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
 
 FTransform URobotVehicleMovementComponent::GetOdomTF() const
 {
-    return FTransform(OdomData.Pose.Pose.Orientation,
-                      FVector(OdomData.Pose.Pose.Position.X, OdomData.Pose.Pose.Position.Y, OdomData.Pose.Pose.Position.Z));
+    return FTransform(OdomData.Pose.Pose.Orientation, OdomData.Pose.Pose.Position);
 }
 
 void URobotVehicleMovementComponent::InitMovementComponent()
