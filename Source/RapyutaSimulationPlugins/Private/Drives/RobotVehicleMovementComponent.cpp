@@ -252,9 +252,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     PreviousNoisyTransform.SetTranslation(pos);
     PreviousNoisyTransform.SetRotation(rot);
 
-    OdomData.Pose.Pose.Position.X = pos.X + RootOffset.GetTranslation().X;
-    OdomData.Pose.Pose.Position.Y = pos.Y + RootOffset.GetTranslation().Y;
-    OdomData.Pose.Pose.Position.Z = pos.Z + RootOffset.GetTranslation().Z;
+    OdomData.Pose.Pose.Position = pos + RootOffset.GetTranslation();
     OdomData.Pose.Pose.Orientation = rot;
 
     OdomData.Twist.Twist.Linear = OdomData.Pose.Pose.Orientation.UnrotateVector(pos - previousEstimatedPos) / InDeltaTime;
