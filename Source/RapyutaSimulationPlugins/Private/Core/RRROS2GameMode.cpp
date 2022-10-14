@@ -6,7 +6,7 @@
 #include "HAL/PlatformMisc.h"
 
 // rclUE
-#include "Msgs/ROS2ClockMsg.h"
+#include "Msgs/ROS2Clock.h"
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins

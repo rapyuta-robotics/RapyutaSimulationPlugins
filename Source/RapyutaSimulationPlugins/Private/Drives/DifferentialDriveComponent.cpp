@@ -71,9 +71,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     }
 
     // time
-    auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
-    OdomData.HeaderStampSec = stamp.sec;
-    OdomData.HeaderStampNanosec = stamp.nanosec;
+    OdomData.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
 
     // vl and vr as computed here is ok for kinematics
     // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is
@@ -109,43 +107,38 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // FRotator is in degrees, while PoseEncoderTheta is in Radians
     FQuat qt(FRotator(0, FMath::RadiansToDegrees(PoseEncoderTheta), 0));
 
-    OdomData.PosePosePosition.X = PoseEncoderX;
-    OdomData.PosePosePosition.Y = PoseEncoderY;
-    OdomData.PosePosePosition.Z = 0;
+    OdomData.Pose.Pose.Position.X = PoseEncoderX;
+    OdomData.Pose.Pose.Position.Y = PoseEncoderY;
+    OdomData.Pose.Pose.Position.Z = 0;
 
-    OdomData.PosePoseOrientation.X = qt.X;
-    OdomData.PosePoseOrientation.Y = qt.Y;
-    OdomData.PosePoseOrientation.Z = qt.Z;
-    OdomData.PosePoseOrientation.W = qt.W;
+    OdomData.Pose.Pose.Orientation = qt;
 
-    OdomData.TwistTwistAngular.Z = w;
-    OdomData.TwistTwistLinear.X = v;
-    OdomData.TwistTwistLinear.Y = 0;
-    OdomData.TwistTwistLinear.Z = 0;
+    OdomData.Twist.Twist.Angular.Z = w;
+    OdomData.Twist.Twist.Linear.X = v;
+    OdomData.Twist.Twist.Linear.Y = 0;
+    OdomData.Twist.Twist.Linear.Z = 0;
 
-    OdomData.PoseCovariance.Init(0, 36);
-    OdomData.PoseCovariance[0] = 0.01;
-    OdomData.PoseCovariance[7] = 0.01;
-    OdomData.PoseCovariance[14] = 1e+12;
-    OdomData.PoseCovariance[21] = 1e+12;
-    OdomData.PoseCovariance[28] = 1e+12;
-    OdomData.PoseCovariance[35] = 0.01;
-    OdomData.TwistCovariance.Init(0, 36);
-    OdomData.TwistCovariance[0] = 0.01;
-    OdomData.TwistCovariance[7] = 0.01;
-    OdomData.TwistCovariance[14] = 1e+12;
-    OdomData.TwistCovariance[21] = 1e+12;
-    OdomData.TwistCovariance[28] = 1e+12;
-    OdomData.TwistCovariance[35] = 0.01;
+    OdomData.Pose.Covariance[0] = 0.01;
+    OdomData.Pose.Covariance[7] = 0.01;
+    OdomData.Pose.Covariance[14] = 1e+12;
+    OdomData.Pose.Covariance[21] = 1e+12;
+    OdomData.Pose.Covariance[28] = 1e+12;
+    OdomData.Pose.Covariance[35] = 0.01;
+    OdomData.Twist.Covariance[0] = 0.01;
+    OdomData.Twist.Covariance[7] = 0.01;
+    OdomData.Twist.Covariance[14] = 1e+12;
+    OdomData.Twist.Covariance[21] = 1e+12;
+    OdomData.Twist.Covariance[28] = 1e+12;
+    OdomData.Twist.Covariance[35] = 0.01;
 
     // UE_LOG(LogTemp, Warning, TEXT("Input:"));
     // UE_LOG(LogTemp, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
     // UE_LOG(LogTemp, Warning, TEXT("Odometry:"));
     // UE_LOG(LogTemp, Warning, TEXT("\tOdom Positon:\t\t\t\t%f %f from %f %f (%f)"), PoseEncoderX, PoseEncoderY, dx, dy,
-    // Velocity.X); UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s (%f)"), *OdomData.PosePoseOrientation.ToString(),
-    // PoseEncoderTheta); UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.TwistTwistLinear.ToString(),
-    // OdomData.TwistTwistLinear.Size()); UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"),
-    // *OdomData.TwistTwistAngular.ToString());
+    // Velocity.X); UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s (%f)"), *OdomData.Pose.Pose.Orientation.ToString(),
+    // PoseEncoderTheta); UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.Twist.Twist.Linear.ToString(),
+    // OdomData.Twist.Twist.Linear.Size()); UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"),
+    // *OdomData.Twist.Twist.Angular.ToString());
 }
 
 void UDifferentialDriveComponent::Initialize()

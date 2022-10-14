@@ -76,7 +76,7 @@ public:
      * Robot's ROS2 Interface.
      * With the client-server setup, this is created in the server and replicated to the client and initialized only in the client.
      */
-    UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
+    UPROPERTY(VisibleAnywhere, BlueprintReadonly, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
     URRRobotROS2Interface* ROS2Interface = nullptr;
 
     /**

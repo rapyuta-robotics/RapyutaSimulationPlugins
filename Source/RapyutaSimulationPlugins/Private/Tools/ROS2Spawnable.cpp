@@ -3,7 +3,7 @@
 #include "Tools/ROS2Spawnable.h"
 
 // rclUE
-#include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Srvs/ROS2SpawnEntity.h"
 
 void UROS2Spawnable::OnComponentCreated()
 {
@@ -20,9 +20,9 @@ void UROS2Spawnable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(UROS2Spawnable, NetworkPlayerId);
 }
 
-void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityRequest& InRequest)
+void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityReq& InRequest)
 {
-    SetName(InRequest.StateName);
+    SetName(InRequest.State.Name);
     UE_LOG(LogTemp,
            Warning,
            TEXT("Pruning / from recieved namespace %s, namespace in UE4 will be set as: %s"),

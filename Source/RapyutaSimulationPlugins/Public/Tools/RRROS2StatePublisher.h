@@ -10,7 +10,7 @@
 #include "CoreMinimal.h"
 
 // rclUE
-#include "Msgs/ROS2EntityStateMsg.h"
+#include "Msgs/ROS2EntityState.h"
 #include "ROS2Node.h"
 #include "ROS2Publisher.h"
 

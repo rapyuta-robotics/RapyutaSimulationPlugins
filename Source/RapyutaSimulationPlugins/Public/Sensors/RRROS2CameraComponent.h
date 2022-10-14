@@ -14,7 +14,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 
 // rclUE
-#include <Msgs/ROS2ImageMsg.h>
+#include <Msgs/ROS2Img.h>
 
 // RapyutaSimulationPlugins
 #include "RRROS2BaseSensorComponent.h"
@@ -82,7 +82,7 @@ protected:
     TQueue<FRenderRequest*> RenderRequestQueue;
 
     //!
-    FROSImage Data;
+    FROSImg Data;
 
     int32 QueueCount = 0;
 
@@ -110,10 +110,10 @@ public:
     /**
      * @brief Update ROS2 Msg structure from #RenderRequestQueue
      * 
-     * @return FROSImage 
+     * @return FROSImg 
      */
     UFUNCTION(BlueprintCallable)
-    virtual FROSImage GetROS2Data();
+    virtual FROSImg GetROS2Data();
 
     /**
      * @brief Set result of #GetROS2Data to InMessage.
