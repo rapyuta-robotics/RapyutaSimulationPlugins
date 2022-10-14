@@ -3,7 +3,7 @@
 #include "Tools/RRROS2EntityStatePublisher.h"
 
 // rclUE
-#include "Msgs/ROS2EntityStateMsg.h"
+#include "Msgs/ROS2EntityState.h"
 
 URRROS2EntityStatePublisher::URRROS2EntityStatePublisher()
 {

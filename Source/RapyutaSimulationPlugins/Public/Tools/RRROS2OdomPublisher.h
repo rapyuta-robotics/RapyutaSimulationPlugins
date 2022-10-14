@@ -10,7 +10,7 @@
 #include "CoreMinimal.h"
 
 // rclUE
-#include "Msgs/ROS2OdometryMsg.h"
+#include "Msgs/ROS2Odom.h"
 #include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins
@@ -59,7 +59,7 @@ public:
 
     void RevokeUpdateCallback() override;
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
-    bool GetOdomData(FROSOdometry& OutOdomData) const;
+    bool GetOdomData(FROSOdom& OutOdomData) const;
 
     //! Publish tf or not
     UPROPERTY(BlueprintReadWrite)

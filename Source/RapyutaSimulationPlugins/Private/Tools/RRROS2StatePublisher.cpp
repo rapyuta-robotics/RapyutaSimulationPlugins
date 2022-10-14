@@ -46,12 +46,8 @@ void URRROS2StatePublisher::AddEntityToPublish(const FString& InName,
 {
     FROSEntityState BodyState;
     BodyState.Name = InName;
-    BodyState.PosePosition.X = InPosition.X;
-    BodyState.PosePosition.Y = -InPosition.Y;
-    BodyState.PosePosition.Z = InPosition.Z;
-    BodyState.PoseOrientation = InOrientation.Quaternion();
-    BodyState.PoseOrientation.X = -BodyState.PoseOrientation.X;
-    BodyState.PoseOrientation.Z = -BodyState.PoseOrientation.Z;
+    BodyState.Pose.Position = URRConversionUtils::ConvertHandedness(InPosition);
+    BodyState.Pose.Orientation = URRConversionUtils::QuatUEToROS(InOrientation.Quaternion());
     BodyState.ReferenceFrame = InRefFrame;
     StatesToPublish.Emplace(MoveTemp(BodyState));
 }

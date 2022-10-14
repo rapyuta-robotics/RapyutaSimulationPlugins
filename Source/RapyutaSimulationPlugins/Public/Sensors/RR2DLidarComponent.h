@@ -15,7 +15,7 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 
 // rclUE
-#include "Msgs/ROS2LaserScanMsg.h"
+#include "Msgs/ROS2LaserScan.h"
 
 // RapyutaSimulationPlugins
 #include "Sensors/RRBaseLidarComponent.h"

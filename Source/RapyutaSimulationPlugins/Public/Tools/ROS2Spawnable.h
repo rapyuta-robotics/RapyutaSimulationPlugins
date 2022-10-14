@@ -9,7 +9,7 @@
 #include "GameFramework/Actor.h"
 
 // rclUE
-#include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Srvs/ROS2SpawnEntity.h"
 
 #include "ROS2Spawnable.generated.h"
 
@@ -39,7 +39,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    virtual void InitializeParameters(const FROSSpawnEntityRequest& InRequest);
+    virtual void InitializeParameters(const FROSSpawnEntityReq& InRequest);
 
     UFUNCTION(BlueprintCallable)
     virtual void SetName(const FString& InName);

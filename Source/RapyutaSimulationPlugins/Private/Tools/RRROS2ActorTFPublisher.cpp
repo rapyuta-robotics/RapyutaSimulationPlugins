@@ -19,7 +19,7 @@ void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
 {
     UROS2SetBoolSrv* TriggerPublishService = Cast<UROS2SetBoolSrv>(Service);
 
-    FROSSetBoolRequest Request;
+    FROSSetBoolReq Request;
     TriggerPublishService->GetRequest(Request);
     if (Request.bData)
     {
@@ -30,7 +30,7 @@ void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
         StopPublishTimer();
     }
 
-    FROSSetBoolResponse Response;
+    FROSSetBoolRes Response;
     Response.bSuccess = true;
     TriggerPublishService->SetResponse(Response);
 }
