@@ -11,6 +11,7 @@
 
 // rclUE
 #include "ROS2Node.h"
+#include "ROS2ServiceClient.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/RRROS2OdomPublisher.h"
 
@@ -141,6 +142,19 @@ public:
     virtual void InitSubscriptions();
 
     /**
+     * @brief Initialize services clients
+     * Overidden in child robot ROS2 interface classes for specialized services clients.
+     */
+    UFUNCTION()
+    virtual bool InitServicesClients();
+
+    /**
+     * @brief Stop all service clients
+     */
+    UFUNCTION()
+    virtual void StopServicesClients();
+
+    /**
      * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.
      * Typically this receive Twist msg to move robot.
      */
@@ -187,6 +201,28 @@ protected:
                               ::Invoke(InMemFunc, robot, msgData);
                           }
                       });
+        }
+    }
+
+    UPROPERTY()
+    TMap<FName /*ServiceName*/, UROS2ServiceClient*> ServiceClientList;
+
+    template<typename TService, typename TServiceRequest>
+    void MakeServiceRequest(const FName& InServiceName, const TServiceRequest& InRequest)
+    {
+        // Create and update request
+        auto* clienPtr = ServiceClientList.Find(InServiceName);
+        if (clienPtr)
+        {
+            UROS2ServiceClient* client = *clienPtr;
+            TService* service = CastChecked<TService>(client->Service);
+            client->SendRequest(service, InRequest);
+
+            UE_LOG(LogTemp, Warning, TEXT("%s [%s] Request made"), *InServiceName.ToString(), *GetName());
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName.ToString());
         }
     }
 };
