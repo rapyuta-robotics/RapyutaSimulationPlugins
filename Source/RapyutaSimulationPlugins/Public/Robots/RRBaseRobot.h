@@ -167,7 +167,7 @@ public:
     }
 
     //! Robot Model Name (loaded from URDF/SDF)
-    UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
+    UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, meta = (ExposeOnSpawn = "true"), Replicated)
     FString RobotModelName;
 
     /**

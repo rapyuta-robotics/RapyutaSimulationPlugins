@@ -18,6 +18,7 @@
 
 #include "RobotVehicleMovementComponent.generated.h"
 
+class ARRRobotBaseVehicle;
 /**
  * @brief Type of odometry frame origin.
  * World provide odometry from world origin and Encoder provide odometry from initial pose.
@@ -52,7 +53,6 @@ class RAPYUTASIMULATIONPLUGINS_API URobotVehicleMovementComponent : public UPawn
 
 private:
     // For Elevator management
-
     //! The platform below the robot, e.g. elevator.
     UPROPERTY(VisibleAnywhere)
     AActor* MovingPlatform = nullptr;
@@ -70,6 +70,9 @@ private:
     TArray<USceneComponent*> ContactPoints;
 
 public:
+    UPROPERTY(VisibleAnywhere)
+    ARRRobotBaseVehicle* OwnerVehicle = nullptr;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
     FVector AngularVelocity = FVector::ZeroVector;
 

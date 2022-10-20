@@ -83,6 +83,31 @@ public:
         return EnumPtr->GetValueByName(FName(*InEnumStringValue));
     }
 
+    FORCEINLINE static FString GetWorldTypeAsString(const EWorldType::Type InWorldType)
+    {
+        switch (InWorldType)
+        {
+            case EWorldType::None:
+                return TEXT("None");
+            case EWorldType::Game:
+                return TEXT("Game");
+            case EWorldType::Editor:
+                return TEXT("Editor");
+            case EWorldType::PIE:
+                return TEXT("PIE");
+            case EWorldType::EditorPreview:
+                return TEXT("EditorPreview");
+            case EWorldType::GamePreview:
+                return TEXT("GamePreview");
+            case EWorldType::GameRPC:
+                return TEXT("GameRPC");
+            case EWorldType::Inactive:
+                return TEXT("Inactive");
+            default:
+                return FString();
+        }
+    }
+
     FORCEINLINE static FString GetERRResourceDataTypeAsString(const ERRResourceDataType InDataType)
     {
         return GetEnumValueAsString("ERRResourceDataType", InDataType);

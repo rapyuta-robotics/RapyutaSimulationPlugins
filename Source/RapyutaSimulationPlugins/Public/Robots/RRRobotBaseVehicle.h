@@ -58,21 +58,31 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     AActor* Map = nullptr;
 
-    // KINEMATIC MOVEMENT --
+    // MOVEMENT --
     //
-    //! Main robot vehicle move component
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector TargetLinearVel = FVector::ZeroVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector TargetAngularVel = FVector::ZeroVector;
+
+    //! Main robot movement component (kinematics/diff-drive or wheels-drive comp)
+    UPROPERTY(VisibleAnywhere)
+    UMovementComponent* MovementComponent = nullptr;
+
+    //! Main robot vehicle movement component
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
-    //! Class of the main robot vehicle move component, configurable in child class
+    //! Class of the main robot movement component, configurable in child class
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    TSubclassOf<URobotVehicleMovementComponent> VehicleMoveComponentClass;
+    TSubclassOf<UMovementComponent> VehicleMoveComponentClass;
 
     /**
-     * @brief Create and Initialize #RobotVehicleMoveComponent if #VehicleMoveComponentClass != nullptr.
-     * If VehicleMoveComponentClass == nullptr, it is expected that RobotVehicleMoveComponent is set from BP or user code.
+     * @brief Create and Initialize #MovementComponent if #VehicleMoveComponentClass != nullptr.
+     * If VehicleMoveComponentClass == nullptr, it is expected that MovementComponent is set from BP or user code.
      *
-     * @return true #RobotVehicleMoveComponent is created and initialized.
+     * @return true #MovementComponent is created and initialized.
      * @return false #VehicleMoveComponentClass == nullptr.
      */
     virtual bool InitMoveComponent();
@@ -175,7 +185,7 @@ protected:
      * Custom initialization of child class can be done by overwritting this method.
      *
      */
-    virtual void ConfigureVehicleMoveComponent()
+    virtual void ConfigureMovementComponent()
     {
     }
 };

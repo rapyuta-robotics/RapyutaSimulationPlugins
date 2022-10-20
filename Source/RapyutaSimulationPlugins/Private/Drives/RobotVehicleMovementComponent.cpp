@@ -9,11 +9,15 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 
+// RapyutaSimulationPlugins
+#include "Robots/RRRobotBaseVehicle.h"
+
 // rclUE
 #include "rclcUtilities.h"
 
 void URobotVehicleMovementComponent::Initialize()
 {
+    OwnerVehicle = CastChecked<ARRRobotBaseVehicle>(GetOwner());
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 
@@ -271,11 +275,17 @@ void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
         // Make sure that everything is still valid, and that we are allowed to move.
         if (IsValid(UpdatedComponent))
         {
+            //1- Update vels to OwnerVehicle's target vels
+            Velocity = OwnerVehicle->TargetLinearVel;
+            AngularVelocity = OwnerVehicle->TargetAngularVel;
+
+            //2- Movement control for OwnerVehicle
             UpdateMovement(InDeltaTime);
             UpdateOdom(InDeltaTime);
-        }
 
-        UpdateComponentVelocity();
+            //3- Update OwnerVehicle's velocity to [Velocity], must be after [UpdateMovement()]
+            UpdateComponentVelocity();
+        }
     }
 }
 

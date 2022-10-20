@@ -57,15 +57,23 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
     if (VehicleMoveComponentClass)
     {
         // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
-        RobotVehicleMoveComponent = CastChecked<URobotVehicleMovementComponent>(
+        MovementComponent = CastChecked<UMovementComponent>(
             URRUObjectUtils::CreateSelfSubobject(this, VehicleMoveComponentClass, FString::Printf(TEXT("%sMoveComp"), *GetName())));
-        RobotVehicleMoveComponent->RegisterComponent();
+        MovementComponent->RegisterComponent();
+        MovementComponent->SetIsReplicated(true);
 
-        // Configure custom properties (frameids, etc.)
-        ConfigureVehicleMoveComponent();
+        // NOTE: This could be NULL
+        RobotVehicleMoveComponent = Cast<URobotVehicleMovementComponent>(MovementComponent);
+
+        // Customize
+        ConfigureMovementComponent();
 
         // Init
-        RobotVehicleMoveComponent->Initialize();
+        if (RobotVehicleMoveComponent)
+        {
+            // Configure custom properties (frameids, etc.)
+            RobotVehicleMoveComponent->Initialize();
+        }
 
         // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
         // to the owner actor's root
@@ -73,7 +81,7 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
         UE_LOG(LogRapyutaCore,
                Warning,
                TEXT("[%s] created from class %s!"),
-               *RobotVehicleMoveComponent->GetName(),
+               *MovementComponent->GetName(),
                *VehicleMoveComponentClass->GetName());
         return true;
     }
@@ -158,30 +166,24 @@ void ARRRobotBaseVehicle::SyncServerAngularMovement(float InClientTimeStamp,
 
 void ARRRobotBaseVehicle::SetLocalLinearVel(const FVector& InLinearVel)
 {
-    if (RobotVehicleMoveComponent)
-    {
+    TargetLinearVel = InLinearVel;
 #if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("PLAYER [%s] SetLocalLinearVel %s"),
-               *PlayerController->PlayerState->GetPlayerName(),
-               *InLinearVel.ToString());
+    UE_LOG(LogRapyutaCore,
+           Warning,
+           TEXT("PLAYER [%s] SetLocalLinearVel %s"),
+           *PlayerController->PlayerState->GetPlayerName(),
+           *InLinearVel.ToString());
 #endif
-        RobotVehicleMoveComponent->Velocity = InLinearVel;
-    }
 }
 
 void ARRRobotBaseVehicle::SetLocalAngularVel(const FVector& InAngularVel)
 {
-    if (RobotVehicleMoveComponent)
-    {
+    TargetAngularVel = InAngularVel;
 #if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("PLAYER [%s] SetLocalAngularVel %s"),
-               *PlayerController->PlayerState->GetPlayerName(),
-               *InAngularVel.ToString());
+    UE_LOG(LogRapyutaCore,
+           Warning,
+           TEXT("PLAYER [%s] SetLocalAngularVel %s"),
+           *PlayerController->PlayerState->GetPlayerName(),
+           *InAngularVel.ToString());
 #endif
-        RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
-    }
 }

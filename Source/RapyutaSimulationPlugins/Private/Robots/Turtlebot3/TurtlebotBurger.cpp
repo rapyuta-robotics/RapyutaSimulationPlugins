@@ -68,9 +68,9 @@ void ATurtlebotBurger::PostInitializeComponents()
 
 void ATurtlebotBurger::SetupWheelDrives()
 {
-    if (bBodyComponentsCreated && IsValid(RobotVehicleMoveComponent))
+    if (bBodyComponentsCreated && IsValid(MovementComponent))
     {
-        UDifferentialDriveComponent* diffDriveComponent = CastChecked<UDifferentialDriveComponent>(RobotVehicleMoveComponent);
+        UDifferentialDriveComponent* diffDriveComponent = CastChecked<UDifferentialDriveComponent>(MovementComponent);
         diffDriveComponent->SetWheels(Base_WheelLeft, Base_WheelRight);
         diffDriveComponent->WheelRadius = WheelRadius;
         diffDriveComponent->WheelSeparationHalf = WheelSeparationHalf;

@@ -215,12 +215,13 @@ void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot*
            *InServerRobot->GetActorLocation().ToString());
 #endif
     auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
-    if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
+    if (robot)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
         robot->SetActorLocation(InClientRobotTransform.GetTranslation() +
                                 InClientRobotTransform.GetRotation() * InLinearVel * (serverCurrentTime - InClientTimeStamp));
-        robot->RobotVehicleMoveComponent->Velocity = InLinearVel;
+        //NOTE: Don't use ARRRobotBaseVehicle::SetLinearVel() here, which is only for client
+        robot->TargetLinearVel = InLinearVel;
     }
 }
 
@@ -238,10 +239,11 @@ void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot
            *InServerRobot->GetActorRotation().ToString());
 #endif
     auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
-    if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
+    if (robot)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
         robot->SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
-        robot->RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+        //NOTE: Don't use ARRRobotBaseVehicle::SetAngularVel() here, which is only for client
+        robot->TargetAngularVel = InAngularVel;
     }
 }
