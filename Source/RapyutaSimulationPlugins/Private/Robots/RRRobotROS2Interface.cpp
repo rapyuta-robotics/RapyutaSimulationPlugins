@@ -39,8 +39,8 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     // Instantiate a ROS2 node for InRobot
     InitRobotROS2Node(InRobot);
 
-    // Initialize Robot's sensors (lidar, etc.)
-    verify(InRobot->InitSensors(RobotROS2Node));
+    // Initialize Robot's sensors (lidar, etc.) ROS2 publishers
+    verify(InRobot->InitSensorsROS2(RobotROS2Node));
 
     // Refresh TF, Odom publishers
     verify(InitPublishers());

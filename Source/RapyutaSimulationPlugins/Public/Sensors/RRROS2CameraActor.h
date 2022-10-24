@@ -30,7 +30,7 @@ public:
     ARRROS2CameraActor();
 
     UPROPERTY(Transient)
-    AROS2Node* Node;
+    AROS2Node* ROS2Node = nullptr;
 
     UPROPERTY(BlueprintReadWrite)
     FString NodeName;
@@ -47,5 +47,5 @@ protected:
 
     //! ROS2 camera component for this camera
     UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    URRROS2CameraComponent* CameraComponent;
+    URRROS2CameraComponent* CameraComponent = nullptr;
 };

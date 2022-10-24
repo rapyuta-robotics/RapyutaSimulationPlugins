@@ -29,14 +29,18 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     // NOTE: PC's PlayerName would be updated later to Pawn's name after possession
     networkPlayerController->PlayerName = pcName;
 #endif
-    networkPlayerController->CreateROS2SimStateClient(ROS2SimStateClientClass);
 
+    // Create [ROS2SimStateClient]
     // Set [networkPlayerController's ServerSimState] -> [GameMode's MainSimState],
     // which should have been instantiated in [InitSim()]
     // NOTE: This could only be done here since from inside [networkPlayerController],
-    // GameMode, which is server-only, is inaccessible
+    // GameMode is server-only thus inaccessible
     check(MainSimState);
-    networkPlayerController->ROS2SimStateClient->ServerSimState = MainSimState;
+    if (bROS2Enabled)
+    {
+        networkPlayerController->CreateROS2SimStateClient(ROS2SimStateClientClass);
+        networkPlayerController->ROS2SimStateClient->ServerSimState = MainSimState;
+    }
     networkPlayerController->ServerSimState = MainSimState;
     UE_LOG(LogRapyutaCore,
            Log,

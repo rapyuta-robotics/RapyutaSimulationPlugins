@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Misc/App.h"
 #include "Misc/DateTime.h"
+#include "Net/UnrealNetwork.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
@@ -43,6 +44,20 @@ void ARRGameState::PrintSimConfig() const
                TEXT("%s"),
                *FString::Printf(TEXT("%f, %f, %f"), vertexNormal.X, vertexNormal.Y, vertexNormal.Z));
     }
+}
+
+void ARRGameState::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+    ARRROS2GameMode* ros2GameMode = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this);
+    verify(ros2GameMode);
+    bROS2Enabled = ros2GameMode->bROS2Enabled;
+}
+
+void ARRGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ARRGameState, bROS2Enabled);
 }
 
 void ARRGameState::StartSim()

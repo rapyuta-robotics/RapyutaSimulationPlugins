@@ -7,7 +7,9 @@
 
 // UE
 #include "CoreMinimal.h"
-#include "GameFramework/GameState.h"
+
+// RapyutaSimulationPlugins
+#include "Core/RRGameState.h"
 
 #include "RRNetworkGameState.generated.h"
 
@@ -16,7 +18,7 @@
  * @sa [GameMode and GameState](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Framework/GameMode/
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameState : public AGameState
+class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameState : public ARRGameState
 {
     GENERATED_BODY()
 

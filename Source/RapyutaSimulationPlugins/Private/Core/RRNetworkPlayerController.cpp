@@ -15,6 +15,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
+#include "Core/RRGameState.h"
 #include "Core/RRUObjectUtils.h"
 #include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotBaseVehicle.h"
@@ -46,6 +47,16 @@ void ARRNetworkPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 
 void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass)
 {
+    if (false == (GameState && GameState->bROS2Enabled))
+    {
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s][ARRNetworkPlayerController::CreateROS2SimStateClient]"
+                    "(ROS2 is not enabled in ARRROS2GameMode)!"),
+               *GetName());
+        return;
+    }
+
     if (ROS2SimStateClient)
     {
         return;
@@ -68,6 +79,16 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
 
 void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
 {
+    if (false == (GameState && GameState->bROS2Enabled))
+    {
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[%s][ARRNetworkPlayerController::ClientInitSimStateClientROS2]"
+                    "(ROS2 is not enabled in ARRROS2GameMode)!"),
+               *GetName());
+        return;
+    }
+
     if (SimStateClientROS2Node)
     {
         return;
@@ -134,6 +155,9 @@ void ARRNetworkPlayerController::BeginPlay()
 {
     Super::BeginPlay();
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRNetworkPlayerController::BeginPlay]"), *GetName());
+
+    GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
+    verify(GameState);
 
     if (IsLocalController())
     {

@@ -22,6 +22,8 @@
 
 #include "RRNetworkPlayerController.generated.h"
 
+class ARRGameState;
+
 /**
  * @brief Network Player controller provides functionality for client-server. Major functionalites are
  * - [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html),  #URRROS2ClockPublisher,  #URRROS2SimulationStateClient are created for each client to provide ROS2 services which are provided by #ARRROS2GameMode in standalone game.
@@ -44,6 +46,9 @@ public:
      * @param OutLifetimeProps Output lifetime properties
      */
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+    UPROPERTY()
+    ARRGameState* GameState = nullptr;
 
     //! Sim ROS2 node in each client. Created only in the client.
     UPROPERTY(Transient)

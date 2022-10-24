@@ -29,15 +29,20 @@ void URRPoseSensorManager::OnComponentCreated()
     SetIsReplicated(true);
 }
 
-void URRPoseSensorManager::InitalizeWithROS2(AROS2Node* InROS2Node,
-                                             const FString& InPublisherName,
-                                             const FString& InTopicName,
-                                             const TEnumAsByte<UROS2QoS> InQoS)
+void URRPoseSensorManager::Initialize()
 {
-    UE_LOG(LogRapyutaCore, Error, TEXT("[%s][URRPoseSensorManager][InitalizeWithROS2] %s"), *GetName(), *ReferenceTag);
-    Super::InitalizeWithROS2(InROS2Node, InPublisherName, InTopicName, InQoS);
-    MapOriginPoseSensor->InitalizeWithROS2(InROS2Node);
+    Super::Initialize();
     ServerSimState = CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
+}
+
+void URRPoseSensorManager::InitROS2(AROS2Node* InROS2Node,
+                                    const FString& InPublisherName,
+                                    const FString& InTopicName,
+                                    const TEnumAsByte<UROS2QoS> InQoS)
+{
+    Super::InitROS2(InROS2Node, InPublisherName, InTopicName, InQoS);
+    MapOriginPoseSensor->InitROS2(InROS2Node);
+    UE_LOG(LogRapyutaCore, Log, TEXT("[%s][URRPoseSensorManager][InitROS2] %s"), *GetName(), *ReferenceTag);
 }
 
 void URRPoseSensorManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

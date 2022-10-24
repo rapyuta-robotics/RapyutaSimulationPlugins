@@ -5,7 +5,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 
 #include "Camera/CameraComponent.h"
@@ -70,7 +69,6 @@ public:
     virtual void SensorUpdate() override;
 
 protected:
-
     /**
      * @brief Capture data by notifing task in #RenderRequestQueue 
      * @sa reference https://github.com/TimmHess/UnrealImageCapture
@@ -82,8 +80,10 @@ protected:
     TQueue<FRenderRequest*> RenderRequestQueue;
 
     //!
+    UPROPERTY()
     FROSImg Data;
 
+    UPROPERTY()
     int32 QueueCount = 0;
 
 public:
@@ -124,5 +124,4 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Encoding = TEXT("rgb8");
-    
 };

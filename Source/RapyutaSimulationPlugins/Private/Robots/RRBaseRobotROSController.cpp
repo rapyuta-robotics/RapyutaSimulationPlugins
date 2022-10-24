@@ -13,7 +13,15 @@ void ARRBaseRobotROSController::OnPossess(APawn* InPawn)
     auto* robot = Cast<ARRBaseRobot>(InPawn);
     if (robot)
     {
-        robot->InitROS2Interface();
+        if (robot->IsROS2SystemEnabled())
+        {
+            robot->InitROS2Interface();
+        }
+        else
+        {
+            UE_LOG(
+                LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobotROSController::OnPossess] ROS2 System is not enabled"), *GetName());
+        }
     }
     else
     {
@@ -29,7 +37,17 @@ void ARRBaseRobotROSController::OnUnPossess()
     auto* robot = GetPawn<ARRBaseRobot>();
     if (robot)
     {
-        robot->DeInitROS2Interface();
+        if (robot->IsROS2SystemEnabled())
+        {
+            robot->DeInitROS2Interface();
+        }
+        else
+        {
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("[%s][ARRBaseRobotROSController::OnUnPossess] ROS2 System is not enabled"),
+                   *GetName());
+        }
     }
     else
     {

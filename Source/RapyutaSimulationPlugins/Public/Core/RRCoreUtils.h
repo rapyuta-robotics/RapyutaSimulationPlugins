@@ -94,7 +94,6 @@ public:
     }
 
     // SIM CONSOLE COMMANDS --
-    // SIM CONSOLE COMMANDS --
     static constexpr const TCHAR* CMD_SIM_QUIT = TEXT("quit");
     static constexpr const TCHAR* CMD_STATS_START = TEXT("stat startfile");
     static constexpr const TCHAR* CMD_STATS_STOP = TEXT("stat stopfile");
@@ -231,8 +230,10 @@ public:
         return bResult;
     }
 
-    // SIM WORLDS --
+    // SIM GENERAL --
     static constexpr const TCHAR* PIXEL_STREAMER_PLAYER_NAME = TEXT("pixelstreamer");
+    UFUNCTION(BlueprintCallable, Category = "ROS2")
+    static bool IsROS2SystemEnabled(const UObject* InContextObject);
     template<typename T>
     static T* GetGameMode(const UObject* InContextObject = nullptr)
     {

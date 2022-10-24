@@ -1,10 +1,18 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.18 ##
+* Add ARRROS2GameMode + ARRBaseRobot add bROS2Enabled #96
+* URRRobotROS2Interface add InitServicesClients() #95
+* Refactor to support msg inside msg, constant, static array initialize #94
+* Add start/stop publisher api ans fixedtimestep #90
+
 ## 0.0.17 ##
 * `URRActorCommon::OnPostWorldCleanup()` only reset actor common list upon matching world
+
 ## 0.0.16 ##
 * Add multi-robot supports for one network client (#83)
 * Udpate source following ROS Msgs updates generated from the latest UE_tools #88
+
 ## 0.0.15 ##
 * ASimulationState::ServerAttach() entity2 ignores entity1 during attachment
 

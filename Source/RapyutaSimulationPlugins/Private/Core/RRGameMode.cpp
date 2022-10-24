@@ -38,6 +38,7 @@ void ARRGameMode::InitGameState()
 
 void ARRGameMode::PrintSimConfig() const
 {
+    Super::PrintSimConfig();
     UE_LOG(LogRapyutaCore, Display, TEXT("SIM GAME MODE CONFIG -----------------------------"));
     UE_LOG(LogRapyutaCore, Display, TEXT("- bBenchmark: %d"), bBenchmark);
 }
@@ -108,8 +109,6 @@ void ARRGameMode::ConfigureSimInPlay()
 void ARRGameMode::StartPlay()
 {
     UE_LOG(LogRapyutaCore, Display, TEXT("[ARRGameMode]: START PLAY!"))
-
-    PrintSimConfig();
     PrintUEPreprocessors();
 
     GameInstance = Cast<URRGameInstance>(GetGameInstance());

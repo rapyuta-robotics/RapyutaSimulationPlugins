@@ -10,6 +10,7 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRGameState.h"
 #include "Core/RRNetworkGameMode.h"
 #include "Tools/RRGhostPlayerPawn.h"
 #include "Tools/RRROS2ClockPublisher.h"
@@ -17,6 +18,13 @@
 ARRROS2GameMode::ARRROS2GameMode()
 {
     DefaultPawnClass = ARRGhostPlayerPawn::StaticClass();
+    GameStateClass = ARRGameState::StaticClass();
+}
+
+void ARRROS2GameMode::PrintSimConfig() const
+{
+    UE_LOG(LogRapyutaCore, Display, TEXT("SIM GAME MODE CONFIG -----------------------------"));
+    UE_LOG(LogRapyutaCore, Display, TEXT("- bROS2Enabled: %d"), bROS2Enabled);
 }
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
@@ -54,7 +62,7 @@ void ARRROS2GameMode::InitSim()
     {
         InitROS2();
     }
-#if WITH_EDITOR    // Since ROSNode in each client is namespaced with editor in network mode, need clock publsiher without
+#if WITH_EDITOR    // Since ROSNode in each client is namespaced with editor in network mode, need clock publsiher without \
                    // namespace
     else if (nullptr != Cast<ARRNetworkGameMode>(this))
     {
@@ -66,7 +74,7 @@ void ARRROS2GameMode::InitSim()
 
 void ARRROS2GameMode::InitROS2()
 {
-    if (IsValid(MainROS2Node))
+    if ((false == bROS2Enabled) || IsValid(MainROS2Node))
     {
         return;
     }
@@ -95,8 +103,9 @@ void ARRROS2GameMode::InitROS2()
 void ARRROS2GameMode::StartPlay()
 {
     Super::StartPlay();
-    
+
     UE_LOG(LogRapyutaCore, Display, TEXT("[ARRROS2GameMode]: START PLAY!"));
+    PrintSimConfig();
 
 #if !WITH_EDITOR
     // The frequency is actually up to the Sim map purpose, which is for AI training or for user-watchable visualization

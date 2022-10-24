@@ -101,7 +101,7 @@ public:
      */
     virtual void StartPlay() override;
 
-    virtual void PrintSimConfig() const;
+    virtual void PrintSimConfig() const override;
     virtual void PrintUEPreprocessors() const;
 
     virtual void ConfigureSimInPlay();

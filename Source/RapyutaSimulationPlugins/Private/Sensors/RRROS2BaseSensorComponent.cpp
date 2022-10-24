@@ -4,22 +4,15 @@
 
 DEFINE_LOG_CATEGORY(LogROS2Sensor);
 
-URRROS2BaseSensorComponent::URRROS2BaseSensorComponent()
+void URRROS2BaseSensorComponent::InitROS2(AROS2Node* InROS2Node,
+                                          const FString& InPublisherName,
+                                          const FString& InTopicName,
+                                          const TEnumAsByte<UROS2QoS> InQoS)
 {
-    PrimaryComponentTick.bCanEverTick = true;
-}
-
-void URRROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node,
-                                                   const FString& InPublisherName,
-                                                   const FString& InTopicName,
-                                                   const TEnumAsByte<UROS2QoS> InQoS)
-{
+    verify(IsValid(InROS2Node));
     CreatePublisher(InPublisherName);
     PreInitializePublisher(InROS2Node, InTopicName);
     InitializePublisher(InROS2Node, InQoS);
-
-    // Start getting sensor data
-    Run();
 }
 
 void URRROS2BaseSensorComponent::CreatePublisher(const FString& InPublisherName)
@@ -61,10 +54,4 @@ void URRROS2BaseSensorComponent::InitializePublisher(AROS2Node* InROS2Node, cons
         SensorPublisher->InitializeWithROS2(InROS2Node);
         SensorPublisher->Init(InQoS);
     }
-}
-
-void URRROS2BaseSensorComponent::Run()
-{
-    GetWorld()->GetTimerManager().SetTimer(
-        TimerHandle, this, &URRROS2BaseSensorComponent::SensorUpdate, 1.f / static_cast<float>(PublicationFrequencyHz), true);
 }

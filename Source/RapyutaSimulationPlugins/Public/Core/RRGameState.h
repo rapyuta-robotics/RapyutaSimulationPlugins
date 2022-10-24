@@ -34,6 +34,11 @@ class RAPYUTASIMULATIONPLUGINS_API ARRGameState : public AGameState
     GENERATED_BODY()
 public:
     ARRGameState();
+
+    //! Store #ARRROS2GameMode's bROS2Enabled to let it replicated among clients
+    UPROPERTY(Replicated)
+    bool bROS2Enabled = true;
+
     virtual void StartSim();
 
     UPROPERTY(config)
@@ -129,6 +134,8 @@ public:
     }
 
 protected:
+    virtual void PostInitializeComponents() override;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
     virtual void CreateSceneInstance(int8 InSceneInstanceId);
     virtual void InitializeSim(int8 InSceneInstanceId);
     virtual void StartSubSim(int8 InSceneInstanceId);

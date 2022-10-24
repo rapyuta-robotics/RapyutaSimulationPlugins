@@ -6,7 +6,7 @@
 
 #pragma once
 
- // UE
+// UE
 #include "Engine/EngineTypes.h"
 #include "GameFramework/GameMode.h"
 
@@ -24,13 +24,17 @@ class URRROS2ClockPublisher;
  * @sa [AGameMode](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
  * @sa [GameMode and GameState](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Framework/GameMode/
  */
-UCLASS()
+UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 {
     GENERATED_BODY()
 
 public:
     ARRROS2GameMode();
+
+    //! Whether Sim starts with ROS2 enabled
+    UPROPERTY(Config, BlueprintReadOnly)
+    bool bROS2Enabled = true;
 
     //! Sim's Main ROS2 node. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadOnly)
@@ -95,6 +99,8 @@ protected:
      * @brief Set timestep with startplay.
      */
     virtual void StartPlay() override;
+
+    virtual void PrintSimConfig() const;
 
 private:
     /**

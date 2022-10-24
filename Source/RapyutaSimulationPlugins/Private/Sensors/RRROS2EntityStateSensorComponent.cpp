@@ -38,12 +38,13 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
     FTransform relativeTransf;
     if (!URRGeneralUtils::GetRelativeTransform(ReferenceActorName, ReferenceActor, GetComponentTransform(), relativeTransf))
     {
-        if (bIsValid)
+        // Print error for once if this is the first invalid scan data since the last valid one
+        if (bLastScanDataValid)
         {
             // warning output once
             UE_LOG(LogRapyutaCore, Warning, TEXT("Reference Actor %s is not valid."), *ReferenceActorName);
         }
-        bIsValid = false;
+        bLastScanDataValid = false;
         return;
     }
 
@@ -57,7 +58,7 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
     Data.Twist.Linear = FVector::ZeroVector;
     Data.Twist.Angular = FVector::ZeroVector;
 
-    bIsValid = true;
+    bLastScanDataValid = true;
 }
 
 void URRROS2EntityStateSensorComponent::SetROS2Msg(UROS2GenericMsg* InMessage)

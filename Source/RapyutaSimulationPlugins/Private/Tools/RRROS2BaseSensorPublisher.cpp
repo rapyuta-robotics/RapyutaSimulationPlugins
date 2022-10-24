@@ -2,6 +2,9 @@
 
 #include "Tools/RRROS2BaseSensorPublisher.h"
 
+// RapyutaSimulationPlugins
+#include "Sensors/RRROS2BaseSensorComponent.h"
+
 URRROS2BaseSensorPublisher::URRROS2BaseSensorPublisher()
 {
     // TopicName could be overridden later by users
@@ -11,7 +14,7 @@ URRROS2BaseSensorPublisher::URRROS2BaseSensorPublisher()
 
 void URRROS2BaseSensorPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-    if (nullptr != DataSourceComponent && DataSourceComponent->bIsValid)
+    if (nullptr != DataSourceComponent && DataSourceComponent->bLastScanDataValid)
     {
         StartPublishTimer();
         DataSourceComponent->SetROS2Msg(InMessage);

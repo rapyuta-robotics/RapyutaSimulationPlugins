@@ -19,9 +19,7 @@
 
 #include "RRBaseRobot.generated.h"
 
-class ARRNetworkGameState;
 class URRRobotROS2Interface;
-class ARRNetworkPlayerController;
 
 /**
  * @brief Which server or client has robot movement authority.
@@ -62,6 +60,10 @@ public:
      * Could only be called in constructor.
      */
     void SetupDefault();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS2 Enabled"), Replicated)
+    uint8 bROS2Enabled : 1;
+    bool IsROS2SystemEnabled() const;
 
     //! Default class to use when ROS2 Interface is setup for robot
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS2 Interface Class"), Replicated)
@@ -216,7 +218,12 @@ public:
     TMap<FString, URRJointComponent*> Joints;
 
     /**
-     * @brief Initialize sensors components which are child class of #URRROS2BaseSensorComponent.
+     * @brief Initialize sensors components which are child class of #URRBaseSensorComponent.
+     */
+    virtual void InitSensors();
+
+    /**
+     * @brief Initialize ROS2 specifics of sensors components which are of child classes of #URRROS2BaseSensorComponent.
      *
      * @param InROS2Node ROS2Node which sensor publishers belongs to.
      * @return true
@@ -225,7 +232,7 @@ public:
      * @sa [TInlineComponentArray](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/GameFramework/TInlineComponentArray/)
      * @sa [GetComponents](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/GameFramework/AActor/GetComponents/2/)
      */
-    bool InitSensors(AROS2Node* InROS2Node);
+    bool InitSensorsROS2(AROS2Node* InROS2Node);
 
     /**
      * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native

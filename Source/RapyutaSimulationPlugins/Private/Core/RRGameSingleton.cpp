@@ -155,9 +155,12 @@ bool URRGameSingleton::RequestResourcesLoading(const ERRResourceDataType InDataT
 
 void URRGameSingleton::FinalizeResources()
 {
-    for (uint8 i = (static_cast<uint8>(ERRResourceDataType::NONE) + 1); i < static_cast<uint8>(ERRResourceDataType::TOTAL); ++i)
+    if (ResourceMap.Num() > 0)
     {
-        ResourceMap[static_cast<ERRResourceDataType>(i)].Finalize();
+        for (uint8 i = (static_cast<uint8>(ERRResourceDataType::NONE) + 1); i < static_cast<uint8>(ERRResourceDataType::TOTAL); ++i)
+        {
+            ResourceMap[static_cast<ERRResourceDataType>(i)].Finalize();
+        }
     }
 
     ResourceStore.Empty();

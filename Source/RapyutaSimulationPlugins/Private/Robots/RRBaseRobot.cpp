@@ -10,11 +10,11 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
-#include "Core/RRNetworkGameMode.h"
-#include "Core/RRNetworkGameState.h"
+#include "Core/RRGameState.h"
 #include "Core/RRUObjectUtils.h"
 #include "Drives/RRJointComponent.h"
 #include "Robots/RRRobotROS2Interface.h"
+#include "Sensors/RRBaseSensorComponent.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
 #include "Tools/SimulationState.h"
 
@@ -38,31 +38,47 @@ void ARRBaseRobot::SetupDefault()
     AutoPossessPlayer = EAutoReceiveInput::Disabled;
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
+    bROS2Enabled = true;
     // NOTE: Any custom object class (eg ROS2InterfaceClass) that is required to be configurable by this class' child BP ones
     // & IF its object needs to be created before BeginPlay(),
     // -> They must be left NULL here, so its object (eg ROS2Interface) is not created by default in [PostInitializeComponents()]
 }
 
+bool ARRBaseRobot::IsROS2SystemEnabled() const
+{
+    return bROS2Enabled && (GameState && GameState->bROS2Enabled);
+}
+
 void ARRBaseRobot::PostInitializeComponents()
 {
-    if (ROS2InterfaceClass)
+    // NOTE: This func could be triggered in Editor by a BP action, thus could give GameState as NULL
+    GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
+
+    // ROS2 Interface
+    if (IsROS2SystemEnabled())
     {
-        // ROS2Interface is created at server and replicated to client.
-        if (!IsNetMode(NM_Client))
+        if (ROS2InterfaceClass)
         {
-            CreateROS2Interface();
+            // ROS2Interface is created at server and replicated to client.
+            if (!IsNetMode(NM_Client))
+            {
+                CreateROS2Interface();
+            }
+        }
+        else
+        {
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("[%s] [ARRBaseRobot::PostInitializeComponents()] has ROS2 enabled but ROS2InterfaceClass has not been "
+                        "configured, probably later in child BP class!"),
+                   *GetName());
         }
     }
-    else
-    {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s] [ARRBaseRobot::PostInitializeComponents()] ROS2InterfaceClass has not been configured, "
-                    "probably later in child BP class!"),
-               *GetName());
-    }
 
-    // which does the possessing, thus must be called afterwards
+    // Sensors
+    InitSensors();
+
+    // which does the possessing, then init robot's ROS2 specifics, thus must be called afterwards
     Super::PostInitializeComponents();
 }
 
@@ -157,6 +173,7 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
 
 void ARRBaseRobot::CreateROS2Interface()
 {
+    verify(IsROS2SystemEnabled());
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::CreateROS2Interface] %d"), *GetName(), IsNetMode(NM_Client));
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
@@ -183,7 +200,7 @@ void ARRBaseRobot::InitROS2Interface()
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::InitROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
 #endif
-
+    verify(IsROS2SystemEnabled());
     if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
     {
         ROS2Interface->Initialize(this);
@@ -205,7 +222,7 @@ void ARRBaseRobot::DeInitROS2Interface()
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::StopROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
 #endif
-
+    verify(IsROS2SystemEnabled());
     if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
     {
         ROS2Interface->DeInitialize();
@@ -218,9 +235,22 @@ void ARRBaseRobot::DeInitROS2Interface()
     }
 }
 
-bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
+void ARRBaseRobot::InitSensors()
 {
-    if (false == IsValid(InROS2Node))
+    // NOTE:
+    // + Sensor comps could have been created either statically in child BPs/SetupDefault()/PostInitializeComponents()
+    // OR dynamically afterwards
+    // + Use [ForEachComponent] would cause a fatal log on [Container has changed during ranged-for iteration!]
+    TInlineComponentArray<URRBaseSensorComponent*> sensorComponents(this);
+    for (auto& sensorComp : sensorComponents)
+    {
+        sensorComp->Initialize();
+    }
+}
+
+bool ARRBaseRobot::InitSensorsROS2(AROS2Node* InROS2Node)
+{
+    if (IsROS2SystemEnabled() && (false == IsValid(InROS2Node)))
     {
         return false;
     }
@@ -229,10 +259,10 @@ bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
     // + Sensor comps could have been created either statically in child BPs/SetupDefault()/PostInitializeComponents()
     // OR dynamically afterwards
     // + Use [ForEachComponent] would cause a fatal log on [Container has changed during ranged-for iteration!]
-    TInlineComponentArray<URRROS2BaseSensorComponent*> sensorComponents(this);
-    for (auto& sensorComp : sensorComponents)
+    TInlineComponentArray<URRROS2BaseSensorComponent*> ros2SensorComponents(this);
+    for (auto& ros2SensorComp : ros2SensorComponents)
     {
-        sensorComp->InitalizeWithROS2(InROS2Node);
+        ros2SensorComp->InitROS2(InROS2Node);
     }
 
     return true;
@@ -250,6 +280,7 @@ void ARRBaseRobot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ARRBaseRobot, RobotID);
     DOREPLIFETIME(ARRBaseRobot, RobotUniqueName);
     DOREPLIFETIME(ARRBaseRobot, ServerRobot);
+    DOREPLIFETIME(ARRBaseRobot, bROS2Enabled);
     DOREPLIFETIME(ARRBaseRobot, ROS2Interface);
     DOREPLIFETIME(ARRBaseRobot, ROS2InterfaceClass);
     DOREPLIFETIME(ARRBaseRobot, ROSSpawnParameters);

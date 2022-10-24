@@ -23,6 +23,12 @@
 IImageWrapperModule* URRCoreUtils::SImageWrapperModule = nullptr;
 TMap<ERRFileType, TSharedPtr<IImageWrapper>> URRCoreUtils::SImageWrappers;
 
+bool URRCoreUtils::IsROS2SystemEnabled(const UObject* InContextObject)
+{
+    ARRGameState* gameState = URRCoreUtils::GetGameState<ARRGameState>(InContextObject);
+    return gameState && gameState->bROS2Enabled;
+}
+
 FString URRCoreUtils::GetFileTypeFilter(const ERRFileType InFileType)
 {
     return FString::Printf(TEXT("%s (*%s)|*%s"),

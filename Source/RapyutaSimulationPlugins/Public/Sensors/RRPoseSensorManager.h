@@ -57,7 +57,12 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     /**
-     * @brief Create and initialize publisher and start sensor update by calling
+     * @brief Initialize sensor specifics & Start scanning
+     */
+    virtual void Initialize() override;
+
+    /**
+     * @brief Create and initialize sensor's ROS2 publisher by calling
      * #CreatePublisher, #PreInitializePublisher, #InitializePublisher and #Run.
      *
      * @param InROS2Node ROS2Node which this publisher belongs to
@@ -68,10 +73,10 @@ public:
      * @sa [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
      * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
-    virtual void InitalizeWithROS2(AROS2Node* InROS2Node,
-                                   const FString& InPublisherName = EMPTY_STR,
-                                   const FString& InTopicName = EMPTY_STR,
-                                   const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData) override;
+    virtual void InitROS2(AROS2Node* InROS2Node,
+                          const FString& InPublisherName = EMPTY_STR,
+                          const FString& InTopicName = EMPTY_STR,
+                          const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData) override;
 
     /**
      * @brief Calculate relative pose with #URRGeneralUtils and update #Data
