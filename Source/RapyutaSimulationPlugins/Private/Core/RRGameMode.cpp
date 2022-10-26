@@ -120,8 +120,8 @@ void ARRGameMode::StartPlay()
     // The frequency is actually up to the Sim map purpose, which is for AI training or for user-watchable visualization
     // Generally, it should be the same as ROS ClockPublisher's PublicationFrequencyHz
     // (NOTE) Could only use fixed time step in non-Editor mode
-    FApp::SetUseFixedTimeStep(true);
-    FApp::SetFixedDeltaTime(1 / ClockPublisher->PublicationFrequencyHz);
+    SetFixedTimestep(
+        1 / CastChecked<URRROS2ClockPublisher>(URRROS2ClockPublisher::StaticClass()->GetDefaultObject())->PublicationFrequencyHz);
 
     // Run benchmark, will freeze game for a bit. Higher workscale increases time it takes to run tests (10 is default and should be
     // used for shipping builds)
