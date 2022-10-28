@@ -2,14 +2,6 @@
 
 #include "Drives/RRFloatingMovementComponent.h"
 
-URRFloatingMovementComponent::URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
-{
-    // NOTE: Let itself be manually activated & tick then to wait for [ExemptedCollidingCompList] to be confirmed
-    bAutoActivate = false;
-    bAutoUpdateTickRegistration = false;
-    bTickBeforeOwner = false;
-}
-
 void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
                                                  enum ELevelTick InTickType,
                                                  FActorComponentTickFunction* InTickFunction)
@@ -53,14 +45,41 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
     {
         // Save prevLocation
         const FVector prevLocation = UpdatedComponent->GetComponentLocation();
-        FHitResult hit(1.f);
-        SafeMoveTargetWithCollisionExemption(deltaLoc, UpdatedComponent->GetComponentQuat(), bSweepEnabled, hit);
-
-        if (hit.IsValidBlockingHit())
+        // Scope for setting move flags & restoring it after movement
         {
-            HandleImpact(hit, InDeltaTime, deltaLoc);
-            // Slide the remaining distance along the hit surface
-            SlideAlongSurface(deltaLoc, 1.f - hit.Time, hit.Normal, hit, bSweepEnabled);
+            // NOTE: [UpdatedComponent] should have been attached to the target base, of which overlapping is ignored
+            TGuardValue<EMoveComponentFlags> ScopedFlagRestore(MoveComponentFlags, MoveComponentFlags | MOVECOMP_IgnoreBases);
+
+            FHitResult hit(1.f);
+            SafeMoveUpdatedComponent(deltaLoc, UpdatedComponent->GetComponentQuat(), bSweepEnabled, hit);
+
+#if RAPYUTA_SIM_DEBUG
+            if (hit.bBlockingHit)
+            {
+                UE_LOG(LogRapyutaCore,
+                       Error,
+                       TEXT("ResolvePenetration: %s.%s at location %s inside %s.%s at location %s by %.3f (netmode: %d)\n"
+                            "TraceStart %s TraceEnd %s Bone %s"),
+                       *UpdatedComponent->GetOwner()->GetName(),
+                       *UpdatedComponent->GetName(),
+                       *UpdatedComponent->GetComponentLocation().ToString(),
+                       *GetNameSafe(hit.GetActor()),
+                       *GetNameSafe(hit.GetComponent()),
+                       hit.Component.IsValid() ? *hit.GetComponent()->GetComponentLocation().ToString() : TEXT("<unknown>"),
+                       hit.PenetrationDepth,
+                       static_cast<uint32>(GetNetMode()),
+                       *hit.TraceStart.ToString(),
+                       *hit.TraceEnd.ToString(),
+                       *hit.BoneName.ToString());
+            }
+#endif
+
+            if (hit.IsValidBlockingHit())
+            {
+                HandleImpact(hit, InDeltaTime, deltaLoc);
+                // Slide the remaining distance along the hit surface
+                SlideAlongSurface(deltaLoc, 1.f - hit.Time, hit.Normal, hit, bSweepEnabled);
+            }
         }
 
         // Update [Velocity], only if not already [bPositionCorrected] possibly due to penetration fixup
@@ -74,6 +93,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
     UpdateComponentVelocity();
 }
 
+#if RAPYUTA_SIM_DEBUG
 bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InProposedAdjustment,
                                                           const FHitResult& InHit,
                                                           const FQuat& InNewRotationQuat)
@@ -91,10 +111,10 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
             return false;
         }
 
-#if 1    // RAPYUTA_SIM_DEBUG
         UE_LOG(LogRapyutaCore,
                Error,
-               TEXT("ResolvePenetration: %s.%s at location %s inside %s.%s at location %s by %.3f (netmode: %d)"),
+               TEXT("ResolvePenetration: %s.%s at location %s inside %s.%s at location %s by %.3f (netmode: %d)\n"
+                    "TraceStart %s TraceEnd %s Bone %s"),
                *ownerActor->GetName(),
                *UpdatedComponent->GetName(),
                *UpdatedComponent->GetComponentLocation().ToString(),
@@ -102,22 +122,10 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
                *GetNameSafe(InHit.GetComponent()),
                InHit.Component.IsValid() ? *InHit.GetComponent()->GetComponentLocation().ToString() : TEXT("<unknown>"),
                InHit.PenetrationDepth,
-               static_cast<uint32>(GetNetMode()));
-#endif
-
-        if (ExemptedCollidingCompList.Contains(InHit.GetComponent()))
-        {
-#if 1    // RAPYUTA_SIM_DEBUG
-            UE_LOG(LogRapyutaCore,
-                   Error,
-                   TEXT("%s ResolvePenetrationImpl - EXEMPTED hit comp %s"),
-                   *GetName(),
-                   *InHit.GetComponent()->GetName());
-#endif
-            // Retry original move WITHOUT Sweep
-            MoveUpdatedComponent(constrainedAdjustment, InNewRotationQuat, false, nullptr, ETeleportType::TeleportPhysics);
-            return true;
-        }
+               static_cast<uint32>(GetNetMode()),
+               *InHit.TraceStart.ToString(),
+               *InHit.TraceEnd.ToString(),
+               *InHit.BoneName.ToString());
 
         // We really want to make sure that precision differences or differences between the overlap test and sweep tests don't put us into another overlap,
         // so make the overlap test a bit more restrictive.
@@ -131,9 +139,7 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
         {
             // Move without sweeping.
             MoveUpdatedComponent(constrainedAdjustment, InNewRotationQuat, false, nullptr, ETeleportType::TeleportPhysics);
-#if 1    // RAPYUTA_SIM_DEBUG
             UE_LOG(LogRapyutaCore, Error, TEXT("ResolvePenetration: teleport by %s"), *constrainedAdjustment.ToString());
-#endif
             return true;
         }
         else
@@ -147,13 +153,11 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
             bool bMoved =
                 MoveUpdatedComponent(constrainedAdjustment, InNewRotationQuat, true, &outSweepHit, ETeleportType::TeleportPhysics);
 
-#if 1    // RAPYUTA_SIM_DEBUG
             UE_LOG(LogRapyutaCore,
                    Error,
                    TEXT("ResolvePenetration: sweep by %s (success = %d)"),
                    *constrainedAdjustment.ToString(),
                    bMoved);
-#endif
 
             // Try sweep again - 1st
             if (!bMoved && outSweepHit.bStartPenetrating)
@@ -164,13 +168,11 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
                 if (secondMTD != constrainedAdjustment && !combinedMTD.IsZero())
                 {
                     bMoved = MoveUpdatedComponent(combinedMTD, InNewRotationQuat, true, nullptr, ETeleportType::TeleportPhysics);
-#if 1    // RAPYUTA_SIM_DEBUG
                     UE_LOG(LogRapyutaCore,
                            Error,
                            TEXT("ResolvePenetration: sweep by %s (MTD combo success = %d)"),
                            *combinedMTD.ToString(),
                            bMoved);
-#endif
                 }
             }
 
@@ -183,13 +185,11 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
                 {
                     bMoved = MoveUpdatedComponent(
                         constrainedAdjustment + moveDelta, InNewRotationQuat, true, nullptr, ETeleportType::TeleportPhysics);
-#if 1    // RAPYUTA_SIM_DEBUG
                     UE_LOG(LogRapyutaCore,
                            Error,
                            TEXT("ResolvePenetration: sweep by %s (adjusted attempt success = %d)"),
                            *(constrainedAdjustment + moveDelta).ToString(),
                            bMoved);
-#endif
 
                     // Finally, try the original move without MTD adjustments, but allowing depenetration along the MTD normal.
                     // This was blocked because MOVECOMP_NeverIgnoreBlockingOverlaps was true for the original move to try a better depenetration normal, but we might be running in to other geometry in the attempt.
@@ -197,13 +197,11 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
                     if (!bMoved && FVector::DotProduct(moveDelta, constrainedAdjustment) > 0.f)
                     {
                         bMoved = MoveUpdatedComponent(moveDelta, InNewRotationQuat, true, nullptr, ETeleportType::TeleportPhysics);
-#if 1    // RAPYUTA_SIM_DEBUG
                         UE_LOG(LogRapyutaCore,
                                Error,
                                TEXT("ResolvePenetration:   sweep by %s (Original move, attempt success = %d)"),
                                *(moveDelta).ToString(),
                                bMoved);
-#endif
                     }
                 }
             }
@@ -214,57 +212,4 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
 
     return false;
 }
-
-bool URRFloatingMovementComponent::SafeMoveTargetWithCollisionExemption(const FVector& InDeltaLoc,
-                                                                        const FQuat& InNewRotation,
-                                                                        bool bSweep,
-                                                                        FHitResult& OutHit,
-                                                                        const ETeleportType InTeleportType)
-{
-    if (UpdatedComponent == NULL)
-    {
-        OutHit.Reset(1.f);
-        return false;
-    }
-
-    bool bMoveResult = false;
-
-    // Scope for move flags
-    {
-        // NOT IGNORE blocking overlaps
-        const EMoveComponentFlags IncludeBlockingOverlapsWithoutEvents =
-            (MOVECOMP_NeverIgnoreBlockingOverlaps | MOVECOMP_DisableBlockingOverlapDispatch);
-        TGuardValue<EMoveComponentFlags> ScopedFlagRestore(
-            MoveComponentFlags,
-            //MovementComponentCVars::MoveIgnoreFirstBlockingOverlap
-            false ? MoveComponentFlags : (MoveComponentFlags | IncludeBlockingOverlapsWithoutEvents));
-        bMoveResult = MoveUpdatedComponent(InDeltaLoc, InNewRotation, bSweep, &OutHit, InTeleportType);
-    }
-
-    // Handle initial penetration
-    if (OutHit.bStartPenetrating && UpdatedComponent)
-    {
-        if (ExemptedCollidingCompList.Contains(OutHit.GetComponent()))
-        {
-#if 1    // RAPYUTA_SIM_DEBUG
-            UE_LOG(LogRapyutaCore,
-                   Error,
-                   TEXT("%s Handle initial penetration - EXEMPTED hit comp %s"),
-                   *GetName(),
-                   *OutHit.GetComponent()->GetName());
 #endif
-            // Retry original move WITHOUT Sweep
-            bMoveResult = MoveUpdatedComponent(InDeltaLoc, InNewRotation, false, &OutHit, InTeleportType);
-        }
-        else
-        {
-            if (ResolvePenetration(GetPenetrationAdjustment(OutHit), OutHit, InNewRotation))
-            {
-                // Retry original move
-                bMoveResult = MoveUpdatedComponent(InDeltaLoc, InNewRotation, bSweep, &OutHit, InTeleportType);
-            }
-        }
-    }
-
-    return bMoveResult;
-}
