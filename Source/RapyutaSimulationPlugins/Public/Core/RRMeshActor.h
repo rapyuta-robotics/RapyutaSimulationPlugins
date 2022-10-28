@@ -141,7 +141,7 @@ public:
 
         // Change RootComponent -> BaseMeshComp
         // Base Mesh Component Configs
-        if ((nullptr == BaseMeshComp) && (MeshCompList.Num() > 0) && (MeshCompList.Num() == ToBeCreatedMeshesNum))
+        if ((nullptr == BaseMeshComp) && (MeshCompList.Num() > 0) /*&& (MeshCompList.Num() == ToBeCreatedMeshesNum)*/)
         {
             BaseMeshComp = MeshCompList[0];
 

@@ -18,14 +18,33 @@ void URRROS2EntityStateSensorComponent::BeginPlay()
 
 void URRROS2EntityStateSensorComponent::SetReferenceActorByName(const FString& InName)
 {
-    ReferenceActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
-    ReferenceActorName = InName;
+    AActor* newReferenceActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
+    if (newReferenceActor)
+    {
+        const bool bNewReference = (ReferenceActor != newReferenceActor);
+        ReferenceActor = newReferenceActor;
+        ReferenceActorName = InName;
+        if (bNewReference)
+        {
+            OnNewReferenceActorDetected.Broadcast(newReferenceActor);
+        }
+    }
+    else
+    {
+        UE_LOG(
+            LogRapyutaCore, Error, TEXT("[URRROS2EntityStateSensorComponent::SetReferenceActorByName] %s is not found"), *InName);
+    }
 }
 
 void URRROS2EntityStateSensorComponent::SetReferenceActorByActor(AActor* InActor)
 {
+    const bool bNewReference = (ReferenceActor != InActor);
     ReferenceActor = InActor;
     ReferenceActorName = ReferenceActor->GetName();
+    if (bNewReference)
+    {
+        OnNewReferenceActorDetected.Broadcast(InActor);
+    }
 }
 
 FROSEntityState URRROS2EntityStateSensorComponent::GetROS2Data()

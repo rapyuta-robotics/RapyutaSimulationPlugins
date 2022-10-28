@@ -20,9 +20,25 @@ class RAPYUTASIMULATIONPLUGINS_API URRFloatingMovementComponent : public UFloati
     GENERATED_BODY()
 
 public:
+    URRFloatingMovementComponent()
+    {
+    }
+    URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer);
     UPROPERTY()
     bool bSweepEnabled = true;
 
+    // Colliding comps to be moved through without sweep, which prevents movement upon collision
+    UPROPERTY()
+    TArray<USceneComponent*> ExemptedCollidingCompList;
+
 protected:
     virtual void TickComponent(float InDeltaTime, enum ELevelTick InTickType, FActorComponentTickFunction* InTickFunction) override;
+    virtual bool ResolvePenetrationImpl(const FVector& InProposedAdjustment,
+                                        const FHitResult& InHit,
+                                        const FQuat& InNewRotationQuat) override;
+    bool SafeMoveTargetWithCollisionExemption(const FVector& InDeltaLoc,
+                                              const FQuat& InNewRotation,
+                                              bool bSweep,
+                                              FHitResult& OutHit,
+                                              const ETeleportType InTeleportType = ETeleportType::None);
 };
