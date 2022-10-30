@@ -508,6 +508,9 @@ public:
     static constexpr int8 IMAGE_BIT_DEPTH_FLOAT16 = 16;
     static constexpr int8 IMAGE_BIT_DEPTH_FLOAT32 = 32;
 
+    static constexpr const TCHAR* MAP_ORIGIN_TAG = TEXT("map_origin");
+    static constexpr const TCHAR* MAP_ROS_FRAME_ID = TEXT("map");
+
     //! Game mode handle
     UPROPERTY()
     ARRGameMode* GameMode = nullptr;
