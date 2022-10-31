@@ -17,6 +17,7 @@ void UROS2Spawnable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(UROS2Spawnable, ActorName);
     DOREPLIFETIME(UROS2Spawnable, ActorNamespace);
     DOREPLIFETIME(UROS2Spawnable, ActorTags);
+    DOREPLIFETIME(UROS2Spawnable, ActorJsonConfigs);
     DOREPLIFETIME(UROS2Spawnable, NetworkPlayerId);
 }
 
