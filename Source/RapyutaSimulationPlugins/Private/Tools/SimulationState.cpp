@@ -337,6 +337,8 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
 #if WITH_EDITOR
     newEntity->SetActorLabel(*InROSSpawnRequest.State.Name);
 #endif
+
+    // Set/Configure [robot]'s [ROSSpawnParameters] as [spawnableComponent]
     ARRBaseRobot* robot = Cast<ARRBaseRobot>(newEntity);
     if (robot)
     {
@@ -359,6 +361,9 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
         newEntity->Tags.Emplace(tag);
         spawnableComponent->AddTag(tag);
     }
+
+    // Add Json configs
+    spawnableComponent->ActorJsonConfigs = InROSSpawnRequest.JsonParameters;
 
     // Finish spawning Entity
     UGameplayStatics::FinishSpawningActor(newEntity, InEntityTransform);
