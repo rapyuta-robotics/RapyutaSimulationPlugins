@@ -315,19 +315,19 @@ public:
     }
 
     // SKELETAL ASSETS --
-    FORCEINLINE USkeletalMesh* GetSkeletalMesh(const FString& InSkeletalMeshName)
+    FORCEINLINE USkeletalMesh* GetSkeletalMesh(const FString& InSkeletalMeshName, bool bIsStaticResource = true)
     {
-        return GetSimResource<USkeletalMesh>(ERRResourceDataType::UE_SKELETAL_MESH, InSkeletalMeshName);
+        return GetSimResource<USkeletalMesh>(ERRResourceDataType::UE_SKELETAL_MESH, InSkeletalMeshName, bIsStaticResource);
     }
 
-    FORCEINLINE USkeleton* GetSkeleton(const FString& InSkeletonName)
+    FORCEINLINE USkeleton* GetSkeleton(const FString& InSkeletonName, bool bIsStaticResource = true)
     {
-        return GetSimResource<USkeleton>(ERRResourceDataType::UE_SKELETON, InSkeletonName);
+        return GetSimResource<USkeleton>(ERRResourceDataType::UE_SKELETON, InSkeletonName, bIsStaticResource);
     }
 
-    FORCEINLINE UPhysicsAsset* GetPhysicsAsset(const FString& InPhysicsAssetName)
+    FORCEINLINE UPhysicsAsset* GetPhysicsAsset(const FString& InPhysicsAssetName, bool bIsStaticResource = true)
     {
-        return GetSimResource<UPhysicsAsset>(ERRResourceDataType::UE_PHYSICS_ASSET, InPhysicsAssetName);
+        return GetSimResource<UPhysicsAsset>(ERRResourceDataType::UE_PHYSICS_ASSET, InPhysicsAssetName, bIsStaticResource);
     }
 
     // MATERIALS --

@@ -12,7 +12,7 @@
 #include "GameFramework/Actor.h"
 
 // rclUE
-#include "Msgs/ROS2PointCloud2Msg.h"
+#include "Msgs/ROS2PointCloud2.h"
 
 // RapyutaSimulationPlugins
 #include "Sensors/RRBaseLidarComponent.h"

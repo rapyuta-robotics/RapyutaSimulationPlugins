@@ -13,7 +13,7 @@
 // rclUE
 #include "RRROS2BaseSensorComponent.h"
 
-#include <Msgs/ROS2EntityStateMsg.h>
+#include <Msgs/ROS2EntityState.h>
 
 // RapyutaSimulationPlugins
 #include "Core/RRGeneralUtils.h"

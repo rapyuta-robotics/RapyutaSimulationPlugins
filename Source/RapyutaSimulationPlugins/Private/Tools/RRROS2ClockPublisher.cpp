@@ -9,7 +9,10 @@ void URRROS2ClockPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
     MsgClass = UROS2ClockMsg::StaticClass();
     TopicName = TEXT("clock");
-    PublicationFrequencyHz = 100;
+
+    // Frequency should be same as Game fixed timestep but 
+    // Since Timer frequency <= fixed timestep causes un precise loop, uses tick.
+    PublicationFrequencyHz = -1;
 
     // [ROS2ClockPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
     Init(UROS2QoS::ClockPub);
@@ -21,11 +24,15 @@ void URRROS2ClockPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
     auto* gameState = GetWorld()->GetGameState();
     if (gameState)
     {
-        auto stamp = UROS2Utils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
 
         FROSClock msg;
-        msg.ClockSec = stamp.sec;
-        msg.ClockNanosec = stamp.nanosec;
+        msg.Clock = URRConversionUtils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
         CastChecked<UROS2ClockMsg>(InMessage)->SetMsg(msg);
     }
+}
+
+void URRROS2ClockPublisher::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    UpdateAndPublishMessage();
 }

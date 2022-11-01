@@ -9,7 +9,7 @@
 #include "GameFramework/Actor.h"
 
 // rclUE
-#include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Srvs/ROS2SpawnEntity.h"
 
 #include "ROS2Spawnable.generated.h"
 
@@ -33,13 +33,16 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TArray<FString> ActorTags;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated)
+    FString ActorJsonConfigs;
+
     /**
      * @brief Set Actor name and ROS2 namespace from SpawnEntity service request.
      * @sa [ue_msgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    virtual void InitializeParameters(const FROSSpawnEntityRequest& InRequest);
+    virtual void InitializeParameters(const FROSSpawnEntityReq& InRequest);
 
     UFUNCTION(BlueprintCallable)
     virtual void SetName(const FString& InName);

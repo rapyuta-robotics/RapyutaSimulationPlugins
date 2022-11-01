@@ -162,9 +162,12 @@ URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* I
     return SActorCommonList[InSceneInstanceId];
 }
 
-void URRActorCommon::OnPostWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources)
+void URRActorCommon::OnPostWorldCleanup(UWorld* InWorld, bool /*bInSessionEnded*/, bool /*bInCleanupResources*/)
 {
-    URRActorCommon::SActorCommonList.Reset();
+    if ((URRActorCommon::SActorCommonList.Num() > 0) && URRActorCommon::SActorCommonList[0]->GetWorld() == InWorld)
+    {
+        URRActorCommon::SActorCommonList.Reset();
+    }
 }
 
 URRActorCommon::URRActorCommon()

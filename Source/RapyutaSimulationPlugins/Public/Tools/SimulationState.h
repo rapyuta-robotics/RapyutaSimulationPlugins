@@ -12,12 +12,12 @@
 #include "GameFramework/Actor.h"
 
 // rclUE
-#include "Srvs/ROS2AttachSrv.h"
-#include "Srvs/ROS2DeleteEntitySrv.h"
-#include "Srvs/ROS2GetEntityStateSrv.h"
-#include "Srvs/ROS2SetEntityStateSrv.h"
-#include "Srvs/ROS2SpawnEntitiesSrv.h"
-#include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Srvs/ROS2Attach.h"
+#include "Srvs/ROS2DeleteEntity.h"
+#include "Srvs/ROS2GetEntityState.h"
+#include "Srvs/ROS2SetEntityState.h"
+#include "Srvs/ROS2SpawnEntities.h"
+#include "Srvs/ROS2SpawnEntity.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
@@ -71,9 +71,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRREntities
  * Supported interactions: Service [GetEntityState, SetEntityState, Attach, SpawnEntity, DeleteEntity]
  *
  * SimulationState can manipulate only actors in #Entities and #EntitiesWithTag. All actors in the world are added to #Entities and
- * #EntitiesWithTag with #Init method and actors can be added to those list by #AddEntity method individually as well.
+ * #EntitiesWithTag with #InitEntities method and actors can be added to those list by #AddEntity method individually as well.
  *
- * SimulationState can spawn only actors in #SpawnableEntities which actors can be added to by #AddSpawnableEntities.
+ * SimulationState can spawn only actors in #SpawnableEntities which actors can be added to by #AddSpawnableEntityTypes.
  *
  */
 UCLASS()
@@ -90,85 +90,95 @@ public:
 
 public:
     /**
-     * @brief Fetch all entities in the current map
+     * @brief Fetch all entities in the current map under control of this Actor.
      */
     UFUNCTION(BlueprintCallable)
     virtual void InitEntities();
 
     //! Cached the previous [GetEntityState] request for duplicated incoming request filtering
+    //! @todo is this necessary?
     UPROPERTY(BlueprintReadOnly)
-    FROSGetEntityStateRequest PrevGetEntityStateRequest;
+    FROSGetEntityStateReq PrevGetEntityStateRequest;
 
     /**
      * @brief Check set-entity-state-request for duplication on server
+     * @todo is this necessary?
      */
     UFUNCTION(BlueprintCallable)
-    bool ServerCheckSetEntityStateRequest(const FROSSetEntityStateRequest& InRequest);
+    bool ServerCheckSetEntityStateRequest(const FROSSetEntityStateReq& InRequest);
 
     /**
      * @brief Set Entity state on server
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    void ServerSetEntityState(const FROSSetEntityStateRequest& InRequest);
+    void ServerSetEntityState(const FROSSetEntityStateReq& InRequest);
 
     //! Cached the previous [SetEntityState] request for duplicated incoming request filtering
+    //! @todo is this necessary?
     UPROPERTY(BlueprintReadOnly)
-    FROSSetEntityStateRequest PrevSetEntityStateRequest;
+    FROSSetEntityStateReq PrevSetEntityStateRequest;
 
     /**
      * @brief Check entity-attach request for duplication on server
      * @param InRequest
+     * @todo is this necessary?
      */
     UFUNCTION(BlueprintCallable)
-    bool ServerCheckAttachRequest(const FROSAttachRequest& InRequest);
+    bool ServerCheckAttachRequest(const FROSAttachReq& InRequest);
 
     /**
-     * @brief Attach an entity to another on Server
+     * @brief Attach/detach an entity to/from another on Server
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    void ServerAttach(const FROSAttachRequest& InRequest);
+    void ServerAttach(const FROSAttachReq& InRequest);
 
     //! Cached the previous [Attach] request for duplicated incoming request filtering
+    //! @todo is this necessary?
     UPROPERTY(BlueprintReadOnly)
-    FROSAttachRequest PrevAttachEntityRequest;
+    FROSAttachReq PrevAttachEntityRequest;
 
     /**
      * @brief Check entity-spawn-request for duplication on Server
+     * @todo is this necessary?
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    bool ServerCheckSpawnRequest(const FROSSpawnEntityRequest& InRequest);
+    bool ServerCheckSpawnRequest(const FROSSpawnEntityReq& InRequest);
 
     /**
      * @brief Spawn entity on Server
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest, const int32 NetworkPlayerId);
+    AActor* ServerSpawnEntity(const FROSSpawnEntityReq& InRequest, const int32 NetworkPlayerId);
 
     //! Cached the previous [SpawnEntity] request for duplicated incoming request filtering
+    //! @todo is this necessary?
     UPROPERTY(BlueprintReadOnly)
-    FROSSpawnEntityRequest PrevSpawnEntityRequest;
+    FROSSpawnEntityReq PrevSpawnEntityRequest;
 
     /**
      * @brief Check delete-entity-request for duplication on Server
+     * @todo is this necessary?
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    bool ServerCheckDeleteRequest(const FROSDeleteEntityRequest& InRequest);
+    bool ServerCheckDeleteRequest(const FROSDeleteEntityReq& InRequest);
 
     /**
      * @brief Delete entity on Server
+     * @todo is this necessary?
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable)
-    void ServerDeleteEntity(const FROSDeleteEntityRequest& InRequest);
+    void ServerDeleteEntity(const FROSDeleteEntityReq& InRequest);
 
     //! Cached the previous [DeleteEntity] request for duplicated incoming request filtering
+    //! @todo is this necessary?
     UPROPERTY(BlueprintReadOnly)
-    FROSDeleteEntityRequest PrevDeleteEntityRequest;
+    FROSDeleteEntityReq PrevDeleteEntityRequest;
 
     /**
      * @brief Add Entity to #Entities and #EntitiesWithTag
@@ -193,16 +203,19 @@ public:
     void AddSpawnableEntityTypes(TMap<FString, TSubclassOf<AActor>> InSpawnableEntityTypes);
 
     //! All existing entities
+    //! @todo Converting to TArrays to be able to be replicated
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
 
     //! Entities with tags which can be manipulated by this class via ROS2 services.
+    //! @todo Converting to TArrays to be able to be replicated
     UPROPERTY(EditAnywhere)
     TMap<FName, FRREntities> EntitiesWithTag;
 
     //! Replicatable copy of #Entities
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_EntityList)
     TArray<AActor*> EntityList;
+
     /**
      * @brief Callback when #EntityList is replicated
      */
@@ -210,6 +223,7 @@ public:
     void OnRep_EntityList();
 
     //! Spawnable entity types for SpawnEntity ROS2 service.
+    //! @todo Converting to TArrays to be able to be replicated
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntityTypes;
 
@@ -235,19 +249,19 @@ public:
 
 private:
     /**
-     * @brief Verify a function is called for server
+     * @brief Verify a function is called from server
      */
     bool VerifyIsServerCall(const FString& InFunctionName);
 
     /**
      * @brief Spawn entity with tag & init nav surrogate
-     * @param InROSSpawnRequest (FROSSpawnEntityRequest)
+     * @param InROSSpawnRequest (FROSSpawnEntityReq)
      * @param InEntityClass
      * @param InEntityTransform
      * @param InNetworkPlayerId
      * @return AActor*
      */
-    AActor* ServerSpawnEntity(const FROSSpawnEntityRequest& InROSSpawnRequest,
+    AActor* ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawnRequest,
                               const TSubclassOf<AActor>& InEntityClass,
                               const FTransform& InEntityTransform,
                               const int32& InNetworkPlayerId);

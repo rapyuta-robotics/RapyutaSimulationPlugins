@@ -14,7 +14,7 @@
 #include "GameFramework/PawnMovementComponent.h"
 
 // rclUE
-#include "Msgs/ROS2OdometryMsg.h"
+#include "Msgs/ROS2Odom.h"
 
 #include "RobotVehicleMovementComponent.generated.h"
 
@@ -84,7 +84,7 @@ public:
     FQuat DesiredRotation = FQuat::Identity;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    FROSOdometry OdomData;
+    FROSOdom OdomData;
 
     //! Frame id of odometry
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -173,10 +173,12 @@ public:
 
 protected:
     virtual void BeginPlay() override;
+
     virtual bool IsSupportedForNetworking() const override
     {
         return true;
     }
+
     /**
      * @brief Move actor by using SafeMoveUpdatedComponent and SlideAlongSurface.
      * Calculate #DesiredMovement and #DesiredRotation from deltatime, UpdatedComponent and #AngularVelocity.

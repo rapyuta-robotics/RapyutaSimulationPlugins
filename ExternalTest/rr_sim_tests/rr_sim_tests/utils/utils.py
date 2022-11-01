@@ -77,9 +77,12 @@ class CmdVelPublisher(Node):
 
             self._timer = self.create_timer(1.0/publishing_freq, self.twist_robot)
 
-            while rclpy.ok() and not self._is_pub_finished:
-                self._executor.spin_once(timeout_sec = 0)
-            print(f'Finished publishing Twist to {self._cmd_vel_topic}')
+        while rclpy.ok() and not self._is_pub_finished:
+            self._executor.spin_once(timeout_sec = 0)
+        print(f'Finished publishing Twist to {self.get_full_topic_name()}')
+
+    def get_full_topic_name(self):
+        return f'{self.get_namespace()}/{self._cmd_vel_topic}'
 
     def __enter__(self):
         return self
@@ -92,8 +95,8 @@ class CmdVelPublisher(Node):
         
     async def twist_robot(self):
         if (self._twist_pub_count < self._publishing_num or self._publishing_num <= 0):
-            self.get_logger().info(f'Publishing to {self._cmd_vel_topic}: {self._twist}')
-            self.twist_pub()
+            self.get_logger().info(f'Publishing to {self.get_full_topic_name()}: {self._twist}')
+            self._twist_pub.publish(self._twist)
             self._twist_pub_count += 1
         else:
             self._is_pub_finished = True
@@ -106,9 +109,13 @@ class CmdVelPublisher(Node):
         self._twist_pub.publish(twist)
 
     def wait_for_robot_twisted(self, in_robot_name, in_robot_prev_pose, in_timeout=5.0):
-        assert self._is_pub_finished
-        # Wait a while for robot to receive Twist message
-        time.sleep(1.0)
-        is_robot_found, robot_pose = wait_for_spawned_entity(in_robot_name, in_timeout)
-        assert is_robot_found, f'wait_for_robot_twisted(): {in_robot_name} unavailable!'
-        return (robot_pose != in_robot_prev_pose)
+        assert self._is_pub_finished, f'Twist has not been published to {self.get_full_topic_name()}'
+        
+        start_time = time.time()
+        while ((time.time() - start_time) < in_timeout):
+            time.sleep(1.0)
+            is_robot_found, robot_pose = wait_for_spawned_entity(in_robot_name, in_timeout=5.0)
+            assert is_robot_found, f'wait_for_robot_twisted(): {in_robot_name} unavailable!'
+            if (robot_pose != in_robot_prev_pose):
+                return True
+        return False
