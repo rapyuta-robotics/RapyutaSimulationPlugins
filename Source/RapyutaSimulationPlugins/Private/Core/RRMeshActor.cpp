@@ -16,6 +16,7 @@ ARRMeshActor::ARRMeshActor()
 {
     // CREATE & SETUP A SCENE COMPONENT AS ROOT
     // -> THIS IS REQUIRED TO ALLOW ACTOR BEING SPAWNED WITH A USER TRANSFORM, WHICH IS APPLIED TO THE SCENE-COMPONENT ROOT
+    // Refer to [AActor::PostSpawnInitialize()]
     URRUObjectUtils::SetupDefaultRootComponent(this);
 
     bLastMeshCreationResult = false;

@@ -100,13 +100,12 @@ public:
                 continue;
             }
 
-            static int64 count = 0;
             // [OBJECT MESH COMP] --
             //
             meshComp = URRUObjectUtils::CreateMeshComponent<TMeshComp>(
                 this,
                 meshUniqueName,
-                FString::Printf(TEXT("%s_MeshComp_%ld"), *ActorInfo->UniqueName, count++),
+                FString::Printf(TEXT("%s_MeshComp_%u"), *ActorInfo->UniqueName, MeshCompList.Num()),
                 InMeshRelTransf.IsValidIndex(i) ? InMeshRelTransf[i] : FTransform::Identity,
                 ActorInfo->bIsStationary,
                 ActorInfo->bIsPhysicsEnabled,
