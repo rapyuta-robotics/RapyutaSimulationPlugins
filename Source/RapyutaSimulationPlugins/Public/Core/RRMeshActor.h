@@ -139,8 +139,8 @@ public:
         }
 
         // Change RootComponent -> BaseMeshComp
-        // Base Mesh Component Configs
-        if ((nullptr == BaseMeshComp) && (MeshCompList.Num() > 0) /*&& (MeshCompList.Num() == ToBeCreatedMeshesNum)*/)
+        // NOTE: If we are in mid of loading up other mesh comps, changing root mid-way could disrupt the component hiearchy
+        if ((nullptr == BaseMeshComp) && (MeshCompList.Num() > 0) && (MeshCompList.Num() == ToBeCreatedMeshesNum))
         {
             BaseMeshComp = MeshCompList[0];
 
