@@ -139,20 +139,23 @@ public:
         }
 
         // Change RootComponent -> BaseMeshComp
-        // NOTE: If we are in mid of loading up other mesh comps, changing root mid-way could disrupt the component hiearchy
-        if ((nullptr == BaseMeshComp) && (MeshCompList.Num() > 0) && (MeshCompList.Num() == ToBeCreatedMeshesNum))
+        if ((nullptr == BaseMeshComp) && (MeshCompList.Num() > 0))
         {
             BaseMeshComp = MeshCompList[0];
 
-            // Set as Root Component
-            // Set the main mesh comp as the root
-            // (Not clear why using the default scene component as the root just disrupts actor-children relative movement,
-            // and thus also compromise the actor transform itself)!
-            if (RootComponent)
+            if (BaseMeshComp->GetRelativeTransform().Equals(FTransform::Identity))
             {
-                RootComponent->DestroyComponent();
+                // Set as Root Component
+                // Set the main mesh comp as the root
+                // (Not clear why using the default scene component as the root just disrupts actor-children relative movement,
+                // and thus also compromise the actor transform itself)!
+                USceneComponent* oldRoot = RootComponent;
+                SetRootComponent(BaseMeshComp);
+                if (oldRoot)
+                {
+                    oldRoot->DestroyComponent();
+                }
             }
-            SetRootComponent(BaseMeshComp);
         }
 
         return addedMeshCompList;
