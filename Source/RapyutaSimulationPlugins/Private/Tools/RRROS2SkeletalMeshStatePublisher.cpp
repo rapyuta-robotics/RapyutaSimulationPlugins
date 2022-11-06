@@ -21,8 +21,9 @@ void URRROS2SkeletalMeshStatePublisher::InitializeWithROS2(AROS2Node* InROS2Node
     MsgClass = UROS2EntityStateMsg::StaticClass();
     TopicName = TEXT("ue_ros/model_state");
     PublicationFrequencyHz = 10;
+    QoS = UROS2QoS::DynamicBroadcaster
 
-    Init(UROS2QoS::DynamicBroadcaster);
+    Init();
 }
 
 void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(ARobotVehicle* InRobot)

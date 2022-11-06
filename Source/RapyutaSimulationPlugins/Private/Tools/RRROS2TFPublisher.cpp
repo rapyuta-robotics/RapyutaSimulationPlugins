@@ -28,7 +28,7 @@ void URRROS2TFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
         TopicName = TEXT("/tf");
         QoS = UROS2QoS::DynamicBroadcaster;
     }
-    Init(QoS);
+    Init();
 }
 
 void URRROS2TFPublisher::SetTransform(const FVector& Translation, const FQuat& Rotation)

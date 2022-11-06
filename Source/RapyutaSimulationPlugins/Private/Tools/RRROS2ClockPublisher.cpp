@@ -6,10 +6,8 @@
 #include "Msgs/ROS2Clock.h"
 #include "rclcUtilities.h"
 
-void URRROS2ClockPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
+void URRROS2ClockPublisher::URRROS2ClockPublisher()
 {
-    Super::InitializeWithROS2(InROS2Node);
-
     MsgClass = UROS2ClockMsg::StaticClass();
     TopicName = TEXT("clock");
 
@@ -18,7 +16,7 @@ void URRROS2ClockPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
     PublicationFrequencyHz = -1;
 
     // [ROS2ClockPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
-    Init(UROS2QoS::ClockPub);
+    QoS = UROS2QoS::ClockPub;
 }
 
 void URRROS2ClockPublisher::UpdateMessage(UROS2GenericMsg* InMessage)

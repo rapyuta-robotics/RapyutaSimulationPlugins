@@ -15,9 +15,10 @@ void URRROS2StatePublisher::InitializeWithROS2(AROS2Node* InROS2Node)
     MsgClass = UROS2EntityStateMsg::StaticClass();
     TopicName = TEXT("state");
     PublicationFrequencyHz = 100;
+    QoS = UROS2QoS::DynamicBroadcaster;
 
     // [URRROS2StatePublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
-    Init(UROS2QoS::DynamicBroadcaster);
+    Init();
 }
 
 void URRROS2StatePublisher::SetTargetRobot(ARobotVehicle* InRobot)

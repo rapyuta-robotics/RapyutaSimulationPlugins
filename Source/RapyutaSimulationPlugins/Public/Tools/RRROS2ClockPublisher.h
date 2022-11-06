@@ -24,6 +24,9 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2ClockPublisher : public UROS2Publisher
     GENERATED_BODY()
 
 public:
+
+    URRROS2ClockPublisher();
+
     void InitializeWithROS2(AROS2Node* InROS2Node) override;
 
     /**

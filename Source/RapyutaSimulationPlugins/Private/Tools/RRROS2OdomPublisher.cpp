@@ -11,14 +11,12 @@ URRROS2OdomPublisher::URRROS2OdomPublisher()
     MsgClass = UROS2OdomMsg::StaticClass();
     TopicName = TEXT("odom");
     PublicationFrequencyHz = 30;
+    QoS = UROS2QoS::KeepLast;
 }
 
 void URRROS2OdomPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
-
-    // [URRROS2OdomPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
-    Init(UROS2QoS::KeepLast);
 
     // Init TF
     InitializeTFWithROS2(InROS2Node);

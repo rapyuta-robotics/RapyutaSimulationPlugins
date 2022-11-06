@@ -9,12 +9,7 @@ URRROS2StringPublisher::URRROS2StringPublisher()
 {
     MsgClass = UROS2StrMsg::StaticClass();
     PublicationFrequencyHz = 1;
-}
-
-void URRROS2StringPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
-{
-    Super::InitializeWithROS2(InROS2Node);
-    Init(UROS2QoS::DynamicBroadcaster);
+    QoS = UROS2QoS::DynamicBroadcaster;
 }
 
 void URRROS2StringPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
