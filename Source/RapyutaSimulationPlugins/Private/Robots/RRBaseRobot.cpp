@@ -241,7 +241,7 @@ void ARRBaseRobot::DeInitROS2Interface()
     }
 }
 
-bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
+bool ARRBaseRobot::InitSensors(UROS2NodeComponent* InROS2Node)
 {
     if (false == IsValid(InROS2Node))
     {

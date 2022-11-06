@@ -72,7 +72,7 @@ void ARRROS2GameMode::InitROS2()
     }
 
     // MainROS2Node
-    MainROS2Node = GetWorld()->SpawnActor<AROS2Node>();
+    MainROS2Node = NewObject<UROS2NodeComponent>(this);
     MainROS2Node->Namespace.Reset();
     MainROS2Node->Name = MainROS2NodeName;
     MainROS2Node->Init();

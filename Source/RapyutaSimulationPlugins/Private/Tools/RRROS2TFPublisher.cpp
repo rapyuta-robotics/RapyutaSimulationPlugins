@@ -10,13 +10,11 @@ URRROS2TFPublisher::URRROS2TFPublisher()
 {
     PublicationFrequencyHz = 50;
     MsgClass = UROS2TFMsgMsg::StaticClass();
+    SetupUpdateCallback(); //use UpdateMessage as update delegate
 }
 
 void URRROS2TFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 {
-    Super::InitializeWithROS2(InROS2Node);
-
-    TEnumAsByte<UROS2QoS> QoS;
     // (NOTE) [/tf, /tf_static] has its [tf_prefix] only for frame ids, not topics
     if (IsStatic)
     {
@@ -28,7 +26,7 @@ void URRROS2TFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
         TopicName = TEXT("/tf");
         QoS = UROS2QoS::DynamicBroadcaster;
     }
-    Init();
+    Super::InitializeWithROS2(InROS2Node);
 }
 
 void URRROS2TFPublisher::SetTransform(const FVector& Translation, const FQuat& Rotation)

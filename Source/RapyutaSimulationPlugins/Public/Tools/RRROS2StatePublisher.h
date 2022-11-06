@@ -34,7 +34,8 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2StatePublisher : public UROS2Publisher
     GENERATED_BODY()
 
 public:
-    void InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
+    URRROS2StatePublisher();
+    
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
 
     UFUNCTION(BlueprintCallable)

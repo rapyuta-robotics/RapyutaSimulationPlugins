@@ -83,9 +83,8 @@ void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
     {
         FActorSpawnParameters spawnParams;
         spawnParams.Name = FName(*nodeName);
-        RobotROS2Node = GetWorld()->SpawnActor<AROS2Node>(spawnParams);
+        RobotROS2Node = NewObject<UROS2NodeComponent>(this);
     }
-    RobotROS2Node->AttachToActor(InRobot, FAttachmentTransformRules::KeepRelativeTransform);
     RobotROS2Node->Name = nodeName;
 
     // Set robot's [ROS2Node] namespace from spawn parameters if existing
@@ -138,15 +137,15 @@ void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
     {
         OutPublisher = UROS2Publisher::CreatePublisher(this, InTopicName, InPublisherClass, InMsgClass, InPubFrequency);
     }
+    OutPublisher->QoS = TEnumAsByte<UROS2QoS>(InQoS);
     OutPublisher->InitializeWithROS2(RobotROS2Node);
-    OutPublisher->Init(TEnumAsByte<UROS2QoS>(InQoS));
 }
 
 void URRRobotROS2Interface::StopPublishers()
 {
     if (bPublishOdom && OdomPublisher)
     {
-        OdomPublisher->RevokeUpdateCallback();
+        // OdomPublisher->RevokeUpdateCallback();
         OdomPublisher->RobotVehicle = nullptr;
     }
 }

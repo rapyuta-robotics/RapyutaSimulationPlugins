@@ -30,7 +30,7 @@ public:
     ARRROS2CameraActor();
 
     UPROPERTY(Transient)
-    AROS2Node* Node;
+    UROS2NodeComponent* Node;
 
     UPROPERTY(BlueprintReadWrite)
     FString NodeName;

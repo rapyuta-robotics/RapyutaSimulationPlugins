@@ -68,7 +68,7 @@ public:
      * @sa [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
      * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
-    virtual void InitalizeWithROS2(AROS2Node* InROS2Node,
+    virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                    const FString& InPublisherName = EMPTY_STR,
                                    const FString& InTopicName = EMPTY_STR,
                                    const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData) override;

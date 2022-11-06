@@ -27,8 +27,6 @@ public:
 
     URRROS2ClockPublisher();
 
-    void InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
-
     /**
      * @brief Update messsage with [UGameplayStatics::GetTimeSeconds](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Kismet/UGameplayStatics/GetTimeSeconds/)
      *

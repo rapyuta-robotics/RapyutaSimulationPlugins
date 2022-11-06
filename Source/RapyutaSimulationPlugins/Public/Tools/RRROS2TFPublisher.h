@@ -56,17 +56,6 @@ public:
     void InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
 
     /**
-     * @brief Initialize.
-     * @todo Is this method necessary?
-     * @param InROS2Node
-     */
-    UFUNCTION(BlueprintCallable)
-    void InitTFPublisher(UROS2NodeComponent* InROS2Node)
-    {
-        InitializeWithROS2(InROS2Node);
-    }
-
-    /**
      * @brief Set value to #TF.
      *
      * @param Translation

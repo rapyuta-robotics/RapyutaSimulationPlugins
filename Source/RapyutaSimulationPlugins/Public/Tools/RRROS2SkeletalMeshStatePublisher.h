@@ -24,7 +24,8 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2SkeletalMeshStatePublisher : public UR
     GENERATED_BODY()
 
 public:
-    void InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
+
+    URRROS2SkeletalMeshStatePublisher();
 
     /**
      * @brief publish pose of owner #ARobotVehicle

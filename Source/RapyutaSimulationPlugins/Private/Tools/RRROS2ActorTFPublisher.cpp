@@ -1,7 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/RRROS2ActorTFPublisher.h"
-
+#include "ROS2ServiceServer.h"
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
 
@@ -12,7 +12,8 @@ void URRROS2ActorTFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
     // register delegates to node
     FServiceCallback TriggerPublishSrvCallback;
     TriggerPublishSrvCallback.BindDynamic(this, &URRROS2ActorTFPublisher::TriggerPublishSrv);
-    InROS2Node->AddServiceServer(TriggerServiceName, UROS2SetBoolSrv::StaticClass(), TriggerPublishSrvCallback);
+
+    InROS2Node->AddServiceServer(UROS2ServiceServer::CreateServiceServer(this, TriggerServiceName, UROS2SetBoolSrv::StaticClass(), TriggerPublishSrvCallback));
 }
 
 void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)

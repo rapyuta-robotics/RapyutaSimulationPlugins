@@ -57,7 +57,7 @@ public:
 
     //! ROS2 node of this interface created by #InitRobotROS2Node
     UPROPERTY(Transient, Replicated)
-    AROS2Node* RobotROS2Node = nullptr;
+    UROS2NodeComponent* RobotROS2Node = nullptr;
 
     //! ROS2SpawnParameters which is created when robot is spawn from /SpawnEntity srv provided by #ASimulationState.
     UPROPERTY(VisibleAnywhere, Replicated)

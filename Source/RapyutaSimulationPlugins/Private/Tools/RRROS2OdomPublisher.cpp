@@ -12,6 +12,7 @@ URRROS2OdomPublisher::URRROS2OdomPublisher()
     TopicName = TEXT("odom");
     PublicationFrequencyHz = 30;
     QoS = UROS2QoS::KeepLast;
+    SetupUpdateCallback(); //use UpdateMessage as update delegate
 }
 
 void URRROS2OdomPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
@@ -22,7 +23,7 @@ void URRROS2OdomPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
     InitializeTFWithROS2(InROS2Node);
 }
 
-void URRROS2OdomPublisher::InitializeTFWithROS2(AROS2Node* InROS2Node)
+void URRROS2OdomPublisher::InitializeTFWithROS2(UROS2NodeComponent* InROS2Node)
 {
     if (bPublishOdomTf)
     {

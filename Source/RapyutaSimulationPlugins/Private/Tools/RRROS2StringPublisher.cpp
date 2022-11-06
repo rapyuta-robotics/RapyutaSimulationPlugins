@@ -10,6 +10,7 @@ URRROS2StringPublisher::URRROS2StringPublisher()
     MsgClass = UROS2StrMsg::StaticClass();
     PublicationFrequencyHz = 1;
     QoS = UROS2QoS::DynamicBroadcaster;
+    SetupUpdateCallback(); //use UpdateMessage as update delegate
 }
 
 void URRROS2StringPublisher::UpdateMessage(UROS2GenericMsg* InMessage)

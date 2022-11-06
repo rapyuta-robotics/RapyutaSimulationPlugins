@@ -13,17 +13,13 @@
 #include "ROS2Publisher.h"
 //#include "DrawDebugHelpers.h"
 
-void URRROS2SkeletalMeshStatePublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
+URRROS2SkeletalMeshStatePublisher::URRROS2SkeletalMeshStatePublisher()
 {
-    // (NOTE) Do not invoke [URRROS2StatePublisher::], which configures its own TopicName, PublicationFrequencyHz
-    UROS2Publisher::InitializeWithROS2(InROS2Node);
-
     MsgClass = UROS2EntityStateMsg::StaticClass();
     TopicName = TEXT("ue_ros/model_state");
     PublicationFrequencyHz = 10;
-    QoS = UROS2QoS::DynamicBroadcaster
-
-    Init();
+    QoS = UROS2QoS::DynamicBroadcaster;
+    SetupUpdateCallback(); //use UpdateMessage as update delegate
 }
 
 void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(ARobotVehicle* InRobot)

@@ -47,7 +47,7 @@ public:
 
     //! Sim ROS2 node in each client. Created only in the client.
     UPROPERTY(Transient)
-    AROS2Node* SimStateClientROS2Node = nullptr;
+    UROS2NodeComponent* SimStateClientROS2Node = nullptr;
 
     //! Publish /clock.
     UPROPERTY(BlueprintReadOnly)
