@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Serialization/AsyncPackageLoader.h"
+#include "Misc/ConfigCacheIni.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRCoreUtils.h"
@@ -120,8 +121,9 @@ void ARRGameMode::StartPlay()
     // The frequency is actually up to the Sim map purpose, which is for AI training or for user-watchable visualization
     // Generally, it should be the same as ROS ClockPublisher's PublicationFrequencyHz
     // (NOTE) Could only use fixed time step in non-Editor mode
-    SetFixedTimestep(
-        1 / CastChecked<URRROS2ClockPublisher>(URRROS2ClockPublisher::StaticClass()->GetDefaultObject())->PublicationFrequencyHz);
+    float frameRate = CastChecked<URRROS2ClockPublisher>(URRROS2ClockPublisher::StaticClass()->GetDefaultObject())->PublicationFrequencyHz;
+    GConfig->GetFloat(TEXT("/Script/Engine.Engine"), TEXT("FixedFrameRate"), frameRate, GEngineIni);
+    SetFixedTimestep(1 / frameRate);
 
     // Run benchmark, will freeze game for a bit. Higher workscale increases time it takes to run tests (10 is default and should be
     // used for shipping builds)
