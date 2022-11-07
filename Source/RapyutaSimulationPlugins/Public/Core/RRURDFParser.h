@@ -8,6 +8,8 @@
 #include "RapyutaSimulationPlugins.h"
 #include "Robots/RRRobotDefines.h"
 
+#define RAPYUTA_URDF_PARSER_DEBUG (0)
+
 /**
  * URDF Parser to parse the information from the robot's URDF file.
  * References:

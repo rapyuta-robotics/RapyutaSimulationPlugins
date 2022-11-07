@@ -1102,6 +1102,10 @@ public:
 
     // Material
     FRRMaterialProperty WholeBodyMaterialInfo;
+    FRRMaterialProperty GetBodyMaterialInfo() const
+    {
+        return WholeBodyMaterialInfo;
+    }
 
     // Articulated link names
     TArray<FString> ArticulatedLinksNames;

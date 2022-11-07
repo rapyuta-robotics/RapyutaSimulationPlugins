@@ -55,15 +55,19 @@ FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
         return FRRRobotModelInfo();
     }
 
+#if RAPYUTA_SDF_PARSER_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("PARSE SDF CONTENT FROM FILE %s"), *InSDFPath);
+#endif
     FRRRobotModelInfo robotModelInfo;
     robotModelInfo.ModelDescType = ERRRobotDescriptionType::SDF;
     robotModelInfo.DescriptionFilePath = InSDFPath;
     if (LoadModelInfoFromSDF(outSDFContent, robotModelInfo))
     {
         robotModelInfo.UpdateLinksLocationFromJoints();
+#if RAPYUTA_SDF_PARSER_DEBUG
         UE_LOG(
             LogRapyutaCore, Warning, TEXT("PARSING SDF SUCCEEDED[%s]!"), *FString::Join(robotModelInfo.ModelNameList, TEXT(",")));
+#endif
     }
     else
     {
@@ -318,8 +322,10 @@ bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRR
             linkElement = linkElement->GetNextElement(SDF_ELEMENT_LINK);
             continue;
         }
-
+#if RAPYUTA_SDF_PARSER_DEBUG
         UE_LOG(LogRapyutaCore, Warning, TEXT("Found [%s] link!"), *linkName);
+#endif
+
         FRRRobotLinkProperty newLinkProp;
         newLinkProp.Name = linkName;
 
@@ -633,7 +639,9 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
 
         if (parentLinkName.Equals(TEXT("world"), ESearchCase::IgnoreCase))
         {
+#if RAPYUTA_SDF_PARSER_DEBUG
             UE_LOG(LogRapyutaCore, Warning, TEXT("Ignore attached-to-world-link joint!"));
+#endif
             jointElement = jointElement->GetNextElement(SDF_ELEMENT_JOINT);
             OutRobotModelInfo.bHasWorldJoint = true;
             continue;
@@ -644,7 +652,9 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
 
         const FString childLinkName = URRCoreUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_JOINT_CHILD));
         verify(false == childLinkName.IsEmpty());
+#if RAPYUTA_SDF_PARSER_DEBUG
         UE_LOG(LogRapyutaCore, Warning, TEXT("Found Joint[%s] : %s link -> %s link"), *jointName, *parentLinkName, *childLinkName);
+#endif
 
         // Creates the joint and set the values of the struct
         FRRRobotJointProperty newJointProp;

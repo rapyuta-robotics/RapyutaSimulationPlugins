@@ -95,9 +95,11 @@ bool FRRURDFParser::ProcessAttribute(const TCHAR* InAttributeName, const TCHAR* 
             // Check current context
             indexGroup = {indexVisual, indexInertial, indexCollision};
             max = FMath::Max<int32>(indexGroup);
+#if RAPYUTA_URDF_PARSER_DEBUG
             UE_LOG(
                 LogRapyutaCore, VeryVerbose, TEXT("FRRURDFParser:: INDEX  %d %d %d"), indexVisual, indexInertial, indexCollision);
             UE_LOG(LogRapyutaCore, VeryVerbose, TEXT("FRRURDFParser::ProcessAttribute %s - %s"), *attName, *attValueString);
+#endif
 
             if ((ELEMENT_INDEX_NONE != indexVisual) && (max == indexVisual))
             {
@@ -188,7 +190,7 @@ bool FRRURDFParser::ProcessClose(const TCHAR* InElementName)
 {
     // (NOTE) Except critical error case, always return true to keep reading until end of file!
     const FString elementStackTop = ElemStack.Top();
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_URDF_PARSER_DEBUG
     // For debugging only
     if (false == FString(InElementName).Equals(elementStackTop))
     {
@@ -342,7 +344,9 @@ bool FRRURDFParser::ParseJointProperty()
     if (parentLinkName == TEXT("world"))
     {
         bHasWorldJoint = true;
-        UE_LOG(LogRapyutaCore, VeryVerbose, TEXT("Ignore attached-to-world-link joint"));
+#if RAPYUTA_URDF_PARSER_DEBUG
+        UE_LOG(LogRapyutaCore, Warning, TEXT("Ignore attached-to-world-link joint"));
+#endif
         return true;
     }
 
@@ -442,7 +446,9 @@ bool FRRURDFParser::ParseLinkProperty()
     }
     else if (linkName.Equals(TEXT("world"), ESearchCase::IgnoreCase))
     {
-        UE_LOG(LogRapyutaCore, VeryVerbose, TEXT("Ignoring [world] link!"));
+#if RAPYUTA_URDF_PARSER_DEBUG
+        UE_LOG(LogRapyutaCore, Warning, TEXT("Ignoring [world] link!"));
+#endif
         return true;
     }
 
@@ -514,7 +520,9 @@ bool FRRURDFParser::ParseLinkProperty()
         visualGeometryInfo.MeshName = visualMeshName;
         visualGeometryInfo.Location = visualLocation;
         visualGeometryInfo.Rotation = visualRotation;
-        UE_LOG(LogRapyutaCore, VeryVerbose, TEXT("URDF: VISUAL MESH FULL NAME: %s"), *visualMeshName);
+#if RAPYUTA_URDF_PARSER_DEBUG
+        UE_LOG(LogRapyutaCore, Warning, TEXT("URDF: VISUAL MESH FULL NAME: %s"), *visualMeshName);
+#endif
 
         // !NOTE: newLinkProp.Location & newLinkProp.Rotation would be read from the joint that has NewLink as child link
         // --> Refer to FRRRobotModelInfo::UpdateLinksTransformInfoFromJoints()
@@ -550,7 +558,9 @@ bool FRRURDFParser::ParseLinkProperty()
     collisionGeometryInfo.Location = collisionLocation;
     collisionGeometryInfo.Rotation = collisionRotation;
     newLinkProp.CollisionList.Emplace(MoveTemp(collisionGeometryInfo));
-    UE_LOG(LogRapyutaCore, VeryVerbose, TEXT("URDF: COLLISION MESH FULL NAME: %s"), *collisionMeshName);
+#if RAPYUTA_URDF_PARSER_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("URDF: COLLISION MESH FULL NAME: %s"), *collisionMeshName);
+#endif
 
     // Add new link prop to the list
     LinkPropList.Emplace(MoveTemp(newLinkProp));
@@ -636,7 +646,7 @@ FVector FRRURDFParser::ParseVector(const FString& InElementName, bool bIsForLoca
     if (vectorText.Num() < 3)
     {
         UE_LOG(LogRapyutaCore,
-               Fatal,
+               Error,
                TEXT("[FRRURDFParser::ParseVector] [%s]: %s does not represent a 3d vector value!"),
                *InElementName,
                *elementText);
@@ -654,7 +664,7 @@ FTransform FRRURDFParser::ParsePose(const FString& InElementName)
     if (poseText.Num() < 6)
     {
         UE_LOG(LogRapyutaCore,
-               Fatal,
+               Error,
                TEXT("[FRRURDFParser::ParsePose] [%s]: %s does not represent a 6d pose value!"),
                *InElementName,
                *elementText);
@@ -684,7 +694,7 @@ FQuat FRRURDFParser::ParseRotation(const FString& InElementName)
     if (rotationText.Num() < 3)
     {
         UE_LOG(LogRapyutaCore,
-               Fatal,
+               Error,
                TEXT("[FRRURDFParser::ParseRotation] [%s]: %s does not represent a 3d rotation value!"),
                *InElementName,
                *elementText);
@@ -707,7 +717,7 @@ FVector FRRURDFParser::ParseCylinderSize(const FString& InRadiusElementName, con
     if (radiusText.Num() < 1)
     {
         UE_LOG(LogRapyutaCore,
-               Fatal,
+               Error,
                TEXT("[FRRURDFParser::ParseCylinderSize] [%s]: %s does not represent a radius value!"),
                *InRadiusElementName,
                *radiusElementText);
@@ -719,7 +729,7 @@ FVector FRRURDFParser::ParseCylinderSize(const FString& InRadiusElementName, con
     if (lengthText.Num() < 1)
     {
         UE_LOG(LogRapyutaCore,
-               Fatal,
+               Error,
                TEXT("[FRRURDFParser::ParseCylinderSize] [%s]: %s does not represent a length value!"),
                *InLengthElementName,
                *lengthElementText);
@@ -809,7 +819,9 @@ FRRRobotModelInfo FRRURDFParser::LoadModelInfoFromFile(const FString& InURDFPath
     }
     outXMLContent = URRCoreUtils::GetSanitizedXMLString(outXMLContent);
 
+#if RAPYUTA_URDF_PARSER_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("PARSE URDF CONTENT FROM FILE %s"), *InURDFPath);
+#endif
     FRRRobotModelInfo robotModelInfo;
     robotModelInfo.ModelDescType = ERRRobotDescriptionType::URDF;
     robotModelInfo.DescriptionFilePath = InURDFPath;
@@ -841,7 +853,9 @@ bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRRRobotModel
 
     if (bResult)
     {
+#if RAPYUTA_URDF_PARSER_DEBUG
         UE_LOG(LogRapyutaCore, Warning, TEXT("PARSING URDF SUCCEEDED[%s]!"), *ModelName);
+#endif
         OutRobotModelInfo.ModelNameList.Emplace(MoveTemp(ModelName));
         OutRobotModelInfo.bHasWorldJoint = bHasWorldJoint;
         OutRobotModelInfo.UEComponentTypeFlags = UEComponentTypeFlags;

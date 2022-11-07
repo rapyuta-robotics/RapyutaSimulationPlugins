@@ -8,6 +8,8 @@
 #include "RapyutaSimulationPlugins.h"
 #include "Robots/RRRobotDefines.h"
 
+#define RAPYUTA_SDF_PARSER_DEBUG (0)
+
 class RAPYUTASIMULATIONPLUGINS_API FRRSDFParser : public FRRRobotDescriptionParser
 {
 public:
