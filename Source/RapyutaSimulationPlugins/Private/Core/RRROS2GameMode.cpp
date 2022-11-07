@@ -112,8 +112,7 @@ void ARRROS2GameMode::SetFixedTimeStep(const float InStepSize)
 
 float ARRROS2GameMode::GetFixedTimeStep() const
 {
-    float stepSize = FApp::GetFixedDeltaTime();
-    return stepSize;
+    return FApp::GetFixedDeltaTime();
 }
 
 void ARRROS2GameMode::SetTargetRTF(const float InTargetRTF)
