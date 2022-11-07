@@ -1,11 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Tools/LimitRTFFixedSizeCustomTimeStep.h"
+#include "Tools/RRLimitRTFFixedSizeCustomTimeStep.h"
 
 #include "Misc/App.h"
 #include "Misc/ConfigCacheIni.h"
 
-ULimitRTFFixedSizeCustomTimeStep::ULimitRTFFixedSizeCustomTimeStep(const FObjectInitializer& ObjectInitializer)
+URRLimitRTFFixedSizeCustomTimeStep::URRLimitRTFFixedSizeCustomTimeStep(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
 {
     float frameRate = 100.f;
@@ -19,24 +19,24 @@ ULimitRTFFixedSizeCustomTimeStep::ULimitRTFFixedSizeCustomTimeStep(const FObject
     GConfig->GetFloat(TEXT("/Script/Engine.Engine"), TEXT("TargetRTF"), TargetRTF, GEngineIni);
     UE_LOG(LogRapyutaCore,
            Display,
-           TEXT("[ULimitRTFFixedSizeCustomTimeStep][ULimitRTFFixedSizeCustomTimeStep]: StepSize: %f, TargetRTFL %f"),
+           TEXT("[URRLimitRTFFixedSizeCustomTimeStep][URRLimitRTFFixedSizeCustomTimeStep]: StepSize: %f, TargetRTFL %f"),
            StepSize,
            TargetRTF);
 
     LastPlatformTime = FPlatformTime::Seconds();
 }
 
-bool ULimitRTFFixedSizeCustomTimeStep::Initialize(UEngine* InEngine)
+bool URRLimitRTFFixedSizeCustomTimeStep::Initialize(UEngine* InEngine)
 {
     return true;
 }
 
-void ULimitRTFFixedSizeCustomTimeStep::Shutdown(UEngine* InEngine)
+void URRLimitRTFFixedSizeCustomTimeStep::Shutdown(UEngine* InEngine)
 {
     // Empty but implemented because it is PURE_VIRTUAL
 }
 
-bool ULimitRTFFixedSizeCustomTimeStep::UpdateTimeStep(UEngine* InEngine)
+bool URRLimitRTFFixedSizeCustomTimeStep::UpdateTimeStep(UEngine* InEngine)
 {
     // Copies "CurrentPlatformTime" (used during the previous frame) in "LastTime"
     UpdateApplicationLastTime();
@@ -45,62 +45,62 @@ bool ULimitRTFFixedSizeCustomTimeStep::UpdateTimeStep(UEngine* InEngine)
     return false;
 }
 
-ECustomTimeStepSynchronizationState ULimitRTFFixedSizeCustomTimeStep::GetSynchronizationState() const
+ECustomTimeStepSynchronizationState URRLimitRTFFixedSizeCustomTimeStep::GetSynchronizationState() const
 {
     return ECustomTimeStepSynchronizationState::Synchronized;
 }
 
-float ULimitRTFFixedSizeCustomTimeStep::GetStepSize() const
+float URRLimitRTFFixedSizeCustomTimeStep::GetStepSize() const
 {
     return StepSize;
 }
 
-void ULimitRTFFixedSizeCustomTimeStep::SetStepSize(const float InStepSize)
+void URRLimitRTFFixedSizeCustomTimeStep::SetStepSize(const float InStepSize)
 {
     float stepSize = InStepSize;
     if (InStepSize < 1e-10)
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[ULimitRTFFixedSizeCustomTimeStep][SetStepSize]: Given step size is too small. Set to 0.001"));
+               TEXT("[URRLimitRTFFixedSizeCustomTimeStep][SetStepSize]: Given step size is too small. Set to 0.001"));
         stepSize = 0.001f;
     }
 
     if (TargetRTF < stepSize)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[ULimitRTFFixedSizeCustomTimeStep][SetStepSize]: TargetRTF must be > StepSize."));
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[URRLimitRTFFixedSizeCustomTimeStep][SetStepSize]: TargetRTF must be > StepSize."));
         return;
     }
 
     StepSize = stepSize;
 }
 
-float ULimitRTFFixedSizeCustomTimeStep::GetTargetRTF() const
+float URRLimitRTFFixedSizeCustomTimeStep::GetTargetRTF() const
 {
     return TargetRTF;
 }
 
-void ULimitRTFFixedSizeCustomTimeStep::SetTargetRTF(const float InTargetRTF)
+void URRLimitRTFFixedSizeCustomTimeStep::SetTargetRTF(const float InTargetRTF)
 {
     float targetRTF = InTargetRTF;
     if (targetRTF < 0)
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[ULimitRTFFixedSizeCustomTimeStep][SetTargetRTF]: TargetRTF must be > 0. Set to default value 1."));
+               TEXT("[URRLimitRTFFixedSizeCustomTimeStep][SetTargetRTF]: TargetRTF must be > 0. Set to default value 1."));
         targetRTF = 1.f;
     }
 
     if (targetRTF < StepSize)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[ULimitRTFFixedSizeCustomTimeStep][SetTargetRTF]: TargetRTF must be > StepSize."));
+        UE_LOG(LogRapyutaCore, Warning, TEXT("[URRLimitRTFFixedSizeCustomTimeStep][SetTargetRTF]: TargetRTF must be > StepSize."));
         return;
     }
 
     TargetRTF = targetRTF;
 }
 
-bool ULimitRTFFixedSizeCustomTimeStep::WaitForSync()
+bool URRLimitRTFFixedSizeCustomTimeStep::WaitForSync()
 {
     const double currentPlatformTime = FPlatformTime::Seconds();
     // const double LastTime = FApp::GetLastTime();

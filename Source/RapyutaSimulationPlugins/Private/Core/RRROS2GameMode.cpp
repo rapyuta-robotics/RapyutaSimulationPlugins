@@ -101,7 +101,7 @@ void ARRROS2GameMode::StartPlay()
 
 void ARRROS2GameMode::SetFixedTimeStep(const float InStepSize)
 {
-    auto ct = Cast<ULimitRTFFixedSizeCustomTimeStep>(GEngine->GetCustomTimeStep());
+    auto ct = Cast<URRLimitRTFFixedSizeCustomTimeStep>(GEngine->GetCustomTimeStep());
     if (ct)
     {
         ct->SetStepSize(InStepSize);
@@ -117,7 +117,7 @@ float ARRROS2GameMode::GetFixedTimeStep() const
 
 void ARRROS2GameMode::SetTargetRTF(const float InTargetRTF)
 {
-    auto ct = Cast<ULimitRTFFixedSizeCustomTimeStep>(GEngine->GetCustomTimeStep());
+    auto ct = Cast<URRLimitRTFFixedSizeCustomTimeStep>(GEngine->GetCustomTimeStep());
     if (ct)
     {
         ct->SetTargetRTF(InTargetRTF);
@@ -126,14 +126,14 @@ void ARRROS2GameMode::SetTargetRTF(const float InTargetRTF)
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[ARRROS2GameMode][SetTargetRTF]: CustomTimeStep Class needs to be ULimitRTFFixedSizeCustomTimeStep. "
+               TEXT("[ARRROS2GameMode][SetTargetRTF]: CustomTimeStep Class needs to be URRLimitRTFFixedSizeCustomTimeStep. "
                     "Return 0."));
     }
 }
 float ARRROS2GameMode::GetTargetRTF() const
 {
     float targetRTF = 0;
-    auto ct = Cast<ULimitRTFFixedSizeCustomTimeStep>(GEngine->GetCustomTimeStep());
+    auto ct = Cast<URRLimitRTFFixedSizeCustomTimeStep>(GEngine->GetCustomTimeStep());
     if (ct)
     {
         targetRTF = ct->GetTargetRTF();
@@ -142,7 +142,7 @@ float ARRROS2GameMode::GetTargetRTF() const
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[ARRROS2GameMode][GetTargetRTF]: CustomTimeStep Class needs to be ULimitRTFFixedSizeCustomTimeStep. "
+               TEXT("[ARRROS2GameMode][GetTargetRTF]: CustomTimeStep Class needs to be URRLimitRTFFixedSizeCustomTimeStep. "
                     "Return 0."));
     }
     return targetRTF;
