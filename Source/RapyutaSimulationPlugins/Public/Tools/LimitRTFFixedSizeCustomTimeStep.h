@@ -108,5 +108,6 @@ public:
     UPROPERTY(EditAnywhere, Category = "Timing")
     float TargetRTF = 1;
 
-    double LastPlatformTime;
+    UPROPERTY()
+    double LastPlatformTime = 0;
 };
