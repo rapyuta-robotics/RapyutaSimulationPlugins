@@ -1,5 +1,5 @@
 /**
- * @file LimitRTFFixedSizeCustomTimeStep.h
+ * @file RRLimitRTFFixedSizeCustomTimeStep.h
  * @brief CustomTimeStep class which uses fixed time step and and limit RTF(Real Time Factor)
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -7,7 +7,7 @@
 #pragma once
 #include "Engine/EngineCustomTimeStep.h"
 
-#include "LimitRTFFixedSizeCustomTimeStep.generated.h"
+#include "RRLimitRTFFixedSizeCustomTimeStep.generated.h"
 
 class UEngine;
 
