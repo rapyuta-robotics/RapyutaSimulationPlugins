@@ -106,7 +106,7 @@ public:
      * No guarantee to meet this RTF but do not over this value
      */
     UPROPERTY(EditAnywhere, Category = "Timing")
-    float TargetRTF = 1;
+    float TargetRTF = 1.f;
 
     UPROPERTY()
     double LastPlatformTime = 0;
