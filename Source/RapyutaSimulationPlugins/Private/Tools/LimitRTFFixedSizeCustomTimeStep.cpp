@@ -38,9 +38,11 @@ void ULimitRTFFixedSizeCustomTimeStep::Shutdown(UEngine* InEngine)
 
 bool ULimitRTFFixedSizeCustomTimeStep::UpdateTimeStep(UEngine* InEngine)
 {
-    UpdateApplicationLastTime();    // Copies "CurrentPlatformTime" (used during the previous frame) in "LastTime"
+    // Copies "CurrentPlatformTime" (used during the previous frame) in "LastTime"
+    UpdateApplicationLastTime();
     WaitForSync();
-    return false;    // false means that the Engine's TimeStep should NOT be performed.
+    // false means that the Engine's TimeStep should NOT be performed.
+    return false;
 }
 
 ECustomTimeStepSynchronizationState ULimitRTFFixedSizeCustomTimeStep::GetSynchronizationState() const
