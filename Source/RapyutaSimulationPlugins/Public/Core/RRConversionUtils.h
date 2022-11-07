@@ -28,6 +28,31 @@ public:
         return FVector(InLocation.X, -InLocation.Y, InLocation.Z);
     }
 
+    // UE: cm, ROS: m
+    template<typename T>
+    static T DistanceROSToUE(const T& InROSDistance)
+    {
+        return 100.f * InROSDistance;
+    }
+
+    template<typename T>
+    static T SizeROSToUE(const T& InROSSize)
+    {
+        return 100.f * InROSSize;
+    }
+
+    template<typename T>
+    static T DistanceUEToROS(const T& InUESize)
+    {
+        return 0.01f * InUESize;
+    }
+
+    template<typename T>
+    static T SizeUEToROS(const T& InUESize)
+    {
+        return 0.01f * InUESize;
+    }
+
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FVector VectorUEToROS(const FVector& Input)
     {
@@ -108,7 +133,7 @@ public:
 
         return 100.f * Output;
     }
-    
+
     FORCEINLINE static void VectorROSToUE(const FVector& Input, FVector& Output)
     {
         Output.Set(Input.X * 100.f, -Input.Y * 100.f, Input.Z * 100.f);

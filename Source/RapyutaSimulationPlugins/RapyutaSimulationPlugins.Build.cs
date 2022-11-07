@@ -43,7 +43,7 @@ public class RapyutaSimulationPlugins : ModuleRules
         CppStandard = CppStandardVersion.Cpp17;
         bEnableExceptions = true;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "Renderer", "RHI", "PhysicsCore",
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "Renderer", "RHI", "PhysicsCore",  "XmlParser",
                                                             "AIModule",  "NavigationSystem",
                                                             "ChaosVehicles",
                                                             "ProceduralMeshComponent", "MeshDescription", "StaticMeshDescription", "MeshConversion",
@@ -68,5 +68,36 @@ public class RapyutaSimulationPlugins : ModuleRules
             }
         }
 
+        // ignition math
+        string IgnMathPath = GetLibPath("ign-math");
+        PublicIncludePaths.Add(Path.Combine(IgnMathPath, "release/include/ignition/math6"));
+        bool bIsIgnMathLibDynamic = false;
+        if (Target.Platform == UnrealTargetPlatform.Linux)
+        {
+            if (bIsIgnMathLibDynamic)
+            {
+                AddLib(Target, IgnMathPath, "libignition-math6.so", "libignition-math6.so.6");
+            }
+            else
+            {
+                AddLib(Target, IgnMathPath, "libignition-math6.a");
+            }
+        }
+
+        // ignition utils
+        string IgnUtilsPath = GetLibPath("ign-utils");
+        PublicIncludePaths.Add(Path.Combine(IgnUtilsPath, "release/include/ignition/utils1"));
+        if (Target.Platform == UnrealTargetPlatform.Linux)
+        {
+            AddLib(Target, IgnUtilsPath, "libignition-utils1.so", "libignition-utils1.so.1");
+        }
+
+        // sdformat
+        string SdformatPath = GetLibPath("sdformat");
+        PublicIncludePaths.Add(Path.Combine(SdformatPath, "release/include/sdformat-12.0"));
+        if (Target.Platform == UnrealTargetPlatform.Linux)
+        {
+            AddLib(Target, SdformatPath, "libsdformat12.so", "libsdformat12.so.12");
+        }
     }
 }
