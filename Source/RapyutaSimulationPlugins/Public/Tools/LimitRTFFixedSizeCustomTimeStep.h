@@ -19,7 +19,7 @@ class UEngine;
  * 
  */
 UCLASS(Blueprintable, editinlinenew, meta = (DisplayName = "Limit RTF Fixed Rate"))
-class TIMEMANAGEMENT_API ULimitRTFFixedSizeCustomTimeStep : public UEngineCustomTimeStep
+class RAPYUTASIMULATIONPLUGINS_API URRLimitRTFFixedSizeCustomTimeStep : public UEngineCustomTimeStep
 {
     GENERATED_UCLASS_BODY()
 
