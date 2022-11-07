@@ -1,5 +1,8 @@
 # Changelog for RapyutaSimulationPlugins repository
 
+## 0.0.18 ##
+* `UROS2Spawnable` add ActorJsonConfigs
+
 ## 0.0.17 ##
 * `URRActorCommon::OnPostWorldCleanup()` only reset actor common list upon matching world
 ## 0.0.16 ##

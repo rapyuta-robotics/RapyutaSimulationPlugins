@@ -54,7 +54,7 @@ void ARRROS2GameMode::InitSim()
     {
         InitROS2();
     }
-#if WITH_EDITOR    // Since ROSNode in each client is namespaced with editor in network mode, need clock publsiher without
+#if WITH_EDITOR    // Since ROSNode in each client is namespaced with editor in network mode, need clock publsiher without \
                    // namespace
     else if (nullptr != Cast<ARRNetworkGameMode>(this))
     {
@@ -95,29 +95,55 @@ void ARRROS2GameMode::InitROS2()
 void ARRROS2GameMode::StartPlay()
 {
     Super::StartPlay();
-    
-    UE_LOG(LogRapyutaCore, Display, TEXT("[ARRROS2GameMode]: START PLAY!"));
 
-#if !WITH_EDITOR
-    // The frequency is actually up to the Sim map purpose, which is for AI training or for user-watchable visualization
-    // Generally, it should be the same as ROS ClockPublisher's PublicationFrequencyHz
-    // (NOTE) Could only use fixed time step in non-Editor mode
-    FApp::SetUseFixedTimeStep(true);
-#endif
+    UE_LOG(LogRapyutaCore, Display, TEXT("[ARRROS2GameMode]: START PLAY!"));
 }
 
-void ARRROS2GameMode::SetFixedTimestep(float InStepSize)
+void ARRROS2GameMode::SetFixedTimeStep(const float InStepSize)
 {
-    if (InStepSize < 1e-10)
+    auto ct = Cast<URRLimitRTFFixedSizeCustomTimeStep>(GEngine->GetCustomTimeStep());
+    if (ct)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRROS2GameMode][SetFixedTimestep]: Given step size is too small. Set to 0.001"));
-        InStepSize = 0.001;
+        ct->SetStepSize(InStepSize);
     }
     FApp::SetUseFixedTimeStep(true);
     FApp::SetFixedDeltaTime(InStepSize);
 }
 
-float ARRROS2GameMode::GetFixedTimestep()
+float ARRROS2GameMode::GetFixedTimeStep() const
 {
     return FApp::GetFixedDeltaTime();
+}
+
+void ARRROS2GameMode::SetTargetRTF(const float InTargetRTF)
+{
+    auto ct = Cast<URRLimitRTFFixedSizeCustomTimeStep>(GEngine->GetCustomTimeStep());
+    if (ct)
+    {
+        ct->SetTargetRTF(InTargetRTF);
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[ARRROS2GameMode][SetTargetRTF]: CustomTimeStep Class needs to be URRLimitRTFFixedSizeCustomTimeStep. "
+                    "Return 0."));
+    }
+}
+float ARRROS2GameMode::GetTargetRTF() const
+{
+    float targetRTF = 0;
+    auto ct = Cast<URRLimitRTFFixedSizeCustomTimeStep>(GEngine->GetCustomTimeStep());
+    if (ct)
+    {
+        targetRTF = ct->GetTargetRTF();
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore,
+               Warning,
+               TEXT("[ARRROS2GameMode][GetTargetRTF]: CustomTimeStep Class needs to be URRLimitRTFFixedSizeCustomTimeStep. "
+                    "Return 0."));
+    }
+    return targetRTF;
 }

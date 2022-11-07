@@ -34,7 +34,7 @@ void URRPoseSensorManager::InitalizeWithROS2(AROS2Node* InROS2Node,
                                              const FString& InTopicName,
                                              const TEnumAsByte<UROS2QoS> InQoS)
 {
-    UE_LOG(LogRapyutaCore, Error, TEXT("[%s][URRPoseSensorManager][InitalizeWithROS2] %s"), *GetName(), *ReferenceTag);
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][URRPoseSensorManager][InitalizeWithROS2] %s"), *GetName(), *ReferenceTag);
     Super::InitalizeWithROS2(InROS2Node, InPublisherName, InTopicName, InQoS);
     MapOriginPoseSensor->InitalizeWithROS2(InROS2Node);
     ServerSimState = CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
@@ -103,10 +103,19 @@ void URRPoseSensorManager::UpdateReferenceActorWithTag()
     {
         if (nearestActor != ReferenceActor)
         {
-            SetReferenceActorByActor(nearestActor);
+            // 1- Attach [MapOriginPoseSensor] to [nearestActor]
             MapOriginPoseSensor->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
             MapOriginPoseSensor->AttachToComponent(nearestActor->GetRootComponent(),
                                                    FAttachmentTransformRules::KeepRelativeTransform);
+            UE_LOG(LogRapyutaCore,
+                   Warning,
+                   TEXT("[%s]'s [MapOriginPoseSensor] attached to [%s]'s comp: %s"),
+                   *GetName(),
+                   *nearestActor->GetName(),
+                   *nearestActor->GetRootComponent()->GetName());
+
+            // 2- Update [ReferenceActor] -> [nearestActor], signalling [OnNewReferenceActorDetected]
+            SetReferenceActorByActor(nearestActor);
         }
     }
     else

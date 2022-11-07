@@ -31,12 +31,11 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
     // Reference: AWheeledVehiclePawn
     SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComp"));
     SkeletalMeshComp->SetCollisionProfileName(UCollisionProfile::Vehicle_ProfileName);
-    SkeletalMeshComp->BodyInstance.bSimulatePhysics = false;
-    SkeletalMeshComp->BodyInstance.bNotifyRigidBodyCollision = true;
-    SkeletalMeshComp->BodyInstance.bUseCCD = true;
-    SkeletalMeshComp->bBlendPhysics = true;
+    SkeletalMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    SkeletalMeshComp->SetCanEverAffectNavigation(true);
+    SkeletalMeshComp->SetIsReplicated(true);
     SkeletalMeshComp->SetGenerateOverlapEvents(true);
-    SkeletalMeshComp->SetCanEverAffectNavigation(false);
+    AddOwnedComponent(SkeletalMeshComp);
     RootComponent = SkeletalMeshComp;
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();

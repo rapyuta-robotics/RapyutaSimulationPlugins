@@ -21,6 +21,8 @@
 
 #include "RRROS2EntityStateSensorComponent.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnNewReferenceActorDetected, AActor* /* NewReferenceActor */);
+
 /**
  * @brief EntityState sensor components which publish entitystate relative to a specific actor.
  * @todo Currently twist = ZeroVectors. Should be filled for physics actors.
@@ -45,11 +47,13 @@ public:
      */
     virtual void SensorUpdate() override;
 
+    //! NOTE: Only #URRPoseSensorManager uses #ReferenceActor
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     FString ReferenceActorName = TEXT("");
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     AActor* ReferenceActor = nullptr;
+    FOnNewReferenceActorDetected OnNewReferenceActorDetected;
 
     UFUNCTION(BlueprintCallable)
     virtual void SetReferenceActorByName(const FString& InName);
