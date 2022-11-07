@@ -6,7 +6,7 @@
 #include "Misc/ConfigCacheIni.h"
 
 ULimitRTFFixedSizeCustomTimeStep::ULimitRTFFixedSizeCustomTimeStep(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer), StepSize(0.01), TargetRTF(1)
+    : Super(ObjectInitializer)
 {
     float frameRate = 100.f;
     if (GConfig->GetFloat(TEXT("/Script/Engine.Engine"), TEXT("FixedFrameRate"), frameRate, GEngineIni))
