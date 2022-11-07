@@ -86,7 +86,7 @@ void ULimitRTFFixedSizeCustomTimeStep::SetTargetRTF(const float InTargetRTF)
         UE_LOG(LogRapyutaCore,
                Warning,
                TEXT("[ULimitRTFFixedSizeCustomTimeStep][SetTargetRTF]: TargetRTF must be > 0. Set to default value 1."));
-        targetRTF = 1;
+        targetRTF = 1.f;
     }
 
     if (targetRTF < StepSize)
