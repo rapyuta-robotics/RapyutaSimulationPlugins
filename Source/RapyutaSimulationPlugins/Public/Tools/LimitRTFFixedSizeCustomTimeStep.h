@@ -100,7 +100,7 @@ public:
 public:
     /** Desired step size */
     UPROPERTY(EditAnywhere, Category = "Timing")
-    float StepSize;
+    float StepSize = 0.01f;
 
     /** Desired RTF(Real Time Factor).
      * No guarantee to meet this RTF but do not over this value
