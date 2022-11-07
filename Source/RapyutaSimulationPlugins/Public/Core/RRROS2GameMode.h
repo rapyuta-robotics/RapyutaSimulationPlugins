@@ -6,9 +6,10 @@
 
 #pragma once
 
- // UE
+// UE
 #include "Engine/EngineTypes.h"
 #include "GameFramework/GameMode.h"
+#include "Tools/LimitRTFFixedSizeCustomTimeStep.h"
 
 // RapyutaSimulationPlugins
 #include "Tools/RRROS2SimulationStateClient.h"
@@ -58,12 +59,13 @@ public:
     TSubclassOf<URRROS2SimulationStateClient> ROS2SimStateClientClass = URRROS2SimulationStateClient::StaticClass();
 
     /**
-     * @brief Set timestep
+     * @brief Set timestep by FApp::SetFixedDeltaTime.
      *
      * @param InFrequency game time update frequency, timestep become 1/frequency.
+     * @attention FApp::SetFixedDeltaTime take arg as double but InFreqency is float to be able to access from BP.
      */
     UFUNCTION(BlueprintCallable)
-    virtual void SetFixedTimestep(float InStepSize);
+    virtual void SetFixedTimeStep(const float InStepSize);
 
     /**
      * @brief Get timestep
@@ -71,7 +73,13 @@ public:
      * @return fixed timestep.
      */
     UFUNCTION(BlueprintCallable)
-    virtual float GetFixedTimestep();
+    virtual float GetFixedTimeStep() const;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void SetTargetRTF(const float InTargetRTF);
+
+    UFUNCTION(BlueprintCallable)
+    virtual float GetTargetRTF() const;
 
 protected:
     /**
