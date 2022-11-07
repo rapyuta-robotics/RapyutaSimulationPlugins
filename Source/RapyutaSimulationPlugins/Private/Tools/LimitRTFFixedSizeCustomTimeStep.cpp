@@ -8,7 +8,7 @@
 ULimitRTFFixedSizeCustomTimeStep::ULimitRTFFixedSizeCustomTimeStep(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer), StepSize(0.01), TargetRTF(1)
 {
-    float frameRate = 100.0;
+    float frameRate = 100.f;
     if (GConfig->GetFloat(TEXT("/Script/Engine.Engine"), TEXT("FixedFrameRate"), frameRate, GEngineIni))
     {
         StepSize = 1.0 / frameRate;
