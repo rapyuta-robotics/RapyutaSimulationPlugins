@@ -61,7 +61,7 @@ void ULimitRTFFixedSizeCustomTimeStep::SetStepSize(const float InStepSize)
         UE_LOG(LogRapyutaCore,
                Warning,
                TEXT("[ULimitRTFFixedSizeCustomTimeStep][SetStepSize]: Given step size is too small. Set to 0.001"));
-        stepSize = 0.001;
+        stepSize = 0.001f;
     }
 
     if (TargetRTF < stepSize)
