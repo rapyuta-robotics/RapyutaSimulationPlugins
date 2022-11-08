@@ -1107,6 +1107,11 @@ public:
         return WholeBodyMaterialInfo;
     }
 
+    FRRMaterialProperty GetVisualMaterialInfo() const
+    {
+        return GetVisualInfo().MaterialInfo;
+    }
+
     // Articulated link names
     TArray<FString> ArticulatedLinksNames;
 
