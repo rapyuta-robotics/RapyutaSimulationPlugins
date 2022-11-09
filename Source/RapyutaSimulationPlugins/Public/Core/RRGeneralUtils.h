@@ -4,12 +4,12 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 
 // UE
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "Json.h"
 #include "TimerManager.h"
 
 #include "RRGeneralUtils.generated.h"
@@ -23,7 +23,6 @@ class RAPYUTASIMULATIONPLUGINS_API URRGeneralUtils : public UBlueprintFunctionLi
 {
     GENERATED_BODY()
 public:
-
     /**
      * @brief Get the Ref Transform.
      * If RefActor==nullptr, return false.
@@ -156,5 +155,111 @@ public:
     FORCEINLINE static FString ComposeROSFullFrameId(const FString& InPrefix, const TCHAR* InFrameId)
     {
         return InPrefix.IsEmpty() ? InFrameId : FString::Printf(TEXT("%s/%s"), *InPrefix, InFrameId);
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject. 
+     * 
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, FString& OutValue)
+    {
+        return InJsonObj.Get()->TryGetStringField(InFieldName, OutValue);
+    }
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject. 
+     * 
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @param InMultiplier (optional) returned value is multiplied by this. Set to 1.f by default
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj,
+                                         const FString& InFieldName,
+                                         float& OutValue,
+                                         float InMultiplier = 1.f)
+    {
+        double resultValue;
+        bool bFieldFound = InJsonObj.Get()->TryGetNumberField(InFieldName, resultValue);
+        if (!bFieldFound)
+        {
+            return false;
+        }
+        OutValue = static_cast<float>(resultValue) * InMultiplier;
+        return true;
+    }
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject. 
+     * 
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @param InMultiplier (optional) returned value is multiplied by this. Set to 1.f by default
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj,
+                                         const FString& InFieldName,
+                                         double& OutValue,
+                                         double InMultiplier = 1.)
+    {
+        bool bFieldFound = InJsonObj.Get()->TryGetNumberField(InFieldName, OutValue);
+        if (!bFieldFound)
+        {
+            return false;
+        }
+        OutValue *= InMultiplier;
+        return true;
+    }
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject. 
+     * 
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, int& OutValue)
+    {
+        return InJsonObj.Get()->TryGetNumberField(InFieldName, OutValue);
+    }
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject. 
+     * 
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, bool& OutValue)
+    {
+        return InJsonObj.Get()->TryGetBoolField(InFieldName, OutValue);
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject. 
+     * If the field does not exist, OutValue = InDefaultValue
+     * 
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param InDefaultValue the value sent back if the field is not in the Json object
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    template<typename T>
+    FORCEINLINE static bool GetJsonFieldOrDefault(const TSharedPtr<FJsonObject>& InJsonObj,
+                                                  const FString& InFieldName,
+                                                  const T& InDefaultValue,
+                                                  T& OutValue)
+    {
+        if (GetJsonField(InJsonObj, InFieldName, OutValue))
+        {
+            return true;
+        }
+        OutValue = InDefaultValue;
+        return false;
     }
 };

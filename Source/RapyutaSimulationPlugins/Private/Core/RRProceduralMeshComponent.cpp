@@ -26,7 +26,7 @@ URRProceduralMeshComponent::URRProceduralMeshComponent(const FObjectInitializer&
     // Due to [FinishPhysicsAsyncCook] being not virtual and private, it is unable to catch [FOnAsyncPhysicsCookFinished] event
     // Thus we could only rely on [UBodySetup::bCreatedPhysicsMeshes]
     bUseAsyncCooking = true;
-    bUseComplexAsSimpleCollision = false;
+    bUseComplexAsSimpleCollision = true;
     bCanEverAffectNavigation = true;
 
     OnMeshCreationDone.BindUObject(Cast<ARRMeshActor>(GetOwner()), &ARRMeshActor::OnBodyComponentMeshCreationDone);
