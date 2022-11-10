@@ -320,7 +320,8 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
     }
 
     // SpawnActorDeferred to set parameters beforehand
-    AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(InEntityClass, InEntityTransform);
+    AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(
+        InEntityClass, InEntityTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
     if (newEntity == nullptr)
     {
         return nullptr;
