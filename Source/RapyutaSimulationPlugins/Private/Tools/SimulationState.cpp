@@ -320,6 +320,8 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
     }
 
     // SpawnActorDeferred to set parameters beforehand
+    // Using AdjustIfPossibleButAlwaysSpawn, the actual entity's transform could be different from one specified in SpawnEntity,
+    // thus we may need to inform ros side to get synchronized with it
     AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(
         InEntityClass, InEntityTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
     if (newEntity == nullptr)
