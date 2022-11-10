@@ -99,6 +99,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdomTf = false;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    float OdomPublicationFrequencyHz = 30;
+
     //! Movement command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(BlueprintReadWrite, Replicated)
     FString CmdVelTopicName = TEXT("cmd_vel");

@@ -124,6 +124,7 @@ bool URRRobotROS2Interface::InitPublishers()
             OdomPublisher = NewObject<URRROS2OdomPublisher>(this);
             OdomPublisher->SetupUpdateCallback();
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
+            OdomPublisher->PublicationFrequencyHz = OdomPublicationFrequencyHz;
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
 
