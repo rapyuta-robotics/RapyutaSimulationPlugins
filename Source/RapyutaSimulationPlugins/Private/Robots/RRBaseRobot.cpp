@@ -48,7 +48,7 @@ void ARRBaseRobot::PostInitializeComponents()
     if (ROS2InterfaceClass)
     {
         // ROS2Interface is created at server and replicated to client.
-        if (!IsNetMode(NM_Client))
+        if (!IsNetMode(NM_Client) && ROS2Interface == nullptr)
         {
             CreateROS2Interface();
         }
