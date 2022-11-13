@@ -970,6 +970,28 @@ public:
         }
     }
 
+    void RemoveLinkJointProp(const FString& InLinkName)
+    {
+        // 1- Rem joint prop having [ParentLinkName] as [InLinkName]
+        JointPropList.RemoveAll(
+            [this, InLinkName](const FRRRobotJointProperty& InJointProp)
+            {
+                if (InJointProp.ParentLinkName == InLinkName)
+                {
+#if RAPYUTA_SIM_DEBUG
+                    UE_LOG(
+                        LogTemp, Error, TEXT("Rem joint from parent [%s] %s"), *InLinkName, *InJointProp.GetTransform().ToString());
+#endif
+                    return true;
+                }
+                return false;
+            });
+
+        // 2- Rem link prop
+        LinkPropList.RemoveAll([this, InLinkName](const FRRRobotLinkProperty& InLinkProp)
+                               { return (InLinkProp.Name == InLinkName); });
+    }
+
     const FRRRobotLinkProperty FindLinkProp(int8 InLinkIndex) const
     {
         for (const auto& linkProp : LinkPropList)
