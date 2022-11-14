@@ -20,6 +20,7 @@
 #include "Core/RRActorCommon.h"
 #include "Core/RRConversionUtils.h"
 #include "Core/RRUObjectUtils.h"
+#include "Net/UnrealNetwork.h"
 #include "Robots/RRBaseRobot.h"
 #include "Tools/ROS2Spawnable.h"
 
@@ -342,6 +343,11 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
 #endif
 
     // Set/Configure [robot]'s [ROSSpawnParameters] as [spawnableComponent]
+
+    // temporary solution to spawn
+    // if there is a option to catch the spawn failure, we should avoid this.
+    // newEntity->SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
     ARRBaseRobot* robot = Cast<ARRBaseRobot>(newEntity);
     if (robot)
     {
@@ -369,10 +375,12 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
     spawnableComponent->ActorJsonConfigs = InROSSpawnRequest.JsonParameters;
 
     // Finish spawning Entity
-    UGameplayStatics::FinishSpawningActor(newEntity, InEntityTransform);
+    // Destroy seems not make newEntity=nullptr evevn if it failed.
+    newEntity = UGameplayStatics::FinishSpawningActor(newEntity, InEntityTransform);
 
     // Add to [Entities]
     ServerAddEntity(newEntity);
+
     return newEntity;
 }
 
