@@ -80,9 +80,9 @@ class CmdVelPublisher(Node):
 
             self._timer = self.create_timer(1.0/publishing_freq, self.twist_robot)
 
-        while rclpy.ok() and not self._is_pub_finished:
-            self._executor.spin_once(timeout_sec = 0)
-        print(f'Finished publishing Twist to {self.get_full_topic_name()}')
+            while rclpy.ok() and not self._is_pub_finished:
+                self._executor.spin_once(timeout_sec = 0)
+            print(f'Finished publishing Twist to {self.get_full_topic_name()}')
 
     def get_full_topic_name(self):
         return f'{self.get_namespace()}/{self._cmd_vel_topic}'
