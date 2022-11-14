@@ -50,7 +50,6 @@ void ARRBaseRobot::PreInitializeComponents()
         // ROS2Interface is created at server and replicated to client.
         if (!IsNetMode(NM_Client) && ROS2Interface == nullptr)
         {
-            
             CreateROS2Interface();
         }
     }
@@ -102,15 +101,19 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
     // Get networkplayer controller
     auto* npc = Cast<ARRNetworkPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-
     bool res = false;
-    if (nullptr != npc && nullptr != npc->ROS2SimStateClient && npc->ROS2SimStateClient->GetNetworkPlayerId() ) {
-        if (nullptr == ROS2Interface) {
+    if (nullptr != npc && nullptr != npc->ROS2SimStateClient && npc->ROS2SimStateClient->GetNetworkPlayerId())
+    {
+        if (nullptr == ROS2Interface)
+        {
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ROS2Controller found"), *GetName());
+            UE_LOG(
+                LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ROS2Controller found"), *GetName());
 #endif
             res = false;
-        } else if (nullptr == ROS2Interface->ROSSpawnParameters) {
+        }
+        else if (nullptr == ROS2Interface->ROSSpawnParameters)
+        {
 #if RAPYUTA_SIM_DEBUG
             UE_LOG(LogRapyutaCore,
                    Warning,
@@ -118,7 +121,9 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
                    *GetName());
 #endif
             res = false;
-        } else if (nullptr == npc) {
+        }
+        else if (nullptr == npc)
+        {
 #if RAPYUTA_SIM_DEBUG
             UE_LOG(LogRapyutaCore,
                    Warning,
@@ -126,23 +131,27 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
                    *GetName());
 #endif
             res = false;
-        } else if (ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId() ==
-                   npc->ROS2SimStateClient->GetNetworkPlayerId()) {
+        }
+        else if (ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId() == npc->ROS2SimStateClient->GetNetworkPlayerId())
+        {
             UE_LOG(LogRapyutaCore,
                    Log,
                    TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient()] PlayerId is matched. PlayerId=%d."),
                    *GetName(),
                    npc->GetPlayerState<APlayerState>()->GetPlayerId());
             res = true;
-        } else {
+        }
+        else
+        {
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient()] PlayerId is mismatched. This robot spawned by PlaeyrId=%d. "
-                        "This Client's PlayerId=%d. "),
-                   *GetName(),
-                   ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId(),
-                   npc->GetPlayerState<APlayerState>()->GetPlayerId());
+            UE_LOG(
+                LogRapyutaCore,
+                Warning,
+                TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient()] PlayerId is mismatched. This robot spawned by PlaeyrId=%d. "
+                     "This Client's PlayerId=%d. "),
+                *GetName(),
+                ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId(),
+                npc->GetPlayerState<APlayerState>()->GetPlayerId());
 #endif
             res = false;
         }
@@ -155,7 +164,7 @@ void ARRBaseRobot::CreateROS2Interface()
 {
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::CreateROS2Interface] %d"), *GetName(), IsNetMode(NM_Client));
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
-            URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
+        URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;
     ROS2Interface->SetupROSParams();
 
@@ -175,8 +184,7 @@ void ARRBaseRobot::CreateROS2Interface()
 }
 void ARRBaseRobot::InitROS2Interface()
 {
-    GetWorld()->GetTimerManager().SetTimer(ROS2InitTimer, this,
-                                           &ARRBaseRobot::TimerInitROS2Interface, 1.0f, true);
+    GetWorld()->GetTimerManager().SetTimer(ROS2InitTimer, this, &ARRBaseRobot::TimerInitROS2Interface, 1.0f, true);
 }
 void ARRBaseRobot::TimerInitROS2Interface()
 {
@@ -184,18 +192,20 @@ void ARRBaseRobot::TimerInitROS2Interface()
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::InitROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
 #endif
 
-    if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) ||
-        (IsNetMode(NM_Client) && IsAuthorizedInThisClient())) {
+    if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
+    {
         ROS2Interface->Initialize(this);
-        if (NetworkAuthorityType == ERRNetworkAuthorityType::CLIENT) {
+        if (NetworkAuthorityType == ERRNetworkAuthorityType::CLIENT)
+        {
             SetReplicatingMovement(false);
         }
-    } else {
+    }
+    else
+    {
         // Use replication to triggerto this function in client.
         // Since RPC can't be used from non-player controller
         bStartStopROS2Interface = true;
     }
-
 }
 
 void ARRBaseRobot::DeInitROS2Interface()
