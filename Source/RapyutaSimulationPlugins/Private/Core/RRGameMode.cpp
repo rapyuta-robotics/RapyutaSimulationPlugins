@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Serialization/AsyncPackageLoader.h"
+#include "Misc/ConfigCacheIni.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRCoreUtils.h"
@@ -117,12 +118,7 @@ void ARRGameMode::StartPlay()
 
 #if !WITH_EDITOR
     FApp::SetBenchmarking(bBenchmark);
-    // The frequency is actually up to the Sim map purpose, which is for AI training or for user-watchable visualization
-    // Generally, it should be the same as ROS ClockPublisher's PublicationFrequencyHz
-    // (NOTE) Could only use fixed time step in non-Editor mode
-    SetFixedTimestep(
-        1 / CastChecked<URRROS2ClockPublisher>(URRROS2ClockPublisher::StaticClass()->GetDefaultObject())->PublicationFrequencyHz);
-
+    
     // Run benchmark, will freeze game for a bit. Higher workscale increases time it takes to run tests (10 is default and should be
     // used for shipping builds)
     UGameUserSettings::GetGameUserSettings()->RunHardwareBenchmark();
@@ -170,8 +166,7 @@ bool ARRGameMode::TryStartingSim()
     UWorld* world = GetWorld();
     bool bResult = URRCoreUtils::CheckWithTimeOut(
         []() { return URRGameSingleton::Get()->HaveAllResourcesBeenLoaded(); },
-        [this, world]()
-        {
+        [this, world]() {
             // Clear the timer to avoid repeated call to the method
             URRCoreUtils::StopRegisteredTimer(world, OwnTimerHandle);
             UE_LOG(LogRapyutaCore, Fatal, TEXT("[ARRGameMode] DYNAMIC RESOURCES LOADING TIMEOUT -> SHUTTING DOWN THE SIM..."))

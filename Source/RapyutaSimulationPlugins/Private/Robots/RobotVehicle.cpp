@@ -32,6 +32,9 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
     SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComp"));
     SkeletalMeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
     SkeletalMeshComp->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+    SkeletalMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    SkeletalMeshComp->SetCanEverAffectNavigation(true);
+    SkeletalMeshComp->SetIsReplicated(true);
     AddOwnedComponent(SkeletalMeshComp);
     RootComponent = SkeletalMeshComp;
 

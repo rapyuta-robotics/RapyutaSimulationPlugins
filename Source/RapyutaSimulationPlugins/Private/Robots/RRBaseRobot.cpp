@@ -40,16 +40,17 @@ void ARRBaseRobot::SetupDefault()
 
     // NOTE: Any custom object class (eg ROS2InterfaceClass) that is required to be configurable by this class' child BP ones
     // & IF its object needs to be created before BeginPlay(),
-    // -> They must be left NULL here, so its object (eg ROS2Interface) is not created by default in [PostInitializeComponents()]
+    // -> They must be left NULL here, so its object (eg ROS2Interface) is not created by default in [PreInitializeComponents()]
 }
 
-void ARRBaseRobot::PostInitializeComponents()
+void ARRBaseRobot::PreInitializeComponents()
 {
     if (ROS2InterfaceClass)
     {
         // ROS2Interface is created at server and replicated to client.
-        if (!IsNetMode(NM_Client))
+        if (!IsNetMode(NM_Client) && ROS2Interface == nullptr)
         {
+            
             CreateROS2Interface();
         }
     }
@@ -57,13 +58,13 @@ void ARRBaseRobot::PostInitializeComponents()
     {
         UE_LOG(LogRapyutaCore,
                Warning,
-               TEXT("[%s] [ARRBaseRobot::PostInitializeComponents()] ROS2InterfaceClass has not been configured, "
+               TEXT("[%s] [ARRBaseRobot::PreInitializeComponents()] ROS2InterfaceClass has not been configured, "
                     "probably later in child BP class!"),
                *GetName());
     }
 
     // which does the possessing, thus must be called afterwards
-    Super::PostInitializeComponents();
+    Super::PreInitializeComponents();
 }
 
 void ARRBaseRobot::OnRep_ROS2Interface()
@@ -223,7 +224,7 @@ bool ARRBaseRobot::InitSensors(AROS2Node* InROS2Node)
     }
 
     // NOTE:
-    // + Sensor comps could have been created either statically in child BPs/SetupDefault()/PostInitializeComponents()
+    // + Sensor comps could have been created either statically in child BPs/SetupDefault()/PreInitializeComponents()
     // OR dynamically afterwards
     // + Use [ForEachComponent] would cause a fatal log on [Container has changed during ranged-for iteration!]
     TInlineComponentArray<URRROS2BaseSensorComponent*> sensorComponents(this);

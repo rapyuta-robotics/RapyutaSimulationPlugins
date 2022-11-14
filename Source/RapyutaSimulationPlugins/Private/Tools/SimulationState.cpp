@@ -321,7 +321,10 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
     }
 
     // SpawnActorDeferred to set parameters beforehand
-    AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(InEntityClass, InEntityTransform);
+    // Using AdjustIfPossibleButAlwaysSpawn, the actual entity's transform could be different from one specified in SpawnEntity,
+    // thus we may need to inform ros side to get synchronized with it
+    AActor* newEntity = GetWorld()->SpawnActorDeferred<AActor>(
+        InEntityClass, InEntityTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
     if (newEntity == nullptr)
     {
         return nullptr;
@@ -399,19 +402,23 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InRequest,
             // Calculate to-be-spawned entity's [world transf]
             FTransform relativeTransf =
                 URRConversionUtils::TransformROSToUE(FTransform(InRequest.State.Pose.Orientation, InRequest.State.Pose.Position));
+            const FString& referenceFrame = InRequest.State.ReferenceFrame;
             FTransform worldTransf;
-            URRGeneralUtils::GetWorldTransform(
-                InRequest.State.ReferenceFrame, Entities.FindRef(InRequest.State.ReferenceFrame), relativeTransf, worldTransf);
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("Spawning Entity of model [%s] as [%s] to pose: %s"),
-                   *entityModelName,
-                   *entityName,
-                   *worldTransf.ToString());
+            URRGeneralUtils::GetWorldTransform(referenceFrame, Entities.FindRef(referenceFrame), relativeTransf, worldTransf);
 
             // Spawn entity
             newEntity = ServerSpawnEntity(InRequest, SpawnableEntityTypes[entityModelName], worldTransf, InNetworkPlayerId);
-            if (nullptr == newEntity)
+            if (newEntity)
+            {
+                UE_LOG(LogRapyutaCore,
+                       Warning,
+                       TEXT("Spawned Entity of model [%s] as [%s] to world pose: %s - ReferenceFrame: %s"),
+                       *entityModelName,
+                       *entityName,
+                       *worldTransf.ToString(),
+                       *referenceFrame);
+            }
+            else
             {
                 // todo: need pass response to SimulationStateClient
                 // response.bSuccess = false;

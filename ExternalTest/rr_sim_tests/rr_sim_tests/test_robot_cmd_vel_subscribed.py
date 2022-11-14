@@ -82,5 +82,6 @@ class TestRobotTwist(unittest.TestCase):
         # Command the robot to move with twist data
         with CmdVelPublisher(in_robot_namespace=argstr(LAUNCH_ARG_ROBOT_NAMESPACE), in_robot_twist=robot_twist) as cmd_vel_publisher:
             # Check for the robot having been twisted if it does susbcribe to /cmd_vel
-            assert cmd_vel_publisher.wait_for_robot_twisted(robot_name, robot_current_pose, in_timeout=5.0)
+            is_twisted = cmd_vel_publisher.wait_for_robot_twisted(robot_name, robot_current_pose, in_timeout=5.0)
+            assert is_twisted, f'{robot_name} failed being twisted by cmd_vel'
         rclpy.shutdown()
