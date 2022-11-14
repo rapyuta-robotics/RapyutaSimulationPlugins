@@ -127,6 +127,9 @@ public:
     void InitROS2Interface();
 
     UFUNCTION(BlueprintCallable)
+    bool InitROS2InterfaceImpl();
+
+    UFUNCTION(BlueprintCallable)
     void TimerInitROS2Interface();
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
