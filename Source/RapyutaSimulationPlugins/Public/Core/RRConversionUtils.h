@@ -109,7 +109,7 @@ public:
     {
         FROSOdom Output = Input;
 
-        VectorROSToUE(Input.Pose.Pose.Position, Output.Pose.Pose.Position);
+        Output.Pose.Pose.Position = VectorUEToROS(Input.Pose.Pose.Position);
         Output.Pose.Pose.Orientation = QuatUEToROS(Output.Pose.Pose.Orientation);
 
         Output.Twist.Twist.Linear = VectorUEToROS(Output.Twist.Twist.Linear);

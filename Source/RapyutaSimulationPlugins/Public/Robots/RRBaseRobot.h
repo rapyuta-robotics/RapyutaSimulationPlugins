@@ -264,5 +264,5 @@ protected:
     /**
      * @brief Instantiate default child components
      */
-    virtual void PostInitializeComponents() override;
+    virtual void PreInitializeComponents() override;
 };
