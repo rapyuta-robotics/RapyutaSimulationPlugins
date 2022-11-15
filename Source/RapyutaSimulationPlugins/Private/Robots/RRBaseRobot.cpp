@@ -184,14 +184,18 @@ void ARRBaseRobot::CreateROS2Interface()
 }
 void ARRBaseRobot::InitROS2Interface()
 {
-    GetWorld()->GetTimerManager().SetTimer(ROS2InitTimer, this, &ARRBaseRobot::TimerInitROS2Interface, 1.0f, true);
+    if (!InitROS2InterfaceImpl())
+    {
+        GetWorld()->GetTimerManager().SetTimer(
+            ROS2InitTimer, FTimerDelegate::CreateLambda([this] { InitROS2InterfaceImpl(); }), 1.0f, true);
+    }
 }
-void ARRBaseRobot::TimerInitROS2Interface()
+
+bool ARRBaseRobot::InitROS2InterfaceImpl()
 {
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::InitROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
 #endif
-
     if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
     {
         ROS2Interface->Initialize(this);
@@ -199,12 +203,15 @@ void ARRBaseRobot::TimerInitROS2Interface()
         {
             SetReplicatingMovement(false);
         }
+        GetWorld()->GetTimerManager().ClearTimer(ROS2InitTimer);
+        return true;
     }
     else
     {
         // Use replication to triggerto this function in client.
         // Since RPC can't be used from non-player controller
         bStartStopROS2Interface = true;
+        return false;
     }
 }
 

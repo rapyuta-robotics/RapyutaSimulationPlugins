@@ -127,7 +127,7 @@ public:
     void InitROS2Interface();
 
     UFUNCTION(BlueprintCallable)
-    void TimerInitROS2Interface();
+    bool InitROS2InterfaceImpl();
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle ROS2InitTimer;
