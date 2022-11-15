@@ -184,21 +184,18 @@ void ARRBaseRobot::CreateROS2Interface()
 }
 void ARRBaseRobot::InitROS2Interface()
 {
-    if(!InitROS2InterfaceImpl())
+    if (!InitROS2InterfaceImpl())
     {
-        GetWorld()->GetTimerManager().SetTimer(ROS2InitTimer, this, &ARRBaseRobot::TimerInitROS2Interface, 1.0f, true);
+        GetWorld()->GetTimerManager().SetTimer(
+            ROS2InitTimer, FTimerDelegate::CreateLambda([this] { InitROS2InterfaceImpl(); }), 1.0f, true);
     }
 }
-void ARRBaseRobot::TimerInitROS2Interface()
+
+bool ARRBaseRobot::InitROS2InterfaceImpl()
 {
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::InitROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
 #endif
-    InitROS2InterfaceImpl();
-
-}
-bool ARRBaseRobot::InitROS2InterfaceImpl()
-{
     if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
     {
         ROS2Interface->Initialize(this);
@@ -206,6 +203,7 @@ bool ARRBaseRobot::InitROS2InterfaceImpl()
         {
             SetReplicatingMovement(false);
         }
+        GetWorld()->GetTimerManager().ClearTimer(ROS2InitTimer);
         return true;
     }
     else
