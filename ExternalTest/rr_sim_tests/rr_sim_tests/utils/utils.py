@@ -70,17 +70,19 @@ class CmdVelPublisher(Node):
         self._twist_pub = self.create_publisher(Twist, self._cmd_vel_topic, qos_profile=latching_qos)
         self._twist = in_robot_twist
 
-        self._publishing_num = publishing_num
-        self._twist_pub_count = 0
-        self._is_pub_finished = False
+        if publishing_num > 0 and publishing_freq > 0:
+            self._publishing_num = publishing_num
+            self._twist_pub_count = 0
+            self._is_pub_finished = False
 
-        self._executor = SingleThreadedExecutor(context=self.context)
-        self._executor.add_node(self)
-        self._timer = self.create_timer(1.0/publishing_freq, self.twist_robot)
+            self._executor = SingleThreadedExecutor(context=self.context)
+            self._executor.add_node(self)
 
-        while rclpy.ok() and not self._is_pub_finished:
-            self._executor.spin_once(timeout_sec = 0)
-        print(f'Finished publishing Twist to {self.get_full_topic_name()}')
+            self._timer = self.create_timer(1.0/publishing_freq, self.twist_robot)
+
+            while rclpy.ok() and not self._is_pub_finished:
+                self._executor.spin_once(timeout_sec = 0)
+            print(f'Finished publishing Twist to {self.get_full_topic_name()}')
 
     def get_full_topic_name(self):
         return f'{self.get_namespace()}/{self._cmd_vel_topic}'
@@ -103,6 +105,11 @@ class CmdVelPublisher(Node):
             self._is_pub_finished = True
             self._timer.cancel()
         await asyncio.sleep(0)
+    
+    def pub(self, twist = None):
+        if twist is None:
+            twist = self._twist
+        self._twist_pub.publish(twist)
 
     def wait_for_robot_twisted(self, in_robot_name, in_robot_prev_pose, in_timeout=5.0):
         assert self._is_pub_finished, f'Twist has not been published to {self.get_full_topic_name()}'

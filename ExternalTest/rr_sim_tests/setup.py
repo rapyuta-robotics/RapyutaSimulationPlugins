@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'test_random_spawn = rr_sim_tests.test_random_spawn:main',
+            'test_random_spawn = rr_sim_tests.test_random_spawn:RandomSpawnAndSendCmdVel',
         ],
     },
 )
