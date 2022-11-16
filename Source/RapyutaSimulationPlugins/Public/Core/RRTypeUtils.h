@@ -46,10 +46,18 @@ class RAPYUTASIMULATIONPLUGINS_API URRTypeUtils : public UBlueprintFunctionLibra
 public:
     // UE-TYPE RELATED UTILS ==
     //
+    // UE-TYPE RELATED UTILS ==
+    //
     template<typename TEnum>
-    FORCEINLINE static FString GetEnumValueAsString(const FString& InTypeName, TEnum InEnumValue)
+    FORCEINLINE static FString GetEnumValueAsString(const FString& InTypeName,
+                                                    TEnum InEnumValue,
+                                                    const TCHAR* InModuleName = nullptr)
     {
-        const UEnum* EnumPtr = FindObject<UEnum>(nullptr, *InTypeName, true);
+        const UEnum* EnumPtr = FindObject<UEnum>(
+            nullptr,
+            *FString::Printf(
+                TEXT("/Script/%s.%s"), InModuleName ? InModuleName : RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME, *InTypeName),
+            true);
         if (!EnumPtr)
         {
             return "Invalid";
@@ -59,9 +67,13 @@ public:
     }
 
     template<typename TEnum>
-    FORCEINLINE static FString GetEnumNameByValue(const FString& InTypeName, TEnum InEnumValue)
+    FORCEINLINE static FString GetEnumNameByValue(const FString& InTypeName, TEnum InEnumValue, const TCHAR* InModuleName = nullptr)
     {
-        const UEnum* EnumPtr = FindObject<UEnum>(nullptr, *InTypeName, true);
+        const UEnum* EnumPtr = FindObject<UEnum>(
+            nullptr,
+            *FString::Printf(
+                TEXT("/Script/%s.%s"), InModuleName ? InModuleName : RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME, *InTypeName),
+            true);
         if (!EnumPtr)
         {
             return "Invalid";
@@ -70,9 +82,15 @@ public:
         return EnumPtr->GetNameByValue(static_cast<int32>(InEnumValue)).ToString();    // Or GetNameByValue
     }
 
-    FORCEINLINE static int8 GetEnumValueFromString(const FString& InTypeName, const FString& InEnumStringValue)
+    FORCEINLINE static int8 GetEnumValueFromString(const FString& InTypeName,
+                                                   const FString& InEnumStringValue,
+                                                   const TCHAR* InModuleName = nullptr)
     {
-        UEnum* EnumPtr = FindObject<UEnum>(nullptr, *InTypeName, true);
+        UEnum* EnumPtr = FindObject<UEnum>(
+            nullptr,
+            *FString::Printf(
+                TEXT("/Script/%s.%s"), InModuleName ? InModuleName : RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME, *InTypeName),
+            true);
         if (!EnumPtr)
         {
             // INDEX_NONE
