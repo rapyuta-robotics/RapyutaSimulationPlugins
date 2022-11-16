@@ -10,6 +10,7 @@
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRNetworkPlayerController.h"
 #include "Core/RRUObjectUtils.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Robots/RRRobotVehicleROSController.h"

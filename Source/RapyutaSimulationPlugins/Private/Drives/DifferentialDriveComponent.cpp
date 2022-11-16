@@ -2,7 +2,11 @@
 
 #include "Drives/DifferentialDriveComponent.h"
 
+// rclUE
 #include "rclcUtilities.h"
+
+// RapyutaSimulationPlugins
+#include "Core/RRConversionUtils.h"
 
 DEFINE_LOG_CATEGORY(LogDifferentialDriveComponent);
 

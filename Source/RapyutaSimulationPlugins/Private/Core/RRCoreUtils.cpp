@@ -157,11 +157,13 @@ bool URRCoreUtils::ShutDownSim(const UObject* InContextObject, uint64 InSimCompl
             URRThreadUtils::DoTaskInGameThread(
                 [InContextObject]()
                 {
+#if STATS
                     // STOP STAT --
-                    if (Stats::IsThreadCollectingData())
+                    if (FThreadStats::IsCollectingData())
                     {
                         URRCoreUtils::ExecuteConsoleCommand(InContextObject, URRCoreUtils::CMD_STATS_STOP);
                     }
+#endif
 
                     // SHUT DOWN SIM --
                     URRCoreUtils::ExecuteSimQuitCommand(InContextObject);

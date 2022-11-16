@@ -12,6 +12,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRNetworkGameMode.h"
 #include "Core/RRNetworkGameState.h"
+#include "Core/RRNetworkPlayerController.h"
 #include "Core/RRUObjectUtils.h"
 #include "Drives/RRJointComponent.h"
 #include "Robots/RRRobotROS2Interface.h"
@@ -50,7 +51,6 @@ void ARRBaseRobot::PreInitializeComponents()
         // ROS2Interface is created at server and replicated to client.
         if (!IsNetMode(NM_Client) && ROS2Interface == nullptr)
         {
-            
             CreateROS2Interface();
         }
     }

@@ -24,6 +24,7 @@
 #include "Misc/Guid.h"
 #include "Stats/Stats.h"
 #include "UObject/Object.h"
+#include "UObject/ObjectMacros.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
@@ -396,9 +397,8 @@ public:
         InWorld->GetTimerManager().ClearTimer(InTimerHandle);
     }
 
-    template<typename T>
-    FORCEINLINE static FTimerHandle PlanToExecuteOnNextTick(T* InObj,
-                                                            typename FTimerDelegate::TUObjectMethodDelegate<T>::FMethodPtr InMethod)
+    template<typename T, typename TDelegate>
+    FORCEINLINE static FTimerHandle PlanToExecuteOnNextTick(T* InObj, typename TDelegate::template TMethodPtr<T> InMethod)
     {
         check(IsValid(InObj));
         return InObj->GetWorld()->GetTimerManager().SetTimerForNextTick(InObj, InMethod);

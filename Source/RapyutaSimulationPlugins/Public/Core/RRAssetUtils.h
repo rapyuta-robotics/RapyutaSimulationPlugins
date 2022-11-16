@@ -7,7 +7,7 @@
 #pragma once
 
 // UE
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Engine/ObjectLibrary.h"
 #include "Engine/StaticMesh.h"
 #include "Kismet/BlueprintFunctionLibrary.h"

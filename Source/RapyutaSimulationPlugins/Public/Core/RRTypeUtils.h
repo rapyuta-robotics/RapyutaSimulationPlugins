@@ -7,7 +7,7 @@
 #pragma once
 
 // UE
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 // RapyutaSimulationPlugins
@@ -49,7 +49,7 @@ public:
     template<typename TEnum>
     FORCEINLINE static FString GetEnumValueAsString(const FString& InTypeName, TEnum InEnumValue)
     {
-        const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, *InTypeName, true);
+        const UEnum* EnumPtr = FindObject<UEnum>(nullptr, *InTypeName, true);
         if (!EnumPtr)
         {
             return "Invalid";
@@ -61,7 +61,7 @@ public:
     template<typename TEnum>
     FORCEINLINE static FString GetEnumNameByValue(const FString& InTypeName, TEnum InEnumValue)
     {
-        const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, *InTypeName, true);
+        const UEnum* EnumPtr = FindObject<UEnum>(nullptr, *InTypeName, true);
         if (!EnumPtr)
         {
             return "Invalid";
@@ -72,7 +72,7 @@ public:
 
     FORCEINLINE static int8 GetEnumValueFromString(const FString& InTypeName, const FString& InEnumStringValue)
     {
-        UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, *InTypeName, true);
+        UEnum* EnumPtr = FindObject<UEnum>(nullptr, *InTypeName, true);
         if (!EnumPtr)
         {
             // INDEX_NONE

@@ -10,6 +10,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRConversionUtils.h"
 #include "Robots/RRRobotBaseVehicle.h"
 
 // rclUE
