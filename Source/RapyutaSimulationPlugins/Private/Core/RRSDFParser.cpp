@@ -55,9 +55,7 @@ FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
         return FRRRobotModelInfo();
     }
 
-#if RAPYUTA_SDF_PARSER_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("PARSE SDF CONTENT FROM FILE %s"), *InSDFPath);
-#endif
     FRRRobotModelInfo robotModelInfo;
     robotModelInfo.ModelDescType = ERRRobotDescriptionType::SDF;
     robotModelInfo.DescriptionFilePath = InSDFPath;

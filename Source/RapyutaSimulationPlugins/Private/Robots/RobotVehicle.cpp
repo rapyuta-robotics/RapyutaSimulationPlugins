@@ -36,6 +36,13 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
     SkeletalMeshComp->SetIsReplicated(true);
     SkeletalMeshComp->SetGenerateOverlapEvents(true);
     AddOwnedComponent(SkeletalMeshComp);
+
+    // [SkeletalMeshComp] -> NEW ROOT
+    if (RootComponent)
+    {
+        SkeletalMeshComp->SetupAttachment(RootComponent);
+        RootComponent->DestroyComponent(true);
+    }
     RootComponent = SkeletalMeshComp;
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();

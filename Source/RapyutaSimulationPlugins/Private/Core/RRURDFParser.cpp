@@ -819,9 +819,7 @@ FRRRobotModelInfo FRRURDFParser::LoadModelInfoFromFile(const FString& InURDFPath
     }
     outXMLContent = URRCoreUtils::GetSanitizedXMLString(outXMLContent);
 
-#if RAPYUTA_URDF_PARSER_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("PARSE URDF CONTENT FROM FILE %s"), *InURDFPath);
-#endif
     FRRRobotModelInfo robotModelInfo;
     robotModelInfo.ModelDescType = ERRRobotDescriptionType::URDF;
     robotModelInfo.DescriptionFilePath = InURDFPath;
