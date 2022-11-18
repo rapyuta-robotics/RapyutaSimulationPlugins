@@ -126,6 +126,12 @@ public:
     UFUNCTION(BlueprintCallable)
     void InitROS2Interface();
 
+    UFUNCTION(BlueprintCallable)
+    bool InitROS2InterfaceImpl();
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTimerHandle ROS2InitTimer;
+
     /**
      * @brief Stop ROS2 Interface. Directly call #URRRobotROS2Interface::DeInitialize or execute in client via #OnRep_bStartStopROS2Interface.
      * @note Not uses RPC but replication since the robot is not always owned by the same connection with the client's PlayerController.
