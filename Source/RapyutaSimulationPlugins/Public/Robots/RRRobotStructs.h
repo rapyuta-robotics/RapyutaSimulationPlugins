@@ -11,7 +11,7 @@
 #include "Core/RRMathUtils.h"
 #include "Core/RRTypeUtils.h"
 
-#include "RRRobotDefines.generated.h"
+#include "RRRobotStructs.generated.h"
 // (NOTE) To avoid cyclic inclusion, except for utils, please DO NOT include any other component header files here!
 
 class ARRSkeletalRobot;

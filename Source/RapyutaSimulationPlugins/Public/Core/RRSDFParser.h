@@ -6,7 +6,7 @@
 
 // RapyutaSimulationPlugins
 #include "RapyutaSimulationPlugins.h"
-#include "Robots/RRRobotDefines.h"
+#include "Robots/RRRobotStructs.h"
 
 #define RAPYUTA_SDF_PARSER_DEBUG (0)
 
