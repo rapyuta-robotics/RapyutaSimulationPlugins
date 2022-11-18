@@ -22,12 +22,10 @@ repos:
     hooks:
       - id: black
         description: Format python code
-        exclude: ^(sootballs_monitoring/|tools/)
 
       - id: black
         name: black with python3.8
-        files: ^(sootballs_monitoring/|tools/)
-        args: ["--line-length=88", "--target-version=py38"]
+        args: ["--line-length=79", "--target-version=py38"]
   - repo: https://gitlab.com/pycqa/flake8
     rev: 4.0.1
     hooks:
