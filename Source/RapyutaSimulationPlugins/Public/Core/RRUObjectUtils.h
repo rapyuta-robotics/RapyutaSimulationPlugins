@@ -59,9 +59,9 @@ public:
         }
         else
         {
-            return InOuter
-                     ? NewObject<UObject>(InOuter, InObjectClass, FName(*InObjectUniqueName))
-                     : NewObject<UObject>(static_cast<UObject*>(GetTransientPackage()), InObjectClass, FName(*InObjectUniqueName));
+            return InOuter ? NewObject<UObject>(InOuter, InObjectClass, FName(*InObjectUniqueName))
+                           : NewObject<UObject>(
+                                 static_cast<UObject*>(GetTransientPackage()), InObjectClass, FName(*InObjectUniqueName));
         }
     }
 
@@ -126,7 +126,6 @@ public:
         {
             primComp->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
             primComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-            primComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
             primComp->SetNotifyRigidBodyCollision(true);
         }
         else if (bIsOverlapEventEnabled)

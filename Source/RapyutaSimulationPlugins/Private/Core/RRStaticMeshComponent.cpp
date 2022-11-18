@@ -107,8 +107,7 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
                 URRCoreUtils::RegisterRepeatedExecution(
                     GetWorld(),
                     StaticMeshTimerHandle,
-                    [this, gameSingleton]()
-                    {
+                    [this, gameSingleton]() {
                         UStaticMesh* existentStaticMesh = gameSingleton->GetStaticMesh(MeshUniqueName, false);
                         if (existentStaticMesh)
                         {
@@ -133,27 +132,23 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
                 {
                     // Start async mesh loading
                     URRThreadUtils::DoAsyncTaskInThread<void>(
-                        [this, InMeshFileName]()
-                        {
+                        [this, InMeshFileName]() {
                             if (!MeshDataBuffer.MeshImporter)
                             {
                                 MeshDataBuffer.MeshImporter = MakeShared<Assimp::Importer>();
                             }
                             MeshDataBuffer = URRMeshUtils::LoadMeshFromFile(InMeshFileName, *MeshDataBuffer.MeshImporter);
                         },
-                        [this]()
-                        {
-                            URRThreadUtils::DoTaskInGameThread(
-                                [this]()
-                                {
-                                    // Save [MeshDataBuffer] to [FRRMeshData::MeshDataStore]
-                                    verify(MeshDataBuffer.IsValid());
-                                    FRRMeshData::AddMeshData(MeshUniqueName, MakeShared<FRRMeshData>(MoveTemp(MeshDataBuffer)));
+                        [this]() {
+                            URRThreadUtils::DoTaskInGameThread([this]() {
+                                // Save [MeshDataBuffer] to [FRRMeshData::MeshDataStore]
+                                verify(MeshDataBuffer.IsValid());
+                                FRRMeshData::AddMeshData(MeshUniqueName, MakeShared<FRRMeshData>(MoveTemp(MeshDataBuffer)));
 
-                                    // Then create mesh body, signalling [OnMeshCreationDone()],
-                                    // which might reference [FRRMeshData::MeshDataStore]
-                                    verify(CreateMeshBody());
-                                });
+                                // Then create mesh body, signalling [OnMeshCreationDone()],
+                                // which might reference [FRRMeshData::MeshDataStore]
+                                verify(CreateMeshBody());
+                            });
                         });
                 }
             }
@@ -358,7 +353,6 @@ void URRStaticMeshComponent::SetCollisionModeAvailable(bool bInCollisionEnabled,
         SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
         SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
         SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
         SetNotifyRigidBodyCollision(bInHitEventEnabled);
 #endif
     }
