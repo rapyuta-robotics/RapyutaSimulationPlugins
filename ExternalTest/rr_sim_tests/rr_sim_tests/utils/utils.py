@@ -59,7 +59,7 @@ def spawn_robot(
     future = cli.call_async(req)
     try:
         start = time.time()
-        while time.time() - start < in_timeout:
+        while (time.time() - start) < in_timeout:
             rclpy.spin_once(node)
             if future.done():
                 break
