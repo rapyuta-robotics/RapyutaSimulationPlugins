@@ -68,27 +68,23 @@ bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
             else
             {
                 URRThreadUtils::DoAsyncTaskInThread<void>(
-                    [this, InMeshFileName]()
-                    {
+                    [this, InMeshFileName]() {
                         if (!MeshDataBuffer.MeshImporter)
                         {
                             MeshDataBuffer.MeshImporter = MakeShared<Assimp::Importer>();
                         }
                         MeshDataBuffer = URRMeshUtils::LoadMeshFromFile(InMeshFileName, *MeshDataBuffer.MeshImporter);
                     },
-                    [this]()
-                    {
-                        URRThreadUtils::DoTaskInGameThread(
-                            [this]()
-                            {
-                                // Save [MeshDataBuffer] to [FRRMeshData::MeshDataStore]
-                                verify(MeshDataBuffer.IsValid());
-                                FRRMeshData::AddMeshData(MeshUniqueName, MakeShared<FRRMeshData>(MoveTemp(MeshDataBuffer)));
+                    [this]() {
+                        URRThreadUtils::DoTaskInGameThread([this]() {
+                            // Save [MeshDataBuffer] to [FRRMeshData::MeshDataStore]
+                            verify(MeshDataBuffer.IsValid());
+                            FRRMeshData::AddMeshData(MeshUniqueName, MakeShared<FRRMeshData>(MoveTemp(MeshDataBuffer)));
 
-                                // Then create mesh body, signalling [OnMeshCreationDone()],
-                                // which might reference [FRRMeshData::MeshDataStore]
-                                CreateMeshBody();
-                            });
+                            // Then create mesh body, signalling [OnMeshCreationDone()],
+                            // which might reference [FRRMeshData::MeshDataStore]
+                            CreateMeshBody();
+                        });
                     });
             }
         }
@@ -149,8 +145,7 @@ bool URRProceduralMeshComponent::CreateMeshBody()
         URRCoreUtils::RegisterRepeatedExecution(
             GetWorld(),
             BodySetupTimerHandle,
-            [this, gameSingleton, bodySetupModelName]()
-            {
+            [this, gameSingleton, bodySetupModelName]() {
                 UBodySetup* existentBodySetup = gameSingleton->GetBodySetup(bodySetupModelName);
                 if (existentBodySetup)
                 {
@@ -201,8 +196,7 @@ bool URRProceduralMeshComponent::CreateMeshBody()
             URRCoreUtils::RegisterRepeatedExecution(
                 GetWorld(),
                 CollisionCookingTimerHandle,
-                [this, bodySetupModelName]()
-                {
+                [this, bodySetupModelName]() {
                     // (NOTE) Upon collision cooking finish, ProcMeshBodySetup will have been updated to the latest created body
                     // setup in the async queue Refer to [FinishPhysicsAsyncCook()]
                     UBodySetup* latestBodySetup = GetBodySetup();
@@ -389,7 +383,6 @@ void URRProceduralMeshComponent::SetCollisionModeAvailable(bool bIsOn, bool bIsH
         SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
         SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
         SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
         SetNotifyRigidBodyCollision(bIsHitEventEnabled);
     }
     else
