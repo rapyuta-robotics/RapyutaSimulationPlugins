@@ -26,7 +26,7 @@ repos:
       - id: black
         name: black with python3.8
         args: ["--line-length=88", "--target-version=py38"]
-  - repo: https://gitlab.com/pycqa/flake8
+  - repo: https://github.com/PyCQA/flake8
     rev: 4.0.1
     hooks:
       - id: flake8
