@@ -283,6 +283,7 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
             {
                 // RPC call to the server
                 ServerSpawnEntity(entityRequest);
+                numEntitySpawned++;
             }
             else
             {
@@ -300,8 +301,8 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
     FROSSpawnEntitiesRes entityListResponse;
     entityListResponse.bSuccess = (numEntitySpawned == entityListRequest.State.Num());
     entityListResponse.StatusMessage = entityListResponse.bSuccess
-                                         ? FString::Printf(TEXT("Newly spawned entities: [%s]"), *statusMessage)
-                                         : FString::Printf(TEXT("Failed to be spawned entities: [%s]"), *statusMessage);
+                                           ? FString::Printf(TEXT("Newly spawned entities: [%s]"), *statusMessage)
+                                           : FString::Printf(TEXT("Failed to spawn entities: [%s]"), *statusMessage);
 
     spawnEntitiesService->SetResponse(entityListResponse);
 }

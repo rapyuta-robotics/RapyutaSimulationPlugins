@@ -5,7 +5,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 
 // UE
@@ -24,6 +23,8 @@
 #include "Core/RRMeshData.h"
 
 #include "RRMeshUtils.generated.h"
+
+#define RAPYUTA_MESH_UTILS_DEBUG (0)
 
 /**
  * @brief MeshUtils

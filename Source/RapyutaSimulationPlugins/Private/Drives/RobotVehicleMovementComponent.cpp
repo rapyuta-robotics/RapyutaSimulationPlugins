@@ -5,7 +5,6 @@
 // UE
 #include "Algo/MinElement.h"
 #include "CollisionQueryParams.h"
-#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -23,12 +22,6 @@ void URobotVehicleMovementComponent::Initialize()
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 
     InitData();
-}
-
-void URobotVehicleMovementComponent::BeginPlay()
-{
-    Super::BeginPlay();
-    Initialize();
 }
 
 void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
@@ -70,18 +63,19 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
     if (bAdaptToSurfaceBelow)
     {
         // check for floor configuration beneath the robot : slopes, etc
-        FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
+        AActor* owner = GetOwner();
+        FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, owner);
         traceParams.bReturnPhysicalMaterial = true;
         traceParams.bTraceComplex = true;
         traceParams.bReturnFaceIndex = true;
-        traceParams.AddIgnoredActor(PawnOwner);
+        traceParams.AddIgnoredActor(owner);
 
         // If few contact points defined, cast a single ray beneath the robot to get the floor orientation
         if (ContactPoints.Num() < 3)
         {
             // robot will be oriented as the normal vector in floor plane
-            FVector startPos = PawnOwner->GetActorLocation() + FVector(0., 0., RayOffsetUp);
-            FVector endPos = PawnOwner->GetActorLocation() - FVector(0., 0., RayOffsetDown);
+            FVector startPos = owner->GetActorLocation() + FVector(0., 0., RayOffsetUp);
+            FVector endPos = owner->GetActorLocation() - FVector(0., 0., RayOffsetDown);
             bool bIsFloorHit = GetWorld()->LineTraceSingleByChannel(hit,
                                                                     startPos,
                                                                     endPos,
@@ -90,18 +84,18 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
                                                                     FCollisionResponseParams::DefaultResponseParam);
             if (bIsFloorHit)
             {
-                FVector forwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), hit.ImpactNormal);
-                PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(forwardProjection, hit.ImpactNormal));
+                FVector forwardProjection = FVector::VectorPlaneProject(owner->GetActorForwardVector(), hit.ImpactNormal);
+                owner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(forwardProjection, hit.ImpactNormal));
                 if (MovingPlatform == nullptr)
                 {
                     FVector heightVariation = {0., 0., MinDistanceToFloor - hit.Distance};
-                    PawnOwner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::None);
+                    owner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::None);
                 }
             }
             else
             {
                 // very basic robot falling
-                PawnOwner->AddActorWorldOffset(FVector(0., 0., -FallingSpeed * InDeltaTime), true, &hit, ETeleportType::None);
+                owner->AddActorWorldOffset(FVector(0., 0., -FallingSpeed * InDeltaTime), true, &hit, ETeleportType::None);
             }
         }
         else
@@ -158,8 +152,8 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             if (planeNormal.Z < 0.f)
                 planeNormal = -planeNormal;
 
-            FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), planeNormal);
-            PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, planeNormal));
+            FVector ForwardProjection = FVector::VectorPlaneProject(owner->GetActorForwardVector(), planeNormal);
+            owner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, planeNormal));
 
             if (MovingPlatform == nullptr)
             {
@@ -169,7 +163,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
                 minDistance = FMath::Min(minDistance, FallingSpeed * InDeltaTime);
 
                 FVector heightVariation = {0., 0., -minDistance};
-                PawnOwner->AddActorWorldOffset(heightVariation, false, &hit, ETeleportType::None);
+                owner->AddActorWorldOffset(heightVariation, false, &hit, ETeleportType::None);
             }
         }
     }
@@ -306,7 +300,9 @@ void URobotVehicleMovementComponent::InitData()
     {
         ContactPoints.Add(Cast<USceneComponent>(acp));
     }
+#if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("URobotVehicleMovementComponent::InitData - Nb Contact Points : %d"), ContactPoints.Num());
+#endif
 
     // Compute the starting distance between the robot root and the floor
     // We consider that the robot is on a horizontal floor at the beginning
@@ -329,8 +325,10 @@ void URobotVehicleMovementComponent::InitData()
     {
         MinDistanceToFloor = hitResult.Distance;
     }
+#if RAPYUTA_SIM_DEBUG
     UE_LOG(
         LogRapyutaCore, Warning, TEXT("URobotVehicleMovementComponent::InitData - Min Distance To Floor = %f"), MinDistanceToFloor);
+#endif
 }
 
 void URobotVehicleMovementComponent::SetMovingPlatform(AActor* InPlatform)

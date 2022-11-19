@@ -118,7 +118,7 @@ public:
      * @sa [ue_mgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
      */
     UFUNCTION(BlueprintCallable)
-    void SpawnEntitySrv(UROS2GenericSrv* InService);
+    virtual void SpawnEntitySrv(UROS2GenericSrv* InService);
 
     /**
      * @brief Callback function of SpawnEntities ROS2 service.
@@ -126,7 +126,7 @@ public:
      * @sa [ue_mgs/SpawnEntities.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntities.srv)
      */
     UFUNCTION(BlueprintCallable)
-    void SpawnEntitiesSrv(UROS2GenericSrv* InService);
+    virtual void SpawnEntitiesSrv(UROS2GenericSrv* InService);
 
     /**
      * @brief RPC call to Server's SpawnEntity

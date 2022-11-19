@@ -175,8 +175,6 @@ public:
     FTransform RootOffset = FTransform::Identity;
 
 protected:
-    virtual void BeginPlay() override;
-
     virtual bool IsSupportedForNetworking() const override
     {
         return true;

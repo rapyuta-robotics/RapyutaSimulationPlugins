@@ -37,18 +37,22 @@ void URRMeshUtils::ProcessMeshNode(aiNode* InNode,
                                                     FPlane(nodeTransf.a3, nodeTransf.b3, nodeTransf.c3, nodeTransf.d3),
                                                     FPlane(nodeTransf.a4, nodeTransf.b4, nodeTransf.c4, nodeTransf.d4)));
 
+#if RAPYUTA_MESH_UTILS_DEBUG
     UE_LOG(LogRapyutaCore,
            Display,
            TEXT("Node(%s): mNumMeshes: %d, mNumChildren: %d"),
            *FString(InNode->mName.C_Str()),
            InNode->mNumMeshes,
            InNode->mNumChildren);
+#endif
     if ((InNode->mNumMeshes > 0) && InNode->mMeshes)
     {
         for (auto i = 0; i < InNode->mNumMeshes; ++i)
         {
             auto meshIndex = InNode->mMeshes[i];
+#if RAPYUTA_MESH_UTILS_DEBUG
             UE_LOG(LogRapyutaCore, Log, TEXT("Loading Mesh at index: %d"), meshIndex);
+#endif
             aiMesh* mesh = InScene->mMeshes[meshIndex];
             if (mesh)
             {
@@ -80,12 +84,14 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
     const bool bHasNormals = InMesh->HasNormals();
     const bool bHasFaces = InMesh->HasFaces();
 
+#if RAPYUTA_MESH_UTILS_DEBUG
     UE_LOG(LogRapyutaCore,
            Warning,
            TEXT("ProcessMesh - Vertices num: %u Faces num: %u %d"),
            InMesh->mNumVertices,
            InMesh->mNumFaces,
            bHasFaces);
+#endif
     // Fetch mesh data, also Converting handedness from Assimp(right) ->UE (left)
     for (auto i = 0; i < InMesh->mNumVertices; ++i)
     {
@@ -122,7 +128,9 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
         const auto& bone = InMesh->mBones[bi];
         if (bone)
         {
+#if RAPYUTA_MESH_UTILS_DEBUG
             UE_LOG(LogRapyutaCore, Warning, TEXT("Bone %s mNumWeights: %u"), *FString(bone->mName.data), bone->mNumWeights);
+#endif
             for (auto wi = 0; wi < bone->mNumWeights; ++wi)
             {
                 const auto& boneWeight = bone->mWeights[wi];
@@ -138,7 +146,9 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
     // [Triangles/Faces' indices]
     if (bHasFaces)
     {
+#if RAPYUTA_MESH_UTILS_DEBUG
         UE_LOG(LogRapyutaCore, Warning, TEXT("mNumFaces: %u at %u"), InMesh->mNumFaces, InMesh->mFaces);
+#endif
         for (auto f = 0; f < InMesh->mNumFaces; ++f)
         {
             const aiFace& face = InMesh->mFaces[f];
@@ -296,11 +306,11 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
             InMeshImporter.SetPropertyBool(AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION, true);
         }
 
-#if 0    // This is only required if the meshes are exported by Blender
-         // Rotate the mesh around X by -90
-         // InMeshImporter.SetPropertyBool(AI_CONFIG_PP_PTV_ADD_ROOT_TRANSFORMATION, true);
-         // const aiMatrix4x4 initialMeshTransform(aiVector3D(0.f, 0.f, 0.f), aiQuaternion(0.f, 0.f, -90.f), aiVector3D(0.f, 0.f,
-         // 0.f));
+#if 0    // This is only required if the meshes are exported by Blender                                                           \
+         // Rotate the mesh around X by -90                                                                                       \
+         // InMeshImporter.SetPropertyBool(AI_CONFIG_PP_PTV_ADD_ROOT_TRANSFORMATION, true);                                       \
+         // const aiMatrix4x4 initialMeshTransform(aiVector3D(0.f, 0.f, 0.f), aiQuaternion(0.f, 0.f, -90.f), aiVector3D(0.f, 0.f, \
+         // 0.f));                                                                                                                \
          // InMeshImporter.SetPropertyMatrix(AI_CONFIG_PP_PTV_ROOT_TRANSFORMATION, initialMeshTransform);
 #endif
 
@@ -361,19 +371,22 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
 
     float unitScaleFactor = 1.f;
     scene->mMetaData->Get("UnitScaleFactor", unitScaleFactor);
+#if RAPYUTA_MESH_UTILS_DEBUG
     UE_LOG(
         LogRapyutaCore, Warning, TEXT("URRMeshUtils::LoadMeshFromFile UnitScaleFactor: %f %s"), unitScaleFactor, *InMeshFilePath);
-
     UE_LOG(LogRapyutaCore, Warning, TEXT("MESHES NUM: Scene(%u) RootNode(%u)"), scene->mNumMeshes, scene->mRootNode->mNumMeshes);
+#endif
 
     // [Meshes] --
     int nodeIndex = 0;
     int* nodeIndexPtr = &nodeIndex;
     ProcessMeshNode(scene->mRootNode, scene, -1, nodeIndexPtr, outMeshData);
 
+#if RAPYUTA_MESH_UTILS_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("MATERIALS NUM: %d"), scene->mNumMaterials);
+#endif
     // Create Material instance dynamic in [outMeshData]
     // [Materials/Textures] --
-    UE_LOG(LogRapyutaCore, Warning, TEXT("MATERIALS NUM: %d"), scene->mNumMaterials);
     if (scene->HasMaterials())
     {
         for (auto i = 0; i < scene->mNumMaterials; ++i)
@@ -382,6 +395,9 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
         }
     }
 
+#if RAPYUTA_MESH_UTILS_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("NODES NUM: %d"), outMeshData.Nodes.Num());
+#endif
     outMeshData.bIsValid = (outMeshData.Nodes.Num() > 0);
     return outMeshData;
 }
