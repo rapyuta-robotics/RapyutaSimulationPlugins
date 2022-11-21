@@ -49,7 +49,7 @@ public:
     //! Update Actors with GetAllActorsOfClass or not in UpdateMessages
     //! Enable this may cause delay since GetAllActorsOfClass is slow operation.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bUpdateActorsList;
+    bool bUpdateActorsList = false;
 
     //! Common parameters among Markers
     //! Parameters are used from this one except for name and pose.
