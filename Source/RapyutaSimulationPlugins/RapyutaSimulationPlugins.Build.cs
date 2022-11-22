@@ -52,15 +52,14 @@ public class RapyutaSimulationPlugins : ModuleRules
         PrivateDependencyModuleNames.AddRange(new string[] { });
 
         // assimp
-        bool bIsAssimpLibDynamic = false;
+        bool bIsAssimpLibDynamic = true;
         string AssimpPath = GetLibPath("assimp");
         PublicIncludePaths.Add(Path.Combine(AssimpPath, "release/include"));
         if (UnrealTargetPlatform.Linux == Target.Platform)
         {
             if (bIsAssimpLibDynamic)
             {
-                // (Note) Release-build assimp version is not reliable yet, use debug one for now
-                AddLib(Target, AssimpPath, "libassimpd.so", "libassimpd.so.5");
+                AddLib(Target, AssimpPath, "libassimp.so", "libassimp.so.5");
             }
             else
             {
