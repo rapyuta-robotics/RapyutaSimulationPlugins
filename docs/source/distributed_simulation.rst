@@ -28,6 +28,7 @@ UE multiplayer is based around the client-server model. Each player is a client 
 In the robotics simulator, we put robots in each client. 
 
 .. figure:: images/overview_of_UE_distributed_simulation.png
+   :align: center
 
    Figure 1: Overview of the configuration.
 
@@ -52,7 +53,7 @@ RPCs and Replication
 Communication between Server and Client uses UE’s `replication and RPCs <https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/>`_.
 
 **Replication** is the process to sync data between the server and the clients. Changes of Actors and properties set as "replicated" in server are synced to the clients.
-Replication is the process of the server to sync data such as Actor pose, and other properties.
+Replication is a one-way process from server to client to sync data such as Actor pose and other properties.
 
 `RPCs (Remote procesure call) <https://docs.unrealengine.com/4.26/en-US/InteractiveExperiences/Networking/Actors/RPCs/>`_
 is a way to call function in client from server or the other way around. While replication provide a way to sync data from server to clients, 
@@ -74,7 +75,8 @@ Basic flows between client and server
 =====================================
 
 .. figure:: images/details_of_UE_distributed_simulation.png
-   
+   :align: center
+
    Figure 2: Detailed architecture of distributed simulation
 
 | **Game start and NetworkPlayer Spawning**
@@ -95,7 +97,7 @@ Basic flows between client and server
 | **Robot Movement flow**
 | **(c-1)** ROS2 application publish command topic such as /cmd_vel
 | **(c-2)** Robot in the client moves to follow command.
-| **(c-3)** Set server robot movement is requested by `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_ 
+| **(c-3)** Robot requests `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_ to set server robot movement
 | **(c-4)** NetworkPlayerController in the client pass the request to the server via RPC
 | **(c-5)** NetworkPlayerController in the server request robot to follow the command 
 | **(c-6)** Robot movement is replicated to the other clients.
@@ -206,6 +208,7 @@ Process to test client server
 4. Send ROS2 spawn request. 
 
 .. figure:: images/multiplayer_editor_setting.png
+   :align: center
 
    Figure 3: Process to test client server
 
