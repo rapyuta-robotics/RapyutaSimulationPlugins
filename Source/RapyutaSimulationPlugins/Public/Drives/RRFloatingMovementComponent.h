@@ -11,6 +11,7 @@
 
 #include "RRFloatingMovementComponent.generated.h"
 
+#define RAPYUTA_FLOAT_MOVEMENT_DEBUG (0)
 /**
  * @brief Base Robot floating movement class
  */
@@ -25,7 +26,7 @@ public:
 
 protected:
     virtual void TickComponent(float InDeltaTime, enum ELevelTick InTickType, FActorComponentTickFunction* InTickFunction) override;
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_FLOAT_MOVEMENT_DEBUG
     virtual bool ResolvePenetrationImpl(const FVector& InProposedAdjustment,
                                         const FHitResult& InHit,
                                         const FQuat& InNewRotationQuat) override;

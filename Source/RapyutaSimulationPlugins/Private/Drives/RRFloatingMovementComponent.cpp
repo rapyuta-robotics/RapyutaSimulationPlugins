@@ -53,7 +53,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
             FHitResult hit(1.f);
             SafeMoveUpdatedComponent(deltaLoc, UpdatedComponent->GetComponentQuat(), bSweepEnabled, hit);
 
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_FLOAT_MOVEMENT_DEBUG
             if (hit.bBlockingHit)
             {
                 UE_LOG(LogRapyutaCore,
@@ -93,7 +93,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
     UpdateComponentVelocity();
 }
 
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_FLOAT_MOVEMENT_DEBUG
 bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InProposedAdjustment,
                                                           const FHitResult& InHit,
                                                           const FQuat& InNewRotationQuat)

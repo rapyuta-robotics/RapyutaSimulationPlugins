@@ -47,6 +47,7 @@ public:
 
     UPROPERTY()
     FString MeshUniqueName;
+    UStaticMesh* CreateMeshBody(const FRRMeshData& InMeshData);
 
     void SetMesh(UStaticMesh* InStaticMesh);
     void SetMeshSize(const FVector& InSize)
@@ -92,15 +93,8 @@ protected:
     virtual void BeginPlay() override;
 
 private:
-    // This is used as a buffer storing loaded mesh data in worker thread,
-    // thus needs to belong to each individual mesh comp of its own
-    // As such, this just exists transiently and should not be queried. Use FRRMeshData::MeshDataStore instead
-    UPROPERTY()
-    FRRMeshData MeshDataBuffer;
-
     UPROPERTY()
     FTimerHandle StaticMeshTimerHandle;
 
-    UStaticMesh* CreateMeshBody();
     void CreateMeshSection(const TArray<FRRMeshNodeData>& InMeshSectionData, FMeshDescriptionBuilder& OutMeshDescBuilder);
 };

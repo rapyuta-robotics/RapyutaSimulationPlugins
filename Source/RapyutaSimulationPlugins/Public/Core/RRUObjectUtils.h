@@ -148,6 +148,13 @@ public:
         primComp->SetSimulatePhysics(bIsPhysicsEnabled);
     }
 
+    static void DisableNavImpactAndPhysicsCollision(UPrimitiveComponent* InComponent)
+    {
+        InComponent->SetCanEverAffectNavigation(false);
+        InComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        InComponent->SetSimulatePhysics(false);
+    }
+
     /**
      * @brief Use SetupAttachment or AttachToComponent based on where this method is called.
      * Uses #URRThreadUtils::IsInsideConstructor.

@@ -140,8 +140,13 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
     void Reset(uint64 InNum = 0)
     {
         Vertices.SetNumZeroed(InNum);
-        TriangleIndices.SetNumZeroed(InNum);
+        VertexColors.SetNumZeroed(InNum);
+        Normals.SetNumZeroed(InNum);
+        UVs.SetNumZeroed(InNum);
+        UV2fs.SetNumZeroed(InNum);
         ProcTangents.SetNumZeroed(InNum);
+        TriangleIndices.SetNumZeroed(3 * InNum);
+        BoneInfluences.Reset();
     }
 
     void PrintSelf() const;

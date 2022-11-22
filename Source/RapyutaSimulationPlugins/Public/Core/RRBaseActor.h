@@ -135,6 +135,7 @@ public:
     void SetTickEnabled(bool bInIsTickEnabled);
 
 protected:
+    virtual void PreInitializeComponents() override;
     virtual void PrintSimConfig() const
     {
     }

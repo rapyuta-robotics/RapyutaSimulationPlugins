@@ -40,6 +40,7 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     InitRobotROS2Node(InRobot);
 
     // Initialize Robot's sensors (lidar, etc.)
+    // NOTE: This inits both static sensors added by BP robot & possiblly also dynamic ones added in the overriding child InitSensors()
     verify(InRobot->InitSensors(RobotROS2Node));
 
     // Refresh TF, Odom publishers

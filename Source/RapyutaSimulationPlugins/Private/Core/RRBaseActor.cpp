@@ -39,6 +39,29 @@ void ARRBaseActor::SetupDefaultBase()
     bAlwaysRelevant = true;
 }
 
+void ARRBaseActor::PreInitializeComponents()
+{
+    Super::PreInitializeComponents();
+
+    // SETUP + CONFIGURE ESSENTIAL GAME & SIM COMMON OBJECTS
+    GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
+    check(GameMode);
+
+    GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
+    check(GameState);
+
+    GameSingleton = URRGameSingleton::Get();
+    check(GameSingleton);
+
+    if (IsNetMode(NM_Standalone))
+    {
+        PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
+        check(PlayerController);
+    }
+
+    ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
+}
+
 // (NOTE) This method, if being called, could only go with a RRGameMode-inheriting game mode setup!
 // Currently, ARRROS2GameMode & ARRGameMode are separate ones.
 // & Maps of ARRROS2GameMode do NOT YET have actors invoking this method.
@@ -61,23 +84,6 @@ bool ARRBaseActor::Initialize()
     // Tick setup
     SetTickEnabled(ActorInfo ? ActorInfo->bIsTickEnabled : false);
 
-    // SETUP + CONFIGURE ESSENTIAL GAME & SIM COMMON OBJECTS
-    GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
-    check(GameMode);
-
-    GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
-    check(GameState);
-
-    GameSingleton = URRGameSingleton::Get();
-    check(GameSingleton);
-
-    if (IsNetMode(NM_Standalone))
-    {
-        PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
-        check(PlayerController);
-    }
-
-    ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
     return true;
 }
 

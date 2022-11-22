@@ -4,7 +4,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 
 // UE
@@ -93,6 +92,14 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void Run();
+
+    /**
+     * @brief Stop timer to update and publish sensor data by using ClearTimer
+     * @sa [ClearTimer](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/FTimerManager/ClearTimer)
+     *
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void Stop();
 
     /**
      * @brief Update Sensor data. This method should be overwritten by child class.
