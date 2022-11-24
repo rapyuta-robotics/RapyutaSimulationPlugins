@@ -38,6 +38,7 @@ private:
     static constexpr const char* SDF_ELEMENT_POSE = "pose";
     static constexpr const char* SDF_ELEMENT_UE = "ue";
     static constexpr const char* SDF_ELEMENT_COMPONENT = "component";
+    static constexpr const char* SDF_ELEMENT_BASE_LINK = "base_link";
     static constexpr const char* SDF_ELEMENT_ARTICULATED_LINK = "articulated_link";
     static constexpr const char* SDF_ELEMENT_WHEEL = "wheel";
     static constexpr const char* SDF_ELEMENT_END_EFFECTOR = "end_effector";

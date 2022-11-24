@@ -45,6 +45,7 @@ private:
 
     TArray<FRRRobotLinkProperty> LinkPropList;
     TArray<FRRRobotJointProperty> JointPropList;
+    FString BaseLinkName;
     TArray<FString> ArticulatedLinksNames;
     TArray<FString> EndEffectorNames;
     TArray<FRRRobotWheelProperty> WheelPropList;
@@ -63,6 +64,7 @@ private:
 
         LinkPropList.Reset();
         JointPropList.Reset();
+        BaseLinkName = EMPTY_STR;
         ArticulatedLinksNames.Reset();
         WheelPropList.Reset();
         EndEffectorNames.Reset();

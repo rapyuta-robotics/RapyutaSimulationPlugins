@@ -192,7 +192,13 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         componentElement = componentElement->GetNextElement(SDF_ELEMENT_COMPONENT);
     }
 
-    // 2- Articulated links, which uses OutRobotModelInfo.UEComponentTypeFlags
+    // 2- Base link name
+    if (auto baseLinkElement = ueElement->FindElement(SDF_ELEMENT_BASE_LINK))
+    {
+        OutRobotModelInfo.BaseLinkName = URRCoreUtils::StdToFString(baseLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+    }
+
+    // 3- Articulated links, which uses OutRobotModelInfo.UEComponentTypeFlags
     if (OutRobotModelInfo.IsPlainManipulatorModel())
     {
         // By default all links are articulated for ARTICULATION_DRIVE-only manipulator type
@@ -217,7 +223,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         }
     }
 
-    // 3- Wheels, which uses OutRobotModelInfo.UEComponentTypeFlags
+    // 4- Wheels, which uses OutRobotModelInfo.UEComponentTypeFlags
     if (OutRobotModelInfo.IsPlainWheeledVehicleModel())
     {
         // By default all links are articulated for WHEEL_DRIVE-only vehicle type
@@ -242,7 +248,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         }
     }
 
-    // 4- EndEffectors
+    // 5- EndEffectors
     sdf::ElementPtr endEffectorElement = ueElement->FindElement(SDF_ELEMENT_END_EFFECTOR);
     while (endEffectorElement)
     {
@@ -255,7 +261,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         endEffectorElement = endEffectorElement->GetNextElement(SDF_ELEMENT_END_EFFECTOR);
     }
 
-    // 4- WholeBody's material
+    // 6- WholeBody's material
     auto& materialInfo = OutRobotModelInfo.WholeBodyMaterialInfo;
     sdf::ElementPtr materialElement = ueElement->FindElement(SDF_ELEMENT_LINK_MATERIAL);
     if (materialElement)
@@ -395,9 +401,9 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
                                      TArray<FRRRobotGeometryInfo>& OutGeometryInfoList)
 {
     const FString linkName = URRCoreUtils::StdToFString(InLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
-    const char* visualCollisionElementName = (ERRRobotGeometryType::VISUAL == InGeometryType)    ? SDF_ELEMENT_LINK_VISUAL
-                                           : (ERRRobotGeometryType::COLLISION == InGeometryType) ? SDF_ELEMENT_LINK_COLLISION
-                                                                                                 : nullptr;
+    const char* visualCollisionElementName = (ERRRobotGeometryType::VISUAL == InGeometryType)      ? SDF_ELEMENT_LINK_VISUAL
+                                             : (ERRRobotGeometryType::COLLISION == InGeometryType) ? SDF_ELEMENT_LINK_COLLISION
+                                                                                                   : nullptr;
     check(visualCollisionElementName);
     sdf::ElementPtr visualCollisionElement = InLinkElement->FindElement(visualCollisionElementName);
 
@@ -575,9 +581,9 @@ bool FRRSDFParser::ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TA
             verify(rayLidarElement.get());
 
             // (NOTE) SDF does not support adding a custom element or attribute type, thus must make use of [SensorName]
-            lidarInfo.LidarType = sensorProp.SensorName.EndsWith(TEXT("2d")) ? ERRLidarSensorType::TWO_D
-                                : sensorProp.SensorName.EndsWith(TEXT("3d")) ? ERRLidarSensorType::THREE_D
-                                                                             : ERRLidarSensorType::NONE;
+            lidarInfo.LidarType = sensorProp.SensorName.EndsWith(TEXT("2d"))   ? ERRLidarSensorType::TWO_D
+                                  : sensorProp.SensorName.EndsWith(TEXT("3d")) ? ERRLidarSensorType::THREE_D
+                                                                               : ERRLidarSensorType::NONE;
 
             // Scan's horizontal + vertical
             sdf::ElementPtr scanElement = rayLidarElement->FindElement(SDF_ELEMENT_SENSOR_LIDAR_SCAN);

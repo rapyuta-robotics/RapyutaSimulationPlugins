@@ -11,6 +11,7 @@ static TArray<const TCHAR*> UE_ELEMENT_LIST = {TEXT("ue_sensor_ray_scan_horizont
                                                TEXT("ue_sensor_ray_range"),
                                                TEXT("ue_sensor_ray_noise"),
                                                TEXT("ue_component"),
+                                               TEXT("ue_base_link"),
                                                TEXT("ue_articulated_link"),
                                                TEXT("ue_wheel"),
                                                TEXT("ue_end_effector"),
@@ -119,8 +120,9 @@ bool FRRURDFParser::ProcessAttribute(const TCHAR* InAttributeName, const TCHAR* 
             }
         }
         else if (elementStackTop.Equals(TEXT("sensor")) || elementStackTop.Equals(TEXT("component")) ||
-                 elementStackTop.Equals(TEXT("articulated_link")) || elementStackTop.Equals(TEXT("wheel")) ||
-                 elementStackTop.Equals(TEXT("end_effector")) || elementStackTop.Equals(TEXT("material")))
+                 elementStackTop.Equals(TEXT("base_link")) || elementStackTop.Equals(TEXT("articulated_link")) ||
+                 elementStackTop.Equals(TEXT("wheel")) || elementStackTop.Equals(TEXT("end_effector")) ||
+                 elementStackTop.Equals(TEXT("material")))
         {
             AttMap.Add(ComposeAttributeKey(elementStackTop, attName, TEXT("ue")), attValueString);
         }
@@ -265,8 +267,8 @@ void FRRURDFParser::ParseUELinkMaterialAndSensorInfo()
 
 void FRRURDFParser::ParseModelUESpecifics()
 {
-    // NOTE: This runs under a SINGLE <ue> tag only
-    // Model custom UE components (diff/manipulator/chaos_wheel drive, etc.)
+    // NOTE: This runs under a SINGLE <ue> tag only -> run MULTIPLE TIMES, which is why check for Empty/INDEX_NONE is essential
+    // 1- Model custom UE components (diff/manipulator/chaos_wheel drive, etc.)
     FString componentTypeValueStr = AttMap.FindRef(TEXT("ue_component_type"));
     const int8 componentTypeVal = URRTypeUtils::GetEnumValueFromString(TEXT("ERRUEComponentType"), componentTypeValueStr);
     if (INDEX_NONE != componentTypeVal)
@@ -274,7 +276,14 @@ void FRRURDFParser::ParseModelUESpecifics()
         UEComponentTypeFlags |= componentTypeVal;
     }
 
-    // ArticulatedLinks: only require parsing for ARTICULATION_DRIVE compound type
+    // 2- Base (main body) link
+    FString baseLinkName = AttMap.FindRef(TEXT("ue_base_link_name"));
+    if (false == baseLinkName.IsEmpty())
+    {
+        BaseLinkName = MoveTemp(baseLinkName);
+    }
+
+    // 3- ArticulatedLinks: only require parsing for ARTICULATION_DRIVE compound type
     if (false == IsPlainManipulatorModel())
     {
         FString arLinkName = AttMap.FindRef(TEXT("ue_articulated_link_name"));
@@ -285,7 +294,7 @@ void FRRURDFParser::ParseModelUESpecifics()
     }
     // else all links would be automatically added to [ArticulatedLinksNames] later in the end when all <ue> have been processed
 
-    // Wheels: only require parsing for WHEEL_DRIVE compound type
+    // 4- Wheels: only require parsing for WHEEL_DRIVE compound type
     if (false == IsPlainWheeledVehicleModel())
     {
         FString wheelName = AttMap.FindRef(TEXT("ue_wheel_name"));
@@ -296,14 +305,14 @@ void FRRURDFParser::ParseModelUESpecifics()
     }
     // else all links would be automatically added to [WheelsNames] later in the end when all <ue> have been processed
 
-    // EndEffectors
+    // 5- EndEffectors
     FString eeName = AttMap.FindRef(TEXT("ue_end_effector_name"));
     if (!eeName.IsEmpty())
     {
         EndEffectorNames.Add(eeName);
     }
 
-    // WholeBody's material
+    // 6- WholeBody's material
     WholeBodyMaterialInfo.Name = AttMap.FindRef(TEXT("ue_material_name"));
     FString albedo = AttMap.FindRef(TEXT("ue_material_albedo_name"));
     if (!albedo.IsEmpty())
@@ -591,9 +600,9 @@ bool FRRURDFParser::ParseSensorProperty(FRRSensorProperty& OutSensorProp)
             {
                 lidarSensorTypeName = AttMap.FindRef(TEXT("ue_sensor_lidar_type"));
             }
-            outLidarInfo.LidarType = lidarSensorTypeName.Equals(TEXT("2d"), ESearchCase::IgnoreCase) ? ERRLidarSensorType::TWO_D
-                                   : lidarSensorTypeName.Equals(TEXT("3d"), ESearchCase::IgnoreCase) ? ERRLidarSensorType::THREE_D
-                                                                                                     : ERRLidarSensorType::NONE;
+            outLidarInfo.LidarType = lidarSensorTypeName.Equals(TEXT("2d"), ESearchCase::IgnoreCase)   ? ERRLidarSensorType::TWO_D
+                                     : lidarSensorTypeName.Equals(TEXT("3d"), ESearchCase::IgnoreCase) ? ERRLidarSensorType::THREE_D
+                                                                                                       : ERRLidarSensorType::NONE;
 
             // Scan's horizontal + vertical
             outLidarInfo.NHorSamplesPerScan = FCString::Atof(*AttMap.FindRef(TEXT("ue_sensor_ray_scan_horizontal_samples")));
@@ -749,9 +758,9 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
     OutGeometryInfo.LinkName = InLinkName;
     OutGeometryInfo.Name = InLinkName;
 
-    const TCHAR* geometryTypePrefix = (ERRRobotGeometryType::VISUAL == InGeometryType)    ? GEOMETRY_TYPE_PREFIX_VISUAL
-                                    : (ERRRobotGeometryType::COLLISION == InGeometryType) ? GEOMETRY_TYPE_PREFIX_COLLISION
-                                                                                          : nullptr;
+    const TCHAR* geometryTypePrefix = (ERRRobotGeometryType::VISUAL == InGeometryType)      ? GEOMETRY_TYPE_PREFIX_VISUAL
+                                      : (ERRRobotGeometryType::COLLISION == InGeometryType) ? GEOMETRY_TYPE_PREFIX_COLLISION
+                                                                                            : nullptr;
     check(geometryTypePrefix);
 
     // [BOX] --
@@ -857,6 +866,9 @@ bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRRRobotModel
         OutRobotModelInfo.ModelNameList.Emplace(MoveTemp(ModelName));
         OutRobotModelInfo.bHasWorldJoint = bHasWorldJoint;
         OutRobotModelInfo.UEComponentTypeFlags = UEComponentTypeFlags;
+
+        // 0- BaseLink
+        OutRobotModelInfo.BaseLinkName = MoveTemp(BaseLinkName);
 
         // 1- Links/Joints
         OutRobotModelInfo.LinkPropList = MoveTemp(LinkPropList);

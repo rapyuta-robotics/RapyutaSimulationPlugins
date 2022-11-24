@@ -940,6 +940,7 @@ public:
     }
 
     // Link/Joint list
+    FString BaseLinkName;
     TArray<FRRRobotLinkProperty> LinkPropList;
     TArray<FRRRobotJointProperty> JointPropList;
 
@@ -990,6 +991,20 @@ public:
         // 2- Rem link prop
         LinkPropList.RemoveAll([this, InLinkName](const FRRRobotLinkProperty& InLinkProp)
                                { return (InLinkProp.Name == InLinkName); });
+
+        // 2.1 - BaseLinkName
+        if (InLinkName == BaseLinkName)
+        {
+            BaseLinkName = TEXT("");
+        }
+
+        // 2.2 - ArticulatedLinks/EndEffectors
+        ArticulatedLinksNames.RemoveSwap(InLinkName);
+        EndEffectorNames.RemoveSwap(InLinkName);
+
+        // 2.3 - Wheels
+        WheelPropList.RemoveAll([this, InLinkName](const FRRRobotWheelProperty& InWheelProp)
+                                { return (InWheelProp.WheelName == InLinkName); });
     }
 
     const FRRRobotLinkProperty FindLinkProp(int8 InLinkIndex) const
@@ -1213,6 +1228,26 @@ public:
             }
             return false;
         }
+        else if (false == BaseLinkName.IsEmpty())
+        {
+            bool bBaseLinkFound = false;
+            for (const auto& linkProp : LinkPropList)
+            {
+                if (BaseLinkName == linkProp.Name)
+                {
+                    bBaseLinkFound = true;
+                    break;
+                }
+            }
+            if (false == bBaseLinkFound)
+            {
+                if (bIsLogged)
+                {
+                    UE_LOG(LogTemp, Log, TEXT("[FRRRobotModelInfo] BaseLinkName [%s] is not a link name!"), *BaseLinkName);
+                }
+                return false;
+            }
+        }
         else if (ArticulatedLinksNames.Num() > 0)
         {
             bool bAllArtLinksFound = true;
@@ -1311,6 +1346,7 @@ public:
         UE_LOG(LogTemp, Display, TEXT("DescriptionFilePath: %s"), *FPaths::ConvertRelativePathToFull(DescriptionFilePath));
         UE_LOG(LogTemp, Display, TEXT("ParentFrameName: %s"), *ParentFrameName);
         UE_LOG(LogTemp, Display, TEXT("RelativeTransform: %s"), *RelativeTransform.ToString());
+        UE_LOG(LogTemp, Display, TEXT("BaseLinkName: %s"), *BaseLinkName);
         for (const auto& linkProp : LinkPropList)
         {
             linkProp.PrintSelf();
