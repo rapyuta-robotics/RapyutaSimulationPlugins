@@ -2,6 +2,16 @@
 
 #include "Drives/RRFloatingMovementComponent.h"
 
+URRFloatingMovementComponent::URRFloatingMovementComponent()
+{
+    bUseAccelerationForPaths = true;
+}
+
+URRFloatingMovementComponent::URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+    bUseAccelerationForPaths = true;
+}
+
 void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
                                                  enum ELevelTick InTickType,
                                                  FActorComponentTickFunction* InTickFunction)

@@ -20,6 +20,8 @@ class RAPYUTASIMULATIONPLUGINS_API URRFloatingMovementComponent : public UFloati
     GENERATED_BODY()
 
 public:
+    URRFloatingMovementComponent();
+    URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer);
     UPROPERTY()
     bool bSweepEnabled = true;
 
