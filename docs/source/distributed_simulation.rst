@@ -24,20 +24,22 @@ Architecture Overview
 Client-Server Model
 ===========================
 
-UE multiplayer is based around the client-server model. Each player is a client and connected to single server.
-In the robotics simulator, we put robots in the each client. 
+UE multiplayer is based around the client-server model. Each player is a client connected to a single server.
+In the robotics simulator, we put robots in each client. 
 
-.. image:: images/overview_of_UE_distributed_simulation.png
+.. figure:: images/overview_of_UE_distributed_simulation.png
+   :align: center
 
-Fig shows an overview of the configuration. 
-The simulator consists of four types of instances. 
+   Figure 1: Overview of the configuration.
+
+As seen in figure 1, the simulator consists of four types of instances. 
 
 - **Server**: sync all state except for ROS Components in the clients.
 - **Robot client**: own multiple simulated robots and robot application software.
 - **Viewer client**: in charge of rendering with GPU.
 - **Signaling server**: provide the view of simulation.
 
-This configuration allows the ROS2 node for a specific robot (Robot ROS2 Node) and ROS application software 
+This configuration allows the ROS2 node of a specific robot (Robot ROS2 Node) and ROS application software 
 to be separated from the simulation server. 
 
 In addition, the rendering can also be separated from the server by using the viewer client to perform 
@@ -50,10 +52,10 @@ RPCs and Replication
 
 Communication between Server and Client uses UE’s `replication and RPCs <https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/>`_.
 
-**Replication** is the process to sync data between the server and the clients. Changes of Actors and properties which set as "replciated" in server are synced to the cliets.
-Replciation is the process from server to process to sync data such as Actor pose, and other properties.
+**Replication** is the process to sync data between the server and the clients. Changes of Actors and properties set as "replicated" in server are synced to the clients.
+Replication is a one-way process from server to client to sync data such as Actor pose and other properties.
 
-`RPCs(Remote procesure call) <https://docs.unrealengine.com/4.26/en-US/InteractiveExperiences/Networking/Actors/RPCs/>`_
+`RPCs (Remote procesure call) <https://docs.unrealengine.com/4.26/en-US/InteractiveExperiences/Networking/Actors/RPCs/>`_
 is a way to call function in client from server or the other way around. While replication provide a way to sync data from server to clients, 
 RPC provide a way to change Actor status in the server from clients.
 RPC function which are defined in NetworkPlayerController or NetworkPlayerController owned pawn are valid and only replciated Actor can call the function.
@@ -61,8 +63,8 @@ RPC function which are defined in NetworkPlayerController or NetworkPlayerContro
 In this distributed simulation setup, 
 
 - ROS2 nodes are spawned only in the clients, i.e. replication are not used.
-- Some ROS2 components are spawned with robot at server and replciated to the clients but initialized, e.g. start publsiher/subscerber, only in the client which send the spawn requests.
-- Robot movements happen in the clients first and uses rpc via NetworkPlayerController to sync the robot movement in the server.
+- Some ROS2 components are spawned with robot at server and replicated to the clients but initialized, e.g. when starting publsiher/subscriber, only in the client which sends the spawn requests.
+- Robot movements happen in the clients first and use rpc via NetworkPlayerController to sync the robot movement in the server.
 
 
 ******************************
@@ -72,8 +74,10 @@ Detailed Architecture
 Basic flows between client and server
 =====================================
 
-.. image:: images/details_of_UE_distributed_simulation.png
+.. figure:: images/details_of_UE_distributed_simulation.png
+   :align: center
 
+   Figure 2: Detailed architecture of distributed simulation
 
 | **Game start and NetworkPlayer Spawning**
 | **(a-1)** Server starts first and create `ARRNetworkGameMode <doxygen_generated/html/d0/d30/class_a_r_r_network_game_mode.html>`_.
@@ -87,27 +91,27 @@ Basic flows between client and server
 | **(b-2)** `URRROS2SimulationstateClient <doxygen_generated/html/d7/d6a/class_u_r_r_r_o_s2_simulation_state_client.html>`_ in the client pass the request to the server via RPC
 | **(b-3)** SimulationStateClient in the server pass the request to the `ASimulationState <doxygen_generated/html/d2/dde/class_a_simulation_state.html>`_
 | **(b-4)** SimulationState spawn the robot in the server.
-| **(b-5)** Spawned robot is replicated to the clients. Only In the client which send spawn request, robot create/initiate ROS2 compoenent. No ROS components are created/initiated in other clients.
+| **(b-5)** Spawned robot is replicated to the clients. Only in the client which sends spawn request, robot creates/initiates ROS2 compoenent. No ROS components are created/initiated in other clients.
 
 
 | **Robot Movement flow**
 | **(c-1)** ROS2 application publish command topic such as /cmd_vel
 | **(c-2)** Robot in the client moves to follow command.
-| **(c-3)** Set server robot movement is requested to  `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_ 
+| **(c-3)** Robot requests `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_ to set server robot movement
 | **(c-4)** NetworkPlayerController in the client pass the request to the server via RPC
 | **(c-5)** NetworkPlayerController in the server request robot to follow the command 
 | **(c-6)** Robot movement is replicated to the other clients.
 
-*When NetworkPlayer pass the request to the server, it send current pose, 
+*When NetworkPlayer pass the request to the server, it sends current pose, 
 velocity command and client timestamp at that time. 
 Server will compensate network delay by comparing current server timestamp and client timestamp.
 
 
 | **Time synchronization**
 | **(d-1)** Client start `Timer <https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Timers/>`_ to sync simulation time between server and client when it is replicated to the client.
-| **(d-2)**  `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_  in the client send current local time to the server via RPC.
-| **(d-3)** NetworkPlayerController in the server received client local time and send client the current server time and received client local time to the client via RPC.
-| **(d-4)** NetworkPlayerController in the client compare the received client local time(send at d-2) at that time and current client local time to estimate latency. Set local simulation time as received server time + estimated latency.
+| **(d-2)**  `ARRNetworkPlayerController <doxygen_generated/html/db/d54/class_a_r_r_network_player_controller.html>`_  in the client sends current local time to the server via RPC.
+| **(d-3)** NetworkPlayerController in the server received client local time via RPC and sends the current server time to the client.
+| **(d-4)** NetworkPlayerController in the client compares the received client local time(sent at d-2) at that time and current client local time to estimate latency. Set local simulation time as received server time + estimated latency.
 
 Server
 ===========================
@@ -117,7 +121,7 @@ all of this information to each client. When the simulation begins,
 the UE Game mode is launched with the responsibility to  start all the simulation components, mainly, the Simulation State.
 The Game mode also spawns a new Player Controller whenever a Client is connected. 
 
-A Player Controller paly a role to use RPCs between the server and clients.
+A Player Controller plays a role to use RPCs between the server and clients.
 
 The Simulation State in the server is responsible for spawning any robots, 
 it does this by following requests sent by an external robot software 
@@ -137,7 +141,7 @@ as well as a copy of all other entities that the server is keeping track of.
 
 This replicated Player Controller to use RPCs and judge spawn request comes from that client or not by using their unique PlayerId. 
 
-Robot(child class of RRBaseRobot) has functionality to regulate client-side actions such 
+Robot (child class of RRBaseRobot) has functionality to regulate client-side actions such 
 as the spawning and the general setup of various components on the client, 
 like their ROS2 node, as well as any attached sensors that will publish to this ROS2 node. 
 
@@ -152,10 +156,10 @@ as each client has its own ROS2 node that is solely responsible for interacting
 with the robot software, we are able to more closely emulate cases such as: 
 a real robot setup where the robot’s software is on the robot itself 
 (by having both pieces of software run on the same node/container), 
-or one where the the software interacts with the robot remotely 
+or one where the software interacts with the robot remotely 
 (such as the software being on the cloud or another remote device). 
 
-Viewer Client(PixelStreaming)
+Viewer Client (PixelStreaming)
 =============================
 
 Due to the nature of this setup intended for being utilized in a cloud environment,
@@ -184,14 +188,16 @@ Example
 ******************************
 `turtlebot3-UE <https://github.com/rapyuta-robotics/turtlebot3-UE>`_ repository has a example of distributed simulation.
 `LargeGround <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/LargeGround.umap>`_ map
-has RRNetworkGame mode and large enought to spawn multiple turtlebot.
+has RRNetworkGame mode and large enough to spawn multiple turtlebot.
 
 
 .. video:: _static/videos/tb3_distributed_simulation.mp4
    :width: 500
    :height: 300
 
-You can see the lidar points appear in the specific client, which measn ROS Component is spawn/initiated in specific client only.
+*Video 1: Distributed simulation example with TurtleBots*
+
+You can see the LiDAR points appear in the specific client, which measn ROS Component is spawn/initiated in specific client only.
 
 
 Process to test client server
@@ -201,25 +207,28 @@ Process to test client server
 3. Press Play.
 4. Send ROS2 spawn request. 
 
-.. image:: images/multiplayer_editor_setting.png
+.. figure:: images/multiplayer_editor_setting.png
+   :align: center
+
+   Figure 3: Process to test client server
 
 Note
 =====
 
 Editor specific setting
 ^^^^^^^^^^^^^^^^^^^^^^^
-- Simulation state client add namespace "NetworkPC<n>" to the ROS2 Service to diffirenciate services in each client. If you paly without editor, the namespace is not added.
-- First client will becomve viewer client. Client become robot client from second client. 
+- Simulation state client add namespace "NetworkPC<n>" to the ROS2 Service to differentiate services in each client. If you play without editor, the namespace is not added.
+- First client will becomve viewer client. Client becomes robot client from second client. 
 
 
 Spawn request from ROS2
 ^^^^^^^^^^^^^^^^^^^^^^^
 RapyutaSimulationPlugins/ExternalTest/rr_sim_tests has a example client script 
 `test_random_spawn.py <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/03b8be7cc3c9659205f6b14c88d3e6bef7d3bba2/ExternalTest/rr_sim_tests/rr_sim_tests/test_random_spawn.py>`_
-which send spawn request with random initial pose and send random cmd_vel.
+which sends spawn request with random initial pose and sends random cmd_vel.
 
 .. code-block:: bash
     
     ros2 run rr_sim_tests test_random_spawn test --ros-args -p robot_name:=tb11 --service_namespace:=NetworkPC1
 
-| \* You need to `source fastdds_setup.sh` to communicate with ROS2 in UE(it is depends on your dds settings)
+| \* You need to `source fastdds_setup.sh` to communicate with ROS2 in UE (it depends on your dds settings)
