@@ -24,21 +24,28 @@ void ARRPlayerController::BeginPlay()
 {
     Super::BeginPlay();
 
-    GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
-    check(GameMode);
+    if (IsNetMode(NM_Standalone))
+    {
+        GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
+        check(GameMode);
 
-    GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
-    check(GameState);
+        GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
+        check(GameState);
 
-    GameInstance = URRCoreUtils::GetGameInstance<URRGameInstance>(this);
-    check(GameInstance);
+        GameInstance = URRCoreUtils::GetGameInstance<URRGameInstance>(this);
+        check(GameInstance);
 
-    // [Initialize()] is virtual, thus need to be run AFTER but OUTSIDE of [BeginPlay()]
-    URRCoreUtils::PlanToExecuteOnNextTick(GetWorld(), [this]() { Initialize(); });
+        // [Initialize()] is virtual, thus need to be run AFTER but OUTSIDE of [BeginPlay()]
+        URRCoreUtils::PlanToExecuteOnNextTick(GetWorld(), [this]() { Initialize(); });
+    }
 }
 
 bool ARRPlayerController::Initialize()
 {
+    if (false == IsNetMode(NM_Standalone))
+    {
+        return true;
+    }
     verify(GameState->HasInitialized(true));
     verify(GameState->HasSceneInstance(SceneInstanceId));
 
@@ -57,6 +64,11 @@ bool ARRPlayerController::Initialize()
 
 bool ARRPlayerController::HasInitialized(bool bIsLogged) const
 {
+    if (false == IsNetMode(NM_Standalone))
+    {
+        return true;
+    }
+
     if (!ActorCommon)
     {
         if (bIsLogged)

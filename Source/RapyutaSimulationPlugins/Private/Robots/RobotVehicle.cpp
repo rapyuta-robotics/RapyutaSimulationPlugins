@@ -36,16 +36,21 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
     SkeletalMeshComp->SetIsReplicated(true);
     SkeletalMeshComp->SetGenerateOverlapEvents(true);
     AddOwnedComponent(SkeletalMeshComp);
-
     // [SkeletalMeshComp] -> NEW ROOT
-    if (RootComponent)
-    {
-        SkeletalMeshComp->SetupAttachment(RootComponent);
-        RootComponent->DestroyComponent(true);
-    }
+    // This is in ctor, thus no need to use [SetRootComponent()]
     RootComponent = SkeletalMeshComp;
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
+}
+
+void ARobotVehicle::PreInitializeComponents()
+{
+    Super::PreInitializeComponents();
+    if (IsDynamicRuntimeRobot())
+    {
+        DefaultRoot->DestroyComponent(true);
+    }
+    // else must keep for static child BP legacy support
 }
 
 void ARobotVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

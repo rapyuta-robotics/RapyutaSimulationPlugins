@@ -58,6 +58,10 @@ int32 URRCoreUtils::GetMaxSplitscreenPlayers(const UObject* InContextObject)
 bool URRCoreUtils::HasPlayerControllerListInitialized(const UObject* InContextObject, bool bIsLogged)
 {
     ARRGameState* gameState = GetGameState<ARRGameState>(InContextObject);
+    if (false == gameState->IsNetMode(NM_Standalone))
+    {
+        return true;
+    }
     for (int8 i = 0; i < gameState->SCENE_INSTANCES_NUM; ++i)
     {
         const auto* playerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(i, InContextObject);
@@ -74,6 +78,10 @@ bool URRCoreUtils::HasSimInitialized(const UObject* InContextObject, bool bIsLog
 {
     const auto* gameState = URRCoreUtils::GetGameState<ARRGameState>(InContextObject);
     check(gameState);
+    if (false == gameState->IsNetMode(NM_Standalone))
+    {
+        return true;
+    }
 
     // [GameState]
     if (!gameState->HasInitialized(bIsLogged))

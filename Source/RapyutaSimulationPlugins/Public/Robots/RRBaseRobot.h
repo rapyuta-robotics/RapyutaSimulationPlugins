@@ -19,6 +19,20 @@
 
 #include "RRBaseRobot.generated.h"
 
+#define RR_VERIFY_DYNAMIC_ROBOT(InRobot)          \
+    if (InRobot)                                  \
+    {                                             \
+        verify(InRobot->IsDynamicRuntimeRobot()); \
+    }
+#define RR_VERIFY_STATIC_BP_ROBOT(InRobot)  \
+    if (InRobot)                            \
+    {                                       \
+        verify(InRobot->IsStaticBPRobot()); \
+    }
+#define RR_VERIFY_DYNAMIC_OR_STATIC_BP_ROBOT(InRobot) \
+    {                                                 \
+    }
+
 class ARRNetworkGameState;
 class URRRobotROS2Interface;
 class ARRNetworkPlayerController;
@@ -64,6 +78,18 @@ public:
      * Could only be called in constructor.
      */
     void SetupDefault();
+
+    UPROPERTY(VisibleAnywhere, Replicated)
+    USceneComponent* DefaultRoot = nullptr;
+
+    FORCEINLINE bool IsDynamicRuntimeRobot() const
+    {
+        return (false == RobotModelName.IsEmpty());
+    }
+    FORCEINLINE bool IsStaticBPRobot() const
+    {
+        return RobotModelName.IsEmpty();
+    }
 
     //! Robot creation done delegate
     FOnRobotCreationDone OnRobotCreationDone;

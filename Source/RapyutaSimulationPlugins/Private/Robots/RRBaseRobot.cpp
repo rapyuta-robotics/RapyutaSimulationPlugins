@@ -34,7 +34,7 @@ void ARRBaseRobot::SetupDefault()
     // Generally, for sake of dynamic robot type import/creation, child components would be then created on the fly!
     // Besides, a default subobject, upon content changes, also makes the owning actor become vulnerable since one in child BP actor
     // classes will automatically get invalidated.
-    URRUObjectUtils::SetupDefaultRootComponent(this);
+    DefaultRoot = URRUObjectUtils::SetupDefaultRootComponent(this);
 
     AutoPossessPlayer = EAutoReceiveInput::Disabled;
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -46,6 +46,12 @@ void ARRBaseRobot::SetupDefault()
 
 void ARRBaseRobot::PreInitializeComponents()
 {
+    if (ROSSpawnParameters)
+    {
+        RobotModelName = ROSSpawnParameters->ActorModelName;
+        RobotUniqueName = ROSSpawnParameters->ActorName;
+    }
+
     if (ROS2InterfaceClass)
     {
         // ROS2Interface is created at server and replicated to client.
@@ -267,6 +273,7 @@ void ARRBaseRobot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ARRBaseRobot, RobotID);
     DOREPLIFETIME(ARRBaseRobot, RobotUniqueName);
     DOREPLIFETIME(ARRBaseRobot, ServerRobot);
+    DOREPLIFETIME(ARRBaseRobot, DefaultRoot);
     DOREPLIFETIME(ARRBaseRobot, ROS2Interface);
     DOREPLIFETIME(ARRBaseRobot, ROS2InterfaceClass);
     DOREPLIFETIME(ARRBaseRobot, ROSSpawnParameters);

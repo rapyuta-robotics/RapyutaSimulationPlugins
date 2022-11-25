@@ -25,6 +25,9 @@ class RAPYUTASIMULATIONPLUGINS_API UROS2Spawnable : public UActorComponent
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    FString ActorModelName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString ActorName;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
@@ -43,6 +46,9 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void InitializeParameters(const FROSSpawnEntityReq& InRequest);
+
+    UFUNCTION(BlueprintCallable)
+    void SetActorModelName(const FString& InModelName);
 
     UFUNCTION(BlueprintCallable)
     virtual void SetName(const FString& InName);

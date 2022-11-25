@@ -109,7 +109,7 @@ public:
     static void SetupComponentTick(UActorComponent* InComponent, bool bIsTickEnabled);
 
     UFUNCTION()
-    static void SetupDefaultRootComponent(AActor* InActor);
+    static USceneComponent* SetupDefaultRootComponent(AActor* InActor);
 
     template<typename T, typename = TEnableIf<TIsDerivedFrom<T, UPrimitiveComponent>::Value>>
     static void ConfigureComponentPhysics(T* InComponent,
