@@ -2,14 +2,34 @@
 
 #include "Drives/RRFloatingMovementComponent.h"
 
-URRFloatingMovementComponent::URRFloatingMovementComponent()
+URRFloatingMovementComponent::URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer)
+    : Super(ObjectInitializer), bSweepEnabled(true), b2DMovement(false), bUseDecelerationForPaths(true), bUseConstantVelocity(false)
 {
-    bUseAccelerationForPaths = true;
 }
 
-URRFloatingMovementComponent::URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+bool URRFloatingMovementComponent::IsExceedingMaxSpeed(float InMaxSpeed) const
 {
-    bUseAccelerationForPaths = true;
+    if (b2DMovement)
+    {
+        const float maxSpeedSquared = FMath::Square(FMath::Max(0.f, InMaxSpeed));
+
+        // Allow 1% error tolerance, to account for numeric imprecision.
+        static constexpr float OVER_VEL_PERCENT = 1.01f;
+        bool bResult = (Velocity.SizeSquared2D() > OVER_VEL_PERCENT * FMath::Square(FMath::Max(0.f, InMaxSpeed)));
+        if (bResult && (Velocity != FVector::ZeroVector))
+            UE_LOG(LogTemp,
+                   Error,
+                   TEXT("%s Is ExceedingMaxSpeed %s : %f # %f"),
+                   *GetOwner()->GetName(),
+                   *Velocity.ToString(),
+                   Velocity.SizeSquared2D(),
+                   maxSpeedSquared);
+        return bResult;
+    }
+    else
+    {
+        return Super::IsExceedingMaxSpeed(InMaxSpeed);
+    }
 }
 
 void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
@@ -21,7 +41,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
         return;
     }
 
-    // NOTE: Here we implement custom movement, Don't call Super::, which already auto updates Owner actor's velocity & pose
+    // NOTE: Here we implement custom movement, Don't call UFloatingPawnMovement::, which already auto updates Owner actor's velocity & pose
     UMovementComponent::TickComponent(InDeltaTime, InTickType, InTickFunction);
 
     if (!PawnOwner || !UpdatedComponent)
@@ -34,16 +54,21 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
     {
         return;
     }
-
     // Apply input for local players but also for AI that's not following a navigation path at the moment
     if (controller->IsLocalPlayerController() || (false == controller->IsFollowingAPath()) || bUseAccelerationForPaths)
     {
         ApplyControlInputToVelocity(InDeltaTime);
+        if (Velocity != FVector::ZeroVector)
+            UE_LOG(LogTemp, Error, TEXT("%s Vel 3 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
     }
     // Limit speed in case of non-path-following AI controller
-    else if (IsExceedingMaxSpeed(MaxSpeed) == true)
+    else if (IsExceedingMaxSpeed(MaxSpeed))
     {
         Velocity = Velocity.GetUnsafeNormal() * MaxSpeed;
+        if (Velocity != FVector::ZeroVector)
+        {
+            UE_LOG(LogTemp, Error, TEXT("%s Vel 2 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
+        }
     }
 
     //LimitWorldBounds();
@@ -89,13 +114,35 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
                 HandleImpact(hit, InDeltaTime, deltaLoc);
                 // Slide the remaining distance along the hit surface
                 SlideAlongSurface(deltaLoc, 1.f - hit.Time, hit.Normal, hit, bSweepEnabled);
+                if (Velocity != FVector::ZeroVector)
+                    UE_LOG(LogTemp, Error, TEXT("%s Vel 1 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
             }
         }
 
         // Update [Velocity], only if not already [bPositionCorrected] possibly due to penetration fixup
         if (false == bPositionCorrected)
         {
+            const auto preVel = Velocity;
             Velocity = ((UpdatedComponent->GetComponentLocation() - prevLocation) / InDeltaTime);
+
+            if (false == bUseDecelerationForPaths)
+            {
+                //if (IsExceedingMaxSpeed(MaxSpeed))
+                //{
+                //    Velocity = preVel;
+                //}
+                //else
+                {
+                    const bool bVelIncreased = b2DMovement ? (Velocity.SizeSquared2D() > preVel.SizeSquared())
+                                                           : (Velocity.SizeSquared() > preVel.SizeSquared());
+                    if (bVelIncreased)
+                    {
+                        Velocity = preVel;
+                        if (Velocity != FVector::ZeroVector)
+                            UE_LOG(LogTemp, Error, TEXT("%s Vel 0 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
+                    }
+                }
+            }
         }
     }
 

@@ -20,16 +20,59 @@ class RAPYUTASIMULATIONPLUGINS_API URRFloatingMovementComponent : public UFloati
     GENERATED_BODY()
 
 public:
-    URRFloatingMovementComponent();
     URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer);
-    UPROPERTY()
-    bool bSweepEnabled = true;
+    void Set2DMovementEnabled(bool bEnabled)
+    {
+        b2DMovement = bEnabled;
+    }
+
+    void SetUseDecelerationForPaths(bool bEnabled)
+    {
+        bUseDecelerationForPaths = bEnabled;
+    }
+    FORCEINLINE bool UseDecelerationForPathFollowing() const
+    {
+        return bUseDecelerationForPaths;
+    }
+
+    void SetUseAccelerationForPaths(bool bEnabled)
+    {
+        bUseAccelerationForPaths = bEnabled;
+    }
+
+    void SetUseConstantVelocity(bool bConstantVelocity)
+    {
+        bUseConstantVelocity = bConstantVelocity;
+        if (bConstantVelocity)
+        {
+            bUseAccelerationForPaths = false;
+            bUseDecelerationForPaths = false;
+        }
+    }
+
+    FORCEINLINE bool UseConstantVelocity() const
+    {
+        return bUseConstantVelocity;
+    }
 
 protected:
     virtual void TickComponent(float InDeltaTime, enum ELevelTick InTickType, FActorComponentTickFunction* InTickFunction) override;
+    virtual bool IsExceedingMaxSpeed(float InMaxSpeed) const override;
 #if RAPYUTA_SIM_DEBUG
     virtual bool ResolvePenetrationImpl(const FVector& InProposedAdjustment,
                                         const FHitResult& InHit,
                                         const FQuat& InNewRotationQuat) override;
 #endif
+private:
+    UPROPERTY(EditAnywhere)
+    uint8 bSweepEnabled : 1;
+
+    UPROPERTY(EditAnywhere)
+    uint8 b2DMovement : 1;
+
+    UPROPERTY(EditAnywhere)
+    uint8 bUseDecelerationForPaths : 1;
+
+    UPROPERTY(EditAnywhere)
+    uint8 bUseConstantVelocity : 1;
 };
