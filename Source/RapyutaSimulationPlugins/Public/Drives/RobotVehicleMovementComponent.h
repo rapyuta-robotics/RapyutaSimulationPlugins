@@ -70,7 +70,7 @@ private:
     TArray<USceneComponent*> ContactPoints;
 
 public:
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(VisibleAnywhere, Replicated)
     ARRRobotBaseVehicle* OwnerVehicle = nullptr;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)

@@ -7,6 +7,7 @@
 #include "CollisionQueryParams.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
@@ -22,6 +23,12 @@ void URobotVehicleMovementComponent::Initialize()
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 
     InitData();
+}
+
+void URobotVehicleMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(URobotVehicleMovementComponent, OwnerVehicle);
 }
 
 void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)

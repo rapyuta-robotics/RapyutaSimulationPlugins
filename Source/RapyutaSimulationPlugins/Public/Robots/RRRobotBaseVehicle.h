@@ -60,9 +60,11 @@ public:
 
     // MOVEMENT --
     //
+    //! Local target linear vel
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector TargetLinearVel = FVector::ZeroVector;
 
+    //! Local target angular vel
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector TargetAngularVel = FVector::ZeroVector;
 
@@ -114,7 +116,7 @@ public:
 
     /**
      * @brief Set velocity to #RobotVehicleMoveComponent.
-     * Calls #SetLocalLinearVel for setting velocity to #RobotVehicleMoveComponent and 
+     * Calls #SetLocalLinearVel for setting velocity to #RobotVehicleMoveComponent and
      * #SyncServerLinearMovement to sync movement of the robot in the server.
      *
      * @param InLinearVel
@@ -124,7 +126,7 @@ public:
 
     /**
      * @brief Set angular velocity to #RobotVehicleMoveComponent
-     * Calls #SetLocalAngularVel for setting velocity to #RobotVehicleMoveComponent and 
+     * Calls #SetLocalAngularVel for setting velocity to #RobotVehicleMoveComponent and
      * #SyncServerAngularMovement to sync movement of the robot in the server.
      * @param InAngularVel
      */
@@ -137,7 +139,7 @@ public:
      * @param InClientRobotPosition
      * @param InLinearVel
      * @note Not uses RPC since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) 
+     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     virtual void SyncServerLinearMovement(float InClientTimeStamp,
@@ -150,7 +152,7 @@ public:
      * @param InClientRobotRotation
      * @param InAngularVel
      * @note Not uses RPC since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) 
+     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     virtual void SyncServerAngularMovement(float InClientTimeStamp,
@@ -160,7 +162,7 @@ public:
     /**
      * @brief Set linear velocity to #RobotVehicleMoveComponent in the client.
      * @note Not uses RPC since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) 
+     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetLocalLinearVel(const FVector& InLinearVel);
@@ -168,7 +170,7 @@ public:
     /**
      * @brief Set angular velocity to #RobotVehicleMoveComponent in the client.
      * @note Not uses RPC since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections) 
+     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetLocalAngularVel(const FVector& InAngularVel);

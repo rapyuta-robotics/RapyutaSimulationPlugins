@@ -39,6 +39,7 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
     // [SkeletalMeshComp] -> NEW ROOT
     // This is in ctor, thus no need to use [SetRootComponent()]
     RootComponent = SkeletalMeshComp;
+    DefaultRoot->SetupAttachment(SkeletalMeshComp);
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
 }
@@ -46,9 +47,10 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
 void ARobotVehicle::PreInitializeComponents()
 {
     Super::PreInitializeComponents();
-    if (IsDynamicRuntimeRobot())
+    if (IsDynamicRuntimeRobot() && DefaultRoot->GetAttachParent())
     {
-        DefaultRoot->DestroyComponent(true);
+        // NOTE: This requires [DefaultRoot] to have been attached to some NEW Root, thus without need to promote its child
+        DefaultRoot->DestroyComponent();
     }
     // else must keep for static child BP legacy support
 }
