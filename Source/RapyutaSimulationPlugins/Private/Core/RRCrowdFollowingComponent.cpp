@@ -39,30 +39,45 @@ void URRCrowdFollowingComponent::FollowPathSegment(float InDeltaTime)
         // set to false by default, we will set set this back to true if appropriate
         bIsDecelerating = false;
 
-        // Keeps the previous Velocity in case of constant movement
-        FVector newExpectedVelocity = (GetCurrentTargetLocation() - MovementComp->GetActorFeetLocation()) / InDeltaTime;
+        // Keeps the previous Velocity in case of non-deceleration movement
+        const FVector newTargetVelocity = (GetCurrentTargetLocation() - MovementComp->GetActorFeetLocation()) / InDeltaTime;
         FVector newVelocity;
-        if (FloatMovementComp && FloatMovementComp->UseConstantVelocity())
+        if (FloatMovementComp && (false == FloatMovementComp->UseDecelerationForPathFollowing()))
         {
-            newVelocity = newExpectedVelocity.GetUnsafeNormal() * MovementComp->Velocity.Size();
+            if (FloatMovementComp->Use2DMovement())
+            {
+                newVelocity = FVector(FVector2D(newTargetVelocity.X, newTargetVelocity.Y).GetSafeNormal() * MaxCrowdSpeed, 0.f);
+            }
+            else
+            {
+                newVelocity = newTargetVelocity.GetUnsafeNormal() * MaxCrowdSpeed;
+            }
+            UE_LOG(LogTemp, Error, TEXT("%s Crowd:FollowPathSegment 1 : %s"), *GetOwner()->GetName(), *newVelocity.ToString());
         }
         else
         {
-            newVelocity = newExpectedVelocity;
+            newVelocity = newTargetVelocity;
+            if ((MaxCrowdSpeed > 0.f) && (newVelocity.SizeSquared2D() > 1.01f * FMath::Square(MaxCrowdSpeed)))
+            {
+                if (FloatMovementComp->Use2DMovement())
+                {
+                    newVelocity = FVector(FVector2D(newVelocity.X, newVelocity.Y).GetSafeNormal() * MaxCrowdSpeed, 0.f);
+                }
+                else
+                {
+                    newVelocity = newVelocity.GetUnsafeNormal() * MaxCrowdSpeed;
+                }
+                UE_LOG(LogTemp, Error, TEXT("%s Crowd:FollowPathSegment 2 : %s"), *GetOwner()->GetName(), *newVelocity.ToString());
+            }
         }
-        //if ((MaxCrowdSpeed > 0.f) && (newVelocity.SizeSquared2D() > 1.01f * FMath::Square(MaxCrowdSpeed)))
-        //{
-        //    newVelocity = newVelocity.GetUnsafeNormal() * MaxCrowdSpeed;
-        //}
 
         const int32 lastSegmentStartIndex = Path->GetPathPoints().Num() - 2;
         const bool bNotFollowingLastSegment = (MoveSegmentStartIndex < lastSegmentStartIndex);
 
         PostProcessMove.ExecuteIfBound(this, newVelocity);
         MovementComp->RequestDirectMove(newVelocity, bNotFollowingLastSegment);
+        UE_LOG(LogTemp, Error, TEXT("%s Crowd:FollowPathSegment After : %s"), *GetOwner()->GetName(), *newVelocity.ToString());
     }
-    UE_LOG(
-        LogTemp, Error, TEXT("%s Crowd:FollowPathSegment After : %s"), *GetOwner()->GetName(), *MovementComp->Velocity.ToString());
 }
 
 void URRCrowdFollowingComponent::ApplyCrowdAgentVelocity(const FVector& InNewVelocity,
@@ -80,6 +95,7 @@ void URRCrowdFollowingComponent::ApplyCrowdAgentVelocity(const FVector& InNewVel
 
 void URRCrowdFollowingComponent::OnPathFinished(const FPathFollowingResult& InResult)
 {
+    // IF NOT using deceleration: Don't stop movement on finish
     if (FloatMovementComp && (false == FloatMovementComp->UseDecelerationForPathFollowing()))
     {
         bStopMovementOnFinish = false;

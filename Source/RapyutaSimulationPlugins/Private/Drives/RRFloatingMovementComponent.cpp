@@ -3,7 +3,7 @@
 #include "Drives/RRFloatingMovementComponent.h"
 
 URRFloatingMovementComponent::URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer), bSweepEnabled(true), b2DMovement(false), bUseDecelerationForPaths(true), bUseConstantVelocity(false)
+    : Super(ObjectInitializer), bSweepEnabled(true), b2DMovement(false), bUseDecelerationForPaths(true)
 {
 }
 
@@ -54,24 +54,38 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
     {
         return;
     }
+
+    if (Velocity != FVector::ZeroVector)
+        UE_LOG(LogTemp, Error, TEXT("%s Cur Vel : %s"), *GetOwner()->GetName(), *Velocity.ToString());
+
     // Apply input for local players but also for AI that's not following a navigation path at the moment
     if (controller->IsLocalPlayerController() || (false == controller->IsFollowingAPath()) || bUseAccelerationForPaths)
     {
         ApplyControlInputToVelocity(InDeltaTime);
         if (Velocity != FVector::ZeroVector)
-            UE_LOG(LogTemp, Error, TEXT("%s Vel 3 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
+            UE_LOG(LogTemp, Error, TEXT("%s Vel 1 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
     }
     // Limit speed in case of non-path-following AI controller
     else if (IsExceedingMaxSpeed(MaxSpeed))
     {
-        Velocity = Velocity.GetUnsafeNormal() * MaxSpeed;
+        if (b2DMovement)
+        {
+            Velocity = FVector(FVector2D(Velocity.X, Velocity.Y).GetSafeNormal() * MaxSpeed, 0.f);
+        }
+        else
+        {
+            Velocity = Velocity.GetUnsafeNormal() * MaxSpeed;
+        }
         if (Velocity != FVector::ZeroVector)
         {
             UE_LOG(LogTemp, Error, TEXT("%s Vel 2 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
         }
     }
 
-    //LimitWorldBounds();
+    if (false == b2DMovement)
+    {
+        LimitWorldBounds();
+    }
     bPositionCorrected = false;
 
     // Move [UpdatedComponent], updating [bPositionCorrected] here-in
@@ -114,37 +128,20 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
                 HandleImpact(hit, InDeltaTime, deltaLoc);
                 // Slide the remaining distance along the hit surface
                 SlideAlongSurface(deltaLoc, 1.f - hit.Time, hit.Normal, hit, bSweepEnabled);
-                if (Velocity != FVector::ZeroVector)
-                    UE_LOG(LogTemp, Error, TEXT("%s Vel 1 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
             }
         }
 
-        // Update [Velocity], only if not already [bPositionCorrected] possibly due to penetration fixup
-        if (false == bPositionCorrected)
+        // Update current-moment [Velocity], only if using acceleration/deceleration + not already [bPositionCorrected] possibly due to penetration fixup
+        if (bUseAccelerationForPaths && bUseDecelerationForPaths && (false == bPositionCorrected))
         {
-            const auto preVel = Velocity;
             Velocity = ((UpdatedComponent->GetComponentLocation() - prevLocation) / InDeltaTime);
-
-            if (false == bUseDecelerationForPaths)
-            {
-                //if (IsExceedingMaxSpeed(MaxSpeed))
-                //{
-                //    Velocity = preVel;
-                //}
-                //else
-                {
-                    const bool bVelIncreased = b2DMovement ? (Velocity.SizeSquared2D() > preVel.SizeSquared())
-                                                           : (Velocity.SizeSquared() > preVel.SizeSquared());
-                    if (bVelIncreased)
-                    {
-                        Velocity = preVel;
-                        if (Velocity != FVector::ZeroVector)
-                            UE_LOG(LogTemp, Error, TEXT("%s Vel 0 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
-                    }
-                }
-            }
+            if (Velocity != FVector::ZeroVector)
+                UE_LOG(LogTemp, Error, TEXT("%s Vel 3 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
         }
     }
+
+    if (Velocity != FVector::ZeroVector)
+        UE_LOG(LogTemp, Error, TEXT("%s Vel final : %s"), *GetOwner()->GetName(), *Velocity.ToString());
 
     // Update [UpdatedComponent]'s Velocity by [Velocity]
     UpdateComponentVelocity();

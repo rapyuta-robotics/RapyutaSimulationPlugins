@@ -25,6 +25,10 @@ public:
     {
         b2DMovement = bEnabled;
     }
+    FORCEINLINE bool Use2DMovement() const
+    {
+        return b2DMovement;
+    }
 
     void SetUseDecelerationForPaths(bool bEnabled)
     {
@@ -38,21 +42,6 @@ public:
     void SetUseAccelerationForPaths(bool bEnabled)
     {
         bUseAccelerationForPaths = bEnabled;
-    }
-
-    void SetUseConstantVelocity(bool bConstantVelocity)
-    {
-        bUseConstantVelocity = bConstantVelocity;
-        if (bConstantVelocity)
-        {
-            bUseAccelerationForPaths = false;
-            bUseDecelerationForPaths = false;
-        }
-    }
-
-    FORCEINLINE bool UseConstantVelocity() const
-    {
-        return bUseConstantVelocity;
     }
 
 protected:
@@ -72,7 +61,4 @@ private:
 
     UPROPERTY(EditAnywhere)
     uint8 bUseDecelerationForPaths : 1;
-
-    UPROPERTY(EditAnywhere)
-    uint8 bUseConstantVelocity : 1;
 };
