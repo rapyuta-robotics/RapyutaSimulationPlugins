@@ -28,6 +28,7 @@ public:
     UPROPERTY()
     URRFloatingMovementComponent* FloatMovementComp = nullptr;
     virtual void SetMovementComponent(UNavMovementComponent* InMoveComp) override;
+    bool Is2DMovement() const;
 
     bool IsIdle() const
     {

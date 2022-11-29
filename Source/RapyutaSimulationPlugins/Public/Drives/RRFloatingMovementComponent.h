@@ -21,11 +21,11 @@ class RAPYUTASIMULATIONPLUGINS_API URRFloatingMovementComponent : public UFloati
 
 public:
     URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer);
-    void Set2DMovementEnabled(bool bEnabled)
+    void Set2DMovement(bool bEnabled)
     {
         b2DMovement = bEnabled;
     }
-    FORCEINLINE bool Use2DMovement() const
+    FORCEINLINE bool Is2DMovement() const
     {
         return b2DMovement;
     }

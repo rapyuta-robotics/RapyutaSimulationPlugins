@@ -2,6 +2,9 @@
 
 #include "Drives/RRFloatingMovementComponent.h"
 
+// RapyutaSimulationPlugins
+#include "Core/RRGeneralUtils.h"
+
 URRFloatingMovementComponent::URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer), bSweepEnabled(true), b2DMovement(false), bUseDecelerationForPaths(true)
 {
@@ -9,22 +12,10 @@ URRFloatingMovementComponent::URRFloatingMovementComponent(const FObjectInitiali
 
 bool URRFloatingMovementComponent::IsExceedingMaxSpeed(float InMaxSpeed) const
 {
+    // NOTE: Since [UFloatingPawnMovement] already has [MaxSpeed], which must not be mistaken with [InMaxSpeed]
     if (b2DMovement)
     {
-        const float maxSpeedSquared = FMath::Square(FMath::Max(0.f, InMaxSpeed));
-
-        // Allow 1% error tolerance, to account for numeric imprecision.
-        static constexpr float OVER_VEL_PERCENT = 1.01f;
-        bool bResult = (Velocity.SizeSquared2D() > OVER_VEL_PERCENT * FMath::Square(FMath::Max(0.f, InMaxSpeed)));
-        if (bResult && (Velocity != FVector::ZeroVector))
-            UE_LOG(LogTemp,
-                   Error,
-                   TEXT("%s Is ExceedingMaxSpeed %s : %f # %f"),
-                   *GetOwner()->GetName(),
-                   *Velocity.ToString(),
-                   Velocity.SizeSquared2D(),
-                   maxSpeedSquared);
-        return bResult;
+        return URRGeneralUtils::IsVelocityExceedingMaxSpeed(Velocity, InMaxSpeed, true);
     }
     else
     {
@@ -55,31 +46,15 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
         return;
     }
 
-    if (Velocity != FVector::ZeroVector)
-        UE_LOG(LogTemp, Error, TEXT("%s Cur Vel : %s"), *GetOwner()->GetName(), *Velocity.ToString());
-
     // Apply input for local players but also for AI that's not following a navigation path at the moment
     if (controller->IsLocalPlayerController() || (false == controller->IsFollowingAPath()) || bUseAccelerationForPaths)
     {
         ApplyControlInputToVelocity(InDeltaTime);
-        if (Velocity != FVector::ZeroVector)
-            UE_LOG(LogTemp, Error, TEXT("%s Vel 1 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
     }
     // Limit speed in case of non-path-following AI controller
-    else if (IsExceedingMaxSpeed(MaxSpeed))
+    else
     {
-        if (b2DMovement)
-        {
-            Velocity = FVector(FVector2D(Velocity.X, Velocity.Y).GetSafeNormal() * MaxSpeed, 0.f);
-        }
-        else
-        {
-            Velocity = Velocity.GetUnsafeNormal() * MaxSpeed;
-        }
-        if (Velocity != FVector::ZeroVector)
-        {
-            UE_LOG(LogTemp, Error, TEXT("%s Vel 2 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
-        }
+        URRGeneralUtils::ClampVelocityToMaxSpeed(Velocity, MaxSpeed, b2DMovement);
     }
 
     if (false == b2DMovement)
@@ -131,17 +106,12 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
             }
         }
 
-        // Update current-moment [Velocity], only if using acceleration/deceleration + not already [bPositionCorrected] possibly due to penetration fixup
+        // Update current-moment [Velocity], ONLY IF using ACCELERATION/DECELERATION & NOT-ALREADY [bPositionCorrected] possibly due to penetration fixup
         if (bUseAccelerationForPaths && bUseDecelerationForPaths && (false == bPositionCorrected))
         {
             Velocity = ((UpdatedComponent->GetComponentLocation() - prevLocation) / InDeltaTime);
-            if (Velocity != FVector::ZeroVector)
-                UE_LOG(LogTemp, Error, TEXT("%s Vel 3 : %s"), *GetOwner()->GetName(), *Velocity.ToString());
         }
     }
-
-    if (Velocity != FVector::ZeroVector)
-        UE_LOG(LogTemp, Error, TEXT("%s Vel final : %s"), *GetOwner()->GetName(), *Velocity.ToString());
 
     // Update [UpdatedComponent]'s Velocity by [Velocity]
     UpdateComponentVelocity();

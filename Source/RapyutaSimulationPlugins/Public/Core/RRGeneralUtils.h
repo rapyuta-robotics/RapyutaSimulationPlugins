@@ -294,4 +294,56 @@ public:
         OutValue = InDefaultValue;
         return false;
     }
+
+    /**
+     * @brief Check if a velocity's magnitude exceeds a given max speed
+     *
+     * @param InVel
+     * @param InMaxSpeed
+     * @param b2DMovement
+     */
+    FORCEINLINE static bool IsVelocityExceedingMaxSpeed(const FVector& InVel, float InMaxSpeed, bool b2DMovement)
+    {
+        // Give 1% error tolerance, to account for numeric imprecision
+        static constexpr float OVER_VEL_PERCENT = 1.01f;
+        const float maxExtraSpeed = OVER_VEL_PERCENT * FMath::Square(InMaxSpeed);
+        return (maxExtraSpeed > 0.f) &&
+               (b2DMovement ? (InVel.SizeSquared2D() > maxExtraSpeed) : (InVel.SizeSquared() > maxExtraSpeed));
+    }
+
+    /**
+     * @brief Set a given velocity's magnitude to its max allowed speed
+     *
+     * @param InVel
+     * @param InMaxSpeed
+     * @param b2DMovement
+     */
+    FORCEINLINE static void SetVelocityToMaxSpeed(FVector& InVel, float InMaxSpeed, bool b2DMovement)
+    {
+        if (b2DMovement)
+        {
+            InVel = InVel.GetClampedToMaxSize2D(InMaxSpeed);
+        }
+        else
+        {
+            InVel = InVel.GetClampedToMaxSize(InMaxSpeed);
+        }
+    }
+
+    /**
+     * @brief Clamp a given velocity's magnitude to its max allowed speed
+     *
+     * @param InVel
+     * @param InMaxSpeed
+     * @param b2DMovement
+     */
+    FORCEINLINE static bool ClampVelocityToMaxSpeed(FVector& InVel, float InMaxSpeed, bool b2DMovement)
+    {
+        if (IsVelocityExceedingMaxSpeed(InVel, InMaxSpeed, b2DMovement))
+        {
+            SetVelocityToMaxSpeed(InVel, InMaxSpeed, b2DMovement);
+            return true;
+        }
+        return false;
+    }
 };

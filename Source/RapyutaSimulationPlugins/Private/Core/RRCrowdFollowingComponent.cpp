@@ -8,11 +8,17 @@
 #include "Navigation/MetaNavMeshPath.h"
 
 //RapyutaSimulationPlugins
+#include "Core/RRGeneralUtils.h"
 #include "Drives/RRFloatingMovementComponent.h"
 
 URRCrowdFollowingComponent::URRCrowdFollowingComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
     SimulationState = ECrowdSimulationState::ObstacleOnly;
+}
+
+bool URRCrowdFollowingComponent::Is2DMovement() const
+{
+    return FloatMovementComp && FloatMovementComp->Is2DMovement();
 }
 
 void URRCrowdFollowingComponent::SetMovementComponent(UNavMovementComponent* InMoveComp)
@@ -23,8 +29,6 @@ void URRCrowdFollowingComponent::SetMovementComponent(UNavMovementComponent* InM
 
 void URRCrowdFollowingComponent::FollowPathSegment(float InDeltaTime)
 {
-    UE_LOG(
-        LogTemp, Error, TEXT("%s Crowd:FollowPathSegment Before : %s"), *GetOwner()->GetName(), *MovementComp->Velocity.ToString());
     if (IsCrowdSimulationEnabled() || (MovementComp && MovementComp->UseAccelerationForPathFollowing()))
     {
         Super::FollowPathSegment(InDeltaTime);
@@ -39,36 +43,16 @@ void URRCrowdFollowingComponent::FollowPathSegment(float InDeltaTime)
         // set to false by default, we will set set this back to true if appropriate
         bIsDecelerating = false;
 
-        // Keeps the previous Velocity in case of non-deceleration movement
-        const FVector newTargetVelocity = (GetCurrentTargetLocation() - MovementComp->GetActorFeetLocation()) / InDeltaTime;
-        FVector newVelocity;
+        // New instantaneous vel
+        FVector newVelocity = (GetCurrentTargetLocation() - MovementComp->GetActorFeetLocation()) / InDeltaTime;
         if (FloatMovementComp && (false == FloatMovementComp->UseDecelerationForPathFollowing()))
         {
-            if (FloatMovementComp->Use2DMovement())
-            {
-                newVelocity = FVector(FVector2D(newTargetVelocity.X, newTargetVelocity.Y).GetSafeNormal() * MaxCrowdSpeed, 0.f);
-            }
-            else
-            {
-                newVelocity = newTargetVelocity.GetUnsafeNormal() * MaxCrowdSpeed;
-            }
-            UE_LOG(LogTemp, Error, TEXT("%s Crowd:FollowPathSegment 1 : %s"), *GetOwner()->GetName(), *newVelocity.ToString());
+            // NON-DECELERATION movement: Always keep the vel's magnitude as [MaxCrowdSpeed]
+            URRGeneralUtils::SetVelocityToMaxSpeed(newVelocity, MaxCrowdSpeed, Is2DMovement());
         }
         else
         {
-            newVelocity = newTargetVelocity;
-            if ((MaxCrowdSpeed > 0.f) && (newVelocity.SizeSquared2D() > 1.01f * FMath::Square(MaxCrowdSpeed)))
-            {
-                if (FloatMovementComp->Use2DMovement())
-                {
-                    newVelocity = FVector(FVector2D(newVelocity.X, newVelocity.Y).GetSafeNormal() * MaxCrowdSpeed, 0.f);
-                }
-                else
-                {
-                    newVelocity = newVelocity.GetUnsafeNormal() * MaxCrowdSpeed;
-                }
-                UE_LOG(LogTemp, Error, TEXT("%s Crowd:FollowPathSegment 2 : %s"), *GetOwner()->GetName(), *newVelocity.ToString());
-            }
+            URRGeneralUtils::ClampVelocityToMaxSpeed(newVelocity, MaxCrowdSpeed, Is2DMovement());
         }
 
         const int32 lastSegmentStartIndex = Path->GetPathPoints().Num() - 2;
@@ -76,7 +60,6 @@ void URRCrowdFollowingComponent::FollowPathSegment(float InDeltaTime)
 
         PostProcessMove.ExecuteIfBound(this, newVelocity);
         MovementComp->RequestDirectMove(newVelocity, bNotFollowingLastSegment);
-        UE_LOG(LogTemp, Error, TEXT("%s Crowd:FollowPathSegment After : %s"), *GetOwner()->GetName(), *newVelocity.ToString());
     }
 }
 
@@ -85,12 +68,9 @@ void URRCrowdFollowingComponent::ApplyCrowdAgentVelocity(const FVector& InNewVel
                                                          bool bInTraversingLink,
                                                          bool bInNearEndOfPath)
 {
-    const FVector newVel = (MaxCrowdSpeed > 0.f) && (InNewVelocity.SizeSquared2D() > 1.01f * FMath::Square(MaxCrowdSpeed))
-                               ? (InNewVelocity.GetUnsafeNormal() * MaxCrowdSpeed)
-                               : InNewVelocity;
+    FVector newVel = InNewVelocity;
+    URRGeneralUtils::ClampVelocityToMaxSpeed(newVel, MaxCrowdSpeed, Is2DMovement());
     Super::ApplyCrowdAgentVelocity(newVel, InDestPathCorner, bInTraversingLink, bInNearEndOfPath);
-    UE_LOG(
-        LogTemp, Error, TEXT("%s Crowd:ApplyCrowdAgentVelocity : %s"), *GetOwner()->GetName(), *MovementComp->Velocity.ToString());
 }
 
 void URRCrowdFollowingComponent::OnPathFinished(const FPathFollowingResult& InResult)
