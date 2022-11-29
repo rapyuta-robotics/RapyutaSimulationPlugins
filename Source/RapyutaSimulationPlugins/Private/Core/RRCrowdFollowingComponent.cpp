@@ -3,7 +3,7 @@
 #include "Core/RRCrowdFollowingComponent.h"
 
 //RapyutaSimulationPlugins
-#include "Core/RRGeneralUtils.h"
+#include "Core/RRMathUtils.h"
 #include "Drives/RRFloatingMovementComponent.h"
 
 URRCrowdFollowingComponent::URRCrowdFollowingComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -43,11 +43,11 @@ void URRCrowdFollowingComponent::FollowPathSegment(float InDeltaTime)
         if (FloatMovementComp && (false == FloatMovementComp->UseDecelerationForPathFollowing()))
         {
             // NON-DECELERATION movement: Always keep the vel's magnitude as [MaxCrowdSpeed]
-            URRGeneralUtils::SetVelocityToMaxSpeed(newVelocity, MaxCrowdSpeed, Is2DMovement());
+            URRMathUtils::SetVectorClampedToMaxMagnitude(newVelocity, MaxCrowdSpeed, Is2DMovement());
         }
         else
         {
-            URRGeneralUtils::ClampVelocityToMaxSpeed(newVelocity, MaxCrowdSpeed, Is2DMovement());
+            URRMathUtils::ClampVectorToMaxMagnitude(newVelocity, MaxCrowdSpeed, Is2DMovement());
         }
 
         const int32 lastSegmentStartIndex = Path->GetPathPoints().Num() - 2;
@@ -64,7 +64,7 @@ void URRCrowdFollowingComponent::ApplyCrowdAgentVelocity(const FVector& InNewVel
                                                          bool bInNearEndOfPath)
 {
     FVector newVel = InNewVelocity;
-    URRGeneralUtils::ClampVelocityToMaxSpeed(newVel, MaxCrowdSpeed, Is2DMovement());
+    URRMathUtils::ClampVectorToMaxMagnitude(newVel, MaxCrowdSpeed, Is2DMovement());
     Super::ApplyCrowdAgentVelocity(newVel, InDestPathCorner, bInTraversingLink, bInNearEndOfPath);
 }
 

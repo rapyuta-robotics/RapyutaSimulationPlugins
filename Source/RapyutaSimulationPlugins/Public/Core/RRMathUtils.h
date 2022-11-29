@@ -34,6 +34,59 @@ public:
         }
     }
 
+    // VECTOR --
+    /**
+     * @brief Check if a vector's magnitude exceeds a given max value
+     *
+     * @param InVector
+     * @param InMaxMagnitude
+     * @param b2D Whether only X,Y are accounted
+     */
+    FORCEINLINE static bool IsVectorExceedingMaxMagnitude(const FVector& InVector, float InMaxMagnitude, bool b2D)
+    {
+        // Give 1% error tolerance, to account for numeric imprecision
+        static constexpr float OVER_VEL_PERCENT = 1.01f;
+        const float maxExtraMagnitude = OVER_VEL_PERCENT * FMath::Square(InMaxMagnitude);
+        return (maxExtraMagnitude > 0.f) &&
+               (b2D ? (InVector.SizeSquared2D() > maxExtraMagnitude) : (InVector.SizeSquared() > maxExtraMagnitude));
+    }
+
+    /**
+     * @brief Set a given vector's magnitude
+     *
+     * @param InVector
+     * @param InMaxMagnitude
+     * @param b2D Whether only X,Y are accounted
+     */
+    FORCEINLINE static void SetVectorClampedToMaxMagnitude(FVector& InVector, float InMaxMagnitude, bool b2D)
+    {
+        if (b2D)
+        {
+            InVector = InVector.GetClampedToMaxSize2D(InMaxMagnitude);
+        }
+        else
+        {
+            InVector = InVector.GetClampedToMaxSize(InMaxMagnitude);
+        }
+    }
+
+    /**
+     * @brief Clamp a given vector's magnitude to its max magnitude
+     *
+     * @param InVector
+     * @param InMaxMagnitude
+     * @param b2D Whether only X,Y are accounted
+     */
+    FORCEINLINE static bool ClampVectorToMaxMagnitude(FVector& InVector, float InMaxMagnitude, bool b2D)
+    {
+        if (IsVectorExceedingMaxMagnitude(InVector, InMaxMagnitude, b2D))
+        {
+            SetVectorClampedToMaxMagnitude(InVector, InMaxMagnitude, b2D);
+            return true;
+        }
+        return false;
+    }
+
     // RANDOM GENERATOR --
     //
     static void InitializeRandomStream();

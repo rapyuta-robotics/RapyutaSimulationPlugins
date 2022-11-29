@@ -3,7 +3,7 @@
 #include "Drives/RRFloatingMovementComponent.h"
 
 // RapyutaSimulationPlugins
-#include "Core/RRGeneralUtils.h"
+#include "Core/RRMathUtils.h"
 
 URRFloatingMovementComponent::URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer), bSweepEnabled(true), b2DMovement(false), bUseDecelerationForPaths(true)
@@ -15,7 +15,7 @@ bool URRFloatingMovementComponent::IsExceedingMaxSpeed(float InMaxSpeed) const
     // NOTE: Since [UFloatingPawnMovement] already has [MaxSpeed], which must not be mistaken with [InMaxSpeed]
     if (b2DMovement)
     {
-        return URRGeneralUtils::IsVelocityExceedingMaxSpeed(Velocity, InMaxSpeed, true);
+        return URRMathUtils::IsVectorExceedingMaxMagnitude(Velocity, InMaxSpeed, true);
     }
     else
     {
@@ -54,7 +54,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
     // Limit speed in case of non-path-following AI controller
     else
     {
-        URRGeneralUtils::ClampVelocityToMaxSpeed(Velocity, MaxSpeed, b2DMovement);
+        URRMathUtils::ClampVectorToMaxMagnitude(Velocity, MaxSpeed, b2DMovement);
     }
 
     if (false == b2DMovement)
