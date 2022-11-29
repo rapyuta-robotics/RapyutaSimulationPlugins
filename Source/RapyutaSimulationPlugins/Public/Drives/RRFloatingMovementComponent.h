@@ -44,9 +44,15 @@ public:
         bUseAccelerationForPaths = bEnabled;
     }
 
+    void SetPenetrationPullbackDistance(float PullbackDistance)
+    {
+        PenetrationPullbackDistance = PullbackDistance;
+    }
+
 protected:
     virtual void TickComponent(float InDeltaTime, enum ELevelTick InTickType, FActorComponentTickFunction* InTickFunction) override;
     virtual bool IsExceedingMaxSpeed(float InMaxSpeed) const override;
+    virtual FVector GetPenetrationAdjustment(const FHitResult& Hit) const;
 #if RAPYUTA_SIM_DEBUG
     virtual bool ResolvePenetrationImpl(const FVector& InProposedAdjustment,
                                         const FHitResult& InHit,
@@ -61,4 +67,7 @@ private:
 
     UPROPERTY(EditAnywhere)
     uint8 bUseDecelerationForPaths : 1;
+
+    UPROPERTY(EditAnywhere)
+    float PenetrationPullbackDistance = 0.f;
 };

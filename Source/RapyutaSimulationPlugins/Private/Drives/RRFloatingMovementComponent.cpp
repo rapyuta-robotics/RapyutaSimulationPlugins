@@ -107,7 +107,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
         }
 
         // Update current-moment [Velocity], ONLY IF using ACCELERATION/DECELERATION & NOT-ALREADY [bPositionCorrected] possibly due to penetration fixup
-        if (bUseAccelerationForPaths && bUseDecelerationForPaths && (false == bPositionCorrected))
+        if (false == bPositionCorrected)
         {
             Velocity = ((UpdatedComponent->GetComponentLocation() - prevLocation) / InDeltaTime);
         }
@@ -115,6 +115,18 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
 
     // Update [UpdatedComponent]'s Velocity by [Velocity]
     UpdateComponentVelocity();
+}
+
+FVector URRFloatingMovementComponent::GetPenetrationAdjustment(const FHitResult& InHit) const
+{
+    if (!InHit.bStartPenetrating)
+    {
+        return FVector::ZeroVector;
+    }
+
+    const float penetrationDepth = (InHit.PenetrationDepth > 0.f ? InHit.PenetrationDepth : 0.125f);
+    const FVector res = ConstrainDirectionToPlane(InHit.Normal * (penetrationDepth + PenetrationPullbackDistance));
+    return res;
 }
 
 #if RAPYUTA_SIM_DEBUG
@@ -150,6 +162,8 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
                *InHit.TraceStart.ToString(),
                *InHit.TraceEnd.ToString(),
                *InHit.BoneName.ToString());
+
+        UE_LOG(LogRapyutaCore, Error, TEXT("ResolvePenetration: proposed Adjustment %s"), *constrainedAdjustment.ToString());
 
         // We really want to make sure that precision differences or differences between the overlap test and sweep tests don't put us into another overlap,
         // so make the overlap test a bit more restrictive.
