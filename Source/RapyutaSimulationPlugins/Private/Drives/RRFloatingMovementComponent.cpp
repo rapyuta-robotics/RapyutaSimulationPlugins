@@ -106,7 +106,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
             }
         }
 
-        // Update current-moment [Velocity], ONLY IF using ACCELERATION/DECELERATION & NOT-ALREADY [bPositionCorrected] possibly due to penetration fixup
+        // Update instantaneous [Velocity], ONLY IF NOT-ALREADY [bPositionCorrected] possibly due to penetration fixup
         if (false == bPositionCorrected)
         {
             Velocity = ((UpdatedComponent->GetComponentLocation() - prevLocation) / InDeltaTime);
