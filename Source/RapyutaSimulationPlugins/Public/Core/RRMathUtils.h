@@ -35,6 +35,7 @@ public:
     }
 
     // VECTOR --
+    // These are mostly for Velocity handling, which is inherently 3D FVector
     /**
      * @brief Check if a vector's magnitude exceeds a given max value
      *
@@ -45,8 +46,8 @@ public:
     FORCEINLINE static bool IsVectorExceedingMaxMagnitude(const FVector& InVector, float InMaxMagnitude, bool b2D)
     {
         // Give 1% error tolerance, to account for numeric imprecision
-        static constexpr float OVER_VEL_PERCENT = 1.01f;
-        const float maxExtraMagnitude = OVER_VEL_PERCENT * FMath::Square(InMaxMagnitude);
+        static constexpr float OVER_MAG_PERCENT = 1.01f;
+        const float maxExtraMagnitude = OVER_MAG_PERCENT * FMath::Square(InMaxMagnitude);
         return (maxExtraMagnitude > 0.f) &&
                (b2D ? (InVector.SizeSquared2D() > maxExtraMagnitude) : (InVector.SizeSquared() > maxExtraMagnitude));
     }
