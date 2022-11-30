@@ -20,14 +20,54 @@ class RAPYUTASIMULATIONPLUGINS_API URRFloatingMovementComponent : public UFloati
     GENERATED_BODY()
 
 public:
-    UPROPERTY()
-    bool bSweepEnabled = true;
+    URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer);
+    void Set2DMovement(bool bEnabled)
+    {
+        b2DMovement = bEnabled;
+    }
+    FORCEINLINE bool Is2DMovement() const
+    {
+        return b2DMovement;
+    }
+
+    void SetUseDecelerationForPaths(bool bEnabled)
+    {
+        bUseDecelerationForPaths = bEnabled;
+    }
+    FORCEINLINE bool UseDecelerationForPathFollowing() const
+    {
+        return bUseDecelerationForPaths;
+    }
+
+    void SetUseAccelerationForPaths(bool bEnabled)
+    {
+        bUseAccelerationForPaths = bEnabled;
+    }
+
+    void SetPenetrationPullbackDistance(float PullbackDistance)
+    {
+        PenetrationPullbackDistance = PullbackDistance;
+    }
 
 protected:
     virtual void TickComponent(float InDeltaTime, enum ELevelTick InTickType, FActorComponentTickFunction* InTickFunction) override;
+    virtual bool IsExceedingMaxSpeed(float InMaxSpeed) const override;
+    virtual FVector GetPenetrationAdjustment(const FHitResult& Hit) const;
 #if RAPYUTA_SIM_DEBUG
     virtual bool ResolvePenetrationImpl(const FVector& InProposedAdjustment,
                                         const FHitResult& InHit,
                                         const FQuat& InNewRotationQuat) override;
 #endif
+private:
+    UPROPERTY(EditAnywhere)
+    uint8 bSweepEnabled : 1;
+
+    UPROPERTY(EditAnywhere)
+    uint8 b2DMovement : 1;
+
+    UPROPERTY(EditAnywhere)
+    uint8 bUseDecelerationForPaths : 1;
+
+    UPROPERTY(EditAnywhere)
+    float PenetrationPullbackDistance = 0.f;
 };
