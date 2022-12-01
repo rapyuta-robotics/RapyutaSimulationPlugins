@@ -51,7 +51,7 @@ void URR2DLidarComponent::Run()
 #if TRACE_ASYNC
     TraceHandles.Init(FTraceHandle(), NSamplesPerScan);
 #endif
-    
+
     Super::Run();
 }
 
@@ -145,7 +145,7 @@ void URR2DLidarComponent::SensorUpdate()
     {
         for (auto& h : RecordedHits)
         {
-            if (h.Actor != nullptr)
+            if (h.GetActor() != nullptr)
             {
                 float Distance = (MinRange * (h.Distance > 0) + h.Distance) * .01f;
                 if (h.PhysMaterial != nullptr)
@@ -257,7 +257,7 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
 
     for (auto& h : RecordedVizHits)
     {
-        if (h.Actor == TargetActor)
+        if (h.GetActor() == TargetActor)
         {
             return true;
         }
@@ -280,11 +280,9 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
     FROSLaserScan retValue;
 
     // time
-    auto stamp = UROS2Utils::FloatToROSStamp(TimeOfLastScan);
-    retValue.HeaderStampSec = stamp.sec;
-    retValue.HeaderStampNanosec = stamp.nanosec;
+    retValue.Header.Stamp = URRConversionUtils::FloatToROSStamp(TimeOfLastScan);
 
-    retValue.HeaderFrameId = FrameId;
+    retValue.Header.FrameId = FrameId;
 
     retValue.AngleMin = GetMinAngleRadians();
     retValue.AngleMax = GetMaxAngleRadians();

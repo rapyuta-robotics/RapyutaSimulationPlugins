@@ -27,7 +27,11 @@ enum class ERRRefActorSelectMode : uint8
 };
 
 /**
- * @brief Robot pose sensor manager
+ * @brief Robot pose sensor manager which has two #URRROS2EntityStateSensorComponent which publishes
+ * - Reference Actor pose from world origin
+ * - Pose from reference actor.
+ * Typical usecase is to set map origin as reference actor and publish robot pose from map_origin. 
+ * This is useful to navigate robot in the large area such as multiple floor building which has multiple map origins.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRPoseSensorManager : public URRROS2EntityStateSensorComponent
@@ -83,7 +87,7 @@ public:
 
     //! Reference actor's tag
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    FString ReferenceTag = TEXT("map_origin");
+    FString ReferenceTag = URRActorCommon::MAP_ORIGIN_TAG;
 
     //! Reference actor's selection mode
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
@@ -91,7 +95,7 @@ public:
 
     //! Map frame id
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    FString MapFrameId = TEXT("map");
+    FString MapFrameId = URRActorCommon::MAP_ROS_FRAME_ID;
 
     //! Map origin's pose sensor
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)

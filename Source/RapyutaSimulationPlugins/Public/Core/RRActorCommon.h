@@ -457,8 +457,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
 DECLARE_DELEGATE_TwoParams(FOnMeshActorFullyCreated, bool /* bCreationResult */, ARRMeshActor*);
 
 /**
- * @brief Common actor
- * @todo add documentation
+ * @brief Scene instance's common object
+ * @note Mostly responsible for holding handles to common scene objects (Main environment, camera, etc.)
  */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API URRActorCommon : public UObject
@@ -481,7 +481,14 @@ public:
     static constexpr const TCHAR* SCRIPT_INI_PATH = TEXT("/Script/RapyutaSimulationPlugins.RRActorCommon");
     static std::once_flag OnceFlag;
 
-    static void OnPostWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources);
+    /**
+     * @brief Callback for world cleanup end
+     * @note [Ref](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/FWorldDelegates/OnPostWorldCleanup)
+     * @param InWorld
+     * @param bInSessionEnded Whether to notify the viewport that the game session (PIE, Game, etc.) has ended.
+     * @param bInCleanupResources Whether resources should be cleaned up
+     */
+    static void OnPostWorldCleanup(UWorld* InWorld, bool /*bInSessionEnded*/, bool /*bInCleanupResources*/);
 
 public:
 #define EMPTY_STR (TEXT(""))    // Using TCHAR* = TEXT("") -> could causes linking error in some case!
@@ -501,66 +508,92 @@ public:
     static constexpr int8 IMAGE_BIT_DEPTH_FLOAT16 = 16;
     static constexpr int8 IMAGE_BIT_DEPTH_FLOAT32 = 32;
 
+    static constexpr const TCHAR* MAP_ORIGIN_TAG = TEXT("map_origin");
+    static constexpr const TCHAR* MAP_ROS_FRAME_ID = TEXT("map");
+
+    //! Game mode handle
     UPROPERTY()
     ARRGameMode* GameMode = nullptr;
 
+    //! Game state handle
     UPROPERTY()
     ARRGameState* GameState = nullptr;
 
-    // Each scene instance house a series of scene, in which operations are performed.
+    //! Each scene instance house a series of scene, in which operations are performed.
     UPROPERTY()
     int8 SceneInstanceId = DEFAULT_SCENE_INSTANCE_ID;
 
+    //! Location of the current scene instance this ActorCommon belongs to
     UPROPERTY()
     FVector SceneInstanceLocation = FVector::ZeroVector;
 
+    //! Generate a new scene id
     // Each scene is assigned with a unique id, regardless of which scene instance it belongs
     static uint64 SLatestSceneId;
     FORCEINLINE static uint64 GetNextSceneId()
     {
         return ++SLatestSceneId;
     }
+
+    //! Current scene id
     UPROPERTY()
     uint64 CurrentSceneId = 0;
 
+    //! Main environment actor if pre-setup in the level
     UPROPERTY()
     AActor* MainEnvironment = nullptr;
 
+    //! Main floor actor if pre-setup in the level
     UPROPERTY()
     AActor* MainFloor = nullptr;
 
+    //! Main wall actor if pre-setup in the level
     UPROPERTY()
     AActor* MainWall = nullptr;
 
+    //! Main camera actor used in the scene instance
     UPROPERTY()
     ARRCamera* MainCamera = nullptr;
 
+    //! Print sim config vars in INI
     virtual void PrintSimConfig() const;
 
+    //! Callback on ARRGameState::StartSim() for this scene instance
     virtual void OnStartSim();
+    //! Callback on ARRGameState::BeginPlay() for this scene instance
     virtual void OnBeginPlay()
     {
     }
 
+    //! Callback on ARRGameState::EndPlay() for this scene instance
     virtual void OnEndPlay(const EEndPlayReason::Type EndPlayReason)
     {
     }
 
+    //! Callback on ARRGameState::Tick() for this scene instance
     virtual void OnTick(float DeltaTime)
     {
     }
 
+    /**
+     * @brief Whether this scene instance's common object has been initialized
+     * @param bIsLogged Whether to log on uninitialized contents
+     */
     virtual bool HasInitialized(bool bIsLogged = false) const;
+    //! Setup the scene instance's environment
     virtual void SetupEnvironment();
+    //! Move the common main environment to another scene instance
     void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId);
 
+    //! Callback on a mesh actor being fully created in the scene
     FOnMeshActorFullyCreated OnMeshActorFullyCreated;
 
-    // (NOTE) Currently UE only supports [0-255] CustomDepthStencil values,
-    // which might probably be extended to a larger range then.
+    //! (NOTE) Currently UE only supports [0-255] CustomDepthStencil values,
+    //! which might probably be extended to a larger range then.
     UPROPERTY()
     int32 LatestCustomDepthStencilValue = 0;
 
+    //! Generate a new unique custom depth stencil value for a mesh actor's Segmentation mask
     int32 GenerateUniqueDepthStencilValue()
     {
         if (255 <= LatestCustomDepthStencilValue)
@@ -578,8 +611,7 @@ class ARRSceneDirector;
 class ARRPlayerController;
 
 /**
- * @brief Scene Instance
- * @todo add documentation
+ * @brief Scene Instance, a scene unit among many residing in the same level
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRSceneInstance : public UObject

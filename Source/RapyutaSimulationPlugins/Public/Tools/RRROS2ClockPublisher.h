@@ -4,7 +4,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 
 // UE
@@ -33,4 +32,14 @@ public:
      * @param InMessage 
      */
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
+
+    /**
+     * @brief 
+     * Called with every simulation step. Publishing clock msg with simulation step.
+     * 
+     * @param DeltaTime 
+     * @param TickType 
+     * @param ThisTickFunction 
+     */
+    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

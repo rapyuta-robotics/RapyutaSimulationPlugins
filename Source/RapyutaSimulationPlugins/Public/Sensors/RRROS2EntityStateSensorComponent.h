@@ -13,13 +13,15 @@
 // rclUE
 #include "RRROS2BaseSensorComponent.h"
 
-#include <Msgs/ROS2EntityStateMsg.h>
+#include <Msgs/ROS2EntityState.h>
 
 // RapyutaSimulationPlugins
 #include "Core/RRGeneralUtils.h"
 #include "Tools/RRROS2EntityStatePublisher.h"
 
 #include "RRROS2EntityStateSensorComponent.generated.h"
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnNewReferenceActorDetected, AActor* /* NewReferenceActor */);
 
 /**
  * @brief EntityState sensor components which publish entitystate relative to a specific actor.
@@ -45,11 +47,13 @@ public:
      */
     virtual void SensorUpdate() override;
 
+    //! NOTE: Only #URRPoseSensorManager uses #ReferenceActor
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     FString ReferenceActorName = TEXT("");
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     AActor* ReferenceActor = nullptr;
+    FOnNewReferenceActorDetected OnNewReferenceActorDetected;
 
     UFUNCTION(BlueprintCallable)
     virtual void SetReferenceActorByName(const FString& InName);

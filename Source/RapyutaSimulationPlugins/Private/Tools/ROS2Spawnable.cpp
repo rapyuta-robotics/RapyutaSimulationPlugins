@@ -3,7 +3,7 @@
 #include "Tools/ROS2Spawnable.h"
 
 // rclUE
-#include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Srvs/ROS2SpawnEntity.h"
 
 void UROS2Spawnable::OnComponentCreated()
 {
@@ -14,21 +14,29 @@ void UROS2Spawnable::OnComponentCreated()
 void UROS2Spawnable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(UROS2Spawnable, ActorModelName);
     DOREPLIFETIME(UROS2Spawnable, ActorName);
     DOREPLIFETIME(UROS2Spawnable, ActorNamespace);
     DOREPLIFETIME(UROS2Spawnable, ActorTags);
+    DOREPLIFETIME(UROS2Spawnable, ActorJsonConfigs);
     DOREPLIFETIME(UROS2Spawnable, NetworkPlayerId);
 }
 
-void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityRequest& InRequest)
+void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityReq& InRequest)
 {
-    SetName(InRequest.StateName);
+    ActorModelName = InRequest.Xml;
+    ActorName = InRequest.State.Name;
     UE_LOG(LogTemp,
            Warning,
-           TEXT("Pruning / from recieved namespace %s, namespace in UE4 will be set as: %s"),
+           TEXT("Pruning / from received namespace %s, namespace in UE will be set as: %s"),
            *InRequest.RobotNamespace,
            *InRequest.RobotNamespace.Replace(TEXT("/"), TEXT("")));
-    SetNamespace(InRequest.RobotNamespace.Replace(TEXT("/"), TEXT("")));
+    ActorNamespace = InRequest.RobotNamespace.Replace(TEXT("/"), TEXT(""));
+}
+
+void UROS2Spawnable::SetActorModelName(const FString& InModelName)
+{
+    ActorModelName = InModelName;
 }
 
 void UROS2Spawnable::SetName(const FString& InName)

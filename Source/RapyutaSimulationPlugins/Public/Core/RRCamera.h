@@ -25,13 +25,13 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRCameraProperties
     GENERATED_BODY()
 
     UPROPERTY()
-    FVector2D DistanceRangeInCm = FVector2D(100.f, 300.f);
+    FVector2f DistanceRangeInCm = FVector2f(100.f, 300.f);
 
     UPROPERTY()
-    FVector2D HeightRangeInCm = FVector2D(5.f, 100.f);
+    FVector2f HeightRangeInCm = FVector2f(5.f, 100.f);
 
     UPROPERTY()
-    FVector2D HFoVRangeInDegree = FVector2D(80.f, 120.f);
+    FVector2f HFoVRangeInDegree = FVector2f(80.f, 120.f);
 
     FORCEINLINE void PrintSelf() const
     {

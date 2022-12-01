@@ -24,7 +24,7 @@ void URRROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const
     SceneCaptureComponent->TextureTarget = RenderTarget;
 
     // Initialize image data
-    Data.HeaderFrameId = FrameId;
+    Data.Header.FrameId = FrameId;
     Data.Width = Width;
     Data.Height = Height;
     Data.Encoding = Encoding;
@@ -93,7 +93,7 @@ void URRROS2CameraComponent::CaptureNonBlocking()
     renderRequest->RenderFence.BeginFence();
 }
 
-FROSImage URRROS2CameraComponent::GetROS2Data()
+FROSImg URRROS2CameraComponent::GetROS2Data()
 {
     if (!RenderRequestQueue.IsEmpty())
     {
@@ -138,5 +138,5 @@ FROSImage URRROS2CameraComponent::GetROS2Data()
 
 void URRROS2CameraComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
 {
-    CastChecked<UROS2ImageMsg>(InMessage)->SetMsg(GetROS2Data());
+    CastChecked<UROS2ImgMsg>(InMessage)->SetMsg(GetROS2Data());
 }

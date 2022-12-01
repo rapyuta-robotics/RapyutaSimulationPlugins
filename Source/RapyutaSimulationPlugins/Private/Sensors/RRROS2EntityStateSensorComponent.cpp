@@ -18,14 +18,33 @@ void URRROS2EntityStateSensorComponent::BeginPlay()
 
 void URRROS2EntityStateSensorComponent::SetReferenceActorByName(const FString& InName)
 {
-    ReferenceActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
-    ReferenceActorName = InName;
+    AActor* newReferenceActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
+    if (newReferenceActor)
+    {
+        const bool bNewReference = (ReferenceActor != newReferenceActor);
+        ReferenceActor = newReferenceActor;
+        ReferenceActorName = InName;
+        if (bNewReference)
+        {
+            OnNewReferenceActorDetected.Broadcast(newReferenceActor);
+        }
+    }
+    else
+    {
+        UE_LOG(
+            LogRapyutaCore, Error, TEXT("[URRROS2EntityStateSensorComponent::SetReferenceActorByName] %s is not found"), *InName);
+    }
 }
 
 void URRROS2EntityStateSensorComponent::SetReferenceActorByActor(AActor* InActor)
 {
+    const bool bNewReference = (ReferenceActor != InActor);
     ReferenceActor = InActor;
     ReferenceActorName = ReferenceActor->GetName();
+    if (bNewReference)
+    {
+        OnNewReferenceActorDetected.Broadcast(InActor);
+    }
 }
 
 FROSEntityState URRROS2EntityStateSensorComponent::GetROS2Data()
@@ -49,15 +68,13 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
 
     relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
-    Data.PosePosition.X = relativeTransf.GetTranslation().X + RootOffset.GetTranslation().X;
-    Data.PosePosition.Y = relativeTransf.GetTranslation().Y + RootOffset.GetTranslation().Y;
-    Data.PosePosition.Z = relativeTransf.GetTranslation().Z + RootOffset.GetTranslation().Z;
-    Data.PoseOrientation = relativeTransf.GetRotation() * RootOffset.GetRotation();
+    Data.Pose.Position = relativeTransf.GetTranslation() + RootOffset.GetTranslation();
+    Data.Pose.Orientation = relativeTransf.GetRotation() * RootOffset.GetRotation();
     Data.ReferenceFrame = ReferenceActorName;
 
     // todo calc vel
-    Data.TwistLinear = FVector::ZeroVector;
-    Data.TwistAngular = FVector::ZeroVector;
+    Data.Twist.Linear = FVector::ZeroVector;
+    Data.Twist.Angular = FVector::ZeroVector;
 
     bIsValid = true;
 }

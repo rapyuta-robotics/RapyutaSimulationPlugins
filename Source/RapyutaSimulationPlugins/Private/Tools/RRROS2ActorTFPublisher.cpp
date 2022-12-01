@@ -17,15 +17,22 @@ void URRROS2ActorTFPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
 
 void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
 {
-    UROS2SetBoolSrv* TriggerPublishService = Cast<UROS2SetBoolSrv>(Service);
+    UROS2SetBoolSrv* triggerPublishService = Cast<UROS2SetBoolSrv>(Service);
 
-    FROSSetBoolRequest Request;
-    TriggerPublishService->GetRequest(Request);
-    bPublish = Request.bData;
+    FROSSetBoolReq request;
+    triggerPublishService->GetRequest(request);
+    if (request.bData)
+    {
+        StartPublishTimer();
+    }
+    else
+    {
+        StopPublishTimer();
+    }
 
-    FROSSetBoolResponse Response;
-    Response.bSuccess = true;
-    TriggerPublishService->SetResponse(Response);
+    FROSSetBoolRes response;
+    response.bSuccess = true;
+    triggerPublishService->SetResponse(response);
 }
 
 void URRROS2ActorTFPublisher::BeginPlay()

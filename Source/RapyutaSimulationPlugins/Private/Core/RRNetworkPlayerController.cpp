@@ -8,8 +8,8 @@
 #include "Net/UnrealNetwork.h"
 
 // rclUE
-#include "Msgs/ROS2ClockMsg.h"
-#include "Msgs/ROS2TwistMsg.h"
+#include "Msgs/ROS2Clock.h"
+#include "Msgs/ROS2Twist.h"
 #include "ROS2Node.h"
 
 // RapyutaSimulationPlugins
@@ -160,13 +160,13 @@ void ARRNetworkPlayerController::ServerSetPlayerName_Implementation(const FStrin
 }
 
 // Client Requesting Server to send time, Client Clock at time of request is sent as well
-void ARRNetworkPlayerController::ClientRequestLocalClockUpdate_Implementation(float InClientRequestTime)
+void ARRNetworkPlayerController::ServerRequestLocalClockUpdate_Implementation(float InClientRequestTime)
 {
     float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-    ServerSendLocalClockUpdate(serverCurrentTime, InClientRequestTime);
+    ClientSendLocalClockUpdate(serverCurrentTime, InClientRequestTime);
 }
 
-void ARRNetworkPlayerController::ServerSendLocalClockUpdate_Implementation(float InServerCurrentTime, float InClientRequestTime)
+void ARRNetworkPlayerController::ClientSendLocalClockUpdate_Implementation(float InServerCurrentTime, float InClientRequestTime)
 {
     float clientRequestRoundTrip = LocalTime - InClientRequestTime;
     float latencyAdjustedTime = InServerCurrentTime + (clientRequestRoundTrip * 0.5f);
@@ -179,7 +179,7 @@ void ARRNetworkPlayerController::RequestServerTimeUpdate()
 {
     if (IsLocalController())
     {
-        ClientRequestLocalClockUpdate(LocalTime);
+        ServerRequestLocalClockUpdate(LocalTime);
     }
 }
 
@@ -196,7 +196,7 @@ void ARRNetworkPlayerController::ReceivedPlayer()
     Super::ReceivedPlayer();
     if (IsLocalController())
     {
-        ClientRequestLocalClockUpdate(LocalTime);
+        ServerRequestLocalClockUpdate(LocalTime);
     }
 }
 
@@ -215,12 +215,13 @@ void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot*
            *InServerRobot->GetActorLocation().ToString());
 #endif
     auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
-    if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
+    if (robot)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
         robot->SetActorLocation(InClientRobotTransform.GetTranslation() +
                                 InClientRobotTransform.GetRotation() * InLinearVel * (serverCurrentTime - InClientTimeStamp));
-        robot->RobotVehicleMoveComponent->Velocity = InLinearVel;
+        //NOTE: Don't use ARRRobotBaseVehicle::SetLinearVel() here, which is only for client
+        robot->TargetLinearVel = InLinearVel;
     }
 }
 
@@ -238,10 +239,11 @@ void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot
            *InServerRobot->GetActorRotation().ToString());
 #endif
     auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
-    if (robot != nullptr && robot->RobotVehicleMoveComponent != nullptr)
+    if (robot)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
         robot->SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
-        robot->RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
+        //NOTE: Don't use ARRRobotBaseVehicle::SetAngularVel() here, which is only for client
+        robot->TargetAngularVel = InAngularVel;
     }
 }

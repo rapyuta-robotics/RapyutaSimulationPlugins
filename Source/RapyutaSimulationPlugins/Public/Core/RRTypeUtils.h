@@ -7,7 +7,7 @@
 #pragma once
 
 // UE
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 // RapyutaSimulationPlugins
@@ -46,10 +46,18 @@ class RAPYUTASIMULATIONPLUGINS_API URRTypeUtils : public UBlueprintFunctionLibra
 public:
     // UE-TYPE RELATED UTILS ==
     //
+    // UE-TYPE RELATED UTILS ==
+    //
     template<typename TEnum>
-    FORCEINLINE static FString GetEnumValueAsString(const FString& InTypeName, TEnum InEnumValue)
+    FORCEINLINE static FString GetEnumValueAsString(const FString& InTypeName,
+                                                    TEnum InEnumValue,
+                                                    const TCHAR* InModuleName = nullptr)
     {
-        const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, *InTypeName, true);
+        const UEnum* EnumPtr = FindObject<UEnum>(
+            nullptr,
+            *FString::Printf(
+                TEXT("/Script/%s.%s"), InModuleName ? InModuleName : RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME, *InTypeName),
+            true);
         if (!EnumPtr)
         {
             return "Invalid";
@@ -58,9 +66,31 @@ public:
         return EnumPtr->GetDisplayNameTextByIndex(static_cast<int32>(InEnumValue)).ToString();    // Or GetNameByValue
     }
 
-    FORCEINLINE static int8 GetEnumValueFromString(const FString& InTypeName, const FString& InEnumStringValue)
+    template<typename TEnum>
+    FORCEINLINE static FString GetEnumNameByValue(const FString& InTypeName, TEnum InEnumValue, const TCHAR* InModuleName = nullptr)
     {
-        UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, *InTypeName, true);
+        const UEnum* EnumPtr = FindObject<UEnum>(
+            nullptr,
+            *FString::Printf(
+                TEXT("/Script/%s.%s"), InModuleName ? InModuleName : RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME, *InTypeName),
+            true);
+        if (!EnumPtr)
+        {
+            return "Invalid";
+        }
+
+        return EnumPtr->GetNameByValue(static_cast<int32>(InEnumValue)).ToString();    // Or GetNameByValue
+    }
+
+    FORCEINLINE static int8 GetEnumValueFromString(const FString& InTypeName,
+                                                   const FString& InEnumStringValue,
+                                                   const TCHAR* InModuleName = nullptr)
+    {
+        UEnum* EnumPtr = FindObject<UEnum>(
+            nullptr,
+            *FString::Printf(
+                TEXT("/Script/%s.%s"), InModuleName ? InModuleName : RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME, *InTypeName),
+            true);
         if (!EnumPtr)
         {
             // INDEX_NONE
@@ -69,6 +99,31 @@ public:
 
         // Or GetIndexByName to return Index
         return EnumPtr->GetValueByName(FName(*InEnumStringValue));
+    }
+
+    FORCEINLINE static FString GetWorldTypeAsString(const EWorldType::Type InWorldType)
+    {
+        switch (InWorldType)
+        {
+            case EWorldType::None:
+                return TEXT("None");
+            case EWorldType::Game:
+                return TEXT("Game");
+            case EWorldType::Editor:
+                return TEXT("Editor");
+            case EWorldType::PIE:
+                return TEXT("PIE");
+            case EWorldType::EditorPreview:
+                return TEXT("EditorPreview");
+            case EWorldType::GamePreview:
+                return TEXT("GamePreview");
+            case EWorldType::GameRPC:
+                return TEXT("GameRPC");
+            case EWorldType::Inactive:
+                return TEXT("Inactive");
+            default:
+                return FString();
+        }
     }
 
     FORCEINLINE static FString GetERRResourceDataTypeAsString(const ERRResourceDataType InDataType)

@@ -11,7 +11,8 @@
 #pragma once
 
 // rclUE
-#include <Msgs/ROS2OdometryMsg.h>
+#include <Msgs/ROS2Odom.h>
+#include <Msgs/ROS2Time.h>
 
 #include "RRConversionUtils.generated.h"
 
@@ -27,16 +28,35 @@ public:
         return FVector(InLocation.X, -InLocation.Y, InLocation.Z);
     }
 
+    // UE: cm, ROS: m
+    template<typename T>
+    static T DistanceROSToUE(const T& InROSDistance)
+    {
+        return 100.f * InROSDistance;
+    }
+
+    template<typename T>
+    static T SizeROSToUE(const T& InROSSize)
+    {
+        return 100.f * InROSSize;
+    }
+
+    template<typename T>
+    static T DistanceUEToROS(const T& InUESize)
+    {
+        return 0.01f * InUESize;
+    }
+
+    template<typename T>
+    static T SizeUEToROS(const T& InUESize)
+    {
+        return 0.01f * InUESize;
+    }
+
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FVector VectorUEToROS(const FVector& Input)
     {
-        FVector Output = Input;
-
-        Output.X = Output.X;
-        Output.Y = -Output.Y;
-        Output.Z = Output.Z;
-
-        return 0.01f * Output;
+        return 0.01f * ConvertHandedness(Input);
     }
 
     FORCEINLINE static void VectorUEToROS(const double& InputX,
@@ -85,15 +105,15 @@ public:
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FROSOdometry OdomUEToROS(const FROSOdometry& Input)
+    static FROSOdom OdomUEToROS(const FROSOdom& Input)
     {
-        FROSOdometry Output = Input;
+        FROSOdom Output = Input;
 
-        VectorROSToUE(Input.PosePosePosition, Output.PosePosePosition);
-        Output.PosePoseOrientation = QuatUEToROS(Output.PosePoseOrientation);
+        Output.Pose.Pose.Position = VectorUEToROS(Input.Pose.Pose.Position);
+        Output.Pose.Pose.Orientation = QuatUEToROS(Output.Pose.Pose.Orientation);
 
-        Output.TwistTwistLinear = VectorUEToROS(Output.TwistTwistLinear);
-        Output.TwistTwistAngular = RotationUEToROS(Output.TwistTwistAngular);
+        Output.Twist.Twist.Linear = VectorUEToROS(Output.Twist.Twist.Linear);
+        Output.Twist.Twist.Angular = RotationUEToROS(Output.Twist.Twist.Angular);
 
         return Output;
     }
@@ -113,7 +133,7 @@ public:
 
         return 100.f * Output;
     }
-    
+
     FORCEINLINE static void VectorROSToUE(const FVector& Input, FVector& Output)
     {
         Output.Set(Input.X * 100.f, -Input.Y * 100.f, Input.Z * 100.f);
@@ -169,19 +189,39 @@ public:
      * @note pose is cast double to float. it will be resolved in UE5 since FVector uses double as default in UE5
      * @sa https://docs.unrealengine.com/5.0/en-US/large-world-coordinates-in-unreal-engine-5/#:~:text=Engine%205%2C%20the-,FVector,-casts%20will%20continue
      * @param Input
-     * @return FROSOdometry
+     * @return FROSOdom
      */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FROSOdometry OdomROSToUE(const FROSOdometry& Input)
+    static FROSOdom OdomROSToUE(const FROSOdom& Input)
     {
-        FROSOdometry Output = Input;
+        FROSOdom Output = Input;
 
-        VectorROSToUE(Input.PosePosePosition, Output.PosePosePosition);
-        Output.PosePoseOrientation = QuatROSToUE(Output.PosePoseOrientation);
+        VectorROSToUE(Input.Pose.Pose.Position, Output.Pose.Pose.Position);
+        Output.Pose.Pose.Orientation = QuatROSToUE(Output.Pose.Pose.Orientation);
 
-        Output.TwistTwistLinear = VectorROSToUE(Output.TwistTwistLinear);
-        Output.TwistTwistAngular = RotationROSToUE(Output.TwistTwistAngular);
+        Output.Twist.Twist.Linear = VectorROSToUE(Output.Twist.Twist.Linear);
+        Output.Twist.Twist.Angular = RotationROSToUE(Output.Twist.Twist.Angular);
 
         return Output;
+    }
+
+    // time to ROS stamp
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FROSTime FloatToROSStamp(const float InTimeSec)
+    {
+        FROSTime stamp;
+        stamp.Sec = static_cast<int32>(InTimeSec);
+        stamp.Nanosec = uint32((InTimeSec - stamp.Sec) * 1e+09f);
+        return stamp;
+    }
+
+    static FROSTime GetCurrentROS2Time(const UObject* InContextObject)
+    {
+        return FloatToROSStamp(UGameplayStatics::GetTimeSeconds(InContextObject->GetWorld()));
+    }
+
+    static float ROSStampToFloat(const FROSTime& InTimeStamp)
+    {
+        return InTimeStamp.Sec + InTimeStamp.Nanosec * 1e-09f;
     }
 };

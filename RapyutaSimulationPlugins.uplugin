@@ -31,6 +31,10 @@
 	   		"Name": "ProceduralMeshComponent",
 	   		"Enabled": true
 		},
+                {
+                        "Name": "ChaosVehiclesPlugin",
+                        "Enabled": true
+                },
  		{
 			"Name": "rclUE",
 			"Enabled": true

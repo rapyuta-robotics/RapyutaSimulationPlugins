@@ -25,17 +25,37 @@ ARRBaseActor::ARRBaseActor(const FObjectInitializer& ObjectInitializer) : Super(
 
 void ARRBaseActor::SetupDefaultBase()
 {
-    // UE HAS A VERY SPECIAL WAY OF HAVING [AActor] INSTANTIATED, IN WHICH
-    // DEFAULT OBJECT IS ALWAYS CREATED AS THE EDITOR IS LOADED UP.
-    // HENCE, IT'S RECOMMENDED NOT TO PUT PARTICULAR ACTOR'S CONTENT INSTANTIATION OR INITIALIZATION INSIDE CTOR,
-    // ESPECIALLY IF THOSE CONTENTS (eg CHILD MESH COMPONENTS) RELY ON SIM'S GLOBAL RESOURCES, WHICH ARE INITIALIZED LATER DURING
-    // SIM START-UP!
+    // UE has a very special way of having [AActor] instantiated, in which
+    // default object is always created as the editor is loaded up.
+    // Hence, it's recommended not to put particular Actor's content instantiation or initialization inside ctor,
+    // especially if those contents (eg child mesh components) rely on sim's global resources, which are initialized later during
+    // sim start-up!
+    //
     //
     // Please put them in [Initialize()] instead!
     SceneInstanceId = ARRBaseActor::SSceneInstanceId;
     bReplicates = true;
     // Needs to be set to relevant otherwise it won't consistantly replicate
     bAlwaysRelevant = true;
+}
+
+void ARRBaseActor::PreInitializeComponents()
+{
+    Super::PreInitializeComponents();
+
+    // SETUP + CONFIGURE ESSENTIAL GAME & SIM COMMON OBJECTS
+    // NOTE: These are used ONLY for dynamic runtime actors.
+    // In child BP actors, except for GameSingleton, other Game framework entities maybe not available yet
+    GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
+    GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
+
+    if (IsNetMode(NM_Standalone))
+    {
+        PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
+    }
+
+    GameSingleton = URRGameSingleton::Get();
+    check(GameSingleton);
 }
 
 // (NOTE) This method, if being called, could only go with a RRGameMode-inheriting game mode setup!
@@ -60,22 +80,8 @@ bool ARRBaseActor::Initialize()
     // Tick setup
     SetTickEnabled(ActorInfo ? ActorInfo->bIsTickEnabled : false);
 
-    // SETUP + CONFIGURE ESSENTIAL GAME & SIM COMMON OBJECTS
-    GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
-    check(GameMode);
-
-    GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
-    check(GameState);
-
-    GameSingleton = URRGameSingleton::Get();
-    check(GameSingleton);
-
-    if (IsNetMode(NM_Standalone))
-    {
-        PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
-        check(PlayerController);
-    }
-
+    // NOTE: This is meant to be created as GameState creates Scene instances (with custom ~CommonClass), which are only at runtime,
+    // thus could not be inside either [PreInitializeComponents()] or [PostInitializeComponents()]
     ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
     return true;
 }

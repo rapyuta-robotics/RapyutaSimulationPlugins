@@ -1,6 +1,6 @@
 /**
  * @file RRRobotROS2Interface.h
- * @brief Base Robot ROS controller class. Other robot ROS2 class should inherit from this class.
+ * @brief Base Robot ROS2Interface class. Other robot ROS2Interface class should inherit from this class.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -11,6 +11,7 @@
 
 // rclUE
 #include "ROS2Node.h"
+#include "ROS2ServiceClient.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/RRROS2OdomPublisher.h"
 
@@ -19,7 +20,14 @@
 class ARRBaseRobot;
 /**
  * @brief  Base Robot ROS2 interface class.
- * This class owns ROS2Node and provide ROS2 interfaces to control robot such as Twist msg.
+ * This class owns ROS2Node and controls ROS2 interfaces of the #Robot, by
+ * - Providing ROS2 subscribers to control robot joints and movement 
+ * - Providing Odometry publisher.
+ * - Controling #URRROS2BaseSensorComponent in #ARRBaseRobot.
+ *
+ * 
+ * Please create child class of this class to custom ROS2Interface which have your own ROS2Interfaces.
+ * @todo add handling of service and action.
  */
 UCLASS(Blueprintable)
 class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
@@ -38,6 +46,7 @@ public:
     {
         return true;
     }
+
     /**
      * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
      * replicated properties
@@ -46,29 +55,30 @@ public:
      */
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-    //! Target ROS2 node of this interface
+    //! ROS2 node of this interface created by #InitRobotROS2Node
     UPROPERTY(Transient, Replicated)
     AROS2Node* RobotROS2Node = nullptr;
 
+    //! ROS2SpawnParameters which is created when robot is spawn from /SpawnEntity srv provided by #ASimulationState.
     UPROPERTY(VisibleAnywhere, Replicated)
     UROS2Spawnable* ROSSpawnParameters = nullptr;
 
     /**
-     * @brief Initialize robot's ROS2 interface
-     *
+     * @brief Initialize robot's ROS2 interface by calling #InitRobotROS2Node, #InitPublishers, #InitSubscriptions and #ARRBaseRobot::InitSensors.
+     * This method is mainly used by #ARRBaseoRbotROSController via #ARRBaseRobot::InitROS2Interface.
      * @param InRobot
      */
     virtual void Initialize(ARRBaseRobot* InRobot);
 
     /**
-     * @brief DeInitialize robot's ROS2 interface
+     * @brief DeInitialize robot's ROS2 interface by stopping publisher
      *
      * @param InRobot
      */
     virtual void DeInitialize();
 
     /**
-     * @brief Spawn ROS2Node and initialize it. This method is mainly used by #ASimulationState to spawn from ROS2 service.
+     * @brief Spawn ROS2Node and initialize it.
      *
      * @param InPawn
      */
@@ -88,6 +98,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdomTf = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    float OdomPublicationFrequencyHz = 30;
 
     //! Movement command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(BlueprintReadWrite, Replicated)
@@ -130,6 +143,19 @@ public:
      */
     UFUNCTION()
     virtual void InitSubscriptions();
+
+    /**
+     * @brief Initialize services clients
+     * Overidden in child robot ROS2 interface classes for specialized services clients.
+     */
+    UFUNCTION()
+    virtual bool InitServicesClients();
+
+    /**
+     * @brief Stop all service clients
+     */
+    UFUNCTION()
+    virtual void StopServicesClients();
 
     /**
      * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.
@@ -178,6 +204,28 @@ protected:
                               ::Invoke(InMemFunc, robot, msgData);
                           }
                       });
+        }
+    }
+
+    UPROPERTY()
+    TMap<FName /*ServiceName*/, UROS2ServiceClient*> ServiceClientList;
+
+    template<typename TService, typename TServiceRequest>
+    void MakeServiceRequest(const FName& InServiceName, const TServiceRequest& InRequest)
+    {
+        // Create and update request
+        auto* clienPtr = ServiceClientList.Find(InServiceName);
+        if (clienPtr)
+        {
+            UROS2ServiceClient* client = *clienPtr;
+            TService* service = CastChecked<TService>(client->Service);
+            client->SendRequest(service, InRequest);
+
+            UE_LOG(LogTemp, Warning, TEXT("%s [%s] Request made"), *InServiceName.ToString(), *GetName());
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName.ToString());
         }
     }
 };

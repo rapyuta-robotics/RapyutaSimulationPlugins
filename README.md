@@ -17,7 +17,7 @@ https://RapyutaSimulationPlugins.readthedocs.io/en/devel/
 ## Example BP robots
 - [SampleArm](https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/tree/devel/Content/Robots/SampleArm): Simple kinematics-based 4-link arm enabled with ROS controller.
 - [Turtlebot3](https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/tree/devel/Content/Robots/Turtlebot3): Kinematics & Physics-based turtlebot3 Burger & Waffle enabled with ROS controller.
-- [Skeletal Turtlebot3](https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/tree/devel/Content/SkeletalRobots/Turtlebot3): Physics-enabled skeletal mesh component-based turtlebot3 robots of types: 
+- [Skeletal Turtlebot3](https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/tree/devel/Content/SkeletalRobots/Turtlebot3): Physics-enabled skeletal mesh component-based turtlebot3 robots of types:
     - _BallCasterSphereWheeled_ : With ball caster sphere wheel
     - _ConvexWheeled_ : Wheels have convex-hull collision
     - _SphereWheeled_ : Wheels have sphere collision
@@ -26,11 +26,15 @@ https://RapyutaSimulationPlugins.readthedocs.io/en/devel/
     - _WheeledVehicle_ : Utilize SimpleWheeledVehicleMovement
 - [SkeletalTurtlebot3Examples](https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/tree/devel/Content/SkeletalRobots/Turtlebot3/SkeletalTurtlebot3Examples.umap) level: Have all example skeletal robots being put to automatically move forward upon Play.
 
-## Maintainer
+# Install pre-commit
+Please install pre-commit before commiting your changes.
+Follow this instruction https://pre-commit.com/
 
-yu.okamoto@rapyuta-robotics.com
+then run
 
-ducanh.than@rapyuta-robotics.com
+```bash
+pre-commit install
+```
 
 # Documentation
 
@@ -57,3 +61,9 @@ Documentation is built with three tools
 3. Open following in your browser.
    - Sphinx at `file:///<path to cloned repo>/docs/source/_build/html/index.html`
    - Original doxygen output at `file:///<path to cloned repo>/docs/source/_build/html/doxygen_generated/html/index.html`
+
+# Maintainer
+
+yu.okamoto@rapyuta-robotics.com
+
+ducanh.than@rapyuta-robotics.com

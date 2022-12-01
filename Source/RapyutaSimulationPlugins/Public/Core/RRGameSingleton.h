@@ -315,19 +315,19 @@ public:
     }
 
     // SKELETAL ASSETS --
-    FORCEINLINE USkeletalMesh* GetSkeletalMesh(const FString& InSkeletalMeshName)
+    FORCEINLINE USkeletalMesh* GetSkeletalMesh(const FString& InSkeletalMeshName, bool bIsStaticResource = true)
     {
-        return GetSimResource<USkeletalMesh>(ERRResourceDataType::UE_SKELETAL_MESH, InSkeletalMeshName);
+        return GetSimResource<USkeletalMesh>(ERRResourceDataType::UE_SKELETAL_MESH, InSkeletalMeshName, bIsStaticResource);
     }
 
-    FORCEINLINE USkeleton* GetSkeleton(const FString& InSkeletonName)
+    FORCEINLINE USkeleton* GetSkeleton(const FString& InSkeletonName, bool bIsStaticResource = true)
     {
-        return GetSimResource<USkeleton>(ERRResourceDataType::UE_SKELETON, InSkeletonName);
+        return GetSimResource<USkeleton>(ERRResourceDataType::UE_SKELETON, InSkeletonName, bIsStaticResource);
     }
 
-    FORCEINLINE UPhysicsAsset* GetPhysicsAsset(const FString& InPhysicsAssetName)
+    FORCEINLINE UPhysicsAsset* GetPhysicsAsset(const FString& InPhysicsAssetName, bool bIsStaticResource = true)
     {
-        return GetSimResource<UPhysicsAsset>(ERRResourceDataType::UE_PHYSICS_ASSET, InPhysicsAssetName);
+        return GetSimResource<UPhysicsAsset>(ERRResourceDataType::UE_PHYSICS_ASSET, InPhysicsAssetName, bIsStaticResource);
     }
 
     // MATERIALS --
@@ -338,10 +338,15 @@ public:
     // Here we only define specially used materials for some specific purpose!
     static constexpr const TCHAR* MATERIAL_NAME_ASSET_MASTER = TEXT("M_RapyutaAssetMaster");
     static constexpr const TCHAR* MATERIAL_NAME_PROP_MASTER = TEXT("M_RapyutaPropMaster");
+    static constexpr const TCHAR* MATERIAL_NAME_PHYSICS_WHEEL = TEXT("PM_Wheel");
 
     FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName) const
     {
         return GetSimResource<UMaterialInterface>(ERRResourceDataType::UE_MATERIAL, InMaterialName);
+    }
+    FORCEINLINE UPhysicalMaterial* GetPhysicalMaterial(const FString& InPhysicalMaterialName)
+    {
+        return GetSimResource<UPhysicalMaterial>(ERRResourceDataType::UE_MATERIAL, InPhysicalMaterialName);
     }
 
     // TEXTURES --

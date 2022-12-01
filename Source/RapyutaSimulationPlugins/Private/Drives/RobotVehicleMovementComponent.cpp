@@ -5,25 +5,30 @@
 // UE
 #include "Algo/MinElement.h"
 #include "CollisionQueryParams.h"
-#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
+
+// RapyutaSimulationPlugins
+#include "Core/RRConversionUtils.h"
+#include "Robots/RRRobotBaseVehicle.h"
 
 // rclUE
 #include "rclcUtilities.h"
 
-void URobotVehicleMovementComponent::BeginPlay()
+void URobotVehicleMovementComponent::Initialize()
 {
-    Super::BeginPlay();
-
+    OwnerVehicle = CastChecked<ARRRobotBaseVehicle>(GetOwner());
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 
-    InitMovementComponent();
+    InitData();
 }
 
-void URobotVehicleMovementComponent::Initialize()
+void URobotVehicleMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(URobotVehicleMovementComponent, OwnerVehicle);
 }
 
 void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
@@ -65,18 +70,19 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
     if (bAdaptToSurfaceBelow)
     {
         // check for floor configuration beneath the robot : slopes, etc
-        FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
+        AActor* owner = GetOwner();
+        FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, owner);
         traceParams.bReturnPhysicalMaterial = true;
         traceParams.bTraceComplex = true;
         traceParams.bReturnFaceIndex = true;
-        traceParams.AddIgnoredActor(PawnOwner);
+        traceParams.AddIgnoredActor(owner);
 
         // If few contact points defined, cast a single ray beneath the robot to get the floor orientation
         if (ContactPoints.Num() < 3)
         {
             // robot will be oriented as the normal vector in floor plane
-            FVector startPos = PawnOwner->GetActorLocation() + FVector(0., 0., RayOffsetUp);
-            FVector endPos = PawnOwner->GetActorLocation() - FVector(0., 0., RayOffsetDown);
+            FVector startPos = owner->GetActorLocation() + FVector(0., 0., RayOffsetUp);
+            FVector endPos = owner->GetActorLocation() - FVector(0., 0., RayOffsetDown);
             bool bIsFloorHit = GetWorld()->LineTraceSingleByChannel(hit,
                                                                     startPos,
                                                                     endPos,
@@ -85,18 +91,18 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
                                                                     FCollisionResponseParams::DefaultResponseParam);
             if (bIsFloorHit)
             {
-                FVector forwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), hit.ImpactNormal);
-                PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(forwardProjection, hit.ImpactNormal));
+                FVector forwardProjection = FVector::VectorPlaneProject(owner->GetActorForwardVector(), hit.ImpactNormal);
+                owner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(forwardProjection, hit.ImpactNormal));
                 if (MovingPlatform == nullptr)
                 {
                     FVector heightVariation = {0., 0., MinDistanceToFloor - hit.Distance};
-                    PawnOwner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::None);
+                    owner->AddActorWorldOffset(heightVariation, true, &hit, ETeleportType::None);
                 }
             }
             else
             {
                 // very basic robot falling
-                PawnOwner->AddActorWorldOffset(FVector(0., 0., -FallingSpeed * InDeltaTime), true, &hit, ETeleportType::None);
+                owner->AddActorWorldOffset(FVector(0., 0., -FallingSpeed * InDeltaTime), true, &hit, ETeleportType::None);
             }
         }
         else
@@ -153,8 +159,8 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
             if (planeNormal.Z < 0.f)
                 planeNormal = -planeNormal;
 
-            FVector ForwardProjection = FVector::VectorPlaneProject(PawnOwner->GetActorForwardVector(), planeNormal);
-            PawnOwner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, planeNormal));
+            FVector ForwardProjection = FVector::VectorPlaneProject(owner->GetActorForwardVector(), planeNormal);
+            owner->SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(ForwardProjection, planeNormal));
 
             if (MovingPlatform == nullptr)
             {
@@ -164,7 +170,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
                 minDistance = FMath::Min(minDistance, FallingSpeed * InDeltaTime);
 
                 FVector heightVariation = {0., 0., -minDistance};
-                PawnOwner->AddActorWorldOffset(heightVariation, false, &hit, ETeleportType::None);
+                owner->AddActorWorldOffset(heightVariation, false, &hit, ETeleportType::None);
             }
         }
     }
@@ -172,7 +178,7 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 
 void URobotVehicleMovementComponent::SetFrameIds(const FString& InFrameId, const FString& InChildFrameId)
 {
-    OdomData.HeaderFrameId = FrameId = InFrameId;
+    OdomData.Header.FrameId = FrameId = InFrameId;
     OdomData.ChildFrameId = ChildFrameId = InChildFrameId;
 }
 
@@ -180,7 +186,7 @@ void URobotVehicleMovementComponent::SetFrameIds(const FString& InFrameId, const
 void URobotVehicleMovementComponent::InitOdom()
 {
     AActor* owner = GetOwner();
-    OdomData.HeaderFrameId = FrameId;
+    OdomData.Header.FrameId = FrameId;
     OdomData.ChildFrameId = ChildFrameId;
 
     if (OdomSource == EOdomSource::ENCODER)
@@ -194,45 +200,39 @@ void URobotVehicleMovementComponent::InitOdom()
         InitialTransform.SetRotation(FQuat::Identity);
     }
 
-    OdomData.PosePosePosition.X = InitialTransform.GetTranslation().X;
-    OdomData.PosePosePosition.Y = InitialTransform.GetTranslation().Y;
-    OdomData.PosePosePosition.Z = InitialTransform.GetTranslation().Z;
-    OdomData.PosePoseOrientation = InitialTransform.GetRotation();
+    OdomData.Pose.Pose.Position = InitialTransform.GetTranslation();
+    OdomData.Pose.Pose.Orientation = InitialTransform.GetRotation();
 
     PreviousTransform = InitialTransform;
     PreviousNoisyTransform = InitialTransform;
 
     // todo temporary hardcoded
-    OdomData.PoseCovariance.Init(0, 36);
-    OdomData.PoseCovariance[0] = 1e-05f;
-    OdomData.PoseCovariance[7] = 1e-05f;
-    OdomData.PoseCovariance[14] = 1e+12;
-    OdomData.PoseCovariance[21] = 1e+12;
-    OdomData.PoseCovariance[28] = 1e+12;
-    OdomData.PoseCovariance[35] = 1e-03f;
+    OdomData.Pose.Covariance[0] = 1e-05f;
+    OdomData.Pose.Covariance[7] = 1e-05f;
+    OdomData.Pose.Covariance[14] = 1e+12;
+    OdomData.Pose.Covariance[21] = 1e+12;
+    OdomData.Pose.Covariance[28] = 1e+12;
+    OdomData.Pose.Covariance[35] = 1e-03f;
 
-    OdomData.TwistCovariance.Init(0, 36);
-    OdomData.TwistCovariance[0] = 1e-05f;
-    OdomData.TwistCovariance[7] = 1e-05f;
-    OdomData.TwistCovariance[14] = 1e+12;
-    OdomData.TwistCovariance[21] = 1e+12;
-    OdomData.TwistCovariance[28] = 1e+12;
-    OdomData.TwistCovariance[35] = 1e-03f;
+    OdomData.Twist.Covariance[0] = 1e-05f;
+    OdomData.Twist.Covariance[7] = 1e-05f;
+    OdomData.Twist.Covariance[14] = 1e+12;
+    OdomData.Twist.Covariance[21] = 1e+12;
+    OdomData.Twist.Covariance[28] = 1e+12;
+    OdomData.Twist.Covariance[35] = 1e-03f;
 
-    IsOdomInitialized = true;
+    bIsOdomInitialized = true;
 }
 
 void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
 {
-    if (!IsOdomInitialized)
+    if (!bIsOdomInitialized)
     {
         InitOdom();
     }
 
     // time
-    auto stamp = UROS2Utils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
-    OdomData.HeaderStampSec = stamp.sec;
-    OdomData.HeaderStampNanosec = stamp.nanosec;
+    OdomData.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
 
     // previous estimated data (with noise)
     FVector previousEstimatedPos = PreviousNoisyTransform.GetTranslation();
@@ -256,16 +256,14 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
     PreviousNoisyTransform.SetTranslation(pos);
     PreviousNoisyTransform.SetRotation(rot);
 
-    OdomData.PosePosePosition.X = pos.X + RootOffset.GetTranslation().X;
-    OdomData.PosePosePosition.Y = pos.Y + RootOffset.GetTranslation().Y;
-    OdomData.PosePosePosition.Z = pos.Z + RootOffset.GetTranslation().Z;
-    OdomData.PosePoseOrientation = rot;
+    OdomData.Pose.Pose.Position = pos + RootOffset.GetTranslation();
+    OdomData.Pose.Pose.Orientation = rot;
 
-    OdomData.TwistTwistLinear = OdomData.PosePoseOrientation.UnrotateVector(pos - previousEstimatedPos) / InDeltaTime;
-    OdomData.TwistTwistAngular =
+    OdomData.Twist.Twist.Linear = OdomData.Pose.Pose.Orientation.UnrotateVector(pos - previousEstimatedPos) / InDeltaTime;
+    OdomData.Twist.Twist.Angular =
         FMath::DegreesToRadians((rot * previousEstimatedRot.Inverse()).GetNormalized().Euler()) / InDeltaTime;
 
-    OdomData.PosePoseOrientation *= RootOffset.GetRotation();
+    OdomData.Pose.Pose.Orientation *= RootOffset.GetRotation();
 }
 
 void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
@@ -279,46 +277,50 @@ void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
         // Make sure that everything is still valid, and that we are allowed to move.
         if (IsValid(UpdatedComponent))
         {
+            //1- Update vels to OwnerVehicle's target vels
+            Velocity = OwnerVehicle->TargetLinearVel;
+            AngularVelocity = OwnerVehicle->TargetAngularVel;
+
+            //2- Movement control for OwnerVehicle
             UpdateMovement(InDeltaTime);
             UpdateOdom(InDeltaTime);
-        }
 
-        UpdateComponentVelocity();
+            //3- Update OwnerVehicle's velocity to [Velocity], must be after [UpdateMovement()]
+            UpdateComponentVelocity();
+        }
     }
 }
 
 FTransform URobotVehicleMovementComponent::GetOdomTF() const
 {
-    return FTransform(OdomData.PosePoseOrientation,
-                      FVector(OdomData.PosePosePosition.X, OdomData.PosePosePosition.Y, OdomData.PosePosePosition.Z));
+    return FTransform(OdomData.Pose.Pose.Orientation, OdomData.Pose.Pose.Position);
 }
 
-void URobotVehicleMovementComponent::InitMovementComponent()
+void URobotVehicleMovementComponent::InitData()
 {
     InitOdom();
 
+    AActor* owner = GetOwner();
     ContactPoints.Empty();
-    TArray<UActorComponent*> actorContactPoints = PawnOwner->GetComponentsByTag(USceneComponent::StaticClass(), "ContactPoint");
-    for (auto acp : actorContactPoints)
+    TArray<UActorComponent*> actorContactPoints = owner->GetComponentsByTag(USceneComponent::StaticClass(), TEXT("ContactPoint"));
+    for (const auto& acp : actorContactPoints)
     {
-        USceneComponent* scp = Cast<USceneComponent>(acp);
-        ContactPoints.Add(scp);
+        ContactPoints.Add(Cast<USceneComponent>(acp));
     }
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("URobotVehicleMovementComponent::InitMovementComponent - Nb Contact Points : %d"),
-           ContactPoints.Num());
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("URobotVehicleMovementComponent::InitData - Nb Contact Points : %d"), ContactPoints.Num());
+#endif
 
     // Compute the starting distance between the robot root and the floor
     // We consider that the robot is on a horizontal floor at the beginning
-    FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, PawnOwner);
+    FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("Contact_Trace")), true, owner);
     traceParams.bReturnPhysicalMaterial = true;
     traceParams.bTraceComplex = true;
     traceParams.bReturnFaceIndex = true;
-    traceParams.AddIgnoredActor(PawnOwner);
+    traceParams.AddIgnoredActor(owner);
 
-    FVector startPos = PawnOwner->GetActorLocation() + FVector(0.f, 0.f, 10.f);
-    FVector endPos = PawnOwner->GetActorLocation() - FVector(0.f, 0.f, 50.f);
+    FVector startPos = owner->GetActorLocation() + FVector(0.f, 0.f, 10.f);
+    FVector endPos = owner->GetActorLocation() - FVector(0.f, 0.f, 50.f);
     FHitResult hitResult;
     bool bIsFloorHit = GetWorld()->LineTraceSingleByChannel(hitResult,
                                                             startPos,
@@ -330,10 +332,10 @@ void URobotVehicleMovementComponent::InitMovementComponent()
     {
         MinDistanceToFloor = hitResult.Distance;
     }
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("URobotVehicleMovementComponent::InitMovementComponent - Min Distance To Floor = %f"),
-           MinDistanceToFloor);
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG(
+        LogRapyutaCore, Warning, TEXT("URobotVehicleMovementComponent::InitData - Min Distance To Floor = %f"), MinDistanceToFloor);
+#endif
 }
 
 void URobotVehicleMovementComponent::SetMovingPlatform(AActor* InPlatform)

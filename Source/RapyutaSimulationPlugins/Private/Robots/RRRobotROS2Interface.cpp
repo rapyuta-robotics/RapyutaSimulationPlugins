@@ -6,8 +6,8 @@
 #include "Net/UnrealNetwork.h"
 
 // rclUE
-#include "Msgs/ROS2JointStateMsg.h"
-#include "Msgs/ROS2TwistMsg.h"
+#include "Msgs/ROS2JointState.h"
+#include "Msgs/ROS2Twist.h"
 #include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins
@@ -40,6 +40,7 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     InitRobotROS2Node(InRobot);
 
     // Initialize Robot's sensors (lidar, etc.)
+    // NOTE: This inits both static sensors added by BP robot & possiblly also dynamic ones added in the overriding child InitSensors()
     verify(InRobot->InitSensors(RobotROS2Node));
 
     // Refresh TF, Odom publishers
@@ -48,7 +49,10 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     // cmd_vel, joint state, and other ROS topic inputs.
     InitSubscriptions();
 
-    // todo: initialize service and action as well.
+    // Initialize service clients
+    InitServicesClients();
+
+    // todo: action clients
 }
 
 void URRRobotROS2Interface::DeInitialize()
@@ -63,7 +67,8 @@ void URRRobotROS2Interface::DeInitialize()
 
     StopPublishers();
 
-    // todo: deinitialize subscriber, service and action as well.
+    // todo: Stop action clients
+    StopServicesClients();
 }
 
 void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -82,13 +87,15 @@ void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
 {
-    if (nullptr == RobotROS2Node)
+    const FString nodeName = URRGeneralUtils::GetNewROS2NodeName(InRobot->GetName());
+    if (RobotROS2Node == nullptr)
     {
-        RobotROS2Node = GetWorld()->SpawnActor<AROS2Node>();
+        FActorSpawnParameters spawnParams;
+        spawnParams.Name = FName(*nodeName);
+        RobotROS2Node = GetWorld()->SpawnActor<AROS2Node>(spawnParams);
     }
     RobotROS2Node->AttachToActor(InRobot, FAttachmentTransformRules::KeepRelativeTransform);
-    // GUID is to make sure the node name is unique, even for multiple Sims?
-    RobotROS2Node->Name = URRGeneralUtils::GetNewROS2NodeName(Robot->GetName());
+    RobotROS2Node->Name = nodeName;
 
     // Set robot's [ROS2Node] namespace from spawn parameters if existing
     if (ROSSpawnParameters)
@@ -118,6 +125,7 @@ bool URRRobotROS2Interface::InitPublishers()
             OdomPublisher = NewObject<URRROS2OdomPublisher>(this);
             OdomPublisher->SetupUpdateCallback();
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
+            OdomPublisher->PublicationFrequencyHz = OdomPublicationFrequencyHz;
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
 
@@ -149,6 +157,19 @@ void URRRobotROS2Interface::StopPublishers()
     {
         OdomPublisher->RevokeUpdateCallback();
         OdomPublisher->RobotVehicle = nullptr;
+    }
+}
+
+bool URRRobotROS2Interface::InitServicesClients()
+{
+    return IsValid(RobotROS2Node);
+}
+
+void URRRobotROS2Interface::StopServicesClients()
+{
+    for (auto& [srvName, srvClient] : ServiceClientList)
+    {
+        RR_ROS2_STOP_SERVICE_CLIENT(srvClient);
     }
 }
 

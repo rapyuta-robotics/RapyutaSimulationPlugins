@@ -10,12 +10,12 @@
 #include "TimerManager.h"
 
 // rclUE
-#include "Srvs/ROS2AttachSrv.h"
-#include "Srvs/ROS2DeleteEntitySrv.h"
-#include "Srvs/ROS2GetEntityStateSrv.h"
-#include "Srvs/ROS2SetEntityStateSrv.h"
-#include "Srvs/ROS2SpawnEntitiesSrv.h"
-#include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Srvs/ROS2Attach.h"
+#include "Srvs/ROS2DeleteEntity.h"
+#include "Srvs/ROS2GetEntityState.h"
+#include "Srvs/ROS2SetEntityState.h"
+#include "Srvs/ROS2SpawnEntities.h"
+#include "Srvs/ROS2SpawnEntity.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
@@ -123,11 +123,11 @@ void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
 {
     UROS2GetEntityStateSrv* GetEntityStateService = Cast<UROS2GetEntityStateSrv>(InService);
 
-    FROSGetEntityStateRequest request;
+    FROSGetEntityStateReq request;
     GetEntityStateService->GetRequest(request);
 
-    FROSGetEntityStateResponse response;
-    response.StateName = request.Name;
+    FROSGetEntityStateRes response;
+    response.State.Name = request.Name;
     response.bSuccess = CheckEntity(request.Name, false) && CheckEntity(request.ReferenceFrame, true);
 
     if (response.bSuccess)
@@ -138,13 +138,11 @@ void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
             request.ReferenceFrame, ServerSimState->Entities.FindRef(request.ReferenceFrame), worldTransf, relativeTransf);
         relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
-        response.StatePosePosition.X = relativeTransf.GetTranslation().X;
-        response.StatePosePosition.Y = relativeTransf.GetTranslation().Y;
-        response.StatePosePosition.Z = relativeTransf.GetTranslation().Z;
-        response.StatePoseOrientation = relativeTransf.GetRotation();
+        response.State.Pose.Position = relativeTransf.GetTranslation();
+        response.State.Pose.Orientation = relativeTransf.GetRotation();
 
-        response.StateTwistLinear = FVector::ZeroVector;
-        response.StateTwistAngular = FVector::ZeroVector;
+        response.State.Twist.Linear = FVector::ZeroVector;
+        response.State.Twist.Angular = FVector::ZeroVector;
     }
 
     GetEntityStateService->SetResponse(response);
@@ -154,11 +152,11 @@ void URRROS2SimulationStateClient::SetEntityStateSrv(UROS2GenericSrv* InService)
 {
     UROS2SetEntityStateSrv* setEntityStateService = Cast<UROS2SetEntityStateSrv>(InService);
 
-    FROSSetEntityStateRequest request;
+    FROSSetEntityStateReq request;
     setEntityStateService->GetRequest(request);
 
-    FROSSetEntityStateResponse response;
-    response.bSuccess = CheckEntity(request.StateName, false) && CheckEntity(request.StateReferenceFrame, true);
+    FROSSetEntityStateRes response;
+    response.bSuccess = CheckEntity(request.State.Name, false) && CheckEntity(request.State.ReferenceFrame, true);
 
     if (response.bSuccess)
     {
@@ -169,7 +167,7 @@ void URRROS2SimulationStateClient::SetEntityStateSrv(UROS2GenericSrv* InService)
     setEntityStateService->SetResponse(response);
 }
 
-void URRROS2SimulationStateClient::ServerSetEntityState_Implementation(const FROSSetEntityStateRequest& InRequest)
+void URRROS2SimulationStateClient::ServerSetEntityState_Implementation(const FROSSetEntityStateReq& InRequest)
 {
     ServerSimState->ServerSetEntityState(InRequest);
 }
@@ -178,10 +176,10 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
 {
     UROS2AttachSrv* attachService = Cast<UROS2AttachSrv>(InService);
 
-    FROSAttachRequest request;
+    FROSAttachReq request;
     attachService->GetRequest(request);
 
-    FROSAttachResponse response;
+    FROSAttachRes response;
     response.bSuccess = CheckEntity(request.Name1, false) && CheckEntity(request.Name2, false);
     if (response.bSuccess)
     {
@@ -205,7 +203,7 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
     attachService->SetResponse(response);
 }
 
-void URRROS2SimulationStateClient::ServerAttach_Implementation(const FROSAttachRequest& InRequest)
+void URRROS2SimulationStateClient::ServerAttach_Implementation(const FROSAttachReq& InRequest)
 {
     ServerSimState->ServerAttach(InRequest);
 }
@@ -214,15 +212,15 @@ void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
 {
     UROS2SpawnEntitySrv* SpawnEntityService = Cast<UROS2SpawnEntitySrv>(InService);
 
-    FROSSpawnEntityRequest request;
+    FROSSpawnEntityReq request;
     SpawnEntityService->GetRequest(request);
 
-    FROSSpawnEntityResponse response;
-    response.bSuccess = CheckSpawnableEntity(request.Xml, false) && CheckEntity(request.StateReferenceFrame, true);
+    FROSSpawnEntityRes response;
+    response.bSuccess = CheckSpawnableEntity(request.Xml, false) && CheckEntity(request.State.ReferenceFrame, true);
     if (response.bSuccess)
     {
         const FString& entityModelName = request.Xml;
-        const FString& entityName = request.StateName;
+        const FString& entityName = request.State.Name;
         verify(false == entityName.IsEmpty());
         if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
@@ -261,37 +259,31 @@ void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
 void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
 {
     UROS2SpawnEntitiesSrv* spawnEntitiesService = Cast<UROS2SpawnEntitiesSrv>(InService);
-    FROSSpawnEntitiesRequest entityListRequest;
+    FROSSpawnEntitiesReq entityListRequest;
     spawnEntitiesService->GetRequest(entityListRequest);
 
     int32 numEntitySpawned = 0;
     FString statusMessage;
-    for (uint32 i = 0; i < entityListRequest.StateName.Num(); ++i)
+    for (uint32 i = 0; i < entityListRequest.State.Num(); ++i)
     {
         UE_LOG(LogRapyutaCore,
                Warning,
                TEXT("Spawning Entity : %s (name: %s)"),
                *entityListRequest.Type[i],
-               *entityListRequest.StateName[i]);
-        FROSSpawnEntityRequest entityRequest;
+               *entityListRequest.State[i].Name);
+        FROSSpawnEntityReq entityRequest;
         entityRequest.Xml = entityListRequest.Type[i];
         entityRequest.RobotNamespace = EMPTY_STR;
-        entityRequest.StateName = entityListRequest.StateName[i];
-        entityRequest.StatePosePosition.X = entityListRequest.StatePosePosition[i].X;
-        entityRequest.StatePosePosition.Y = entityListRequest.StatePosePosition[i].Y;
-        entityRequest.StatePosePosition.Z = entityListRequest.StatePosePosition[i].Z;
-        entityRequest.StatePoseOrientation = entityListRequest.StatePoseOrientation[i];
-        entityRequest.StateTwistLinear = entityListRequest.StateTwistLinear[i];
-        entityRequest.StateTwistAngular = entityListRequest.StateTwistAngular[i];
-        entityRequest.StateReferenceFrame = entityListRequest.StateReferenceFrame[i];
-        entityRequest.Tags.Add(entityListRequest.Tags[i]);
+        entityRequest.State = entityListRequest.State[i];
+        entityRequest.Tags = entityListRequest.Tags;
 
-        if (CheckSpawnableEntity(entityRequest.Xml, false) && CheckEntity(entityRequest.StateReferenceFrame, true))
+        if (CheckSpawnableEntity(entityRequest.Xml, false) && CheckEntity(entityRequest.State.ReferenceFrame, true))
         {
-            if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityRequest.StateName))
+            if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityRequest.State.Name))
             {
                 // RPC call to the server
                 ServerSpawnEntity(entityRequest);
+                numEntitySpawned++;
             }
             else
             {
@@ -299,23 +291,23 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
                        Error,
                        TEXT("[%s] Failed to spawn entity named %s,  given name actor already exists!"),
                        *GetName(),
-                       *entityRequest.StateName);
+                       *entityRequest.State.Name);
             }
         }
 
-        statusMessage.Append(FString::Printf(TEXT("%s,"), *entityRequest.StateName));
+        statusMessage.Append(FString::Printf(TEXT("%s,"), *entityRequest.State.Name));
     }
 
-    FROSSpawnEntitiesResponse entityListResponse;
-    entityListResponse.bSuccess = (numEntitySpawned == entityListRequest.StateName.Num());
+    FROSSpawnEntitiesRes entityListResponse;
+    entityListResponse.bSuccess = (numEntitySpawned == entityListRequest.State.Num());
     entityListResponse.StatusMessage = entityListResponse.bSuccess
-                                         ? FString::Printf(TEXT("Newly spawned entities: [%s]"), *statusMessage)
-                                         : FString::Printf(TEXT("Failed to be spawned entities: [%s]"), *statusMessage);
+                                           ? FString::Printf(TEXT("Newly spawned entities: [%s]"), *statusMessage)
+                                           : FString::Printf(TEXT("Failed to spawn entities: [%s]"), *statusMessage);
 
     spawnEntitiesService->SetResponse(entityListResponse);
 }
 
-void URRROS2SimulationStateClient::ServerSpawnEntity_Implementation(const FROSSpawnEntityRequest& InRequest)
+void URRROS2SimulationStateClient::ServerSpawnEntity_Implementation(const FROSSpawnEntityReq& InRequest)
 {
     ServerSimState->ServerSpawnEntity(InRequest, NetworkPlayerId);
 }
@@ -328,7 +320,7 @@ void URRROS2SimulationStateClient::SpawnEntityCheck()
 {
     if (IsNetMode(NM_Client))
     {
-        FROSSpawnEntityRequest request;
+        FROSSpawnEntityReq request;
         SpawnEntityService->GetRequest(request);
 
         AActor* matchingEntity;
@@ -339,7 +331,7 @@ void URRROS2SimulationStateClient::SpawnEntityCheck()
                 UROS2Spawnable* rosSpawnParameters = Entity->FindComponentByClass<UROS2Spawnable>();
                 if (rosSpawnParameters)
                 {
-                    if (rosSpawnParameters->GetName() == request.StateName)
+                    if (rosSpawnParameters->GetName() == request.State.Name)
                     {
                         matchingEntity = entity;
                         break;
@@ -350,7 +342,7 @@ void URRROS2SimulationStateClient::SpawnEntityCheck()
         if (matchingEntity)
         {
             SpawnResponse.bSuccess = true;
-            SpawnResponse.StatusMessage = FString::Printf(TEXT("Newly spawned Entity: %s"), *request.StateName);
+            SpawnResponse.StatusMessage = FString::Printf(TEXT("Newly spawned Entity: %s"), *request.State.Name);
             UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *SpawnResponse.StatusMessage);
             SpawnEntityService->SetResponse(SpawnResponse);
             GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
@@ -358,7 +350,7 @@ void URRROS2SimulationStateClient::SpawnEntityCheck()
         else
         {
             SpawnResponse.bSuccess = false;
-            SpawnResponse.StatusMessage = FString::Printf(TEXT("Entity spawning failed for actor [%s]"), *request.StateName);
+            SpawnResponse.StatusMessage = FString::Printf(TEXT("Entity spawning failed for actor [%s]"), *request.State.Name);
             UE_LOG(LogRapyutaCore, Error, TEXT("%s"), *SpawnResponse.StatusMessage);
         }
     }
@@ -375,12 +367,12 @@ void URRROS2SimulationStateClient::DeleteEntitySrv(UROS2GenericSrv* InService)
 {
     UROS2DeleteEntitySrv* deleteEntityService = Cast<UROS2DeleteEntitySrv>(InService);
 
-    FROSDeleteEntityRequest request;
+    FROSDeleteEntityReq request;
     deleteEntityService->GetRequest(request);
 
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] Deleting %s"), *GetName(), *request.Name);
 
-    FROSDeleteEntityResponse response;
+    FROSDeleteEntityRes response;
     response.bSuccess = false;
     if (ServerSimState->Entities.Contains(request.Name))
     {
@@ -400,7 +392,7 @@ void URRROS2SimulationStateClient::DeleteEntitySrv(UROS2GenericSrv* InService)
     deleteEntityService->SetResponse(response);
 }
 
-void URRROS2SimulationStateClient::ServerDeleteEntity_Implementation(const FROSDeleteEntityRequest& InRequest)
+void URRROS2SimulationStateClient::ServerDeleteEntity_Implementation(const FROSDeleteEntityReq& InRequest)
 {
     ServerSimState->ServerDeleteEntity(InRequest);
 }

@@ -13,12 +13,12 @@
 
 // rclUE
 #include "ROS2Node.h"
-#include "Srvs/ROS2AttachSrv.h"
-#include "Srvs/ROS2DeleteEntitySrv.h"
-#include "Srvs/ROS2GetEntityStateSrv.h"
-#include "Srvs/ROS2SetEntityStateSrv.h"
-#include "Srvs/ROS2SpawnEntitiesSrv.h"
-#include "Srvs/ROS2SpawnEntitySrv.h"
+#include "Srvs/ROS2Attach.h"
+#include "Srvs/ROS2DeleteEntity.h"
+#include "Srvs/ROS2GetEntityState.h"
+#include "Srvs/ROS2SetEntityState.h"
+#include "Srvs/ROS2SpawnEntities.h"
+#include "Srvs/ROS2SpawnEntity.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
@@ -30,13 +30,8 @@ class UROS2GenericSrv;
 class ASimulationState;
 
 /**
- * @brief Provide ROS2 interfaces to interact with UE4.
+ * @brief Provide ROS2 interfaces to interact with UE4. This provide only ROS2 interfaces and implementation is in #ASimulationState
  * Supported interactions: GetEntityState, SetEntityState, Attach, SpawnEntity, DeleteEntity
- *
- * URRROS2SimulationStateClient can manipulate only actors in #Entities and #EntitiesWithTag. All actors in the world are added to
- * #Entities and #EntitiesWithTag with #Init method and actors can be added to those list by #AddEntity method individually as well.
- *
- * URRROS2SimulationStateClient can spawn only actors in #SpawnableEntities which actors can be added to by #AddSpawnableEntities.
  *
  */
 UCLASS()
@@ -49,7 +44,7 @@ public:
     UPROPERTY(BlueprintReadOnly, Replicated)
     AROS2Node* ROS2Node = nullptr;
 
-    //! Handle to server's main sim state
+    //! Handle to server's main sim state which has ROS2 interface implementation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     ASimulationState* ServerSimState = nullptr;
 
@@ -99,7 +94,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerSetEntityState(const FROSSetEntityStateRequest& InRequest);
+    void ServerSetEntityState(const FROSSetEntityStateReq& InRequest);
 
     /**
      * @brief Callback function of Attach ROS2 service.
@@ -115,7 +110,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerAttach(const FROSAttachRequest& InRequest);
+    void ServerAttach(const FROSAttachReq& InRequest);
 
     /**
      * @brief Callback function of SpawnEntity ROS2 service.
@@ -123,7 +118,7 @@ public:
      * @sa [ue_mgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
      */
     UFUNCTION(BlueprintCallable)
-    void SpawnEntitySrv(UROS2GenericSrv* InService);
+    virtual void SpawnEntitySrv(UROS2GenericSrv* InService);
 
     /**
      * @brief Callback function of SpawnEntities ROS2 service.
@@ -131,14 +126,14 @@ public:
      * @sa [ue_mgs/SpawnEntities.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntities.srv)
      */
     UFUNCTION(BlueprintCallable)
-    void SpawnEntitiesSrv(UROS2GenericSrv* InService);
+    virtual void SpawnEntitiesSrv(UROS2GenericSrv* InService);
 
     /**
      * @brief RPC call to Server's SpawnEntity
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerSpawnEntity(const FROSSpawnEntityRequest& InRequest);
+    void ServerSpawnEntity(const FROSSpawnEntityReq& InRequest);
 
     /**
      * @brief Callback function of DeleteEntity ROS2 service.
@@ -153,7 +148,7 @@ public:
      * @param InRequest
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void ServerDeleteEntity(const FROSDeleteEntityRequest& InRequest);
+    void ServerDeleteEntity(const FROSDeleteEntityReq& InRequest);
 
     /**
      * @brief RPC call to Server's AddEntity
@@ -189,7 +184,6 @@ protected:
     UPROPERTY(BlueprintReadOnly, Replicated)
     int32 NetworkPlayerId;
 
-private:
     template<typename T>
     bool CheckEntity(TMap<FString, T>& InEntities, const FString& InEntityName, const bool bAllowEmpty = false);
     bool CheckEntity(const FString& InEntityName, const bool bAllowEmpty = false);

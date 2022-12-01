@@ -28,10 +28,11 @@ void URRROS2BaseSensorComponent::CreatePublisher(const FString& InPublisherName)
     if (nullptr == SensorPublisher)
     {
         verify(SensorPublisherClass);
-        FString PublisherName =
-            InPublisherName.IsEmpty() ? FString::Printf(TEXT("%sSensorPublisher"), *GetName()) : InPublisherName;
         // Instantiate publisher
-        SensorPublisher = NewObject<URRROS2BaseSensorPublisher>(this, SensorPublisherClass, *PublisherName);
+        SensorPublisher = NewObject<URRROS2BaseSensorPublisher>(
+            this,
+            SensorPublisherClass,
+            InPublisherName.IsEmpty() ? *FString::Printf(TEXT("%sSensorPublisher"), *GetName()) : *InPublisherName);
         SensorPublisher->DataSourceComponent = this;
     }
 }
@@ -67,4 +68,9 @@ void URRROS2BaseSensorComponent::Run()
 {
     GetWorld()->GetTimerManager().SetTimer(
         TimerHandle, this, &URRROS2BaseSensorComponent::SensorUpdate, 1.f / static_cast<float>(PublicationFrequencyHz), true);
+}
+
+void URRROS2BaseSensorComponent::Stop()
+{
+    GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }

@@ -26,6 +26,8 @@ LAUNCH_ARG_ROBOT_NAME = 'robot_name'
 LAUNCH_ARG_ROBOT_REF_FRAME = 'robot_ref_frame'
 LAUNCH_ARG_ROBOT_POS = 'robot_pos'
 LAUNCH_ARG_ROBOT_ROT = 'robot_rot'
+LAUNCH_ARG_ROBOT_TAGS = 'robot_tags'
+LAUNCH_ARG_ROBOT_JSON = 'robot_json'
 
 SERVICE_NAME_SPAWN_ENTITY = 'SpawnEntity'
 
@@ -38,6 +40,8 @@ def generate_test_description():
     robot_ref_frame = launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ROBOT_REF_FRAME, default='')
     robot_pos = launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ROBOT_POS, default='0.0, 0.0, 0.0')
     robot_rot = launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ROBOT_ROT, default='0.0, 0.0, 0.0')
+    robot_tags = launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ROBOT_TAGS, default='')
+    robot_json = launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ROBOT_JSON, default='')
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
@@ -64,6 +68,14 @@ def generate_test_description():
             LAUNCH_ARG_ROBOT_ROT,
             default_value=robot_rot,
             description="Robot initial rotation (roll, pitch, yaw). Eg:'0.0, 0.0, 0.0'"),
+        launch.actions.DeclareLaunchArgument(
+            LAUNCH_ARG_ROBOT_TAGS,
+            default_value=robot_tags,
+            description="Robot tags separated by ','. Eg:'map_origin'"),
+        launch.actions.DeclareLaunchArgument(
+            LAUNCH_ARG_ROBOT_JSON,
+            default_value=robot_tags,
+            description="Robot json configs"),
         launch_testing.actions.ReadyToTest()
     ])
 class TestRobotSpawn(unittest.TestCase):
@@ -90,11 +102,15 @@ class TestRobotSpawn(unittest.TestCase):
         robot_pose.orientation.z = q[2]
         robot_pose.orientation.w = q[3]
 
+        robot_tags = argstr(LAUNCH_ARG_ROBOT_TAGS).split(',')
+        robot_json = argstr(LAUNCH_ARG_ROBOT_JSON)
         assert spawn_robot(argstr(LAUNCH_ARG_ROBOT_MODEL),
                            robot_name,
                            argstr(LAUNCH_ARG_ROBOT_NAMESPACE),
                            argstr(LAUNCH_ARG_ROBOT_REF_FRAME),
-                           robot_pose)
+                           robot_pose,
+                           in_robot_tags=robot_tags,
+                           in_robot_json=robot_json)
         is_robot_spawned, _ = wait_for_spawned_entity(robot_name, 8.0)
         assert is_robot_spawned, f'{robot_name} failed being spawned!'
         rclpy.shutdown()

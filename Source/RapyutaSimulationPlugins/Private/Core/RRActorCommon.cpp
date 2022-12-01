@@ -143,28 +143,39 @@ URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* I
 {
     if (!SActorCommonList.Contains(InSceneInstanceId))
     {
-        verify(InActorCommonClass);
-        verify(InOuter && InOuter->IsValidLowLevel());
-        URRActorCommon* actorCommon = Cast<URRActorCommon>(URRUObjectUtils::CreateSelfSubobject(
-            InOuter, InActorCommonClass, FString::Printf(TEXT("%d_ActorCommon"), InSceneInstanceId)));
-        verify(actorCommon);
-        actorCommon->SceneInstanceId = InSceneInstanceId;
-        SActorCommonList.Add(InSceneInstanceId, actorCommon);
-
-        // This [OnPostWorldCleanup()] is meant to called once only!
-        // Not sure about whether there is an UE internal check on already bound function, but better not relying on it.
-        if (URRActorCommon::DEFAULT_SCENE_INSTANCE_ID == InSceneInstanceId)
+        // First time fetching should come with valid [InOuter] for the creation
+        if (InOuter)
         {
-            FWorldDelegates::OnPostWorldCleanup.AddStatic(&URRActorCommon::OnPostWorldCleanup);
+            verify(InActorCommonClass);
+            verify(InOuter && InOuter->IsValidLowLevel());
+            URRActorCommon* actorCommon = Cast<URRActorCommon>(URRUObjectUtils::CreateSelfSubobject(
+                InOuter, InActorCommonClass, FString::Printf(TEXT("%d_ActorCommon"), InSceneInstanceId)));
+            verify(actorCommon);
+            actorCommon->SceneInstanceId = InSceneInstanceId;
+            SActorCommonList.Add(InSceneInstanceId, actorCommon);
+
+            // This [OnPostWorldCleanup()] is meant to called once only!
+            // Not sure about whether there is an UE internal check on already bound function, but better not relying on it.
+            if (URRActorCommon::DEFAULT_SCENE_INSTANCE_ID == InSceneInstanceId)
+            {
+                FWorldDelegates::OnPostWorldCleanup.AddStatic(&URRActorCommon::OnPostWorldCleanup);
+            }
+        }
+        else
+        {
+            return nullptr;
         }
     }
 
     return SActorCommonList[InSceneInstanceId];
 }
 
-void URRActorCommon::OnPostWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources)
+void URRActorCommon::OnPostWorldCleanup(UWorld* InWorld, bool /*bInSessionEnded*/, bool /*bInCleanupResources*/)
 {
-    URRActorCommon::SActorCommonList.Reset();
+    if ((URRActorCommon::SActorCommonList.Num() > 0) && URRActorCommon::SActorCommonList[0]->GetWorld() == InWorld)
+    {
+        URRActorCommon::SActorCommonList.Reset();
+    }
 }
 
 URRActorCommon::URRActorCommon()
@@ -226,11 +237,15 @@ void URRActorCommon::SetupEnvironment()
                                                        FString::Printf(TEXT("%d_MainCamera"), SceneInstanceId),
                                                        FTransform(SceneInstanceLocation),
                                                        ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn));
-    verify(MainCamera);
 }
 
 bool URRActorCommon::HasInitialized(bool bIsLogged) const
 {
+    if (false == GetWorld()->IsNetMode(ENetMode::NM_Standalone))
+    {
+        return true;
+    }
+
     if (!MainCamera)
     {
         if (bIsLogged)

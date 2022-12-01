@@ -20,7 +20,7 @@
 
 /**
  * @brief Procedural mesh components. this class is used to spawn robot and object from ROS2 service.
- * 
+ *
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRProceduralMeshComponent : public UProceduralMeshComponent
@@ -28,14 +28,13 @@ class RAPYUTASIMULATIONPLUGINS_API URRProceduralMeshComponent : public UProcedur
     GENERATED_BODY()
 
 public:
-
     /**
      * @brief Construct a new URRProceduralMeshComponent object
      * This Initializer-based ctor is used due to [UProceduralMeshComponent] still having it.
      * The collision cooking is critical for sweeping movement to work after spawning Proc mesh actor.
      * Due to [FinishPhysicsAsyncCook] being not virtual and private, it is unable to catch [FOnAsyncPhysicsCookFinished] event
      * Thus we could only rely on [UBodySetup::bCreatedPhysicsMeshes]
-     * @param ObjectInitializer 
+     * @param ObjectInitializer
      */
     URRProceduralMeshComponent(const FObjectInitializer& ObjectInitializer);
 
@@ -55,12 +54,12 @@ public:
     /**
      * @brief Initialize mesh. initialization is different based on mesh type.
      * Uses #URRThreadUtils::DoAsyncTaskInThread and #URRThreadUtils::DoTaskInGameThread to load Mesh
-     * @param InMeshFileName 
-     * @return true 
-     * @return false 
+     * @param InMeshFileName
+     * @return true
+     * @return false
      */
     bool InitializeMesh(const FString& InMeshFileName);
-    
+
     FOnMeshCreationDone OnMeshCreationDone;
 
     UPROPERTY()
@@ -106,28 +105,21 @@ protected:
     }
 
 private:
-    // This is used as a buffer storing loaded mesh data in worker thread,
-    // thus needs to belong to each individual mesh comp of its own
-    // As such, this just exists transiently and should not be queried. Use FRRMeshData::MeshDataStore instead
-    UPROPERTY()
-    FRRMeshData MeshDataBuffer;
-
     UPROPERTY()
     FTimerHandle CollisionCookingTimerHandle;
     UPROPERTY()
     FTimerHandle BodySetupTimerHandle;
 
     /**
-     * @brief Create a Mesh Body object
+     * @brief Create Mesh Body Setup from #FRRMeshData
      * This function is hooked up from an async task running in GameThread
-     * @return true 
+     * @param InMeshData
+     * @return true
      * @return false
-     *
-     * @todo explain impl detail.
      */
-    bool CreateMeshBody();
+    bool CreateMeshBody(const FRRMeshData& InMeshData);
 
     void CreateMeshSection(const TArray<FRRMeshNodeData>& InMeshSectionData);
-    
+
     void FinalizeMeshBodyCreation(UBodySetup* InBodySetup, const FString& InBodySetupModelName);
 };

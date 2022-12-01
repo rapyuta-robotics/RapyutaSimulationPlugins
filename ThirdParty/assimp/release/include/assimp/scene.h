@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2022, assimp team
 
 All rights reserved.
 
@@ -79,8 +79,7 @@ extern "C" {
  * the imported scene does consist of only a single root node without children.
  */
 // -------------------------------------------------------------------------------
-struct ASSIMP_API aiNode
-{
+struct ASSIMP_API aiNode {
     /** The name of the node.
      *
      * The name might be empty (length of zero) but all nodes which
@@ -343,6 +342,16 @@ struct aiScene
      */
     C_STRUCT aiString mName;
 
+    /**
+     *
+     */
+    unsigned int mNumSkeletons;
+
+    /**
+     *
+     */
+    C_STRUCT aiSkeleton **mSkeletons;
+
 #ifdef __cplusplus
 
     //! Default constructor - set everything to 0/nullptr
@@ -381,6 +390,10 @@ struct aiScene
     //! Check whether the scene contains animations
     inline bool HasAnimations() const {
         return mAnimations != nullptr && mNumAnimations > 0;
+    }
+
+    bool hasSkeletons() const {
+        return mSkeletons != nullptr && mNumSkeletons > 0;
     }
 
     //! Returns a short filename from a full path

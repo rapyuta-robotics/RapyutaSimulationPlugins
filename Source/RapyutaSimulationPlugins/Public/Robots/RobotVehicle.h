@@ -59,4 +59,10 @@ public:
      * @param OutLifetimeProps Output lifetime properties
      */
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+
+protected:
+    /**
+     * @brief Pre-Initialize components
+     */
+    void PreInitializeComponents() override;
 };

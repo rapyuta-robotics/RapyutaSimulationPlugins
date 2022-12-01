@@ -26,7 +26,7 @@ else:
         for line in f:
             if line.lstrip().startswith('GENERATED_BODY()'): #skip GENERATED_BODY()
                 continue
-            line = line.replace('UMETA', ', //! UMETA') #convevrt UMETA to comment
+            line = line.replace('UMETA', ', ///< UMETA') #convevrt UMETA to comment
             for key in UE_MACROS:
                 if line.lstrip().startswith(key):
                     line = '''

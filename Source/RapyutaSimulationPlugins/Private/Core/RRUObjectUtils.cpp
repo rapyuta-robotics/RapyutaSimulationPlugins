@@ -46,12 +46,12 @@ void URRUObjectUtils::SetupComponentTick(UActorComponent* InComponent, bool bIsT
     InComponent->bTickInEditor = bIsTickEnabled;
 }
 
-void URRUObjectUtils::SetupDefaultRootComponent(AActor* InActor)
+USceneComponent* URRUObjectUtils::SetupDefaultRootComponent(AActor* InActor)
 {
     if (InActor->GetRootComponent())
     {
         UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] RootComponent has already been set up!"), *InActor->GetName());
-        return;
+        return InActor->GetRootComponent();
     }
 
     USceneComponent* defaultRoot = CreateSelfSubobject<USceneComponent>(InActor, TEXT("DefaultRoot"));
@@ -59,11 +59,12 @@ void URRUObjectUtils::SetupDefaultRootComponent(AActor* InActor)
     if (!(defaultRoot && InActor->SetRootComponent(defaultRoot)))
     {
         UE_LOG(LogRapyutaCore, Error, TEXT("[%s] Failed setting up root component!"), *InActor->GetName());
-        return;
+        return nullptr;
     }
 #if WITH_EDITOR
     defaultRoot->bVisualizeComponent = false;
 #endif
+    return defaultRoot;
 }
 
 void URRUObjectUtils::RegisterActorComponent(UActorComponent* InComp)
@@ -127,24 +128,39 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
     ARRBaseActor::SSceneInstanceId = InSceneInstanceId;
 
     FActorSpawnParameters spawnInfo;
-    // (dnote) To be checked again, not know why this naming does not work??
-    spawnInfo.Name = InActorName.IsEmpty() ? FName(*FString::Printf(TEXT("%d_%s"), InSceneInstanceId, *InActorClass->GetName()))
-                                           : FName(*InActorName);
+    if (InWorld->IsNetMode(NM_Standalone))
+    {
+        spawnInfo.Name = InActorName.IsEmpty() ? FName(*FString::Printf(TEXT("%d_%s"), InSceneInstanceId, *InActorClass->GetName()))
+                                               : FName(*InActorName);
+    }
+    // else let client auto assign a unique name
     spawnInfo.SpawnCollisionHandlingOverride = InCollisionHandlingType;
     ARRBaseActor* newActor = InWorld->SpawnActor<ARRBaseActor>(InActorClass, InActorTransform, spawnInfo);
-    verify(newActor);
-    // This is set in ctor
-    verify(newActor->SceneInstanceId == InSceneInstanceId);
-    newActor->SetEntityModelName(InEntityModelName);
+    if (newActor)
+    {
+        // This is set in ctor
+        verify(newActor->SceneInstanceId == InSceneInstanceId);
+        newActor->SetEntityModelName(InEntityModelName);
 
 #if WITH_EDITOR
-    // [newObjectActor] ActorUniqueName is set inside the CTOR
-    // In Editor, Use the id itself for actor's label as well, just for sake of verification.
-    newActor->SetActorLabel(spawnInfo.Name.ToString());
+        // [newObjectActor] ActorUniqueName is set inside the CTOR
+        // In Editor, Use the id itself for actor's label as well, just for sake of verification.
+        newActor->SetActorLabel(spawnInfo.Name.ToString());
 #endif
 
-    // Initializing itself
-    verify(newActor->Initialize());
+        // Initializing itself
+        verify(newActor->Initialize());
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore,
+               Error,
+               TEXT("SceneInstance[%d] Failed spawning actor [%s] of model [%d] as class[%s]"),
+               InSceneInstanceId,
+               *InActorName,
+               *InEntityModelName,
+               *InActorClass->GetName());
+    }
 
     return newActor;
 }
@@ -255,9 +271,9 @@ UMaterialInstanceDynamic* URRUObjectUtils::GetActorBaseMaterial(AActor* InActor,
     {
         baseMaterial = Cast<UMaterialInstanceDynamic>(meshActor->GetBaseMeshMaterial(InMaterialIndex));
     }
-    else if (auto* staticMeshActor = Cast<AStaticMeshActor>(InActor))
+    else if (auto* rootPrimitiveComp = Cast<UPrimitiveComponent>(InActor->GetRootComponent()))
     {
-        baseMaterial = Cast<UMaterialInstanceDynamic>(staticMeshActor->GetStaticMeshComponent()->GetMaterial(InMaterialIndex));
+        baseMaterial = Cast<UMaterialInstanceDynamic>(rootPrimitiveComp->GetMaterial(InMaterialIndex));
     }
     return baseMaterial;
 }
@@ -267,44 +283,49 @@ bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor, const FRRMate
     UMaterialInstanceDynamic* baseMaterial = GetActorBaseMaterial(InActor);
     if (baseMaterial)
     {
-        URRGameSingleton* gameSingleton = URRGameSingleton::Get();
-        // Albedo texture
-        if (InMaterialInfo.AlbedoTextureNameList.Num() > 0)
-        {
-            baseMaterial->SetTextureParameterValue(
-                FRRMaterialProperty::PROP_NAME_ALBEDO,
-                gameSingleton->GetTexture(URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoTextureNameList)));
-        }
-
-        // Albedo color
-        baseMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO,
-                                              (InMaterialInfo.AlbedoColorList.Num() > 0)
-                                                  ? URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoColorList)
-                                                  : URRMathUtils::GetRandomColor());
-
-        // ORM Texture
-        if (false == InMaterialInfo.ORMTextureName.IsEmpty())
-        {
-            baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_ORM,
-                                                   gameSingleton->GetTexture(InMaterialInfo.ORMTextureName));
-        }
-
-        // Normal Texture
-        if (false == InMaterialInfo.NormalTextureName.IsEmpty())
-        {
-            baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_NORMAL,
-                                                   gameSingleton->GetTexture(InMaterialInfo.NormalTextureName));
-        }
-
-        // Mask Texture
-        if (false == InMaterialInfo.MaskTextureName.IsEmpty())
-        {
-            baseMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
-                                                   gameSingleton->GetTexture(InMaterialInfo.MaskTextureName));
-        }
+        ApplyMaterialProps(baseMaterial, InMaterialInfo);
         return true;
     }
     return false;
+}
+
+void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial, const FRRMaterialProperty& InMaterialInfo)
+{
+    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
+    // Albedo texture
+    if (InMaterialInfo.AlbedoTextureNameList.Num() > 0)
+    {
+        InMaterial->SetTextureParameterValue(
+            FRRMaterialProperty::PROP_NAME_ALBEDO,
+            gameSingleton->GetTexture(URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoTextureNameList)));
+    }
+
+    // Albedo color
+    InMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO,
+                                        (InMaterialInfo.AlbedoColorList.Num() > 0)
+                                            ? URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoColorList)
+                                            : URRMathUtils::GetRandomColor());
+
+    // ORM Texture
+    if (false == InMaterialInfo.ORMTextureName.IsEmpty())
+    {
+        InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_ORM,
+                                             gameSingleton->GetTexture(InMaterialInfo.ORMTextureName));
+    }
+
+    // Normal Texture
+    if (false == InMaterialInfo.NormalTextureName.IsEmpty())
+    {
+        InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_NORMAL,
+                                             gameSingleton->GetTexture(InMaterialInfo.NormalTextureName));
+    }
+
+    // Mask Texture
+    if (false == InMaterialInfo.MaskTextureName.IsEmpty())
+    {
+        InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
+                                             gameSingleton->GetTexture(InMaterialInfo.MaskTextureName));
+    }
 }
 
 void URRUObjectUtils::RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData)

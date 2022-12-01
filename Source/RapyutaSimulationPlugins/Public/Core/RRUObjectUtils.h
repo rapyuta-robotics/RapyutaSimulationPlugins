@@ -59,9 +59,9 @@ public:
         }
         else
         {
-            return InOuter
-                     ? NewObject<UObject>(InOuter, InObjectClass, FName(*InObjectUniqueName))
-                     : NewObject<UObject>(static_cast<UObject*>(GetTransientPackage()), InObjectClass, FName(*InObjectUniqueName));
+            return InOuter ? NewObject<UObject>(InOuter, InObjectClass, FName(*InObjectUniqueName))
+                           : NewObject<UObject>(
+                                 static_cast<UObject*>(GetTransientPackage()), InObjectClass, FName(*InObjectUniqueName));
         }
     }
 
@@ -109,7 +109,7 @@ public:
     static void SetupComponentTick(UActorComponent* InComponent, bool bIsTickEnabled);
 
     UFUNCTION()
-    static void SetupDefaultRootComponent(AActor* InActor);
+    static USceneComponent* SetupDefaultRootComponent(AActor* InActor);
 
     template<typename T, typename = TEnableIf<TIsDerivedFrom<T, UPrimitiveComponent>::Value>>
     static void ConfigureComponentPhysics(T* InComponent,
@@ -126,7 +126,6 @@ public:
         {
             primComp->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
             primComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-            primComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
             primComp->SetNotifyRigidBodyCollision(true);
         }
         else if (bIsOverlapEventEnabled)
@@ -147,6 +146,13 @@ public:
 
         // Physics (last)
         primComp->SetSimulatePhysics(bIsPhysicsEnabled);
+    }
+
+    static void DisableNavImpactAndPhysicsCollision(UPrimitiveComponent* InComponent)
+    {
+        InComponent->SetCanEverAffectNavigation(false);
+        InComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        InComponent->SetSimulatePhysics(false);
     }
 
     /**
@@ -593,5 +599,6 @@ public:
                                                                     const FString& InMaterialInterfaceName);
     static UMaterialInstanceDynamic* GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex = 0);
     static bool ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo);
+    static void ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial, const FRRMaterialProperty& InMaterialInfo);
     static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);
 };

@@ -1,8 +1,13 @@
 # Changelog for RapyutaSimulationPlugins repository
 
-## 0.0.16 ##
-* Udpate source following ROS Msgs updates generated from the latest UE_tools #88
+## 0.0.18 ##
+* `UROS2Spawnable` add ActorJsonConfigs
 
+## 0.0.17 ##
+* `URRActorCommon::OnPostWorldCleanup()` only reset actor common list upon matching world
+## 0.0.16 ##
+* Add multi-robot supports for one network client (#83)
+* Udpate source following ROS Msgs updates generated from the latest UE_tools #88
 ## 0.0.15 ##
 * ASimulationState::ServerAttach() entity2 ignores entity1 during attachment
 

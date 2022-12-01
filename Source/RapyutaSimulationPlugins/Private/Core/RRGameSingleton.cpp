@@ -85,9 +85,11 @@ bool URRGameSingleton::InitializeResources()
 
     // [PHYSICS ASSET] --
     GetSimResourceInfo(ERRResourceDataType::UE_PHYSICS_ASSET).HasBeenAllLoaded = true;
+
     // [MATERIAL] --
     dataType = ERRResourceDataType::UE_MATERIAL;
     CollateAssetsInfo<UMaterialInterface>(dataType, FOLDER_PATH_ASSET_MATERIALS);
+    CollateAssetsInfo<UPhysicalMaterial>(dataType, FOLDER_PATH_ASSET_MATERIALS);
 
     // Request Material resource async loading
     GetSimResourceInfo(dataType).HasBeenAllLoaded = false;

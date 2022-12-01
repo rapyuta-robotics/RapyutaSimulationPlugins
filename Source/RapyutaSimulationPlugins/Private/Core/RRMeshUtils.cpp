@@ -19,6 +19,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGameSingleton.h"
+#include "Core/RRThreadUtils.h"
 #include "RapyutaSimulationPlugins.h"
 
 void URRMeshUtils::ProcessMeshNode(aiNode* InNode,
@@ -36,18 +37,22 @@ void URRMeshUtils::ProcessMeshNode(aiNode* InNode,
                                                     FPlane(nodeTransf.a3, nodeTransf.b3, nodeTransf.c3, nodeTransf.d3),
                                                     FPlane(nodeTransf.a4, nodeTransf.b4, nodeTransf.c4, nodeTransf.d4)));
 
+#if RAPYUTA_MESH_UTILS_DEBUG
     UE_LOG(LogRapyutaCore,
            Display,
            TEXT("Node(%s): mNumMeshes: %d, mNumChildren: %d"),
            *FString(InNode->mName.C_Str()),
            InNode->mNumMeshes,
            InNode->mNumChildren);
+#endif
     if ((InNode->mNumMeshes > 0) && InNode->mMeshes)
     {
         for (auto i = 0; i < InNode->mNumMeshes; ++i)
         {
             auto meshIndex = InNode->mMeshes[i];
+#if RAPYUTA_MESH_UTILS_DEBUG
             UE_LOG(LogRapyutaCore, Log, TEXT("Loading Mesh at index: %d"), meshIndex);
+#endif
             aiMesh* mesh = InScene->mMeshes[meshIndex];
             if (mesh)
             {
@@ -79,12 +84,14 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
     const bool bHasNormals = InMesh->HasNormals();
     const bool bHasFaces = InMesh->HasFaces();
 
+#if RAPYUTA_MESH_UTILS_DEBUG
     UE_LOG(LogRapyutaCore,
            Warning,
            TEXT("ProcessMesh - Vertices num: %u Faces num: %u %d"),
            InMesh->mNumVertices,
            InMesh->mNumFaces,
            bHasFaces);
+#endif
     // Fetch mesh data, also Converting handedness from Assimp(right) ->UE (left)
     for (auto i = 0; i < InMesh->mNumVertices; ++i)
     {
@@ -104,9 +111,10 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
         // [UVs] --
         // UVs have already been flipped with [aiProcess_FlipUVs] flag
         const aiVector3D* textureCoords = InMesh->mTextureCoords[0];
-        outMeshNodeData.UVs.Emplace(textureCoords
-                                        ? FVector2D(static_cast<float>(textureCoords[i].x), static_cast<float>(textureCoords[i].y))
-                                        : FVector2D::ZeroVector);
+        outMeshNodeData.UVs.Emplace(
+            textureCoords ? FVector2D(static_cast<double>(textureCoords[i].x), static_cast<double>(textureCoords[i].y))
+                          : FVector2D::ZeroVector);
+        outMeshNodeData.UV2fs.Emplace(FVector2f(outMeshNodeData.UVs.Last()));
 
         // [Tangents] --
         outMeshNodeData.ProcTangents.Emplace(
@@ -120,7 +128,9 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
         const auto& bone = InMesh->mBones[bi];
         if (bone)
         {
+#if RAPYUTA_MESH_UTILS_DEBUG
             UE_LOG(LogRapyutaCore, Warning, TEXT("Bone %s mNumWeights: %u"), *FString(bone->mName.data), bone->mNumWeights);
+#endif
             for (auto wi = 0; wi < bone->mNumWeights; ++wi)
             {
                 const auto& boneWeight = bone->mWeights[wi];
@@ -136,7 +146,9 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
     // [Triangles/Faces' indices]
     if (bHasFaces)
     {
+#if RAPYUTA_MESH_UTILS_DEBUG
         UE_LOG(LogRapyutaCore, Warning, TEXT("mNumFaces: %u at %u"), InMesh->mNumFaces, InMesh->mFaces);
+#endif
         for (auto f = 0; f < InMesh->mNumFaces; ++f)
         {
             const aiFace& face = InMesh->mFaces[f];
@@ -183,7 +195,8 @@ bool URRMeshUtils::ProcessTexture(aiMaterial* InMaterial,
             fullTexturePath, FString::Printf(TEXT("%d%s"), ++sTextureNameCount, InTextureTypeName));
         if (ueTexture != nullptr)
         {
-            OutUEMaterial->SetTextureParameterValue(InTextureTypeName, ueTexture);
+            URRThreadUtils::DoTaskInGameThread([OutUEMaterial, InTextureTypeName, ueTexture]()
+                                               { OutUEMaterial->SetTextureParameterValue(InTextureTypeName, ueTexture); });
             return true;
         }
         else
@@ -227,33 +240,38 @@ void URRMeshUtils::ProcessMaterial(aiMaterial* InMaterial, const FString& InMesh
     ProcessTexture(InMaterial, aiTextureType_DIFFUSE_ROUGHNESS, MATERIAL_PARAM_NAME_ROUGHNESS, fullMeshPath, ueMaterial);
 #endif
 
-    aiColor4D color;
     auto fToLinearColor = [](const aiColor4D& InColor)
     {
         // https://stackoverflow.com/questions/12524623/what-are-the-practical-differences-when-working-with-colors-in-a-linear-vs-a-no
         // [aiColor4D] is already in [0, 1]
         return FLinearColor(InColor.r, InColor.g, InColor.b, InColor.a);
     };
-
+    aiColor4D color;
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_BASE_COLOR, fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread([ueMaterial, linearColor = fToLinearColor(color)]()
+                                           { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_BASE_COLOR, linearColor); });
     }
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_SPECULAR, fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread([ueMaterial, linearColor = fToLinearColor(color)]()
+                                           { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_SPECULAR, linearColor); });
     }
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_EMISSIVE, fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread([ueMaterial, linearColor = fToLinearColor(color)]()
+                                           { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_EMISSIVE, linearColor); });
     }
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_REFLECTIVE, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_ROUGHNESS, FLinearColor::White - fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread(
+            [ueMaterial, linearColor = fToLinearColor(color)]()
+            { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_ROUGHNESS, FLinearColor::White - linearColor); });
     }
     if (AI_SUCCESS == InMaterial->Get(AI_MATKEY_COLOR_AMBIENT, color))
     {
-        ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_AMBIENT, fToLinearColor(color));
+        URRThreadUtils::DoTaskInGameThread([ueMaterial, linearColor = fToLinearColor(color)]()
+                                           { ueMaterial->SetVectorParameterValue(MATERIAL_PARAM_NAME_AMBIENT, linearColor); });
     }
 
     // Add into [MaterialInstances]
@@ -288,11 +306,11 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
             InMeshImporter.SetPropertyBool(AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION, true);
         }
 
-#if 0    // This is only required if the meshes are exported by Blender
-         // Rotate the mesh around X by -90
-         // InMeshImporter.SetPropertyBool(AI_CONFIG_PP_PTV_ADD_ROOT_TRANSFORMATION, true);
-         // const aiMatrix4x4 initialMeshTransform(aiVector3D(0.f, 0.f, 0.f), aiQuaternion(0.f, 0.f, -90.f), aiVector3D(0.f, 0.f,
-         // 0.f));
+#if 0    // This is only required if the meshes are exported by Blender                                                           \
+         // Rotate the mesh around X by -90                                                                                       \
+         // InMeshImporter.SetPropertyBool(AI_CONFIG_PP_PTV_ADD_ROOT_TRANSFORMATION, true);                                       \
+         // const aiMatrix4x4 initialMeshTransform(aiVector3D(0.f, 0.f, 0.f), aiQuaternion(0.f, 0.f, -90.f), aiVector3D(0.f, 0.f, \
+         // 0.f));                                                                                                                \
          // InMeshImporter.SetPropertyMatrix(AI_CONFIG_PP_PTV_ROOT_TRANSFORMATION, initialMeshTransform);
 #endif
 
@@ -353,19 +371,22 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
 
     float unitScaleFactor = 1.f;
     scene->mMetaData->Get("UnitScaleFactor", unitScaleFactor);
+#if RAPYUTA_MESH_UTILS_DEBUG
     UE_LOG(
         LogRapyutaCore, Warning, TEXT("URRMeshUtils::LoadMeshFromFile UnitScaleFactor: %f %s"), unitScaleFactor, *InMeshFilePath);
-
     UE_LOG(LogRapyutaCore, Warning, TEXT("MESHES NUM: Scene(%u) RootNode(%u)"), scene->mNumMeshes, scene->mRootNode->mNumMeshes);
+#endif
 
     // [Meshes] --
     int nodeIndex = 0;
     int* nodeIndexPtr = &nodeIndex;
     ProcessMeshNode(scene->mRootNode, scene, -1, nodeIndexPtr, outMeshData);
 
+#if RAPYUTA_MESH_UTILS_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("MATERIALS NUM: %d"), scene->mNumMaterials);
+#endif
     // Create Material instance dynamic in [outMeshData]
     // [Materials/Textures] --
-    UE_LOG(LogRapyutaCore, Warning, TEXT("MATERIALS NUM: %d"), scene->mNumMaterials);
     if (scene->HasMaterials())
     {
         for (auto i = 0; i < scene->mNumMaterials; ++i)
@@ -374,6 +395,9 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
         }
     }
 
+#if RAPYUTA_MESH_UTILS_DEBUG
+    UE_LOG(LogRapyutaCore, Warning, TEXT("NODES NUM: %d"), outMeshData.Nodes.Num());
+#endif
     outMeshData.bIsValid = (outMeshData.Nodes.Num() > 0);
     return outMeshData;
 }

@@ -26,7 +26,7 @@ URRProceduralMeshComponent::URRProceduralMeshComponent(const FObjectInitializer&
     // Due to [FinishPhysicsAsyncCook] being not virtual and private, it is unable to catch [FOnAsyncPhysicsCookFinished] event
     // Thus we could only rely on [UBodySetup::bCreatedPhysicsMeshes]
     bUseAsyncCooking = true;
-    bUseComplexAsSimpleCollision = false;
+    bUseComplexAsSimpleCollision = true;
     bCanEverAffectNavigation = true;
 
     OnMeshCreationDone.BindUObject(Cast<ARRMeshActor>(GetOwner()), &ARRMeshActor::OnBodyComponentMeshCreationDone);
@@ -45,50 +45,54 @@ void URRProceduralMeshComponent::Initialize(bool bIsStaticBody, bool bInIsPhysic
 
 bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
 {
-    MeshUniqueName = FPaths::GetBaseFilename(InMeshFileName);
+    MeshUniqueName = URRUObjectUtils::ComposeDynamicResourceName(TEXT("PM"), *FPaths::GetBaseFilename(InMeshFileName));
     ShapeType = URRGameSingleton::GetShapeTypeFromMeshName(InMeshFileName);
 
     switch (ShapeType)
     {
         case ERRShapeType::MESH:
         {
-            const bool bIsMeshAlreadyLoaded = FRRMeshData::IsMeshDataAvailable(MeshUniqueName);
+            TSharedPtr<FRRMeshData> meshData = FRRMeshData::GetMeshData(MeshUniqueName);
 #if RAPYUTA_SIM_DEBUG
             UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("URRProceduralMeshComponent::InitializeMesh: %s - %s - Already loaded %d"),
                    *GetName(),
                    *InMeshFileName,
-                   bIsMeshAlreadyLoaded);
+                   meshData.IsValid());
 #endif
-            if (bIsMeshAlreadyLoaded)
+            if (meshData.IsValid())
             {
-                CreateMeshBody();
+                CreateMeshBody(*meshData);
             }
             else
             {
-                URRThreadUtils::DoAsyncTaskInThread<void>(
+                Async(
+#if WITH_EDITOR
+                    EAsyncExecution::LargeThreadPool,
+#else
+                    EAsyncExecution::ThreadPool,
+#endif
                     [this, InMeshFileName]()
                     {
-                        if (!MeshDataBuffer.MeshImporter)
+                        FRRMeshData runtimeMeshData;
+                        TSharedPtr<Assimp::Importer> meshImporter = MakeShared<Assimp::Importer>();
+                        runtimeMeshData = URRMeshUtils::LoadMeshFromFile(InMeshFileName, *meshImporter);
+                        runtimeMeshData.MeshImporter = meshImporter;
+                        runtimeMeshData.MeshUniqueName = MeshUniqueName;
+                        if (runtimeMeshData.IsValid())
                         {
-                            MeshDataBuffer.MeshImporter = MakeShared<Assimp::Importer>();
+                            AsyncTask(ENamedThreads::GameThread,
+                                      [this, loadedMeshData = MoveTemp(runtimeMeshData)]() mutable
+                                      {
+                                          verify(loadedMeshData.IsValid());
+                                          // Create mesh body, signalling [OnMeshCreationDone()]
+                                          verify(CreateMeshBody(loadedMeshData));
+                                          // Save [loadedMeshData] to [FRRMeshData::MeshDataStore]
+                                          FRRMeshData::AddMeshData(MeshUniqueName,
+                                                                   MakeShared<FRRMeshData>(MoveTemp(loadedMeshData)));
+                                      });
                         }
-                        MeshDataBuffer = URRMeshUtils::LoadMeshFromFile(InMeshFileName, *MeshDataBuffer.MeshImporter);
-                    },
-                    [this]()
-                    {
-                        URRThreadUtils::DoTaskInGameThread(
-                            [this]()
-                            {
-                                // Save [MeshDataBuffer] to [FRRMeshData::MeshDataStore]
-                                verify(MeshDataBuffer.IsValid());
-                                FRRMeshData::AddMeshData(MeshUniqueName, MakeShared<FRRMeshData>(MoveTemp(MeshDataBuffer)));
-
-                                // Then create mesh body, signalling [OnMeshCreationDone()],
-                                // which might reference [FRRMeshData::MeshDataStore]
-                                CreateMeshBody();
-                            });
                     });
             }
         }
@@ -109,13 +113,10 @@ bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
     return true;
 }
 
-bool URRProceduralMeshComponent::CreateMeshBody()
+bool URRProceduralMeshComponent::CreateMeshBody(const FRRMeshData& InBodyMeshData)
 {
     // (NOTE) This function is hooked up from an async task running in GameThread
-    const TSharedPtr<FRRMeshData> loadedMeshData = FRRMeshData::GetMeshData(MeshUniqueName);
-    const FRRMeshData& bodyMeshData = loadedMeshData.IsValid() ? *loadedMeshData : MeshDataBuffer;
-
-    if (false == bodyMeshData.IsValid())
+    if (false == InBodyMeshData.IsValid())
     {
         UE_LOG(LogRapyutaCore,
                Error,
@@ -126,14 +127,14 @@ bool URRProceduralMeshComponent::CreateMeshBody()
     }
 
     // VISUAL MESH DATA --
-    for (const auto& node : bodyMeshData.Nodes)
+    for (const auto& node : InBodyMeshData.Nodes)
     {
         // (NOTE) This also invoke UpdateCollision() but without collision info yet
         CreateMeshSection(node.Meshes);
     }
-    for (auto matIndex = 0; matIndex < bodyMeshData.MaterialInstances.Num(); ++matIndex)
+    for (auto matIndex = 0; matIndex < InBodyMeshData.MaterialInstances.Num(); ++matIndex)
     {
-        SetMaterial(matIndex, bodyMeshData.MaterialInstances[matIndex]);
+        SetMaterial(matIndex, InBodyMeshData.MaterialInstances[matIndex]);
     }
     // These should have been marked by PMC itself
     // MarkRenderStateDirty();
@@ -178,7 +179,7 @@ bool URRProceduralMeshComponent::CreateMeshBody()
         // REGISTER collision info, Creating new [ProcMeshBodySetup]
         // Ref: Super::SetCollisionConvexMeshes(MeshData.ConvexCollision);
         TArray<TArray<FVector>> convexMeshes;
-        for (const auto& node : bodyMeshData.Nodes)
+        for (const auto& node : InBodyMeshData.Nodes)
         {
             for (const auto& mesh : node.Meshes)
             {
@@ -389,7 +390,6 @@ void URRProceduralMeshComponent::SetCollisionModeAvailable(bool bIsOn, bool bIsH
         SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
         SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
         SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
         SetNotifyRigidBodyCollision(bIsHitEventEnabled);
     }
     else

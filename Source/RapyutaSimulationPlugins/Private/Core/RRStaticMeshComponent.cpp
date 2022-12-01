@@ -90,7 +90,7 @@ void URRStaticMeshComponent::SetMesh(UStaticMesh* InStaticMesh)
 
 bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
 {
-    MeshUniqueName = FPaths::GetBaseFilename(InMeshFileName);
+    MeshUniqueName = URRUObjectUtils::ComposeDynamicResourceName(TEXT("SM"), *FPaths::GetBaseFilename(InMeshFileName));
     ShapeType = URRGameSingleton::GetShapeTypeFromMeshName(InMeshFileName);
 
 #if RAPYUTA_SIM_DEBUG
@@ -125,35 +125,40 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
                 // so other StaticMeshComps, wanting to reuse the same [MeshUniqueName], could check & wait for its creation
                 gameSingleton->AddDynamicResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, nullptr, MeshUniqueName);
 
-                if (FRRMeshData::IsMeshDataAvailable(MeshUniqueName))
+                TSharedPtr<FRRMeshData> meshData = FRRMeshData::GetMeshData(MeshUniqueName);
+                if (meshData.IsValid())
                 {
-                    verify(CreateMeshBody());
+                    verify(CreateMeshBody(*meshData));
                 }
                 else
                 {
                     // Start async mesh loading
-                    URRThreadUtils::DoAsyncTaskInThread<void>(
+                    Async(
+#if WITH_EDITOR
+                        EAsyncExecution::LargeThreadPool,
+#else
+                        EAsyncExecution::ThreadPool,
+#endif
                         [this, InMeshFileName]()
                         {
-                            if (!MeshDataBuffer.MeshImporter)
+                            FRRMeshData runtimeMeshData;
+                            TSharedPtr<Assimp::Importer> meshImporter = MakeShared<Assimp::Importer>();
+                            runtimeMeshData = URRMeshUtils::LoadMeshFromFile(InMeshFileName, *meshImporter);
+                            runtimeMeshData.MeshImporter = meshImporter;
+                            runtimeMeshData.MeshUniqueName = MeshUniqueName;
+                            if (runtimeMeshData.IsValid())
                             {
-                                MeshDataBuffer.MeshImporter = MakeShared<Assimp::Importer>();
+                                AsyncTask(ENamedThreads::GameThread,
+                                          [this, loadedMeshData = MoveTemp(runtimeMeshData)]() mutable
+                                          {
+                                              verify(loadedMeshData.IsValid());
+                                              // Create mesh body, signalling [OnMeshCreationDone()]
+                                              verify(CreateMeshBody(loadedMeshData));
+                                              // Save [loadedMeshData] to [FRRMeshData::MeshDataStore]
+                                              FRRMeshData::AddMeshData(MeshUniqueName,
+                                                                       MakeShared<FRRMeshData>(MoveTemp(loadedMeshData)));
+                                          });
                             }
-                            MeshDataBuffer = URRMeshUtils::LoadMeshFromFile(InMeshFileName, *MeshDataBuffer.MeshImporter);
-                        },
-                        [this]()
-                        {
-                            URRThreadUtils::DoTaskInGameThread(
-                                [this]()
-                                {
-                                    // Save [MeshDataBuffer] to [FRRMeshData::MeshDataStore]
-                                    verify(MeshDataBuffer.IsValid());
-                                    FRRMeshData::AddMeshData(MeshUniqueName, MakeShared<FRRMeshData>(MoveTemp(MeshDataBuffer)));
-
-                                    // Then create mesh body, signalling [OnMeshCreationDone()],
-                                    // which might reference [FRRMeshData::MeshDataStore]
-                                    verify(CreateMeshBody());
-                                });
                         });
                 }
             }
@@ -172,22 +177,10 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
     return true;
 }
 
-UStaticMesh* URRStaticMeshComponent::CreateMeshBody()
+UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshData)
 {
     // (NOTE) This function could be invoked from an async task running in GameThread
-    const TSharedPtr<FRRMeshData> loadedMeshData = FRRMeshData::GetMeshData(MeshUniqueName);
-    if (false == loadedMeshData.IsValid())
-    {
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("[%s] CreateMeshBody() STATIC MESH DATA [%s] HAS YET TO BE LOADED"),
-               *GetName(),
-               *MeshUniqueName);
-        return nullptr;
-    }
-
-    const FRRMeshData& bodyMeshData = *loadedMeshData;
-    if (false == bodyMeshData.IsValid())
+    if (false == InMeshData.IsValid())
     {
         UE_LOG(LogRapyutaCore,
                Error,
@@ -208,13 +201,15 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody()
     meshDescBuilder.EnablePolyGroups();
     meshDescBuilder.SetNumUVLayers(1);
 
-    for (const auto& node : bodyMeshData.Nodes)
+    for (const auto& node : InMeshData.Nodes)
     {
         CreateMeshSection(node.Meshes, meshDescBuilder);
     }
 
     // Build static mesh
     UStaticMesh::FBuildMeshDescriptionsParams meshDescParams;
+    // NOTE: bFastBuild off is only supported for WITH_EDITOR
+    meshDescParams.bFastBuild = true;
     meshDescParams.bBuildSimpleCollision = true;
     UStaticMesh* staticMesh = NewObject<UStaticMesh>(this, FName(*MeshUniqueName));
     staticMesh->SetLightMapCoordinateIndex(0);
@@ -238,11 +233,10 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody()
         sourceModel.BuildSettings.DstLightmapIndex = 0;
         sourceModel.BuildSettings.bRecomputeNormals = false;
         sourceModel.BuildSettings.bRecomputeTangents = false;
-        sourceModel.BuildSettings.bBuildAdjacencyBuffer = false;
 
         // LOD Section
         auto& sectionInfoMap = staticMesh->GetSectionInfoMap();
-        for (auto meshSectionIndex = 0; meshSectionIndex < bodyMeshData.Nodes.Num(); ++meshSectionIndex)
+        for (auto meshSectionIndex = 0; meshSectionIndex < InMeshData.Nodes.Num(); ++meshSectionIndex)
         {
             FMeshSectionInfo info = sectionInfoMap.Get(lodIndex, meshSectionIndex);
             info.MaterialIndex = 0;
@@ -254,9 +248,9 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody()
 #endif
 
     // Mesh's static materials
-    for (auto i = 0; i < bodyMeshData.MaterialInstances.Num(); ++i)
+    for (const auto& materialInstance : InMeshData.MaterialInstances)
     {
-        staticMesh->AddMaterial(bodyMeshData.MaterialInstances[i]->GetBaseMaterial());
+        staticMesh->AddMaterial(materialInstance->GetBaseMaterial());
     }
     staticMesh->BuildFromMeshDescriptions({&meshDesc}, meshDescParams);
     // staticMesh->PostLoad();
@@ -316,7 +310,7 @@ void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& In
             const FVertexInstanceID instanceID = OutMeshDescBuilder.AppendInstance(vertexIDs[vIdx]);
             OutMeshDescBuilder.SetInstanceNormal(instanceID, mesh.Normals[vIdx]);
             OutMeshDescBuilder.SetInstanceUV(instanceID, mesh.UVs[vIdx], 0);
-            OutMeshDescBuilder.SetInstanceColor(instanceID, FVector4(FLinearColor(mesh.VertexColors[vIdx])));
+            OutMeshDescBuilder.SetInstanceColor(instanceID, FVector4f(mesh.VertexColors[vIdx]));
             vertexInsts.Emplace(instanceID);
         }
 
@@ -359,7 +353,6 @@ void URRStaticMeshComponent::SetCollisionModeAvailable(bool bInCollisionEnabled,
         SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
         SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
         SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
         SetNotifyRigidBodyCollision(bInHitEventEnabled);
 #endif
     }

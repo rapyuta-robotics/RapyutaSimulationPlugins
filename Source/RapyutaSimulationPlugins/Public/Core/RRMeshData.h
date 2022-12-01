@@ -22,6 +22,7 @@
 #include "assimp/scene.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRCoreUtils.h"
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRMeshData.generated.h"
@@ -85,16 +86,16 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluence
  *	@brief Contains the vertices that are most dominated by that bone. Vertices are in Bone space.
  *	Not used at runtime, but useful for fitting physics assets etc.
  */
+
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
 {
     GENERATED_BODY()
 
-    // These must be of same length!
     UPROPERTY()
-    TArray<FVector> Positions;
+    TArray<FVector3f> Positions;
     UPROPERTY()
-    TArray<FVector> Normals;
+    TArray<FVector3f> Normals;
 };
 
 /**
@@ -122,6 +123,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
     TArray<FVector> Normals;
 
     UPROPERTY()
+    TArray<FVector2f> UV2fs;
+
+    UPROPERTY()
     TArray<FVector2D> UVs;
 
     UPROPERTY()
@@ -136,8 +140,13 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
     void Reset(uint64 InNum = 0)
     {
         Vertices.SetNumZeroed(InNum);
-        TriangleIndices.SetNumZeroed(InNum);
+        VertexColors.SetNumZeroed(InNum);
+        Normals.SetNumZeroed(InNum);
+        UVs.SetNumZeroed(InNum);
+        UV2fs.SetNumZeroed(InNum);
         ProcTangents.SetNumZeroed(InNum);
+        TriangleIndices.SetNumZeroed(3 * InNum);
+        BoneInfluences.Reset();
     }
 
     void PrintSelf() const;

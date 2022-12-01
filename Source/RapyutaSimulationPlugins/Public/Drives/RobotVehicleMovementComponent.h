@@ -14,10 +14,11 @@
 #include "GameFramework/PawnMovementComponent.h"
 
 // rclUE
-#include "Msgs/ROS2OdometryMsg.h"
+#include "Msgs/ROS2Odom.h"
 
 #include "RobotVehicleMovementComponent.generated.h"
 
+class ARRRobotBaseVehicle;
 /**
  * @brief Type of odometry frame origin.
  * World provide odometry from world origin and Encoder provide odometry from initial pose.
@@ -52,7 +53,6 @@ class RAPYUTASIMULATIONPLUGINS_API URobotVehicleMovementComponent : public UPawn
 
 private:
     // For Elevator management
-
     //! The platform below the robot, e.g. elevator.
     UPROPERTY(VisibleAnywhere)
     AActor* MovingPlatform = nullptr;
@@ -70,6 +70,9 @@ private:
     TArray<USceneComponent*> ContactPoints;
 
 public:
+    UPROPERTY(VisibleAnywhere, Replicated)
+    ARRRobotBaseVehicle* OwnerVehicle = nullptr;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
     FVector AngularVelocity = FVector::ZeroVector;
 
@@ -84,7 +87,7 @@ public:
     FQuat DesiredRotation = FQuat::Identity;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    FROSOdometry OdomData;
+    FROSOdom OdomData;
 
     //! Frame id of odometry
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -146,7 +149,7 @@ public:
      *
      */
     UFUNCTION(BlueprintCallable)
-    virtual void InitMovementComponent();
+    virtual void InitData();
 
     UFUNCTION(BlueprintCallable)
     void SetMovingPlatform(AActor* platform);
@@ -172,11 +175,11 @@ public:
     FTransform RootOffset = FTransform::Identity;
 
 protected:
-    virtual void BeginPlay() override;
     virtual bool IsSupportedForNetworking() const override
     {
         return true;
     }
+
     /**
      * @brief Move actor by using SafeMoveUpdatedComponent and SlideAlongSurface.
      * Calculate #DesiredMovement and #DesiredRotation from deltatime, UpdatedComponent and #AngularVelocity.
@@ -202,7 +205,8 @@ protected:
      */
     virtual void UpdateOdom(float InDeltaTime);
 
-    bool IsOdomInitialized = false;
+    UPROPERTY(VisibleAnywhere)
+    bool bIsOdomInitialized = false;
 
     UPROPERTY()
     FTransform PreviousTransform = FTransform::Identity;

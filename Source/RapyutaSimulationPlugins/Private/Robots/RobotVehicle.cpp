@@ -27,15 +27,32 @@ void ARobotVehicle::SetupDefaultRootSkeletal()
     // classes will automatically get invalidated.
 
     // [SkeletalMeshComp], due to the support for being configured in certain [ARobotVehicle]'s BP classes,
-    // needs to be created in ctor.
+    // needs to be created in ctor, thus its name must be also a constant literal.
     // Reference: AWheeledVehiclePawn
     SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComp"));
-    SkeletalMeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
-    SkeletalMeshComp->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+    SkeletalMeshComp->SetCollisionProfileName(UCollisionProfile::Vehicle_ProfileName);
+    SkeletalMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    SkeletalMeshComp->SetCanEverAffectNavigation(true);
+    SkeletalMeshComp->SetIsReplicated(true);
+    SkeletalMeshComp->SetGenerateOverlapEvents(true);
     AddOwnedComponent(SkeletalMeshComp);
+    // [SkeletalMeshComp] -> NEW ROOT
+    // This is in ctor, thus no need to use [SetRootComponent()]
     RootComponent = SkeletalMeshComp;
+    DefaultRoot->SetupAttachment(SkeletalMeshComp);
 
     AIControllerClass = ARRRobotVehicleROSController::StaticClass();
+}
+
+void ARobotVehicle::PreInitializeComponents()
+{
+    Super::PreInitializeComponents();
+    if (IsDynamicRuntimeRobot() && DefaultRoot->GetAttachParent())
+    {
+        // NOTE: This requires [DefaultRoot] to have been attached to some NEW Root, thus without need to promote its child
+        DefaultRoot->DestroyComponent();
+    }
+    // else must keep for static child BP legacy support
 }
 
 void ARobotVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -100,13 +100,12 @@ public:
                 continue;
             }
 
-            static int64 count = 0;
             // [OBJECT MESH COMP] --
             //
             meshComp = URRUObjectUtils::CreateMeshComponent<TMeshComp>(
                 this,
                 meshUniqueName,
-                FString::Printf(TEXT("%s_MeshComp_%ld"), *ActorInfo->UniqueName, count++),
+                FString::Printf(TEXT("%s_MeshComp_%u"), *ActorInfo->UniqueName, MeshCompList.Num()),
                 InMeshRelTransf.IsValidIndex(i) ? InMeshRelTransf[i] : FTransform::Identity,
                 ActorInfo->bIsStationary,
                 ActorInfo->bIsPhysicsEnabled,
@@ -140,20 +139,23 @@ public:
         }
 
         // Change RootComponent -> BaseMeshComp
-        // Base Mesh Component Configs
-        if ((nullptr == BaseMeshComp) && (MeshCompList.Num() > 0) && (MeshCompList.Num() == ToBeCreatedMeshesNum))
+        if ((nullptr == BaseMeshComp) && (MeshCompList.Num() > 0))
         {
             BaseMeshComp = MeshCompList[0];
 
-            // Set as Root Component
-            // Set the main mesh comp as the root
-            // (Not clear why using the default scene component as the root just disrupts actor-children relative movement,
-            // and thus also compromise the actor transform itself)!
-            if (RootComponent)
+            if (BaseMeshComp->GetRelativeTransform().Equals(FTransform::Identity))
             {
-                RootComponent->DestroyComponent();
+                // Set as Root Component
+                // Set the main mesh comp as the root
+                // (Not clear why using the default scene component as the root just disrupts actor-children relative movement,
+                // and thus also compromise the actor transform itself)!
+                USceneComponent* oldRoot = RootComponent;
+                SetRootComponent(BaseMeshComp);
+                if (oldRoot)
+                {
+                    oldRoot->DestroyComponent();
+                }
             }
-            SetRootComponent(BaseMeshComp);
         }
 
         return addedMeshCompList;

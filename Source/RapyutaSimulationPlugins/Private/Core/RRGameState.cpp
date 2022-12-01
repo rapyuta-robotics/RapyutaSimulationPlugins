@@ -202,9 +202,12 @@ bool ARRGameState::HaveAllSceneInstancesCompleted() const
 
 void ARRGameState::FinalizeSim()
 {
-    for (auto& sceneInstance : SceneInstanceList)
+    if (IsNetMode(NM_Standalone))
     {
-        verify(sceneInstance && sceneInstance->IsValid(true));
+        for (auto& sceneInstance : SceneInstanceList)
+        {
+            verify(sceneInstance && sceneInstance->IsValid(true));
+        }
     }
 }
 

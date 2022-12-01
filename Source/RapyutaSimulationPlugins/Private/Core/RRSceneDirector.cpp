@@ -89,7 +89,7 @@ bool ARRSceneDirector::InitializeOperation()
     MainPostProcessVolume = Cast<APostProcessVolume>(URRUObjectUtils::FindPostProcessVolume(GetWorld()));
 
     // Plan to run the main operation after Initializing is finished, in the next tick --
-    URRCoreUtils::PlanToExecuteOnNextTick(this, &ARRSceneDirector::RunOperation);
+    URRCoreUtils::PlanToExecuteOnNextTick(GetWorld(), [this]() { RunOperation(); });
 
     return true;
 }
