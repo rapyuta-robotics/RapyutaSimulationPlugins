@@ -27,7 +27,7 @@ void URRKinematicTricycleDriveComponent::TickComponent(float InDeltaTime,
         }
         else
         {
-            UE_LOG(LogKinematicTricycleDriveComponent,
+            UE_LOG(LogRRKinematicTricycleDriveComponent,
                    Warning,
                    TEXT("[%s] [URRKinematicTricycleDriveComponent] Steering and/or drive joints are not speciied"),
                    *GetName());
