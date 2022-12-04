@@ -241,6 +241,27 @@ bool URRUObjectUtils::GetPhysicsActorHandles(FBodyInstance* InBody1,
     OutActorRef2 = actorRef2;
     return true;
 }
+
+void URRUObjectUtils::SetHomoLinearConstraintMotion(FConstraintInstance* InCI, const ELinearConstraintMotion InHomoLinearMotion)
+{
+    const bool bEnabled = (InHomoLinearMotion != ELinearConstraintMotion::LCM_Locked);
+    InCI->SetLinearPositionDrive(bEnabled, bEnabled, bEnabled);
+    InCI->SetLinearVelocityDrive(bEnabled, bEnabled, bEnabled);
+    InCI->SetLinearXMotion(InHomoLinearMotion);
+    InCI->SetLinearYMotion(InHomoLinearMotion);
+    InCI->SetLinearZMotion(InHomoLinearMotion);
+}
+
+void URRUObjectUtils::SetHomoAngularConstraintMotion(FConstraintInstance* InCI, const EAngularConstraintMotion InHomoAngularMotion)
+{
+    const bool bEnabled = (InHomoAngularMotion != EAngularConstraintMotion::ACM_Locked);
+    InCI->SetOrientationDriveTwistAndSwing(bEnabled, bEnabled);
+    InCI->SetAngularVelocityDriveTwistAndSwing(bEnabled, bEnabled);
+    InCI->SetAngularSwing1Motion(InHomoAngularMotion);
+    InCI->SetAngularSwing2Motion(InHomoAngularMotion);
+    InCI->SetAngularTwistMotion(InHomoAngularMotion);
+}
+
 FString URRUObjectUtils::GetSegMaskDepthStencilsAsText(ARRMeshActor* InActor)
 {
     TArray<uint8> depthStencilValueList;

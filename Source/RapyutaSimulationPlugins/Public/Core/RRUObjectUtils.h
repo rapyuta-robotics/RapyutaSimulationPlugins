@@ -594,6 +594,8 @@ public:
                                        FBodyInstance* InBody2,
                                        FPhysicsActorHandle& OutActorRef1,
                                        FPhysicsActorHandle& OutActorRef2);
+    static void SetHomoLinearConstraintMotion(FConstraintInstance* InCI, const ELinearConstraintMotion InLinearMotion);
+    static void SetHomoAngularConstraintMotion(FConstraintInstance* InCI, const EAngularConstraintMotion InAngularMotion);
     static UMaterialInstanceDynamic* CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                     int32 InMaterialIndex,
                                                                     const FString& InMaterialInterfaceName);
