@@ -113,7 +113,7 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
         Base_WheelLeft->ComponentName1.ComponentName = TEXT("WheelLeft");
         Base_WheelLeft->SetDisableCollision(true);
         // Base_WheelLeft->SetRelativeLocation(FVector(0, -8, 2.3));
-        Base_WheelLeft->SetRelativeRotation(FRotator(0, 90, 0));
+        Base_WheelLeft->SetRelativeRotation(FRotator(0, -90, 0));
         Base_WheelLeft->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
         Base_WheelLeft->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
         Base_WheelLeft->SetAngularVelocityDriveTwistAndSwing(true, false);
@@ -127,7 +127,7 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
         Base_WheelRight->ComponentName1.ComponentName = TEXT("WheelRight");
         Base_WheelRight->SetDisableCollision(true);
         // Base_WheelRight->SetRelativeLocation(FVector(0, 8, 2.3));
-        Base_WheelRight->SetRelativeRotation(FRotator(0, 90, 0));
+        Base_WheelRight->SetRelativeRotation(FRotator(0, -90, 0));
         Base_WheelRight->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
         Base_WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
         Base_WheelRight->SetAngularVelocityDriveTwistAndSwing(true, false);

@@ -16,13 +16,8 @@
 #include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotBaseVehicle.h"
 
-void URRRobotROS2Interface::SetupROSParams()
+void URRRobotROS2Interface::SetupROSParams_Implementation()
 {
-    bPublishOdom = true;
-    bPublishOdomTf = false;
-    CmdVelTopicName = TEXT("cmd_vel");
-    JointsCmdTopicName = TEXT("joint_states");
-    bWarnAboutMissingLink = true;
 }
 
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
