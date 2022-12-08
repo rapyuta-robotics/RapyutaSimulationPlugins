@@ -21,11 +21,11 @@ class ARRBaseRobot;
 /**
  * @brief  Base Robot ROS2 interface class.
  * This class owns ROS2Node and controls ROS2 interfaces of the #Robot, by
- * - Providing ROS2 subscribers to control robot joints and movement 
+ * - Providing ROS2 subscribers to control robot joints and movement
  * - Providing Odometry publisher.
  * - Controling #URRROS2BaseSensorComponent in #ARRBaseRobot.
  *
- * 
+ *
  * Please create child class of this class to custom ROS2Interface which have your own ROS2Interfaces.
  * @todo add handling of service and action.
  */
@@ -117,7 +117,20 @@ public:
      * @brief Setup ROS Params, overridable by child classes to config custom ROS2 Interface's params
      */
     UFUNCTION()
-    virtual void SetupROSParams();
+    virtual void SetupROSParams(){};
+
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPSetupROSParams();
+
+    /**
+     * @brief Call #SetupROSParams and #BPSetupROSParams
+     */
+    UFUNCTION(BlueprintCallable)
+    void SetupROSParamsAll()
+    {
+        SetupROSParams();
+        BPSetupROSParams();
+    }
 
     //! Odom publisher
     UPROPERTY(Transient, BlueprintReadWrite, Replicated)

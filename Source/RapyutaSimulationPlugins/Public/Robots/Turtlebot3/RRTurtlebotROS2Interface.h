@@ -22,10 +22,8 @@ class RAPYUTASIMULATIONPLUGINS_API URRTurtlebotROS2Interface : public URRRobotRO
 
 protected:
     /**
-     * @brief Init turlebot's publishers and set to publish odom as topic and tf.
+     * @brief Init turlebot's ros parameter and set to publish odom as topic and tf.
      *
-     * @return true
-     * @return false
      */
-    bool InitPublishers() override;
+    void SetupROSParams() override;
 };

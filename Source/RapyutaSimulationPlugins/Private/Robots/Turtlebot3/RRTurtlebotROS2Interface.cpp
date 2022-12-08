@@ -2,15 +2,9 @@
 
 #include "Robots/Turtlebot3/RRTurtlebotROS2Interface.h"
 
-bool URRTurtlebotROS2Interface::InitPublishers()
+// example of override of ros parameter
+void URRTurtlebotROS2Interface::SetupROSParams()
 {
     bPublishOdom = true;
     bPublishOdomTf = true;
-
-    if (false == Super::InitPublishers())
-    {
-        return false;
-    }
-
-    return true;
 }
