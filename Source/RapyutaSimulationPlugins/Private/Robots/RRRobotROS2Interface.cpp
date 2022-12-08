@@ -16,10 +16,6 @@
 #include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotBaseVehicle.h"
 
-void URRRobotROS2Interface::SetupROSParams_Implementation()
-{
-}
-
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
     if (nullptr == InRobot)

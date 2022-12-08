@@ -25,5 +25,5 @@ protected:
      * @brief Init turlebot's ros parameter and set to publish odom as topic and tf.
      *
      */
-    void SetupROSParams_Implementation() override;
+    void SetupROSParams() override;
 };

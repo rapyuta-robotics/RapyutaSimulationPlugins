@@ -116,10 +116,21 @@ public:
     /**
      * @brief Setup ROS Params, overridable by child classes to config custom ROS2 Interface's params
      */
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-    void SetupROSParams();
+    UFUNCTION()
+    virtual void SetupROSParams(){};
 
-    virtual void SetupROSParams_Implementation();
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPSetupROSParams();
+
+    /**
+     * @brief Call #SetupROSParams and #BPSetupROSParams
+     */
+    UFUNCTION(BlueprintCallable)
+    void SetupROSParamsAll()
+    {
+        SetupROSParams();
+        BPSetupROSParams();
+    }
 
     //! Odom publisher
     UPROPERTY(Transient, BlueprintReadWrite, Replicated)

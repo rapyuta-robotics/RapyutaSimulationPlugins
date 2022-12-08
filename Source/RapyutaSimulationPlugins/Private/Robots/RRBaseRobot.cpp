@@ -174,7 +174,7 @@ void ARRBaseRobot::CreateROS2Interface()
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;
-    ROS2Interface->SetupROSParams();
+    ROS2Interface->SetupROSParamsAll();
 
     if (bStartStopROS2Interface)
     {
