@@ -73,6 +73,7 @@ void URRLimitRTFFixedSizeCustomTimeStep::SetStepSize(const float InStepSize)
     }
 
     StepSize = stepSize;
+    FApp::SetFixedDeltaTime(StepSize);
 }
 
 float URRLimitRTFFixedSizeCustomTimeStep::GetTargetRTF() const
