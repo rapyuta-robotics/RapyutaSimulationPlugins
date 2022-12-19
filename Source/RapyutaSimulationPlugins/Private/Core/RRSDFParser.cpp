@@ -261,7 +261,15 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         endEffectorElement = endEffectorElement->GetNextElement(SDF_ELEMENT_END_EFFECTOR);
     }
 
-    // 6- WholeBody's material
+    // 6- WholeBody's static mesh (for World model only to make use of pre-baked UE static mesh)
+    sdf::ElementPtr staticMeshElement = ueElement->FindElement(SDF_ELEMENT_LINK_STATIC_MESH);
+    if (staticMeshElement)
+    {
+        OutRobotModelInfo.WholeBodyStaticMeshName =
+            URRCoreUtils::StdToFString(staticMeshElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+    }
+
+    // 7- WholeBody's material
     auto& materialInfo = OutRobotModelInfo.WholeBodyMaterialInfo;
     sdf::ElementPtr materialElement = ueElement->FindElement(SDF_ELEMENT_LINK_MATERIAL);
     if (materialElement)
