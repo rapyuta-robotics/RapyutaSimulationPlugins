@@ -91,6 +91,7 @@ private:
 
     static constexpr const char* SDF_ELEMENT_LINK_SCALE = "scale";
     static constexpr const char* SDF_ELEMENT_LINK_MESH = "mesh";
+    static constexpr const char* SDF_ELEMENT_LINK_STATIC_MESH = "static_mesh";
     static constexpr const char* SDF_ELEMENT_LINK_URI = "uri";
     static constexpr const char* SDF_ELEMENT_LINK_CYLINDER = "cylinder";
     static constexpr const char* SDF_ELEMENT_LINK_CYLINDER_RADIUS = "radius";

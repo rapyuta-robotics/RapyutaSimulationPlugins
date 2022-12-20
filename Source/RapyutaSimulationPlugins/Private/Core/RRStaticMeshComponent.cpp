@@ -90,18 +90,26 @@ void URRStaticMeshComponent::SetMesh(UStaticMesh* InStaticMesh)
 
 bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
 {
-    MeshUniqueName = URRUObjectUtils::ComposeDynamicResourceName(TEXT("SM"), *FPaths::GetBaseFilename(InMeshFileName));
+    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
+    UStaticMesh* staticMesh = gameSingleton->GetStaticMesh(InMeshFileName, false);
+    const bool bStaticMeshAlreadyExists = (nullptr != staticMesh);
+    MeshUniqueName = bStaticMeshAlreadyExists
+                         ? InMeshFileName
+                         : URRUObjectUtils::ComposeDynamicResourceName(TEXT("SM"), *FPaths::GetBaseFilename(InMeshFileName));
     ShapeType = URRGameSingleton::GetShapeTypeFromMeshName(InMeshFileName);
 
 #if RAPYUTA_SIM_DEBUG
     UE_LOG(LogRapyutaCore, Warning, TEXT("URRStaticMeshComponent::InitializeMesh: %s - %s"), *GetName(), *InMeshFileName);
 #endif
 
-    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
     switch (ShapeType)
     {
         case ERRShapeType::MESH:
-            if (gameSingleton->HasSimResource(ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName))
+            if (bStaticMeshAlreadyExists)
+            {
+                SetMesh(staticMesh);
+            }
+            else if (gameSingleton->HasSimResource(ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName))
             {
                 // Wait for StaticMesh[MeshUniqueName] has been fully loaded
                 URRCoreUtils::RegisterRepeatedExecution(

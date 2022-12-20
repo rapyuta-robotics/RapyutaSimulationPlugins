@@ -1137,6 +1137,9 @@ public:
                                                                                     : FRRRobotGeometryInfo();
     }
 
+    // UE-StaticMesh
+    FString WholeBodyStaticMeshName;
+
     // Material
     FRRMaterialProperty WholeBodyMaterialInfo;
     FRRMaterialProperty GetBodyMaterialInfo() const
@@ -1361,6 +1364,7 @@ public:
         {
             wheelProp.PrintSelf();
         }
+        UE_LOG(LogTemp, Display, TEXT("WholeBodyStaticMeshName: %s"), *WholeBodyStaticMeshName);
         WholeBodyMaterialInfo.PrintSelf();
 
         for (const auto& modelInfo : ChildModelsInfo)
