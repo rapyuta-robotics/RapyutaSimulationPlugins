@@ -24,7 +24,7 @@ protected:
     /**
      * @brief Initialize robot pawn by calling #ARRBaseRobot::InitROS2Interface.
      *
-     * @sa [OnPossess](https://docs.unrealengine.com/4.27/en-US/API/Runtime/AIModule/AAIController/OnPossess/)
+     * @sa [OnPossess](https://docs.unrealengine.com/5.1/en-US/API/Runtime/AIModule/AAIController/OnPossess/)
      * @param InPawn
      */
     virtual void OnPossess(APawn* InPawn) override;
@@ -32,7 +32,7 @@ protected:
     /**
      * @brief Deinitialize robot pawn by calling #ARRBaseRobot::DeInitROS2Interface.
      *
-     * @sa [OnUnPossess](https://docs.unrealengine.com/4.27/en-US/API/Runtime/AIModule/AAIController/OnUnPossess/)
+     * @sa [OnUnPossess](https://docs.unrealengine.com/5.1/en-US/API/Runtime/AIModule/AAIController/OnUnPossess/)
      */
     virtual void OnUnPossess() override;
 };

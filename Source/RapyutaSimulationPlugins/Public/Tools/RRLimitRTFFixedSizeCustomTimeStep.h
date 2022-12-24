@@ -14,9 +14,9 @@ class UEngine;
 /**
  * @brief Control the Engine TimeStep via a fixed time step and limit RTF(Real Time Factor).
  * Main logic is copied from UGenlockedFixedRateCustomTimeStep and UEngineCustomTimeStep.
- * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
- * @sa [UGenlockedFixedRateCustomTimeStep](https://docs.unrealengine.com/4.27/en-US/API/Runtime/TimeManagement/UGenlockedFixedRateCustomTimeSte-/)
- * 
+ * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
+ * @sa [UGenlockedFixedRateCustomTimeStep](https://docs.unrealengine.com/5.1/en-US/API/Runtime/TimeManagement/UGenlockedFixedRateCustomTimeSte-/)
+ *
  */
 UCLASS(Blueprintable, editinlinenew, meta = (DisplayName = "Limit RTF Fixed Rate"))
 class RAPYUTASIMULATIONPLUGINS_API URRLimitRTFFixedSizeCustomTimeStep : public UEngineCustomTimeStep
@@ -27,73 +27,73 @@ public:
     //~ UFixedFrameRateCustomTimeStep interface
     /**
      * @brief Overriden function from UEngineCustomTimeStep
-     * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
-     * @param InEngine 
-     * @return true 
-     * @return false 
+     * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
+     * @param InEngine
+     * @return true
+     * @return false
      */
     virtual bool Initialize(UEngine* InEngine) override;
 
     /**
      * @brief Overriden function from UEngineCustomTimeStep
-     * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
-     * 
-     * @param InEngine 
+     * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
+     *
+     * @param InEngine
      */
     virtual void Shutdown(UEngine* InEngine) override;
 
     /**
      * @brief Overriden function from UEngineCustomTimeStep
-     * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
-     * 
-     * @param InEngine 
-     * @return true 
-     * @return false 
+     * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
+     *
+     * @param InEngine
+     * @return true
+     * @return false
      */
     virtual bool UpdateTimeStep(UEngine* InEngine) override;
 
     /**
      * @brief Overriden function from UEngineCustomTimeStep
-     * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
-     * 
-     * @return ECustomTimeStepSynchronizationState 
+     * @sa [UEngineCustomTimeStep](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UEngineCustomTimeStep/)
+     *
+     * @return ECustomTimeStepSynchronizationState
      */
     virtual ECustomTimeStepSynchronizationState GetSynchronizationState() const override;
 
     /**
      * @brief Get the Step Size object
-     * 
-     * @return float 
+     *
+     * @return float
      */
     virtual float GetStepSize() const;
 
     /**
      * @brief Set the Step Size object
-     * 
-     * @param InStepSize 
+     *
+     * @param InStepSize
      */
     virtual void SetStepSize(const float InStepSize);
 
     /**
      * @brief Get the Target R T F object
-     * 
-     * @return float 
+     *
+     * @return float
      */
     virtual float GetTargetRTF() const;
 
     /**
      * @brief Set the Target R T F object
-     * 
-     * @param InTargetRTF 
+     *
+     * @param InTargetRTF
      */
     virtual void SetTargetRTF(const float InTargetRTF);
 
     /**
      * @brief Main logic to update simulation time.
      * Simulation time += #StepSize and wait not to over #TargetRTF.
-     * 
-     * @return true 
-     * @return false 
+     *
+     * @return true
+     * @return false
      */
     virtual bool WaitForSync();
 

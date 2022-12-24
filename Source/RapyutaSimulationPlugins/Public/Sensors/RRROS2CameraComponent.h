@@ -5,7 +5,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 
 #include "Camera/CameraComponent.h"
@@ -23,7 +22,7 @@
 #include "RRROS2CameraComponent.generated.h"
 
 /**
- * @brief 
+ * @brief
  * used in　#CaptureNonBlocking of #URRROS2CameraComponent
  */
 USTRUCT()
@@ -36,9 +35,9 @@ struct FRenderRequest
 
 /**
  * @brief ROS2 Camera component. Uses USceneCaptureComponent2D.
- * 
- * @sa [USceneCaptureComponent2D](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneCaptureComponent2D/)
- * @sa [UE4 ShaderInPlugin](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/Rendering/ShaderInPlugin/Overview/)
+ *
+ * @sa [USceneCaptureComponent2D](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Components/USceneCaptureComponent2D/)
+ * @sa [UE4 ShaderInPlugin](https://docs.unrealengine.com/5.1/en-US/ProgrammingAndScripting/Rendering/ShaderInPlugin/Overview/)
  * @sa implementation reference: https://github.com/TimmHess/UnrealImageCapture
  * @todo Support non RGB data support.
  */
@@ -56,23 +55,22 @@ public:
 
     /**
      * @brief Initialize #Data and #RenderTarget, set #SceneCaptureComponent parameters.
-     * 
+     *
      * @param InROS2Node ROS2Node which this publisher belongs to
-     * @param InTopicName 
+     * @param InTopicName
      */
     virtual void PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName) override;
 
     /**
      * @brief Update sensor data by CaptureScene and #CaptureNonBlocking
-     * @sa [CaptureScene](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneCaptureComponent2D/CaptureScene/)
+     * @sa [CaptureScene](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Components/USceneCaptureComponent2D/CaptureScene/)
      * @todo Should #CaptureNonBlocking called in TickComponents?
      */
     virtual void SensorUpdate() override;
 
 protected:
-
     /**
-     * @brief Capture data by notifing task in #RenderRequestQueue 
+     * @brief Capture data by notifing task in #RenderRequestQueue
      * @sa reference https://github.com/TimmHess/UnrealImageCapture
      */
     UFUNCTION()
@@ -109,20 +107,19 @@ public:
     // ROS
     /**
      * @brief Update ROS2 Msg structure from #RenderRequestQueue
-     * 
-     * @return FROSImg 
+     *
+     * @return FROSImg
      */
     UFUNCTION(BlueprintCallable)
     virtual FROSImg GetROS2Data();
 
     /**
      * @brief Set result of #GetROS2Data to InMessage.
-     * 
-     * @param InMessage 
+     *
+     * @param InMessage
      */
     virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Encoding = TEXT("rgb8");
-    
 };

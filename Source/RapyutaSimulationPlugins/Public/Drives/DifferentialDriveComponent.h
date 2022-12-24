@@ -21,9 +21,9 @@ DECLARE_LOG_CATEGORY_EXTERN(LogDifferentialDriveComponent, Log, All);
  * Simulate differential drive by using 2 UPhysicsConstraintComponent.
  * Calculate wheel rotation from given Velocity(member of UMovementComponent) and #AngularVelocity and set by calling SetAngularVelocityTarget
  * Publish odometry from Velocity and #AngularVelocity.
- * 
- * @sa [UPhysicsConstraintComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/)
- * @sa [SetAngularVelocityTarget](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVeloci-_3/)
+ *
+ * @sa [UPhysicsConstraintComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/)
+ * @sa [SetAngularVelocityTarget](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVeloci-_3/)
  *
  * @todo Calculate odom from wheel rotation.
  */
@@ -35,18 +35,18 @@ class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponent : public URobotVe
 public:
     /**
      * @brief Calculate wheel velocity from Velocity(member of UMovementComponent) and #AngularVelocity, and set by calling SetAngularVelocityTarget
-     * SetAngularDriveParams as well. 
-     * @param DeltaTime 
-     * @sa [UPhysicsConstraintComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/)
-     * @sa [SetAngularVelocityTarget](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVeloci-_3/)
-     * @sa [SetAngularDriveParams](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularDriveP-/)
+     * SetAngularDriveParams as well.
+     * @param DeltaTime
+     * @sa [UPhysicsConstraintComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/)
+     * @sa [SetAngularVelocityTarget](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVeloci-_3/)
+     * @sa [SetAngularDriveParams](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularDriveP-/)
      */
     virtual void UpdateMovement(float DeltaTime) override;
 
     /**
      * @brief Calculate odometry from Velocity and #AngularVelocity.
-     * 
-     * @param DeltaTime 
+     *
+     * @param DeltaTime
      *
      * @todo Calculate odom from wheel rotation.
      */
@@ -54,22 +54,22 @@ public:
 
     /**
      * @brief Set left and right wheels.
-     * 
-     * @param InWheelLeft 
-     * @param InWheelRight 
+     *
+     * @param InWheelLeft
+     * @param InWheelRight
      */
     UFUNCTION(BlueprintCallable)
     void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);
 
     /**
      * @brief Call Super::Initialize() and #SetPerimeter.
-     * 
+     *
      */
     virtual void Initialize() override;
 
     /**
      * @brief SetPerimeter from #WheelRadius * 2.f * M_PI
-     * 
+     *
      */
     UFUNCTION(BlueprintCallable)
     void SetPerimeter();

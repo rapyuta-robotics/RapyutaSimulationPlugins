@@ -139,7 +139,7 @@ public:
      * @param InClientRobotPosition
      * @param InLinearVel
      * @note Not uses RPC since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
+     * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     virtual void SyncServerLinearMovement(float InClientTimeStamp,
@@ -152,7 +152,7 @@ public:
      * @param InClientRobotRotation
      * @param InAngularVel
      * @note Not uses RPC since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
+     * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     virtual void SyncServerAngularMovement(float InClientTimeStamp,
@@ -162,7 +162,7 @@ public:
     /**
      * @brief Set linear velocity to #RobotVehicleMoveComponent in the client.
      * @note Not uses RPC since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
+     * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetLocalLinearVel(const FVector& InLinearVel);
@@ -170,7 +170,7 @@ public:
     /**
      * @brief Set angular velocity to #RobotVehicleMoveComponent in the client.
      * @note Not uses RPC since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
+     * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetLocalAngularVel(const FVector& InAngularVel);
@@ -178,8 +178,8 @@ public:
 protected:
     /**
      * @brief Post Initialization process of actor. Initialize #RobotVehicleMoveComponent by calling #InitMoveComponent.
-     * @sa[ActorLifecycle](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Actors/ActorLifecycle/)
-     * @sa[PostInitializeComponents](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
+     * @sa[ActorLifecycle](https://docs.unrealengine.com/5.1/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Actors/ActorLifecycle/)
+     * @sa[PostInitializeComponents](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
      */
     virtual void PostInitializeComponents() override;
     /**

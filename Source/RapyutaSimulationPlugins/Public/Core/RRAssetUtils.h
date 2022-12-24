@@ -52,9 +52,9 @@ public:
         FString packageFileName;
         if (false == FPackageName::DoesPackageExist(assetPackage->GetName(),
 #if ENGINE_MAJOR_VERSION < 5
-            nullptr,
+                                                    nullptr,
 #endif
-            &packageFileName))
+                                                    &packageFileName))
         {
             if (bIsLogged)
             {
@@ -109,7 +109,7 @@ public:
 #else
         const int32 packageFileVersionUEGlobal = GPackageFileUEVersion.ToValue();
 #endif
-            
+
         if (packageFileVersionUE > packageFileVersionUEGlobal)
         {
             if (bIsLogged)
@@ -190,7 +190,7 @@ public:
      * @param OutAssetDataList
      * @param bHasBPAsset
      * @param bIsFullLoad
-     * @sa [UObjectLibrary](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UObjectLibrary/)
+     * @sa [UObjectLibrary](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UObjectLibrary/)
      * @sa [AsyncLoading](https://docs.unrealengine.com/en-US/Programming/Assets/AsyncLoading/index.html)
      */
     template<typename T>

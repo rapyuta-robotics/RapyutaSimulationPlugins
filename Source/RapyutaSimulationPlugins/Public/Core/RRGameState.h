@@ -24,7 +24,7 @@ class ARRMeshActor;
 /**
  * @brief Game state
  *
- * @sa [AGameState](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameState/)
+ * @sa [AGameState](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameState/)
  *
  * @todo add documentation
  */
@@ -58,8 +58,8 @@ public:
     TScenceInstanceClass* GetSceneInstance(int8 InSceneInstanceId) const
     {
         TScenceInstanceClass* instance = SceneInstanceList.IsValidIndex(InSceneInstanceId)
-                                           ? Cast<TScenceInstanceClass>(SceneInstanceList[InSceneInstanceId])
-                                           : nullptr;
+                                             ? Cast<TScenceInstanceClass>(SceneInstanceList[InSceneInstanceId])
+                                             : nullptr;
         verify(instance);
         return instance;
     }
@@ -83,8 +83,8 @@ public:
     FString GetSimOutputsBaseFolderPath() const
     {
         return FPaths::IsRelative(SIM_OUTPUTS_BASE_FOLDER_NAME)
-                 ? FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / SIM_OUTPUTS_BASE_FOLDER_NAME)
-                 : SIM_OUTPUTS_BASE_FOLDER_NAME;
+                   ? FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / SIM_OUTPUTS_BASE_FOLDER_NAME)
+                   : SIM_OUTPUTS_BASE_FOLDER_NAME;
     }
 
     // ENTITIES

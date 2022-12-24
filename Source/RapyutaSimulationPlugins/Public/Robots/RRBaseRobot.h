@@ -143,7 +143,7 @@ public:
     /**
      * @brief Instantiate ROS2 Interface without initializing yet
      * @note Not uses RPC but replication since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
+     * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      *
      */
     UFUNCTION(BlueprintCallable)
@@ -152,7 +152,7 @@ public:
     /**
      * @brief Initialize ROS2 Interface. Directly call #URRRobotROS2Interface::Initialize or execute in client via #OnRep_bStartStopROS2Interface.
      * @note Not uses RPC but replication since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
+     * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     void InitROS2Interface();
@@ -166,7 +166,7 @@ public:
     /**
      * @brief Stop ROS2 Interface. Directly call #URRRobotROS2Interface::DeInitialize or execute in client via #OnRep_bStartStopROS2Interface.
      * @note Not uses RPC but replication since the robot is not always owned by the same connection with the client's PlayerController.
-     * @sa [Connection](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
+     * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
     void DeInitROS2Interface();

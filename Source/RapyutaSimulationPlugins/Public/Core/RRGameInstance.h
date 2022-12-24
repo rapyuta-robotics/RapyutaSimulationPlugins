@@ -20,7 +20,7 @@
  * @brief
  * This is a globally accessible instanced UObject that can store run-time data to be commonly accessed between levels and Scene
  * instances. (Not to keep data persistent out of PIE) Add logs to original UGameInstance.
- * @sa [UGameInstance](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/UGameInstance/)
+ * @sa [UGameInstance](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UGameInstance/)
  */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API URRGameInstance : public UGameInstance
