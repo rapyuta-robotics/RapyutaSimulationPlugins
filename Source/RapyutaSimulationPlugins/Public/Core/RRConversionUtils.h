@@ -11,8 +11,9 @@
 #pragma once
 
 // rclUE
-#include <Msgs/ROS2Odom.h>
-#include <Msgs/ROS2Time.h>
+#include "Msgs/ROS2Odom.h"
+#include "Msgs/ROS2Pose.h"
+#include "Msgs/ROS2Time.h"
 
 #include "RRConversionUtils.generated.h"
 
@@ -203,6 +204,19 @@ public:
         Output.Twist.Twist.Angular = RotationROSToUE(Output.Twist.Twist.Angular);
 
         return Output;
+    }
+
+    /**
+     * @brief Convert ROS Pose to UE Transform
+     * @sa https://docs.unrealengine.com/5.0/en-US/large-world-coordinates-in-unreal-engine-5/#:~:text=Engine%205%2C%20the-,FVector,-casts%20will%20continue
+     * @param InROSPose
+     * @return FTransform
+     */
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FTransform PoseROSToUETransform(const FROSPose& InROSPose)
+    {
+        return FTransform(URRConversionUtils::QuatROSToUE(InROSPose.Orientation),
+                          URRConversionUtils::VectorROSToUE(InROSPose.Position));
     }
 
     // time to ROS stamp
