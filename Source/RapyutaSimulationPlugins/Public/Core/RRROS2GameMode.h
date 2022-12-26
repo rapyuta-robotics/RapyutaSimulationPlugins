@@ -22,8 +22,8 @@ class URRROS2ClockPublisher;
 
 /**
  * @brief ROS2 GameMode which have Clock publisher and ROS2 services to interact with ROS2.
- * @sa [AGameMode](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
- * @sa [GameMode and GameState](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Framework/GameMode/
+ * @sa [AGameMode](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
+ * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
@@ -89,7 +89,7 @@ protected:
      * @param InOptions
      * @param OutErrorMessage
      *
-     * @sa [InitGame](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameMode/InitGame/)
+     * @sa [InitGame](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameMode/InitGame/)
      */
     virtual void InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage) override;
 

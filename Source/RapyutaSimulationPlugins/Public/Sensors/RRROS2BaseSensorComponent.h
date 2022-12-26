@@ -24,7 +24,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
 /**
  * @brief Base ROS2 Sensor Component class. Other sensors class should inherit from this class.
- * Provide features to initialize with [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html) 
+ * Provide features to initialize with [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
  * and initialize #URRROS2BaseSensorPublisher.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
@@ -35,12 +35,12 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2BaseSensorComponent : public USceneCom
 public:
     /**
     * @brief Construct a new URRROS2BaseSensorComponent object
-    * 
+    *
     */
     URRROS2BaseSensorComponent();
 
     /**
-     * @brief Create and initialize publisher and start sensor update by calling 
+     * @brief Create and initialize publisher and start sensor update by calling
      * #CreatePublisher, #PreInitializePublisher, #InitializePublisher and #Run.
      *
      * @param InROS2Node ROS2Node which this publisher belongs to
@@ -48,7 +48,7 @@ public:
      * @param InTopicName Topic name
      * @param InQoS Topic QoS
      *
-     * @sa [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html) 
+     * @sa [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
      * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
     UFUNCTION(BlueprintCallable)
@@ -59,26 +59,26 @@ public:
 
     /**
      * @brief Create a Publisher with #SensorPublisherClass.
-     * 
+     *
      * @param InPublisherName If this is empty, publisher name become this component name + SensorPublisher.
      */
     UFUNCTION(BlueprintCallable)
     virtual void CreatePublisher(const FString& InPublisherName = TEXT(""));
 
     /**
-     * @brief Set publish frequency, topic name and #FrameId. 
+     * @brief Set publish frequency, topic name and #FrameId.
      * if #bAppendNodeNamespace == true, FrameId become ROS2Node's namespace + #FramId
      * @param InROS2Node  ROS2Node which this publisher belongs to
-     * @param InTopicName If this is empty, topic name become #TopicName. 
+     * @param InTopicName If this is empty, topic name become #TopicName.
      */
     UFUNCTION(BlueprintCallable)
     virtual void PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName = TEXT(""));
 
     /**
      * @brief Initialize Sensorpublisher by using [UROS2Publisher](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dd4/class_u_r_o_s2_publisher.html)'s methods.
-     * 
+     *
      * @param InROS2Node ROS2Node which this publisher belongs to
-     * @param InQoS 
+     * @param InQoS
 
      * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
@@ -87,15 +87,15 @@ public:
 
     /**
      * @brief Start timer to update and publish sensor data by using SetTimer
-     * @sa [SetTimer](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/FTimerManager/SetTimer/4/)
-     * 
+     * @sa [SetTimer](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/FTimerManager/SetTimer/4/)
+     *
      */
     UFUNCTION(BlueprintCallable)
     virtual void Run();
 
     /**
      * @brief Stop timer to update and publish sensor data by using ClearTimer
-     * @sa [ClearTimer](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/FTimerManager/ClearTimer)
+     * @sa [ClearTimer](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/FTimerManager/ClearTimer)
      *
      */
     UFUNCTION(BlueprintCallable)

@@ -31,7 +31,7 @@ enum class ERRSimType : uint8
 
 /**
  * @brief GameMode with specific setting, asset loading and ROS2 interface via #ClockPublisher and #ASimulationState.
- * @sa [GameMode and GameState](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Framework/GameMode/
+ * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)
  */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRGameMode : public ARRROS2GameMode
@@ -97,7 +97,7 @@ public:
     /**
      * @brief Set benchmark, fixed time step via FApp if running without editor.
      * Call #ConfigureSimInPlay and #StartSim
-     * @sa [FApp](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FApp/)
+     * @sa [FApp](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Misc/FApp/)
      */
     virtual void StartPlay() override;
 

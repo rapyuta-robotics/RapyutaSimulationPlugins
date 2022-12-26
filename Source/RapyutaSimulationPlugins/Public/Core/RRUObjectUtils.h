@@ -47,8 +47,8 @@ public:
      * @param InObjectUniqueName
      * @return static UObject*
      *
-     * @sa[CreateDefaultSubobject](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
-     * @sa[NewObject](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
+     * @sa[CreateDefaultSubobject](https://docs.unrealengine.com/5.1/en-US/API/Runtime/CoreUObject/UObject/UObject/CreateDefaultSubobject/2/)
+     * @sa[NewObject](https://docs.unrealengine.com/5.1/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Objects/Creation/)
      */
     FORCEINLINE static UObject* CreateSelfSubobject(UObject* InOuter, UClass* InObjectClass, const FString& InObjectUniqueName)
     {
@@ -165,8 +165,8 @@ public:
      * @param InAttachmentRules
      * @param InSocketName
      *
-     * @sa[SetupAttachment](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
-     * @sa[AttachToComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
+     * @sa[SetupAttachment](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Components/USceneComponent/SetupAttachment/)
+     * @sa[AttachToComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Components/USceneComponent/AttachToComponent/)
      */
     static void AttachComponentToComponent(
         USceneComponent* InChildComp,

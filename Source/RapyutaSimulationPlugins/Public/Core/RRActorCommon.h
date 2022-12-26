@@ -483,7 +483,7 @@ public:
 
     /**
      * @brief Callback for world cleanup end
-     * @note [Ref](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Engine/FWorldDelegates/OnPostWorldCleanup)
+     * @note [Ref](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/FWorldDelegates/OnPostWorldCleanup)
      * @param InWorld
      * @param bInSessionEnded Whether to notify the viewport that the game session (PIE, Game, etc.) has ended.
      * @param bInCleanupResources Whether resources should be cleaned up

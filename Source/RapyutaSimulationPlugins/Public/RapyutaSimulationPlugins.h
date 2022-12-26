@@ -13,9 +13,9 @@
 #define RAPYUTA_SIMULATION_PLUGINS_MODULE_FOLDER_NAME RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME
 
 /**
- * @brief Unreal Engine Module class. This is used to initialize a module after 
+ * @brief Unreal Engine Module class. This is used to initialize a module after
  * it's been loaded, and also to clean it up before the module is unloaded.
- * @sa[Unreal Engine IModuleInterface](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Modules/IModuleInterface/)
+ * @sa[Unreal Engine IModuleInterface](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Modules/IModuleInterface/)
  */
 class FRapyutaSimulationPluginsModule : public IModuleInterface
 {

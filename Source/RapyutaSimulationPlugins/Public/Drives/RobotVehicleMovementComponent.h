@@ -41,7 +41,7 @@ enum class EOdomSource : uint8
  *
  * Publish odometry from world origin or initial pose.
  *
- * @sa [UPawnMovementComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UPawnMovementComponent/)
+ * @sa [UPawnMovementComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UPawnMovementComponent/)
  *
  * @todo Support 3D movement.
  * @todo Expose odom covariance parameter.
@@ -78,7 +78,7 @@ public:
 
     //! Desired position calculated from deltatime and UpdatedComponent::ComponentVelocity
     //! @sa
-    //! [UpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
+    //! [UpdatedComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
     UPROPERTY(Transient)
     FVector DesiredMovement = FVector::ZeroVector;
 
@@ -190,11 +190,11 @@ protected:
      *
      * @param InDeltaTime
      * @sa
-     * [SafeMoveUpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/SafeMoveUpdatedComponent/1/)
+     * [SafeMoveUpdatedComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/SafeMoveUpdatedComponent/1/)
      * @sa
-     * [SlideAlongSurface](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/SlideAlongSurface/)
+     * [SlideAlongSurface](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/SlideAlongSurface/)
      * @sa
-     * [UpdatedComponent](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
+     * [UpdatedComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
      */
     virtual void UpdateMovement(float InDeltaTime);
 
@@ -248,7 +248,7 @@ public:
      * @param ThisTickFunction
      *
      * @sa
-     * [UpdateComponentVelocity](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdateComponentVelocity/)
+     * [UpdateComponentVelocity](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdateComponentVelocity/)
      */
     virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

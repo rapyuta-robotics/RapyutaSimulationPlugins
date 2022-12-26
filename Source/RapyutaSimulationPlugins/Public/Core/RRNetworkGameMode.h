@@ -20,7 +20,7 @@ class ARRNetworkPlayerController;
 
 /**
  * @brief GameMode for client-server. This class handles #ANetworkPlayerController initialization from #PostLogin.
- * @sa [AGameMode](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
+ * @sa [AGameMode](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameMode : public ARRROS2GameMode
