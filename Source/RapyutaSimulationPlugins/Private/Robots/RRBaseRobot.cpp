@@ -170,7 +170,8 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
 
 void ARRBaseRobot::CreateROS2Interface()
 {
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::CreateROS2Interface] %d"), *GetName(), IsNetMode(NM_Client));
+    UE_LOG(
+        LogRapyutaCore, Display, TEXT("[%s][ARRBaseRobot::CreateROS2Interface] IsNetMode: %d"), *GetName(), IsNetMode(NM_Client));
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;

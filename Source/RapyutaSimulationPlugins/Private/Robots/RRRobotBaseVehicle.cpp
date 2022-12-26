@@ -80,7 +80,7 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
         // to the owner actor's root
 
         UE_LOG(LogRapyutaCore,
-               Warning,
+               Display,
                TEXT("[%s] created from class %s!"),
                *MovementComponent->GetName(),
                *VehicleMoveComponentClass->GetName());

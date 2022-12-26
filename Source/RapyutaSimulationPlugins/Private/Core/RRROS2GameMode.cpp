@@ -54,11 +54,10 @@ void ARRROS2GameMode::InitSim()
     {
         InitROS2();
     }
-#if WITH_EDITOR    // Since ROSNode in each client is namespaced with editor in network mode, need clock publsiher without \
-                   // namespace
+#if WITH_EDITOR    // Since ROSNode in each client is namespaced with editor in network mode, need clock publsiher without namespace
     else if (nullptr != Cast<ARRNetworkGameMode>(this))
     {
-        UE_LOG(LogRapyutaCore, Display, TEXT("Init ROS2 Node with editor in gamemode"));
+        UE_LOG(LogRapyutaCore, Display, TEXT("[ARRROS2GameMode] Init ROS2 Node with editor in gamemode"));
         InitROS2();
     }
 #endif
@@ -89,7 +88,7 @@ void ARRROS2GameMode::InitROS2()
     // Create Clock publisher
     ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
-    ClockPublisher->InitializeWithROS2(MainROS2Node);
+    MainROS2Node->AddPublisher(ClockPublisher);
 }
 
 void ARRROS2GameMode::StartPlay()
