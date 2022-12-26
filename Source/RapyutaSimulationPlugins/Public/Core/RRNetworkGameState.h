@@ -13,7 +13,7 @@
 
 /**
  * @brief Network Game State for client-server
- * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Framework/GameMode/
+ * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRNetworkGameState : public AGameState

@@ -15,7 +15,7 @@ Mobile Robot Actor is composed of
 `URRRobotROS2Interface <doxygen_generated/html/d6/d64/class_u_r_r_robot_r_o_s2_interface.html>`_ and
 `ARRRobotVehicleROSController <doxygen_generated/html/d6/d83/class_a_r_r_robot_vehicle_r_o_s_controller.html>`_ .
 You can create your own robot by creating child class of following components.
-Robot can be palced from UE interface, e.g drag and drop from UE Editor, or spawned from ROS2 /SpawnEntity srv.
+Robot can be placed from UE interface, e.g drag and drop from UE Editor, or spawned from ROS2 /SpawnEntity srv.
 
 - `URRRobotROS2Interface <doxygen_generated/html/d6/d64/class_u_r_r_robot_r_o_s2_interface.html>`_ has `AROS2Node <https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html>`_ and controls publisher and subscribers in the Robot.
 - `ARRRobotBaseVehicle <doxygen_generated/html/d9/d52/class_a_r_r_robot_base_vehicle.html>`_
