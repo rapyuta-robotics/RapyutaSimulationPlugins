@@ -87,7 +87,6 @@ void ARRROS2GameMode::InitROS2()
 
     // Create Clock publisher
     ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
-    // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
     MainROS2Node->AddPublisher(ClockPublisher);
 }
 

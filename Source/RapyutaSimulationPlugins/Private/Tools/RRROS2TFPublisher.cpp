@@ -10,7 +10,7 @@ URRROS2TFPublisher::URRROS2TFPublisher()
 {
     PublicationFrequencyHz = 50;
     MsgClass = UROS2TFMsgMsg::StaticClass();
-    SetupUpdateCallback(); //use UpdateMessage as update delegate
+    SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
 void URRROS2TFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
@@ -37,7 +37,6 @@ void URRROS2TFPublisher::SetTransform(const FVector& Translation, const FQuat& R
 
 void URRROS2TFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
-
     FROSTFMsg tf;
 
     FROSTFStamped tfData;

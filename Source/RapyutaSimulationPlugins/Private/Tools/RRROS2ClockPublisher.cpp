@@ -17,7 +17,7 @@ URRROS2ClockPublisher::URRROS2ClockPublisher()
 
     // [ROS2ClockPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
     QoS = UROS2QoS::ClockPub;
-    SetupUpdateCallback();    //use UpdateMessage as update delegate
+    SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
 void URRROS2ClockPublisher::UpdateMessage(UROS2GenericMsg* InMessage)

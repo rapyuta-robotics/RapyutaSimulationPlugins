@@ -35,7 +35,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
     GENERATED_BODY()
 
 #define RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(InTopicName, InMsgClass, InCallback) \
-    RR_ROS2_SUBSCRIBE_TO_TOPIC(RobotROS2Node, this, InTopicName, InMsgClass, InCallback)
+    ROS2_CREATE_SUBSCRIBER(RobotROS2Node, this, InTopicName, InMsgClass, InCallback)
 
 public:
     //! Target robot
@@ -163,12 +163,6 @@ public:
      */
     UFUNCTION()
     virtual bool InitServicesClients();
-
-    /**
-     * @brief Stop all service clients
-     */
-    UFUNCTION()
-    virtual void StopServicesClients();
 
     /**
      * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.

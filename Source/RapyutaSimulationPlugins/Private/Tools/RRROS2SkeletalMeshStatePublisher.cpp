@@ -19,7 +19,7 @@ URRROS2SkeletalMeshStatePublisher::URRROS2SkeletalMeshStatePublisher()
     TopicName = TEXT("ue_ros/model_state");
     PublicationFrequencyHz = 10;
     QoS = UROS2QoS::DynamicBroadcaster;
-    SetupUpdateCallback(); //use UpdateMessage as update delegate
+    SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
 void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(ARobotVehicle* InRobot)

@@ -57,9 +57,6 @@ void URRRobotROS2Interface::DeInitialize()
     Robot = nullptr;
 
     StopPublishers();
-
-    // todo: Stop action clients
-    StopServicesClients();
 }
 
 void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -113,7 +110,7 @@ bool URRRobotROS2Interface::InitPublishers()
         if (nullptr == OdomPublisher)
         {
             OdomPublisher = NewObject<URRROS2OdomPublisher>(this);
-            OdomPublisher->SetupUpdateCallback();
+            OdomPublisher->SetDefaultDelegates();
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
             OdomPublisher->PublicationFrequencyHz = OdomPublicationFrequencyHz;
         }
@@ -155,22 +152,14 @@ bool URRRobotROS2Interface::InitServicesClients()
     return IsValid(RobotROS2Node);
 }
 
-void URRRobotROS2Interface::StopServicesClients()
-{
-    for (auto& [srvName, srvClient] : ServiceClientList)
-    {
-        RR_ROS2_STOP_SERVICE_CLIENT(srvClient);
-    }
-}
-
 void URRRobotROS2Interface::InitSubscriptions()
 {
     // Subscription with callback to enqueue vehicle spawn info.
-    RR_ROS2_SUBSCRIBE_TO_TOPIC(
+    ROS2_CREATE_SUBSCRIBER(
         RobotROS2Node, this, CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);
 
     // Subscription with callback to enqueue vehicle spawn info.
-    RR_ROS2_SUBSCRIBE_TO_TOPIC(
+    ROS2_CREATE_SUBSCRIBER(
         RobotROS2Node, this, JointsCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointStateCallback);
 }
 

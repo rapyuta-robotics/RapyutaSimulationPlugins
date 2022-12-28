@@ -8,14 +8,13 @@
 // RapyutaSimulationPlugins
 #include "Tools/SimulationState.h"
 
-
 URRROS2StatePublisher::URRROS2StatePublisher()
 {
     MsgClass = UROS2EntityStateMsg::StaticClass();
     TopicName = TEXT("state");
     PublicationFrequencyHz = 100;
     QoS = UROS2QoS::DynamicBroadcaster;
-    SetupUpdateCallback(); //use UpdateMessage as update delegate
+    SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
 void URRROS2StatePublisher::SetTargetRobot(ARobotVehicle* InRobot)
