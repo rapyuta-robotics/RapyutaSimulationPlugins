@@ -55,7 +55,10 @@ bool ARRPlayerController::Initialize()
 
     SceneCamera = ActorCommon->SceneCamera;
     check(SceneCamera);
-    Possess(SceneCamera);
+    if (GameMode->IsDataSynthSimType())
+    {
+        Possess(SceneCamera);
+    }
 
     // Not all maps has GlobalPostProcessVolume
     MainPostProcessVolume = Cast<APostProcessVolume>(URRUObjectUtils::FindPostProcessVolume(GetWorld()));
