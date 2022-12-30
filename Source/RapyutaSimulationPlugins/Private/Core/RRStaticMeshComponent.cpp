@@ -9,6 +9,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRGameSingleton.h"
+#include "Core/RRMeshUtils.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
