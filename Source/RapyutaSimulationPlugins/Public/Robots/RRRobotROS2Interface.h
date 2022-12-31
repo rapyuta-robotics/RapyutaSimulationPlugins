@@ -136,6 +136,10 @@ public:
     UPROPERTY(Transient, BlueprintReadWrite, Replicated)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
 
+    //! Odom publisher
+    UPROPERTY(Transient, BlueprintReadWrite, Replicated)
+    UROS2Subscriber* CmdVelPublisher = nullptr;
+
     /**
      * @brief Initialize non sensor basic publishers such as odometry.
      * Overidden in child robot ROS2 interface classes for specialized publishers.
@@ -155,7 +159,7 @@ public:
      * Overidden in child robot ROS2 interface classes for specialized topic subscriptions.
      */
     UFUNCTION()
-    virtual void InitSubscriptions();
+    virtual bool InitSubscriptions();
 
     /**
      * @brief Initialize services clients
@@ -172,22 +176,6 @@ public:
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
 
 protected:
-    /**
-     * @brief Create a ROS2 publisher
-     *
-     * @param InTopicName
-     * @param OutPublisher
-     * @param InPublisherClass
-     * @param InMsgClass
-     * @param InPubFrequency
-     */
-    void CreatePublisher(const FString& InTopicName,
-                         const TSubclassOf<UROS2Publisher>& InPublisherClass,
-                         const TSubclassOf<UROS2GenericMsg>& InMsgClass,
-                         int32 InPubFrequency,
-                         uint8 InQoS,
-                         UROS2Publisher*& OutPublisher);
-
     template<typename TROS2Message,
              typename TROS2MessageData,
              typename TRobot,

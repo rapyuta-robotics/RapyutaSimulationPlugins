@@ -24,15 +24,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2ClockPublisher : public UROS2Publisher
     GENERATED_BODY()
 
 public:
-
     URRROS2ClockPublisher();
-
-    /**
-     * @brief Update messsage with [UGameplayStatics::GetTimeSeconds](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Kismet/UGameplayStatics/GetTimeSeconds/)
-     *
-     * @param InMessage
-     */
-    void UpdateMessage(UROS2GenericMsg* InMessage) override;
 
     /**
      * @brief

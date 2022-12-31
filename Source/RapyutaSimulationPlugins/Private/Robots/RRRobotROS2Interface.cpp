@@ -123,21 +123,6 @@ bool URRRobotROS2Interface::InitPublishers()
     return true;
 }
 
-void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
-                                            const TSubclassOf<UROS2Publisher>& InPublisherClass,
-                                            const TSubclassOf<UROS2GenericMsg>& InMsgClass,
-                                            int32 InPubFrequency,
-                                            uint8 InQoS,
-                                            UROS2Publisher*& OutPublisher)
-{
-    if (nullptr == OutPublisher)
-    {
-        OutPublisher = UROS2Publisher::CreatePublisher(this, InTopicName, InPublisherClass, InMsgClass, InPubFrequency);
-    }
-    OutPublisher->QoS = TEnumAsByte<UROS2QoS>(InQoS);
-    OutPublisher->InitializeWithROS2(RobotROS2Node);
-}
-
 void URRRobotROS2Interface::StopPublishers()
 {
     if (bPublishOdom && OdomPublisher)
@@ -152,8 +137,13 @@ bool URRRobotROS2Interface::InitServicesClients()
     return IsValid(RobotROS2Node);
 }
 
-void URRRobotROS2Interface::InitSubscriptions()
+bool URRRobotROS2Interface::InitSubscriptions()
 {
+    if (false == IsValid(RobotROS2Node))
+    {
+        return false;
+    }
+
     // Subscription with callback to enqueue vehicle spawn info.
     ROS2_CREATE_SUBSCRIBER(
         RobotROS2Node, this, CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);
@@ -161,6 +151,8 @@ void URRRobotROS2Interface::InitSubscriptions()
     // Subscription with callback to enqueue vehicle spawn info.
     ROS2_CREATE_SUBSCRIBER(
         RobotROS2Node, this, JointsCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointStateCallback);
+
+    return true;
 }
 
 void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)
