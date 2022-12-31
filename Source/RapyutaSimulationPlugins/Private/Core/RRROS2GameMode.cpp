@@ -71,10 +71,7 @@ void ARRROS2GameMode::InitROS2()
     }
 
     // MainROS2Node
-    MainROS2Node = NewObject<UROS2NodeComponent>(this);
-    MainROS2Node->Namespace.Reset();
-    MainROS2Node->Name = MainROS2NodeName;
-    MainROS2Node->Init();
+    MainROS2Node = UROS2NodeComponent::CreateNewNode(this, MainROS2NodeName, TEXT("/"));
 
     // MainSimState
     check(MainSimState);
@@ -86,8 +83,8 @@ void ARRROS2GameMode::InitROS2()
     MainROS2SimStateClient->ServerSimState = MainSimState;
 
     // Create Clock publisher
-    ClockPublisher = NewObject<URRROS2ClockPublisher>(this);
-    MainROS2Node->AddPublisher(ClockPublisher);
+    ClockPublisher =
+        CastChecked<URRROS2ClockPublisher>(MainROS2Node->CreatePublisherWithClass(URRROS2ClockPublisher::StaticClass()));
 }
 
 void ARRROS2GameMode::StartPlay()

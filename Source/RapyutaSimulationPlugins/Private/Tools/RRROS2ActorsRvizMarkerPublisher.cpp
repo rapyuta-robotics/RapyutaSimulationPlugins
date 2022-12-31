@@ -9,6 +9,7 @@ URRROS2ActorsRvizMarkerPublisher::URRROS2ActorsRvizMarkerPublisher()
     MsgClass = UROS2MarkerArrayMsg::StaticClass();
     PublicationFrequencyHz = 1;
     QoS = UROS2QoS::KeepLast;
+    SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
 void URRROS2ActorsRvizMarkerPublisher::UpdateMessage(UROS2GenericMsg* InMessage)

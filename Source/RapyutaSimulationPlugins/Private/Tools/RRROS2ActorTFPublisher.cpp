@@ -1,6 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/RRROS2ActorTFPublisher.h"
+
 #include "ROS2ServiceServer.h"
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
@@ -9,11 +10,8 @@ void URRROS2ActorTFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
 
-    // register delegates to node
-    FServiceCallback TriggerPublishSrvCallback;
-    TriggerPublishSrvCallback.BindDynamic(this, &URRROS2ActorTFPublisher::TriggerPublishSrv);
-
-    InROS2Node->AddServiceServer(UROS2ServiceServer::CreateServiceServer(this, TriggerServiceName, UROS2SetBoolSrv::StaticClass(), TriggerPublishSrvCallback));
+    ROS2_CREATE_SERVICE_SERVER(
+        InROS2Node, this, TriggerServiceName, UROS2SetBoolSrv::StaticClass(), &URRROS2ActorTFPublisher::TriggerPublishSrv);
 }
 
 void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
@@ -34,11 +32,6 @@ void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
     FROSSetBoolRes response;
     response.bSuccess = true;
     triggerPublishService->SetResponse(response);
-}
-
-void URRROS2ActorTFPublisher::BeginPlay()
-{
-    Super::BeginPlay();
 }
 
 void URRROS2ActorTFPublisher::SetReferenceActorByName(const FString& InName)

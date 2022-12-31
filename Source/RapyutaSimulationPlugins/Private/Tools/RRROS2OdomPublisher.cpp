@@ -25,15 +25,9 @@ void URRROS2OdomPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 
 void URRROS2OdomPublisher::InitializeTFWithROS2(UROS2NodeComponent* InROS2Node)
 {
-    if (bPublishOdomTf)
+    if (bPublishOdomTf && nullptr == TFPublisher)
     {
-        if (nullptr == TFPublisher)
-        {
-            TFPublisher = NewObject<URRROS2TFPublisher>(this);
-            TFPublisher->SetDefaultDelegates();
-            TFPublisher->PublicationFrequencyHz = PublicationFrequencyHz;
-        }
-        TFPublisher->InitializeWithROS2(InROS2Node);
+        TFPublisher = CastChecked<URRROS2TFPublisher>(InROS2Node->CreatePublisherWithClass(URRROS2TFPublisher::StaticClass()));
     }
 }
 
@@ -74,12 +68,3 @@ bool URRROS2OdomPublisher::GetOdomData(FROSOdom& OutOdomData) const
         return false;
     }
 }
-
-// void URRROS2OdomPublisher::RevokeUpdateCallback()
-// {
-//     Super::RevokeUpdateCallback();
-//     if (bPublishOdomTf && TFPublisher)
-//     {
-//         TFPublisher->RevokeUpdateCallback();
-//     }
-// }

@@ -120,7 +120,7 @@ public:
     }
 
     UPROPERTY()
-    TSubclassOf<UROS2Publisher> SensorPublisherClass;
+    TSubclassOf<UROS2Publisher> SensorPublisherClass = URRROS2BaseSensorPublisher::StaticClass();
 
     UPROPERTY(Transient)
     URRROS2BaseSensorPublisher* SensorPublisher = nullptr;

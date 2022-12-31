@@ -7,6 +7,7 @@
 #pragma once
 
 // UE
+#include "Containers/Ticker.h"
 #include "CoreMinimal.h"
 
 // rclUE
@@ -24,23 +25,26 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2ClockPublisher : public UROS2Publisher
     GENERATED_BODY()
 
 public:
-
     URRROS2ClockPublisher();
 
     /**
-     * @brief Update messsage with [UGameplayStatics::GetTimeSeconds](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Kismet/UGameplayStatics/GetTimeSeconds/)
+     * @brief Initialize tickdelegate
      *
-     * @param InMessage
      */
-    void UpdateMessage(UROS2GenericMsg* InMessage) override;
+    virtual void Init() override;
+
+protected:
+    /** Delegate for callbacks to Tick */
+    FTickerDelegate TickDelegate;
+
+    /** Handle to various registered delegates */
+    FTSTicker::FDelegateHandle TickDelegateHandle;
 
     /**
      * @brief
      * Called with every simulation step. Publishing clock msg with simulation step.
      *
-     * @param DeltaTime
-     * @param TickType
-     * @param ThisTickFunction
+     * @param DeltaSeconds
      */
-    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+    bool Tick(float DeltaSeconds);
 };
