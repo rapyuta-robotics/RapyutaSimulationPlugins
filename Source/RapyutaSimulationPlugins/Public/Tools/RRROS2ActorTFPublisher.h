@@ -33,7 +33,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2ActorTFPublisher : public URRROS2TFPub
     GENERATED_BODY()
 
 public:
-    void InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
+    void InitializeWithROS2(UROS2Node* InROS2Node) override;
 
     /**
      * @brief Callback function of TriggerPublishSrv

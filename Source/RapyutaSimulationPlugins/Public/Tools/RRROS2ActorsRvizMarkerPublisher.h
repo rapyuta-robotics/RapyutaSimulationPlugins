@@ -15,7 +15,7 @@
 
 #include "RRROS2ActorsRvizMarkerPublisher.generated.h"
 
-class AROS2Node;
+class AROS2NodeActor;
 
 /**
  * @brief SRviz marker array publisher class. This class publishes are markers for given actors.

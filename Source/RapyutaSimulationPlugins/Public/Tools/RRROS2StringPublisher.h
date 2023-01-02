@@ -4,7 +4,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 #pragma once
 
 // UE
@@ -15,7 +14,7 @@
 
 #include "RRROS2StringPublisher.generated.h"
 
-class AROS2Node;
+class AROS2NodeActor;
 
 /**
  * @brief String Publisher class
@@ -29,7 +28,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2StringPublisher : public UROS2Publishe
 public:
     /**
     * @brief Construct a new URRROS2StringPublisher object
-    * 
+    *
     */
     URRROS2StringPublisher();
 

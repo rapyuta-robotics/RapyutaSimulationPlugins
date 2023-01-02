@@ -80,7 +80,7 @@ void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
     {
         FActorSpawnParameters spawnParams;
         spawnParams.Name = FName(*nodeName);
-        RobotROS2Node = NewObject<UROS2NodeComponent>(this);
+        RobotROS2Node = NewObject<UROS2Node>(this);
     }
     RobotROS2Node->Name = nodeName;
 

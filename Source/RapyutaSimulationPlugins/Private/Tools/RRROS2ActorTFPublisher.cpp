@@ -6,7 +6,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
 
-void URRROS2ActorTFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
+void URRROS2ActorTFPublisher::InitializeWithROS2(UROS2Node* InROS2Node)
 {
     Super::InitializeWithROS2(InROS2Node);
 

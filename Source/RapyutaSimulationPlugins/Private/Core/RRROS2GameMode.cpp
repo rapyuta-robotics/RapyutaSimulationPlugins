@@ -71,7 +71,7 @@ void ARRROS2GameMode::InitROS2()
     }
 
     // MainROS2Node
-    MainROS2Node = UROS2NodeComponent::CreateNewNode(this, MainROS2NodeName, TEXT("/"));
+    MainROS2Node = UROS2Node::CreateNewNode(this, MainROS2NodeName, TEXT("/"));
 
     // MainSimState
     check(MainSimState);
@@ -86,12 +86,23 @@ void ARRROS2GameMode::InitROS2()
     ClockPublisher =
         CastChecked<URRROS2ClockPublisher>(MainROS2Node->CreatePublisherWithClass(URRROS2ClockPublisher::StaticClass()));
 }
+void ARRROS2GameMode::StopROS2()
+{
+    MainROS2Node->Destroy();
+}
 
 void ARRROS2GameMode::StartPlay()
 {
     Super::StartPlay();
 
     UE_LOG(LogRapyutaCore, Display, TEXT("[ARRROS2GameMode]: START PLAY!"));
+}
+
+void ARRROS2GameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    UE_LOG(LogRapyutaCore, Display, TEXT("[ARRROS2GameMode]: END PLAY!"));
+
+    Super::EndPlay(EndPlayReason);
 }
 
 void ARRROS2GameMode::SetFixedTimeStep(const float InStepSize)

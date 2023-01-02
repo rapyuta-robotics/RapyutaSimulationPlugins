@@ -59,7 +59,7 @@ public:
      * @param InROS2Node ROS2Node which this publisher belongs to
      * @param InTopicName
      */
-    virtual void PreInitializePublisher(UROS2NodeComponent* InROS2Node, const FString& InTopicName) override;
+    virtual void PreInitializePublisher(UROS2Node* InROS2Node, const FString& InTopicName) override;
 
     /**
      * @brief Update sensor data by CaptureScene and #CaptureNonBlocking

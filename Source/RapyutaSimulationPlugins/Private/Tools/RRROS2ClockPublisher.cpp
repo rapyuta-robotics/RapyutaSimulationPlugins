@@ -19,19 +19,19 @@ URRROS2ClockPublisher::URRROS2ClockPublisher()
     QoS = UROS2QoS::ClockPub;
 }
 
-void URRROS2ClockPublisher::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+// void URRROS2ClockPublisher::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+// {
+//     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    // Noted: Elapsed time: time in seconds since world was brought up for play
-    auto* gameState = GetWorld()->GetGameState();
-    if (gameState)
-    {
-        // update msg
-        FROSClock msg;
-        msg.Clock = URRConversionUtils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
+//     // Noted: Elapsed time: time in seconds since world was brought up for play
+//     auto* gameState = GetWorld()->GetGameState();
+//     if (gameState)
+//     {
+//         // update msg
+//         FROSClock msg;
+//         msg.Clock = URRConversionUtils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
 
-        // publish
-        Publish<UROS2ClockMsg, FROSClock>(msg);
-    }
-}
+//         // publish
+//         Publish<UROS2ClockMsg, FROSClock>(msg);
+//     }
+// }

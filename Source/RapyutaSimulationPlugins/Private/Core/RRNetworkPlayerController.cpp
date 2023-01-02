@@ -83,7 +83,7 @@ void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
     }
 
     // Init SimStateClient's [ROS2Node] & [ClockPublisher]
-    SimStateClientROS2Node = NewObject<UROS2NodeComponent>(this);
+    SimStateClientROS2Node = NewObject<UROS2Node>(this);
     SimStateClientROS2Node->Namespace.Reset();
     // NOTE: Its NameSpace will be set to [PlayerName] in [ServerSetPlayerName()]
     SimStateClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);
@@ -98,7 +98,7 @@ void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
 
     // Create Clock publisher
     SimStateClientClockPublisher = NewObject<URRROS2ClockPublisher>(this);
-    // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
+    // ClockPublisher's RegisterComponent() is done by [AROS2NodeActor::AddPublisher()]
     SimStateClientClockPublisher->InitializeWithROS2(SimStateClientROS2Node);
 
     UE_LOG(LogRapyutaCore, Log, TEXT("[%s] SimStateClient ROS2Node[%s] created"), *PlayerName, *SimStateClientROS2Node->Name);

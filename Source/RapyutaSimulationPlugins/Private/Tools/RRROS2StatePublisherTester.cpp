@@ -11,7 +11,7 @@ void ARRROS2StatePublisherTester::BeginPlay()
 {
     Super::BeginPlay();
 
-    ROS2Node = NewObject<UROS2NodeComponent>(this);
+    ROS2Node = NewObject<UROS2Node>(this);
     ROS2Node->Name = FString::Printf(TEXT("%s_UE4ROS2Node"), *GetName());
     ROS2Node->Namespace = FString();
     ROS2Node->Init();

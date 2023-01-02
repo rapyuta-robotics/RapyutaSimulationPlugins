@@ -17,7 +17,7 @@
 
 #include "RRROS2GameMode.generated.h"
 
-class AROS2Node;
+class AROS2NodeActor;
 class URRROS2ClockPublisher;
 
 /**
@@ -35,7 +35,7 @@ public:
 
     //! Sim's Main ROS2 node. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadOnly)
-    UROS2NodeComponent* MainROS2Node = nullptr;
+    UROS2Node* MainROS2Node = nullptr;
 
     //! Sim's Main ROS2 node name. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadWrite)
@@ -104,10 +104,14 @@ protected:
      */
     virtual void StartPlay() override;
 
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 private:
     /**
      * @brief Create and initialize #MainROS2Node, #ClockPublisher and #MainSimState.
      *
      */
     void InitROS2();
+
+    void StopROS2();
 };

@@ -30,10 +30,10 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2OdomPublisher : public UROS2Publisher
 {
     GENERATED_BODY()
 
-public: 
+public:
     /**
      * @brief Construct a new URRROS2OdomPublisher object
-     * 
+     *
      */
     URRROS2OdomPublisher();
 
@@ -43,16 +43,16 @@ public:
     UPROPERTY(BlueprintReadWrite)
     URRROS2TFPublisher* TFPublisher = nullptr;
 
-    void InitializeTFWithROS2(UROS2NodeComponent* InROS2Node);
+    void InitializeTFWithROS2(UROS2Node* InROS2Node);
 
-    void InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
+    void InitializeWithROS2(UROS2Node* InROS2Node) override;
 
     /**
      * @brief Initialize odom publisher
      * @todo is this method necessary?
      */
     UFUNCTION(BlueprintCallable)
-    void InitOdomPublisher(UROS2NodeComponent* InROS2Node)
+    void InitOdomPublisher(UROS2Node* InROS2Node)
     {
         InitializeWithROS2(InROS2Node);
     }

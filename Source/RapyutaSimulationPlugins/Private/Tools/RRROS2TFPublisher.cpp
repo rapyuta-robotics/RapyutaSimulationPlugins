@@ -13,7 +13,7 @@ URRROS2TFPublisher::URRROS2TFPublisher()
     SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
-void URRROS2TFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
+void URRROS2TFPublisher::InitializeWithROS2(UROS2Node* InROS2Node)
 {
     // (NOTE) [/tf, /tf_static] has its [tf_prefix] only for frame ids, not topics
     if (IsStatic)

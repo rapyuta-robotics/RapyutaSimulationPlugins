@@ -24,7 +24,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
 /**
  * @brief Base ROS2 Sensor Component class. Other sensors class should inherit from this class.
- * Provide features to initialize with [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
+ * Provide features to initialize with [AROS2NodeActor](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
  * and initialize #URRROS2BaseSensorPublisher.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
@@ -48,11 +48,11 @@ public:
      * @param InTopicName Topic name
      * @param InQoS Topic QoS
      *
-     * @sa [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
+     * @sa [AROS2NodeActor](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
      * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
     UFUNCTION(BlueprintCallable)
-    virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
+    virtual void InitalizeWithROS2(UROS2Node* InROS2Node,
                                    const FString& InPublisherName = TEXT(""),
                                    const FString& InTopicName = TEXT(""),
                                    const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
@@ -72,7 +72,7 @@ public:
      * @param InTopicName If this is empty, topic name become #TopicName.
      */
     UFUNCTION(BlueprintCallable)
-    virtual void PreInitializePublisher(UROS2NodeComponent* InROS2Node, const FString& InTopicName = TEXT(""));
+    virtual void PreInitializePublisher(UROS2Node* InROS2Node, const FString& InTopicName = TEXT(""));
 
     /**
      * @brief Initialize Sensorpublisher by using [UROS2Publisher](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dd4/class_u_r_o_s2_publisher.html)'s methods.
@@ -83,7 +83,7 @@ public:
      * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
     UFUNCTION(BlueprintCallable)
-    virtual void InitializePublisher(UROS2NodeComponent* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
+    virtual void InitializePublisher(UROS2Node* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
 
     /**
      * @brief Start timer to update and publish sensor data by using SetTimer

@@ -34,7 +34,7 @@ public:
 
     // should be its own node? one for each namespace?
     UPROPERTY()
-    UROS2NodeComponent* ROS2Node = nullptr;
+    UROS2Node* ROS2Node = nullptr;
 
     UPROPERTY()
     ARobotVehicle* RobotVehicle = nullptr;
