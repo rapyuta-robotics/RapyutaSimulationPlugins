@@ -53,7 +53,7 @@ public:
      *
      * @param InROS2Node
      */
-    void InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
+    bool InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
 
     /**
      * @brief Set value to #TF.

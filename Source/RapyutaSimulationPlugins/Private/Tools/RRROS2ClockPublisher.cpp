@@ -19,11 +19,13 @@ URRROS2ClockPublisher::URRROS2ClockPublisher()
     QoS = UROS2QoS::ClockPub;
 }
 
-void URRROS2ClockPublisher::Init()
+bool URRROS2ClockPublisher::Init()
 {
-    Super::Init();
+    bool res = Super::Init();
     TickDelegate = FTickerDelegate::CreateUObject(this, &URRROS2ClockPublisher::Tick);
     TickDelegateHandle = FTSTicker::GetCoreTicker().AddTicker(TickDelegate);
+
+    return res;
 }
 
 bool URRROS2ClockPublisher::Tick(float DeltaSeconds)

@@ -30,10 +30,10 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2OdomPublisher : public UROS2Publisher
 {
     GENERATED_BODY()
 
-public: 
+public:
     /**
      * @brief Construct a new URRROS2OdomPublisher object
-     * 
+     *
      */
     URRROS2OdomPublisher();
 
@@ -45,7 +45,7 @@ public:
 
     void InitializeTFWithROS2(UROS2NodeComponent* InROS2Node);
 
-    void InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
+    bool InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
 
     /**
      * @brief Initialize odom publisher

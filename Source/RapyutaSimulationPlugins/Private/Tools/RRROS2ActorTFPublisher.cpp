@@ -6,12 +6,16 @@
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
 
-void URRROS2ActorTFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
+bool URRROS2ActorTFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 {
-    Super::InitializeWithROS2(InROS2Node);
+    bool result = Super::InitializeWithROS2(InROS2Node);
 
-    ROS2_CREATE_SERVICE_SERVER(
-        InROS2Node, this, TriggerServiceName, UROS2SetBoolSrv::StaticClass(), &URRROS2ActorTFPublisher::TriggerPublishSrv);
+    if (result)
+    {
+        ROS2_CREATE_SERVICE_SERVER(
+            InROS2Node, this, TriggerServiceName, UROS2SetBoolSrv::StaticClass(), &URRROS2ActorTFPublisher::TriggerPublishSrv);
+    }
+    return result;
 }
 
 void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)

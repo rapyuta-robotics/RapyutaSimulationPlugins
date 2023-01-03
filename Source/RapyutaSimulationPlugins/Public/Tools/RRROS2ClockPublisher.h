@@ -31,7 +31,7 @@ public:
      * @brief Initialize tickdelegate
      *
      */
-    virtual void Init() override;
+    virtual bool Init() override;
 
 protected:
     /** Delegate for callbacks to Tick */

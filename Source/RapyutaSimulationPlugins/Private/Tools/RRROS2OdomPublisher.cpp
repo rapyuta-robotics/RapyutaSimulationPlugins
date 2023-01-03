@@ -15,12 +15,17 @@ URRROS2OdomPublisher::URRROS2OdomPublisher()
     SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
-void URRROS2OdomPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
+bool URRROS2OdomPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 {
-    Super::InitializeWithROS2(InROS2Node);
+    bool res = Super::InitializeWithROS2(InROS2Node);
 
-    // Init TF
-    InitializeTFWithROS2(InROS2Node);
+    if (res)
+    {
+        // Init TF
+        InitializeTFWithROS2(InROS2Node);
+    }
+
+    return res;
 }
 
 void URRROS2OdomPublisher::InitializeTFWithROS2(UROS2NodeComponent* InROS2Node)

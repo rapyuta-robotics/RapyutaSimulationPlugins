@@ -13,7 +13,7 @@ URRROS2TFPublisher::URRROS2TFPublisher()
     SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
-void URRROS2TFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
+bool URRROS2TFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 {
     // (NOTE) [/tf, /tf_static] has its [tf_prefix] only for frame ids, not topics
     if (IsStatic)
@@ -26,7 +26,7 @@ void URRROS2TFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
         TopicName = TEXT("/tf");
         QoS = UROS2QoS::DynamicBroadcaster;
     }
-    Super::InitializeWithROS2(InROS2Node);
+    return Super::InitializeWithROS2(InROS2Node);
 }
 
 void URRROS2TFPublisher::SetTransform(const FVector& Translation, const FQuat& Rotation)
