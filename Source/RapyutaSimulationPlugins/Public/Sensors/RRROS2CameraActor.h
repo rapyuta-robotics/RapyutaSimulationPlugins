@@ -10,7 +10,7 @@
 #include "Sensors/RRROS2CameraComponent.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 #include "RRROS2CameraActor.generated.h"
 

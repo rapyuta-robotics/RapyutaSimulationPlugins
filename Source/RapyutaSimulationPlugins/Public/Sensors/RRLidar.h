@@ -15,7 +15,7 @@
 #include "Sensors/RRBaseLidarComponent.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 #include "ROS2Publisher.h"
 
 #include "RRLidar.generated.h"

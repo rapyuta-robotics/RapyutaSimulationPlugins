@@ -7,7 +7,7 @@
 #include "Net/UnrealNetwork.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRNetworkGameMode.h"

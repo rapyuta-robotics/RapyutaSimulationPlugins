@@ -7,7 +7,7 @@
 
 // rclUE
 #include "Msgs/ROS2Clock.h"
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRNetworkGameMode.h"

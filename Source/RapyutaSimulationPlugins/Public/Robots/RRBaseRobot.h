@@ -15,7 +15,7 @@
 #include "Tools/ROS2Spawnable.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 #include "RRBaseRobot.generated.h"
 

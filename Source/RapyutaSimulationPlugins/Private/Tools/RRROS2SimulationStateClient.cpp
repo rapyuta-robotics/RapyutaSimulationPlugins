@@ -36,25 +36,27 @@ void URRROS2SimulationStateClient::Init(UROS2NodeComponent* InROS2Node)
 {
     ROS2Node = InROS2Node;
 
-    // register delegates to node
-    FServiceCallback GetEntityStateSrvCallback;
-    FServiceCallback SetEntityStateSrvCallback;
-    FServiceCallback AttachSrvCallback;
-    FServiceCallback SpawnEntitySrvCallback;
-    FServiceCallback SpawnEntitiesSrvCallback;
-    FServiceCallback DeleteEntitySrvCallback;
-    GetEntityStateSrvCallback.BindDynamic(this, &URRROS2SimulationStateClient::GetEntityStateSrv);
-    SetEntityStateSrvCallback.BindDynamic(this, &URRROS2SimulationStateClient::SetEntityStateSrv);
-    AttachSrvCallback.BindDynamic(this, &URRROS2SimulationStateClient::AttachSrv);
-    SpawnEntitySrvCallback.BindDynamic(this, &URRROS2SimulationStateClient::SpawnEntitySrv);
-    SpawnEntitiesSrvCallback.BindDynamic(this, &URRROS2SimulationStateClient::SpawnEntitiesSrv);
-    DeleteEntitySrvCallback.BindDynamic(this, &URRROS2SimulationStateClient::DeleteEntitySrv);
-    InROS2Node->AddServiceServer(UROS2ServiceServer::CreateServiceServer(this, ("GetEntityState"), UROS2GetEntityStateSrv::StaticClass(), GetEntityStateSrvCallback));
-    InROS2Node->AddServiceServer(UROS2ServiceServer::CreateServiceServer(this, ("SetEntityState"), UROS2SetEntityStateSrv::StaticClass(), SetEntityStateSrvCallback));
-    InROS2Node->AddServiceServer(UROS2ServiceServer::CreateServiceServer(this, ("Attach"), UROS2AttachSrv::StaticClass(), AttachSrvCallback));
-    InROS2Node->AddServiceServer(UROS2ServiceServer::CreateServiceServer(this, ("SpawnEntity"), UROS2SpawnEntitySrv::StaticClass(), SpawnEntitySrvCallback));
-    InROS2Node->AddServiceServer(UROS2ServiceServer::CreateServiceServer(this, ("SpawnEntities"), UROS2SpawnEntitiesSrv::StaticClass(), SpawnEntitiesSrvCallback));
-    InROS2Node->AddServiceServer(UROS2ServiceServer::CreateServiceServer(this, ("DeleteEntity"), UROS2DeleteEntitySrv::StaticClass(), DeleteEntitySrvCallback));
+    ROS2_CREATE_SERVICE_SERVER(ROS2Node,
+                               this,
+                               TEXT("GetEntityState"),
+                               UROS2GetEntityStateSrv::StaticClass(),
+                               &URRROS2SimulationStateClient::GetEntityStateSrv);
+    ROS2_CREATE_SERVICE_SERVER(ROS2Node,
+                               this,
+                               TEXT("SetEntityState"),
+                               UROS2SetEntityStateSrv::StaticClass(),
+                               &URRROS2SimulationStateClient::SetEntityStateSrv);
+    ROS2_CREATE_SERVICE_SERVER(
+        ROS2Node, this, TEXT("Attach"), UROS2AttachSrv::StaticClass(), &URRROS2SimulationStateClient::AttachSrv);
+    ROS2_CREATE_SERVICE_SERVER(
+        ROS2Node, this, TEXT("SpawnEntity"), UROS2SpawnEntitySrv::StaticClass(), &URRROS2SimulationStateClient::SpawnEntitySrv);
+    ROS2_CREATE_SERVICE_SERVER(ROS2Node,
+                               this,
+                               TEXT("SpawnEntities"),
+                               UROS2SpawnEntitiesSrv::StaticClass(),
+                               &URRROS2SimulationStateClient::SpawnEntitiesSrv);
+    ROS2_CREATE_SERVICE_SERVER(
+        ROS2Node, this, TEXT("DeleteEntity"), UROS2DeleteEntitySrv::StaticClass(), &URRROS2SimulationStateClient::DeleteEntitySrv);
 }
 
 void URRROS2SimulationStateClient::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

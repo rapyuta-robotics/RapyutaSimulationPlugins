@@ -9,7 +9,7 @@
 #include "Robots/RobotVehicle.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 #include "ROS2Publisher.h"
 //#include "DrawDebugHelpers.h"
 

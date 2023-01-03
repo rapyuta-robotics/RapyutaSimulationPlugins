@@ -3,7 +3,7 @@
 #include "Tools/RRROS2StatePublisher.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 // RapyutaSimulationPlugins
 #include "Tools/SimulationState.h"

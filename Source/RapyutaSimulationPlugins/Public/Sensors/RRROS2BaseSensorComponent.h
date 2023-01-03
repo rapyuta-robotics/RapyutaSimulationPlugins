@@ -10,7 +10,7 @@
 #include "CoreMinimal.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 #include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins

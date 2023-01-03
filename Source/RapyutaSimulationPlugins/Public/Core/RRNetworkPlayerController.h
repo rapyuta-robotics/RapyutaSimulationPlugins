@@ -11,7 +11,7 @@
 #include "UnrealClient.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
@@ -75,8 +75,8 @@ public:
 
     /**
      * @brief Create ROS2SimStateClient without initializing yet
-     * 
-     * @param InSimStateClientClass 
+     *
+     * @param InSimStateClientClass
      */
     UFUNCTION(BlueprintCallable)
     void CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass);
@@ -112,10 +112,10 @@ public:
     void RequestServerTimeUpdate();
 
     /**
-     * @brief Called from the server and execute in the client via RPC. 
+     * @brief Called from the server and execute in the client via RPC.
      * Sync client time with InServerCurrentTime + delay compendation.
      * Delay is estimated as 0.5 * (current client time - InClientRequestTime)
-     * 
+     *
      * @param InClientRequestTime Client time when client calls #ServerRequestLocalClockUpdate
      * @param InServerCurrentTime Server time when server call this method
      */
@@ -123,9 +123,9 @@ public:
     void ClientSendLocalClockUpdate(float InClientRequestTime, float InServerCurrentTime);
 
     /**
-     * @brief Called from the client and execute in the server via RPC. 
+     * @brief Called from the client and execute in the server via RPC.
      * Get current server time and call #ClientSendLocalClockUpdate with current server time and given InClientRequestTime
-     * 
+     *
      * @param InClientRequestTime Client Time when client call this method.
      */
     UFUNCTION(Server, Reliable)
@@ -143,7 +143,7 @@ public:
      * @param InClientTimeStamp
      * @param InClientRobotPosition
      * @param InLinearVel
-     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player. 
+     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player.
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
     virtual void ServerSetLinearVel(ARRBaseRobot* InServerRobot,
@@ -157,7 +157,7 @@ public:
      * @param InClientTimeStamp
      * @param InClientRobotRotation
      * @param InAngularVel
-     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player. 
+     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player.
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
     virtual void ServerSetAngularVel(ARRBaseRobot* InServerRobot,

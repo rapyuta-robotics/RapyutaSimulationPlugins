@@ -12,7 +12,7 @@
 #include "CoreMinimal.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 #include "Srvs/ROS2Attach.h"
 #include "Srvs/ROS2DeleteEntity.h"
 #include "Srvs/ROS2GetEntityState.h"
