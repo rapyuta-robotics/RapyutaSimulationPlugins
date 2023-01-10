@@ -10,7 +10,7 @@
 // rclUE
 #include "Msgs/ROS2Clock.h"
 #include "Msgs/ROS2Twist.h"
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
@@ -83,9 +83,7 @@ void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
     }
 
     // Init SimStateClient's [ROS2Node] & [ClockPublisher]
-    UWorld* currentWorld = GetWorld();
-    SimStateClientROS2Node = currentWorld->SpawnActor<AROS2Node>();
-    SimStateClientROS2Node->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+    SimStateClientROS2Node = NewObject<UROS2NodeComponent>(this);
     SimStateClientROS2Node->Namespace.Reset();
     // NOTE: Its NameSpace will be set to [PlayerName] in [ServerSetPlayerName()]
     SimStateClientROS2Node->Name = FString::Printf(TEXT("%s_ROS2Node"), *PlayerName);

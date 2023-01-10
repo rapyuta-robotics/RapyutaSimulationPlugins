@@ -12,7 +12,7 @@
 #include "CoreMinimal.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 #include "Srvs/ROS2Attach.h"
 #include "Srvs/ROS2DeleteEntity.h"
 #include "Srvs/ROS2GetEntityState.h"
@@ -42,7 +42,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2SimulationStateClient : public UActorC
 public:
     //! ROS2 node of each client's own in the network
     UPROPERTY(BlueprintReadOnly, Replicated)
-    AROS2Node* ROS2Node = nullptr;
+    UROS2NodeComponent* ROS2Node = nullptr;
 
     //! Handle to server's main sim state which has ROS2 interface implementation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
@@ -55,7 +55,7 @@ public:
      * @sa [ROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
      */
     UFUNCTION(BlueprintCallable)
-    virtual void Init(AROS2Node* InROS2Node);
+    virtual void Init(UROS2NodeComponent* InROS2Node);
 
     virtual bool IsSupportedForNetworking() const override
     {

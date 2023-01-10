@@ -6,10 +6,8 @@
 #include "Msgs/ROS2Clock.h"
 #include "rclcUtilities.h"
 
-void URRROS2ClockPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
+URRROS2ClockPublisher::URRROS2ClockPublisher()
 {
-    Super::InitializeWithROS2(InROS2Node);
-
     MsgClass = UROS2ClockMsg::StaticClass();
     TopicName = TEXT("clock");
 
@@ -18,23 +16,31 @@ void URRROS2ClockPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
     PublicationFrequencyHz = -1;
 
     // [ROS2ClockPublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
-    Init(UROS2QoS::ClockPub);
+    QoS = UROS2QoS::ClockPub;
 }
 
-void URRROS2ClockPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
+bool URRROS2ClockPublisher::Init()
+{
+    bool res = Super::Init();
+    TickDelegate = FTickerDelegate::CreateUObject(this, &URRROS2ClockPublisher::Tick);
+    TickDelegateHandle = FTSTicker::GetCoreTicker().AddTicker(TickDelegate);
+
+    return res;
+}
+
+bool URRROS2ClockPublisher::Tick(float DeltaSeconds)
 {
     // Noted: Elapsed time: time in seconds since world was brought up for play
     auto* gameState = GetWorld()->GetGameState();
     if (gameState)
     {
+        // update msg
         FROSClock msg;
         msg.Clock = URRConversionUtils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
-        CastChecked<UROS2ClockMsg>(InMessage)->SetMsg(msg);
-    }
-}
 
-void URRROS2ClockPublisher::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-    UpdateAndPublishMessage();
+        // publish
+        Publish<UROS2ClockMsg, FROSClock>(msg);
+    }
+
+    return true;
 }

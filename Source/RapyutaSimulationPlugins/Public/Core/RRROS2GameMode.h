@@ -35,7 +35,7 @@ public:
 
     //! Sim's Main ROS2 node. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadOnly)
-    AROS2Node* MainROS2Node = nullptr;
+    UROS2NodeComponent* MainROS2Node = nullptr;
 
     //! Sim's Main ROS2 node name. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadWrite)

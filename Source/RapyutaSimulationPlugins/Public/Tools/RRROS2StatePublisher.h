@@ -11,7 +11,7 @@
 
 // rclUE
 #include "Msgs/ROS2EntityState.h"
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 #include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins
@@ -34,7 +34,8 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2StatePublisher : public UROS2Publisher
     GENERATED_BODY()
 
 public:
-    void InitializeWithROS2(AROS2Node* InROS2Node) override;
+    URRROS2StatePublisher();
+
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
 
     UFUNCTION(BlueprintCallable)

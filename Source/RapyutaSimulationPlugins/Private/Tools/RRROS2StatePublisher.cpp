@@ -3,21 +3,18 @@
 #include "Tools/RRROS2StatePublisher.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 // RapyutaSimulationPlugins
 #include "Tools/SimulationState.h"
 
-void URRROS2StatePublisher::InitializeWithROS2(AROS2Node* InROS2Node)
+URRROS2StatePublisher::URRROS2StatePublisher()
 {
-    Super::InitializeWithROS2(InROS2Node);
-
     MsgClass = UROS2EntityStateMsg::StaticClass();
     TopicName = TEXT("state");
     PublicationFrequencyHz = 100;
-
-    // [URRROS2StatePublisher] must have been already registered to [InROS2Node] (in Super::) before being initialized
-    Init(UROS2QoS::DynamicBroadcaster);
+    QoS = UROS2QoS::DynamicBroadcaster;
+    SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
 void URRROS2StatePublisher::SetTargetRobot(ARobotVehicle* InRobot)

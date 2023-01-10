@@ -5,14 +5,11 @@
 URRROS2ActorsRvizMarkerPublisher::URRROS2ActorsRvizMarkerPublisher()
 {
     ActorClass = APawn::StaticClass();
+    TopicName = TEXT("rviz_marker");
     MsgClass = UROS2MarkerArrayMsg::StaticClass();
     PublicationFrequencyHz = 1;
-}
-
-void URRROS2ActorsRvizMarkerPublisher::InitializeWithROS2(AROS2Node* InROS2Node)
-{
-    Super::InitializeWithROS2(InROS2Node);
-    Init(UROS2QoS::DynamicBroadcaster);
+    QoS = UROS2QoS::KeepLast;
+    SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
 void URRROS2ActorsRvizMarkerPublisher::UpdateMessage(UROS2GenericMsg* InMessage)

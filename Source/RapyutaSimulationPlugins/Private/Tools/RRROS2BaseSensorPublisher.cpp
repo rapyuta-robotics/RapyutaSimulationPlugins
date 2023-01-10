@@ -7,6 +7,7 @@ URRROS2BaseSensorPublisher::URRROS2BaseSensorPublisher()
     // TopicName could be overridden later by users
     TopicName = TEXT("sensor_data");
     MsgClass = UROS2GenericMsg::StaticClass();
+    SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
 void URRROS2BaseSensorPublisher::UpdateMessage(UROS2GenericMsg* InMessage)

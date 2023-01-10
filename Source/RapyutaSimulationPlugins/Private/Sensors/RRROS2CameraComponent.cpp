@@ -14,7 +14,7 @@ URRROS2CameraComponent::URRROS2CameraComponent()
     SensorPublisherClass = URRROS2ImagePublisher::StaticClass();
 }
 
-void URRROS2CameraComponent::PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName)
+void URRROS2CameraComponent::PreInitializePublisher(UROS2NodeComponent* InROS2Node, const FString& InTopicName)
 {
     SceneCaptureComponent->FOVAngle = CameraComponent->FieldOfView;
     SceneCaptureComponent->OrthoWidth = CameraComponent->OrthoWidth;
