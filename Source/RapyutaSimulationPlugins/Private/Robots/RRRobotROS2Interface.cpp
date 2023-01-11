@@ -57,9 +57,6 @@ void URRRobotROS2Interface::DeInitialize()
     Robot = nullptr;
 
     StopPublishers();
-
-    // todo: Stop action clients
-    StopServicesClients();
 }
 
 void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -83,9 +80,8 @@ void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
     {
         FActorSpawnParameters spawnParams;
         spawnParams.Name = FName(*nodeName);
-        RobotROS2Node = GetWorld()->SpawnActor<AROS2Node>(spawnParams);
+        RobotROS2Node = NewObject<UROS2NodeComponent>(this);
     }
-    RobotROS2Node->AttachToActor(InRobot, FAttachmentTransformRules::KeepRelativeTransform);
     RobotROS2Node->Name = nodeName;
 
     // Set robot's [ROS2Node] namespace from spawn parameters if existing
@@ -114,7 +110,7 @@ bool URRRobotROS2Interface::InitPublishers()
         if (nullptr == OdomPublisher)
         {
             OdomPublisher = NewObject<URRROS2OdomPublisher>(this);
-            OdomPublisher->SetupUpdateCallback();
+            OdomPublisher->SetDefaultDelegates();
             OdomPublisher->bPublishOdomTf = bPublishOdomTf;
             OdomPublisher->PublicationFrequencyHz = OdomPublicationFrequencyHz;
         }
@@ -127,26 +123,11 @@ bool URRRobotROS2Interface::InitPublishers()
     return true;
 }
 
-void URRRobotROS2Interface::CreatePublisher(const FString& InTopicName,
-                                            const TSubclassOf<UROS2Publisher>& InPublisherClass,
-                                            const TSubclassOf<UROS2GenericMsg>& InMsgClass,
-                                            int32 InPubFrequency,
-                                            uint8 InQoS,
-                                            UROS2Publisher*& OutPublisher)
-{
-    if (nullptr == OutPublisher)
-    {
-        OutPublisher = UROS2Publisher::CreatePublisher(this, InTopicName, InPublisherClass, InMsgClass, InPubFrequency);
-    }
-    OutPublisher->InitializeWithROS2(RobotROS2Node);
-    OutPublisher->Init(TEnumAsByte<UROS2QoS>(InQoS));
-}
-
 void URRRobotROS2Interface::StopPublishers()
 {
     if (bPublishOdom && OdomPublisher)
     {
-        OdomPublisher->RevokeUpdateCallback();
+        // OdomPublisher->RevokeUpdateCallback();
         OdomPublisher->RobotVehicle = nullptr;
     }
 }
@@ -156,23 +137,22 @@ bool URRRobotROS2Interface::InitServicesClients()
     return IsValid(RobotROS2Node);
 }
 
-void URRRobotROS2Interface::StopServicesClients()
+bool URRRobotROS2Interface::InitSubscriptions()
 {
-    for (auto& [srvName, srvClient] : ServiceClientList)
+    if (false == IsValid(RobotROS2Node))
     {
-        RR_ROS2_STOP_SERVICE_CLIENT(srvClient);
+        return false;
     }
-}
 
-void URRRobotROS2Interface::InitSubscriptions()
-{
     // Subscription with callback to enqueue vehicle spawn info.
-    RR_ROS2_SUBSCRIBE_TO_TOPIC(
+    ROS2_CREATE_SUBSCRIBER(
         RobotROS2Node, this, CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);
 
     // Subscription with callback to enqueue vehicle spawn info.
-    RR_ROS2_SUBSCRIBE_TO_TOPIC(
+    ROS2_CREATE_SUBSCRIBER(
         RobotROS2Node, this, JointsCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointStateCallback);
+
+    return true;
 }
 
 void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)

@@ -16,7 +16,7 @@
 #include "Sensors/RRROS2BaseSensorComponent.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 #include "RRRobotBaseVehicle.generated.h"
 

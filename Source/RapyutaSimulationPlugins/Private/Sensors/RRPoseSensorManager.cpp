@@ -29,7 +29,7 @@ void URRPoseSensorManager::OnComponentCreated()
     SetIsReplicated(true);
 }
 
-void URRPoseSensorManager::InitalizeWithROS2(AROS2Node* InROS2Node,
+void URRPoseSensorManager::InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                              const FString& InPublisherName,
                                              const FString& InTopicName,
                                              const TEnumAsByte<UROS2QoS> InQoS)

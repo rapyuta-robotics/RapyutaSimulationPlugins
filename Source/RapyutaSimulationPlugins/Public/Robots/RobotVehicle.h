@@ -15,7 +15,7 @@
 #include "Robots/RRRobotBaseVehicle.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 #include "RobotVehicle.generated.h"
 

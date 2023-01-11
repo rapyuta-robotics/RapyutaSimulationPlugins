@@ -9,7 +9,7 @@ URRROS2BaseSensorComponent::URRROS2BaseSensorComponent()
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-void URRROS2BaseSensorComponent::InitalizeWithROS2(AROS2Node* InROS2Node,
+void URRROS2BaseSensorComponent::InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                                    const FString& InPublisherName,
                                                    const FString& InTopicName,
                                                    const TEnumAsByte<UROS2QoS> InQoS)
@@ -37,7 +37,7 @@ void URRROS2BaseSensorComponent::CreatePublisher(const FString& InPublisherName)
     }
 }
 
-void URRROS2BaseSensorComponent::PreInitializePublisher(AROS2Node* InROS2Node, const FString& InTopicName)
+void URRROS2BaseSensorComponent::PreInitializePublisher(UROS2NodeComponent* InROS2Node, const FString& InTopicName)
 {
     if (IsValid(SensorPublisher))
     {
@@ -55,12 +55,13 @@ void URRROS2BaseSensorComponent::PreInitializePublisher(AROS2Node* InROS2Node, c
     }
 }
 
-void URRROS2BaseSensorComponent::InitializePublisher(AROS2Node* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS)
+void URRROS2BaseSensorComponent::InitializePublisher(UROS2NodeComponent* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS)
 {
     if (IsValid(SensorPublisher))
     {
         SensorPublisher->InitializeWithROS2(InROS2Node);
-        SensorPublisher->Init(InQoS);
+        SensorPublisher->QoS = InQoS;
+        SensorPublisher->Init();
     }
 }
 

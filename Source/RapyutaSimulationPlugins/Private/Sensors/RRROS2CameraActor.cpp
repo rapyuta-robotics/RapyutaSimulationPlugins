@@ -20,12 +20,11 @@ void ARRROS2CameraActor::BeginPlay()
     Super::BeginPlay();
 	
 	// Node initialize
-    Node = GetWorld()->SpawnActor<AROS2Node>();
+    Node = NewObject<UROS2NodeComponent>(this);
 	Node->Name =
         NodeName.IsEmpty() ? FString::Printf(TEXT("%s_RRROS2CameraNode"), *(GetName())) : NodeName;
 	Node->Namespace = NodeNamespace;
     Node->Init();
-	Node->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
     
 	CameraComponent->InitalizeWithROS2(Node);
 }

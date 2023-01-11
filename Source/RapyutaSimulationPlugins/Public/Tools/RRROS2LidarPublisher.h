@@ -4,7 +4,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #pragma once
@@ -13,7 +12,7 @@
 #include "CoreMinimal.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 
 // RapyutaSimulationPlugins
 #include "Tools/RRROS2BaseSensorPublisher.h"
@@ -22,7 +21,7 @@
 
 /**
  * @brief Publisher class of 2D scan
- * 
+ *
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2LaserScanPublisher : public URRROS2BaseSensorPublisher
@@ -35,7 +34,7 @@ public:
 
 /**
  * @brief Publisher class of Point cloud such as 3D lidar scan
- * 
+ *
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2PointCloud2Publisher : public URRROS2BaseSensorPublisher

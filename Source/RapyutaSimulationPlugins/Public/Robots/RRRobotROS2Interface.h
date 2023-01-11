@@ -10,7 +10,7 @@
 #include "CoreMinimal.h"
 
 // rclUE
-#include "ROS2Node.h"
+#include "ROS2NodeComponent.h"
 #include "ROS2ServiceClient.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/RRROS2OdomPublisher.h"
@@ -35,7 +35,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
     GENERATED_BODY()
 
 #define RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(InTopicName, InMsgClass, InCallback) \
-    RR_ROS2_SUBSCRIBE_TO_TOPIC(RobotROS2Node, this, InTopicName, InMsgClass, InCallback)
+    ROS2_CREATE_SUBSCRIBER(RobotROS2Node, this, InTopicName, InMsgClass, InCallback)
 
 public:
     //! Target robot
@@ -57,7 +57,7 @@ public:
 
     //! ROS2 node of this interface created by #InitRobotROS2Node
     UPROPERTY(Transient, Replicated)
-    AROS2Node* RobotROS2Node = nullptr;
+    UROS2NodeComponent* RobotROS2Node = nullptr;
 
     //! ROS2SpawnParameters which is created when robot is spawn from /SpawnEntity srv provided by #ASimulationState.
     UPROPERTY(VisibleAnywhere, Replicated)
@@ -136,6 +136,10 @@ public:
     UPROPERTY(Transient, BlueprintReadWrite, Replicated)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
 
+    //! Odom publisher
+    UPROPERTY(Transient, BlueprintReadWrite, Replicated)
+    UROS2Subscriber* CmdVelPublisher = nullptr;
+
     /**
      * @brief Initialize non sensor basic publishers such as odometry.
      * Overidden in child robot ROS2 interface classes for specialized publishers.
@@ -155,7 +159,7 @@ public:
      * Overidden in child robot ROS2 interface classes for specialized topic subscriptions.
      */
     UFUNCTION()
-    virtual void InitSubscriptions();
+    virtual bool InitSubscriptions();
 
     /**
      * @brief Initialize services clients
@@ -165,12 +169,6 @@ public:
     virtual bool InitServicesClients();
 
     /**
-     * @brief Stop all service clients
-     */
-    UFUNCTION()
-    virtual void StopServicesClients();
-
-    /**
      * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.
      * Typically this receive Twist msg to move robot.
      */
@@ -178,22 +176,6 @@ public:
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
 
 protected:
-    /**
-     * @brief Create a ROS2 publisher
-     *
-     * @param InTopicName
-     * @param OutPublisher
-     * @param InPublisherClass
-     * @param InMsgClass
-     * @param InPubFrequency
-     */
-    void CreatePublisher(const FString& InTopicName,
-                         const TSubclassOf<UROS2Publisher>& InPublisherClass,
-                         const TSubclassOf<UROS2GenericMsg>& InMsgClass,
-                         int32 InPubFrequency,
-                         uint8 InQoS,
-                         UROS2Publisher*& OutPublisher);
-
     template<typename TROS2Message,
              typename TROS2MessageData,
              typename TRobot,

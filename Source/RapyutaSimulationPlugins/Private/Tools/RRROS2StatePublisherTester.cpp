@@ -11,8 +11,7 @@ void ARRROS2StatePublisherTester::BeginPlay()
 {
     Super::BeginPlay();
 
-    ROS2Node = GetWorld()->SpawnActor<AROS2Node>();
-    ROS2Node->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+    ROS2Node = NewObject<UROS2NodeComponent>(this);
     ROS2Node->Name = FString::Printf(TEXT("%s_UE4ROS2Node"), *GetName());
     ROS2Node->Namespace = FString();
     ROS2Node->Init();
