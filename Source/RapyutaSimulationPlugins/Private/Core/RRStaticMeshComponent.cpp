@@ -9,6 +9,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRGameSingleton.h"
+#include "Core/RRMeshUtils.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
@@ -56,13 +57,7 @@ void URRStaticMeshComponent::Initialize(bool bInIsStationary, bool bInIsPhysicsE
     // Refer to [FBodyInstance::SetInstanceSimulatePhysics()]
     SetSimulatePhysics(bInIsPhysicsEnabled);
 
-    // CustomDepthStencilValue
-    ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
-    if (ownerActor->GameMode->IsDataSynthSimType() && ownerActor->IsDataSynthEntity())
-    {
-        verify(IsValid(ownerActor->ActorCommon));
-        SetCustomDepthStencilValue(ownerActor->ActorCommon->GenerateUniqueDepthStencilValue());
-    }
+    // CustomDepthStencil will be actively set by stakeholders or ARRMeshActor if needs be
 }
 
 void URRStaticMeshComponent::SetMesh(UStaticMesh* InStaticMesh)
@@ -318,7 +313,7 @@ void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& In
             const FVertexInstanceID instanceID = OutMeshDescBuilder.AppendInstance(vertexIDs[vIdx]);
             OutMeshDescBuilder.SetInstanceNormal(instanceID, mesh.Normals[vIdx]);
             OutMeshDescBuilder.SetInstanceUV(instanceID, mesh.UVs[vIdx], 0);
-            OutMeshDescBuilder.SetInstanceColor(instanceID, FVector4f(mesh.VertexColors[vIdx]));
+            OutMeshDescBuilder.SetInstanceColor(instanceID, FVector4f(FLinearColor(mesh.VertexColors[vIdx])));
             vertexInsts.Emplace(instanceID);
         }
 
@@ -372,13 +367,13 @@ void URRStaticMeshComponent::SetCollisionModeAvailable(bool bInCollisionEnabled,
     }
 }
 
-void URRStaticMeshComponent::EnableOverlapping()
+void URRStaticMeshComponent::EnableOverlapping(bool bOverlapEventEnabled)
 {
     SetSimulatePhysics(false);
     SetCollisionProfileName(TEXT("Overlap"));
     SetCollisionEnabled(ECollisionEnabled::QueryOnly);    // SUPER IMPORTANT!
     SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-    SetGenerateOverlapEvents(true);
+    SetGenerateOverlapEvents(bOverlapEventEnabled);
 }
 
 // This function is used proprietarily for Generic Link/Joint (Non-Articulation) structure

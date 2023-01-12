@@ -90,7 +90,7 @@ public:
 
     // Collision/Overlapping --
     void SetCollisionModeAvailable(bool bIsOn, bool bIsHitEventEnabled = false);
-    void EnableOverlapping();
+    void EnableOverlapping(bool bOverlapEventEnabled);
 
     bool IsMeshDataValid() const;
     bool GetMeshData(FRRMeshData& OutMeshData, bool bFromBuffer);

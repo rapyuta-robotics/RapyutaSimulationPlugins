@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameViewportClient.h"
 #include "HAL/PlatformProcess.h"
+#include "IESConverter.h"
 #include "ImageUtils.h"
 
 // RapyutaSimulationPlugins
@@ -22,6 +23,13 @@
 
 IImageWrapperModule* URRCoreUtils::SImageWrapperModule = nullptr;
 TMap<ERRFileType, TSharedPtr<IImageWrapper>> URRCoreUtils::SImageWrappers;
+FRRLightProfileData URRCoreUtils::SLightProfileData;
+TFunction<void(uint8*, const FUpdateTextureRegion2D*)> URRCoreUtils::CleanupLightProfileData =
+    [](uint8*, const FUpdateTextureRegion2D*)
+{
+    FMemory::Free(SLightProfileData.ImageData);
+    SLightProfileData.ImageData = nullptr;
+};
 
 FString URRCoreUtils::GetFileTypeFilter(const ERRFileType InFileType)
 {
@@ -42,6 +50,7 @@ void URRCoreUtils::LoadImageWrapperModule()
     {
         verify(SImageWrapperModule);
         SImageWrappers.Add(ERRFileType::IMAGE_JPG, SImageWrapperModule->CreateImageWrapper(EImageFormat::JPEG));
+        SImageWrappers.Add(ERRFileType::IMAGE_GRAYSCALE_JPG, SImageWrapperModule->CreateImageWrapper(EImageFormat::GrayscaleJPEG));
         SImageWrappers.Add(ERRFileType::IMAGE_PNG, SImageWrapperModule->CreateImageWrapper(EImageFormat::PNG));
         SImageWrappers.Add(ERRFileType::IMAGE_EXR, SImageWrapperModule->CreateImageWrapper(EImageFormat::EXR));
     }
@@ -128,6 +137,11 @@ bool URRCoreUtils::HasEnoughDiskSpace(const FString& InPath, uint64 InRequiredMe
     }
 
     return bEnoughMemory;
+}
+
+bool URRCoreUtils::IsSimProfiling()
+{
+    return URRGameSingleton::Get()->BSIM_PROFILING;
 }
 
 bool URRCoreUtils::ShutDownSim(const UObject* InContextObject, uint64 InSimCompletionTimeoutInSecs)
@@ -304,6 +318,120 @@ bool URRCoreUtils::LoadImagesFromFolder(const FString& InImageFolderPath,
     if (!bResult && bIsLogged)
     {
         UE_LOG(LogRapyutaCore, Error, TEXT("Failed to load all images from [%s] into textures!"), *InImageFolderPath);
+    }
+
+    return bResult;
+}
+
+// Ref: DatasmithRuntime::GetTextureDataForIes() & CreateIESTexture()
+UTextureLightProfile* URRCoreUtils::LoadIESProfile(const FString& InFullFilePath, const FString& InLightProfileName)
+{
+    TArray<uint8> buffer;
+    if (!(FFileHelper::LoadFileToArray(buffer, *InFullFilePath) && buffer.Num() > 0))
+    {
+        UE_LOG(LogRapyutaCore, Error, TEXT("[URRCoreUtils::LoadIESProfile] Failed loading file to array [%s]"), *InFullFilePath);
+        return nullptr;
+    }
+
+    // checks for .IES extension to avoid wasting loading large assets just to reject them during header parsing
+    FIESConverter iesConverter(buffer.GetData(), buffer.Num());
+    if (false == iesConverter.IsValid())
+    {
+        UE_LOG(LogRapyutaCore,
+               Error,
+               TEXT("[URRCoreUtils::LoadIESProfile] IESConverter failed creating buffer from image loaded from [%s]"),
+               *InFullFilePath);
+        return nullptr;
+    }
+
+    // Fille loaded data into [SLightProfileData]
+    SLightProfileData.Width = iesConverter.GetWidth();
+    SLightProfileData.Height = iesConverter.GetHeight();
+    SLightProfileData.Brightness = iesConverter.GetBrightness();
+    SLightProfileData.BytesPerPixel = 8;    // RGBA16F
+    SLightProfileData.Pitch = SLightProfileData.Width * SLightProfileData.BytesPerPixel;
+    SLightProfileData.TextureMultiplier = iesConverter.GetMultiplier();
+    const TArray<uint8>& rawData = iesConverter.GetRawData();
+    SLightProfileData.ImageData = (uint8*)FMemory::Malloc(rawData.Num() * sizeof(uint8), 0x20);
+    FMemory::Memcpy(SLightProfileData.ImageData, rawData.GetData(), rawData.Num() * sizeof(uint8));
+    ensure(SLightProfileData.ImageData);
+
+    // [SLightProfileData] -> [lightProfile]
+    UTextureLightProfile* lightProfile = NewObject<UTextureLightProfile>(GetTransientPackage(), *InLightProfileName, RF_Transient);
+    if (!lightProfile)
+    {
+        return nullptr;
+    }
+
+#if WITH_EDITORONLY_DATA
+    FAssetImportInfo importInfo;
+    importInfo.Insert(FAssetImportInfo::FSourceFile(InLightProfileName));
+    lightProfile->AssetImportData->SourceData = MoveTemp(importInfo);
+
+    lightProfile->Source.Init(SLightProfileData.Width,
+                              SLightProfileData.Height,
+                              /*NumSlices=*/1,
+                              1,
+                              TSF_RGBA16F,
+                              SLightProfileData.ImageData);
+    CleanupLightProfileData(nullptr, nullptr);
+#endif
+
+    lightProfile->LODGroup = TEXTUREGROUP_IESLightProfile;
+    lightProfile->AddressX = TA_Clamp;
+    lightProfile->AddressY = TA_Clamp;
+    lightProfile->CompressionSettings = TC_HDR;
+#if WITH_EDITORONLY_DATA
+    lightProfile->MipGenSettings = TMGS_NoMipmaps;
+#endif
+    lightProfile->Brightness = SLightProfileData.Brightness;
+    lightProfile->TextureMultiplier = SLightProfileData.TextureMultiplier;
+
+    // Update the texture with these new settings
+    lightProfile->UpdateResource();
+
+#if !WITH_EDITOR
+    SLightProfileData.Region = FUpdateTextureRegion2D(0, 0, 0, 0, SLightProfileData.Width, SLightProfileData.Height);
+    lightProfile->UpdateTextureRegions(0,
+                                       1,
+                                       &SLightProfileData.Region,
+                                       SLightProfileData.Pitch,
+                                       SLightProfileData.BytesPerPixel,
+                                       SLightProfileData.ImageData,
+                                       CleanupLightProfileData);
+#endif
+    return lightProfile;
+}
+
+bool URRCoreUtils::LoadIESProfilesFromFolder(const FString& InFolderPath,
+                                             TArray<UTextureLightProfile*>& OutLightProfileList,
+                                             bool bIsLogged)
+{
+    TArray<FString> filePaths;
+    bool bResult = LoadFullFilePaths(InFolderPath, filePaths, {ERRFileType::LIGHT_PROFILE_IES});
+    if (bResult)
+    {
+        for (const auto& iesProfilePath : filePaths)
+        {
+            // FPaths::GetCleanFilename() could be used but rather not due to being more expensive.
+            // Also, InFolderPath could be single or compound relative path, which must be unique to be light profile name.
+            FString&& iesProfileName = iesProfilePath.RightChop(InFolderPath.Len());
+            if (UTextureLightProfile* iesProfile = LoadIESProfile(iesProfilePath, iesProfileName))
+            {
+                OutLightProfileList.Add(iesProfile);
+            }
+            else
+            {
+                // Continue the loading regardless of some being failed.
+                bResult = false;
+                UE_LOG(LogRapyutaCore, Error, TEXT("Failed to load ies profile to light texture [%s]"), *iesProfilePath);
+            }
+        }
+    }
+
+    if (!bResult && bIsLogged)
+    {
+        UE_LOG(LogRapyutaCore, Error, TEXT("Failed to load all ies profiles from [%s] into light textures!"), *InFolderPath);
     }
 
     return bResult;

@@ -10,6 +10,7 @@
 #include "Core/RRGameMode.h"
 #include "Core/RRGameSingleton.h"
 #include "Core/RRGameState.h"
+#include "Core/RRMeshActor.h"
 #include "Core/RRPlayerController.h"
 #include "Core/RRSceneDirector.h"
 #include "Core/RRThreadUtils.h"
@@ -65,6 +66,24 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
 }
 
 // ===================================================================================================================================
+// [FRRHomoMeshEntityGroup] --
+//
+FString FRRHomoMeshEntityGroup::GetGroupModelName() const
+{
+    const int32 num = Num();
+    return (num == 1) ? Entities[0]->EntityModelName
+         : (num > 1)  ? FString::Printf(TEXT("Merged%d_%s"), num, *Entities[0]->EntityModelName)
+                      : FString();
+}
+
+FString FRRHomoMeshEntityGroup::GetGroupName() const
+{
+    const int32 num = Num();
+    return (num == 1) ? Entities[0]->GetName()
+         : (num > 1)  ? FString::Printf(TEXT("Merged%d_%s"), num, *Entities[0]->GetName())
+                      : FString();
+}
+// ===================================================================================================================================
 // [FRRActorSpawnInfo] --
 //
 FRRActorSpawnInfo::FRRActorSpawnInfo()
@@ -74,6 +93,7 @@ FRRActorSpawnInfo::FRRActorSpawnInfo()
     bIsPhysicsEnabled = true;
     bIsCollisionEnabled = true;
     bIsSelfCollision = false;
+    bIsOverlapEventEnabled = false;
     bIsDataSynthEntity = false;
 }
 
@@ -85,7 +105,8 @@ FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
                                      const TArray<FString>& InMaterialNameList,
                                      bool bInIsStationary,
                                      bool bInIsPhysicsEnabled,
-                                     bool bInIsCollisionEnabled)
+                                     bool bInIsCollisionEnabled,
+                                     bool bInIsOverlapEventEnabled)
     : EntityModelName(InEntityModelName),
       UniqueName(InUniqueName),
       ActorTransform(InActorTransform),
@@ -94,7 +115,8 @@ FRRActorSpawnInfo::FRRActorSpawnInfo(const FString& InEntityModelName,
       MaterialNameList(InMaterialNameList),
       bIsStationary(bInIsStationary),
       bIsPhysicsEnabled(bInIsPhysicsEnabled),
-      bIsCollisionEnabled(bInIsCollisionEnabled)
+      bIsCollisionEnabled(bInIsCollisionEnabled),
+      bIsOverlapEventEnabled(bInIsOverlapEventEnabled)
 {
     bIsTickEnabled = false;
     bIsSelfCollision = false;
@@ -109,7 +131,8 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
                                    const TArray<FString>& InMaterialNameList,
                                    bool bInIsStationary,
                                    bool bInIsPhysicsEnabled,
-                                   bool bInIsCollisionEnabled)
+                                   bool bInIsCollisionEnabled,
+                                   bool bInIsOverlapEventEnabled)
 {
     EntityModelName = InEntityModelName;
     UniqueName = InUniqueName;
@@ -127,6 +150,7 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
     bIsStationary = bInIsStationary;
     bIsPhysicsEnabled = bInIsPhysicsEnabled;
     bIsCollisionEnabled = bInIsCollisionEnabled;
+    bIsOverlapEventEnabled = bInIsOverlapEventEnabled;
     bIsTickEnabled = false;
     bIsSelfCollision = false;
     bIsDataSynthEntity = false;
@@ -137,6 +161,7 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
 //
 std::once_flag URRActorCommon::OnceFlag;
 uint64 URRActorCommon::SLatestSceneId = 0;
+TArray<int32> URRActorCommon::StaticCustomDepthStencilList;
 // This is used as a map due to the unequivalence of element order with [ARRGameState::SceneInstanceList]
 TMap<int8, URRActorCommon*> URRActorCommon::SActorCommonList;
 URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* InActorCommonClass, UObject* InOuter)
@@ -205,36 +230,20 @@ void URRActorCommon::OnStartSim()
 
 void URRActorCommon::SetupEnvironment()
 {
-    // Here, we initialize artifacts that utilized play resources
     UWorld* currentWorld = GetWorld();
     checkf(currentWorld, TEXT("[URRActorCommon::SetupEnvironment] Failed fetching Game World"));
 
-    // Fetch Main background environment
-    if (!MainEnvironment)
-    {
-        MainEnvironment = URRUObjectUtils::FindEnvironmentActor(currentWorld);
-        // Not all maps has MainEnvironment setup
-    }
+    // By default, these just reference GameState's floor & wall but could be overridable in child class setup
+    SceneFloor = GameState->MainFloor;
+    SceneWall = GameState->MainWall;
 
-    if (!MainFloor)
-    {
-        MainFloor = URRUObjectUtils::FindFloorActor(currentWorld);
-        // Not all maps has MainFloor setup
-    }
-
-    if (!MainWall)
-    {
-        MainWall = URRUObjectUtils::FindWallActor(currentWorld);
-        // Not all maps has MainWall setup
-    }
-
-    // Spawn MainCamera
-    MainCamera =
+    // Spawn Scene main camera
+    SceneCamera =
         Cast<ARRCamera>(URRUObjectUtils::SpawnSimActor(GetWorld(),
                                                        SceneInstanceId,
                                                        ARRCamera::StaticClass(),
                                                        TEXT("RapyutaCamera"),
-                                                       FString::Printf(TEXT("%d_MainCamera"), SceneInstanceId),
+                                                       FString::Printf(TEXT("%d_SceneCamera"), SceneInstanceId),
                                                        FTransform(SceneInstanceLocation),
                                                        ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn));
 }
@@ -246,23 +255,13 @@ bool URRActorCommon::HasInitialized(bool bIsLogged) const
         return true;
     }
 
-    if (!MainCamera)
+    if (!SceneCamera)
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[URRActorCommon]:: MainCamera is NULL!"))
+            UE_LOG(LogRapyutaCore, Display, TEXT("[URRActorCommon]:: SceneCamera is NULL!"))
         }
         return false;
     }
     return true;
-}
-
-void URRActorCommon::MoveEnvironmentToSceneInstance(int8 InSceneInstanceId)
-{
-    if (IsValid(MainEnvironment))
-    {
-        const FVector currentEnvLocation = MainEnvironment->GetActorLocation();
-        const FVector sceneInstanceLocation = URRCoreUtils::GetSceneInstanceLocation(InSceneInstanceId);
-        MainEnvironment->SetActorLocation(FVector(sceneInstanceLocation.X, sceneInstanceLocation.Y, currentEnvLocation.Z));
-    }
 }

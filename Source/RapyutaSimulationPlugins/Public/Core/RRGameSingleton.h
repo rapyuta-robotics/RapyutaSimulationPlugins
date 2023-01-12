@@ -37,6 +37,13 @@ public:
     static URRGameSingleton* Get();
     virtual ~URRGameSingleton();
 
+    virtual void PrintSimConfig() const;
+
+    // SIM GLOBAL PROPERTIES --
+    //
+    UPROPERTY(config)
+    bool BSIM_PROFILING = false;
+
     // SIM RESOURCES ==
     //
     bool InitializeResources();
@@ -120,6 +127,10 @@ public:
                 {
                     ProcessAsyncLoadedResource<UPhysicalMaterial>(InDataType, InResourcePath, InResourceUniqueName);
                 }
+                break;
+
+            case ERRResourceDataType::UE_TEXTURE:
+                ProcessAsyncLoadedResource<UTexture>(InDataType, InResourcePath, InResourceUniqueName);
                 break;
 
             default:
@@ -331,7 +342,7 @@ public:
     }
 
     // MATERIALS --
-    // Material Entities Info folder path
+    // Dynamic Material assets folder path
     UPROPERTY(config)
     FString FOLDER_PATH_ASSET_MATERIALS = TEXT("Materials");
 
@@ -339,6 +350,7 @@ public:
     static constexpr const TCHAR* MATERIAL_NAME_ASSET_MASTER = TEXT("M_RapyutaAssetMaster");
     static constexpr const TCHAR* MATERIAL_NAME_PROP_MASTER = TEXT("M_RapyutaPropMaster");
     static constexpr const TCHAR* MATERIAL_NAME_PHYSICS_WHEEL = TEXT("PM_Wheel");
+    static constexpr const TCHAR* MATERIAL_NAME_TRANSLUCENCE_MASTER = TEXT("M_RapyutaTranslucenceMaster");
 
     FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName) const
     {
@@ -350,6 +362,12 @@ public:
     }
 
     // TEXTURES --
+    // Dynamic Texture assets folder path
+    UPROPERTY(config)
+    FString FOLDER_PATH_ASSET_TEXTURES = TEXT("Textures");
+
+    static constexpr const TCHAR* TEXTURE_NAME_WHITE_MASK = TEXT("T_WhiteMask");
+    static constexpr const TCHAR* TEXTURE_NAME_BLACK_MASK = TEXT("T_BlackMask");
     FORCEINLINE UTexture* GetTexture(const FString& InTextureName) const
     {
         return GetSimResource<UTexture>(ERRResourceDataType::UE_TEXTURE, InTextureName);

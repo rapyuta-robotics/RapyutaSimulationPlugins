@@ -12,6 +12,103 @@
 #include "Core/RRMathUtils.h"
 #include "Core/RRMeshActor.h"
 
+//! Hardcoded [DATA_SYNTH_CUSTOM_DEPTH_STENCILS], due to UE5 mismatched pixels in captured image vs ones written into the custom depth buffer
+//! https://superyateam.com/2019/06/17/custom-depth-and-custom-depth-stencil-in-ue4/
+static TArray<uint8> DATA_SYNTH_CUSTOM_DEPTH_STENCILS = []()
+{
+    TArray<uint8> data = {
+        /*0*/ 0,
+        /*1*/ 13,
+        /*2*/ 22,
+        /*3*/ 28,
+        /*4*/ 34,
+        /*5*/ 38,
+        /*6*/ 42,
+        /*7*/ 46,
+        /*8*/ 49,
+        /*9*/ 53,
+
+        /*10*/ 56,
+        /*11*/ 58,
+        /*12*/ 61,
+        /*13*/ 64,
+        /*14*/ 66,
+        /*15*/ 68,
+        /*16*/ 71,
+        /*17*/ 73,
+        /*18*/ 75,
+        /*19*/ 77,
+
+        /*20*/ 79,
+        /*21*/ 81,
+        /*22*/ 83,
+        /*23*/ 85,
+        /*24*/ 86,
+        /*25*/ 88,
+        /*26*/ 90,
+        /*27*/ 91,
+        /*28*/ 93,
+        /*29*/ 95,
+
+        /*30*/ 96,
+        /*31*/ 98,
+        /*32*/ 99,
+        /*33*/ 101,
+        /*34*/ 102,
+        /*35*/ 103,
+        /*36*/ 105,
+        /*37*/ 106,
+        /*38*/ 107,
+        /*39*/ 109,
+
+        /*40*/ 110,
+        /*41*/ 111,
+        /*42*/ 113,
+        /*43*/ 114,
+        /*44*/ 115,
+        /*45*/ 116,
+        /*46*/ 118,
+        /*47*/ 119,
+        /*48*/ 120,
+        /*49*/ 121,
+
+        /*50*/ 122,
+        /*51*/ 123,
+        /*52*/ 124,
+        /*53*/ 126,
+        /*54*/ 127,
+        /*55*/ 128,
+        /*56*/ 129,
+        /*57*/ 130,
+        /*58*/ 131,
+        /*59*/ 132,
+
+        /*60*/ 133,
+        /*61*/ 134,
+        /*62*/ 135,
+        /*63*/ 136,
+        /*64*/ 137,
+        /*65*/ 138,
+        /*66*/ 139,
+        /*67*/ 140,
+        /*68*/ 141,
+        /*69*/ 142,
+
+        /*70*/ 143,
+        /*71*/ 144,
+        /*72*/ 145,
+        /*73*/ 146,
+        /*74*/ 147,
+        /*75*/ 148,
+    };
+
+    for (auto i = 76; i <= 255; ++i)
+    {
+        data.Add(0);
+    }
+    return data;
+}();
+
 void URRUObjectUtils::SetupActorTick(AActor* InActor, bool bIsTickEnabled, float InTickInterval)
 {
     // Tick if not required could be disabled to improve performance
@@ -167,17 +264,19 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
 
 void URRUObjectUtils::GetActorCenterAndBoundingBoxVertices(const AActor* InActor,
                                                            const AActor* InBaseActor,
-                                                           TArray<FVector>& OutCenterAndVertices,
+                                                           TArray<FVector>* OutCenterAndVertices3D,
                                                            bool bInIncludeNonColliding)
 {
+    OutCenterAndVertices3D->Reset();
     ARRGameState* gameState = URRCoreUtils::GetGameState<ARRGameState>(InActor);
 
     // [InActor]'s Local bounding box
+    //NOTE: For a single [InActor], its EXTENT would be the same as using [InActor->GetComponentsBoundingBox()]
     FVector centerLocal, extentsLocal;
     FBox actorLocalBox = InActor->CalculateComponentsBoundingBoxInLocalSpace(bInIncludeNonColliding);
     actorLocalBox.GetCenterAndExtents(centerLocal, extentsLocal);
 
-    // [InActor]'s global bounding box with rotation (in BaseActor frame or World frame)
+    // [InActor]'s global oriented bounding box with rotation (in BaseActor frame or World frame)
     // Reference : DrawDebugBox()
     // (snote) The exact order of points is important. Consult with Robot Research team before adjusting.
 
@@ -185,20 +284,17 @@ void URRUObjectUtils::GetActorCenterAndBoundingBoxVertices(const AActor* InActor
     // UnrealEngine/Engine/Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteComponent.cpp:179
     const FTransform baseTransform =
         InBaseActor ? InActor->GetActorTransform().GetRelativeTransform(InBaseActor->GetTransform()) : InActor->GetTransform();
-    const FVector center = baseTransform.TransformPosition(centerLocal);
-    OutCenterAndVertices.Emplace(center);
+    const FVector centerBase = baseTransform.TransformPosition(centerLocal);
+    OutCenterAndVertices3D->Emplace(centerBase);
 
     // [InActor]'s global Rotation (in BaseActor frame or World frame)
     const FQuat& actorQuat = InBaseActor ? URRUObjectUtils::GetRelativeQuatFrom(InActor, InBaseActor) : InActor->GetActorQuat();
 
     // Calculate global vertices as : [center] + Rotated [ExtentsLocal]
-    for (auto i = 0; i < 8; ++i)
+    for (auto i = 0; i < gameState->ENTITY_BOUNDING_BOX_VERTEX_NORMALS.Num(); ++i)
     {
-        const FVector& vertexNormal = gameState->ENTITY_BOUNDING_BOX_VERTEX_NORMALS[i];
-        OutCenterAndVertices.Emplace(center +
-                                     actorQuat.RotateVector(FVector((0.f == vertexNormal.X) ? -extentsLocal.X : extentsLocal.X,
-                                                                    (0.f == vertexNormal.Y) ? -extentsLocal.Y : extentsLocal.Y,
-                                                                    (0.f == vertexNormal.Z) ? -extentsLocal.Z : extentsLocal.Z)));
+        OutCenterAndVertices3D->Emplace(
+            centerBase + actorQuat.RotateVector(GetDirectedExtent(gameState->GetEntityBBVertexNormal(i), extentsLocal)));
     }
 }
 
@@ -241,7 +337,6 @@ bool URRUObjectUtils::GetPhysicsActorHandles(FBodyInstance* InBody1,
     OutActorRef2 = actorRef2;
     return true;
 }
-
 void URRUObjectUtils::SetHomoLinearConstraintMotion(FConstraintInstance* InCI, const ELinearConstraintMotion InHomoLinearMotion)
 {
     const bool bEnabled = (InHomoLinearMotion != ELinearConstraintMotion::LCM_Locked);
@@ -262,19 +357,29 @@ void URRUObjectUtils::SetHomoAngularConstraintMotion(FConstraintInstance* InCI, 
     InCI->SetAngularTwistMotion(InHomoAngularMotion);
 }
 
-FString URRUObjectUtils::GetSegMaskDepthStencilsAsText(ARRMeshActor* InActor)
+FString URRUObjectUtils::GetSegMaskDepthStencilsAsText(AActor* InActor)
 {
     TArray<uint8> depthStencilValueList;
 
-    // The validity and uniqueness of [meshComp's CustomDepthStencilValue] should have been already verified
-    for (const auto& meshComp : InActor->MeshCompList)
+    if (ARRMeshActor* meshActor = Cast<ARRMeshActor>(InActor))
     {
-        depthStencilValueList.AddUnique(static_cast<uint8>(meshComp->CustomDepthStencilValue));
+        // The validity and uniqueness of [meshComp's CustomDepthStencilValue] should have been already verified
+        for (const auto& meshComp : meshActor->MeshCompList)
+        {
+            depthStencilValueList.AddUnique(
+                DATA_SYNTH_CUSTOM_DEPTH_STENCILS[static_cast<uint8>(meshComp->CustomDepthStencilValue)]);
+        }
+    }
+    else if (AStaticMeshActor* staticMeshActor = Cast<AStaticMeshActor>(InActor))
+    {
+        depthStencilValueList.Add(DATA_SYNTH_CUSTOM_DEPTH_STENCILS[static_cast<uint8>(
+            staticMeshActor->GetStaticMeshComponent()->CustomDepthStencilValue)]);
     }
 
     return FString::JoinBy(
         depthStencilValueList, TEXT("/"), [](const uint8& InDepthStencilValue) { return FString::FromInt(InDepthStencilValue); });
 }
+
 UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshComponent* InMeshComp,
                                                                           int32 InMaterialIndex,
                                                                           const FString& InMaterialInterfaceName)
@@ -283,6 +388,19 @@ UMaterialInstanceDynamic* URRUObjectUtils::CreateMeshCompMaterialInstance(UMeshC
     const FString& dynamicMaterialName = FString::Printf(TEXT("%s%s"), *InMeshComp->GetName(), *InMaterialInterfaceName);
     return InMeshComp->CreateDynamicMaterialInstance(
         InMaterialIndex, URRGameSingleton::Get()->GetMaterial(InMaterialInterfaceName), FName(*dynamicMaterialName));
+}
+
+int32 URRUObjectUtils::GetActorMaterialsNum(AActor* InActor)
+{
+    if (auto* meshActor = Cast<ARRMeshActor>(InActor))
+    {
+        return meshActor->BaseMeshComp->GetMaterials().Num();
+    }
+    else if (auto* staticMeshActor = Cast<AStaticMeshActor>(InActor))
+    {
+        return staticMeshActor->GetStaticMeshComponent()->GetMaterials().Num();
+    }
+    return 0;
 }
 
 UMaterialInstanceDynamic* URRUObjectUtils::GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex)
@@ -299,33 +417,55 @@ UMaterialInstanceDynamic* URRUObjectUtils::GetActorBaseMaterial(AActor* InActor,
     return baseMaterial;
 }
 
-bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor, const FRRMaterialProperty& InMaterialInfo)
+bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor,
+                                                  const FRRMaterialProperty& InMaterialInfo,
+                                                  bool bApplyManufacturingAlbedo)
 {
-    UMaterialInstanceDynamic* baseMaterial = GetActorBaseMaterial(InActor);
-    if (baseMaterial)
+    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
+    for (auto i = 0; i < GetActorMaterialsNum(InActor); ++i)
     {
-        ApplyMaterialProps(baseMaterial, InMaterialInfo);
-        return true;
+        UMaterialInstanceDynamic* baseMaterial = GetActorBaseMaterial(InActor, i);
+        if (baseMaterial)
+        {
+            ApplyMaterialProps(baseMaterial, InMaterialInfo, bApplyManufacturingAlbedo);
+            return true;
+        }
     }
     return false;
 }
 
-void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial, const FRRMaterialProperty& InMaterialInfo)
+void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
+                                         const FRRMaterialProperty& InMaterialInfo,
+                                         bool bApplyManufacturingAlbedo)
 {
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
+    static UTexture* blackMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
+    static UTexture* whiteMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK);
     // Albedo texture
-    if (InMaterialInfo.AlbedoTextureNameList.Num() > 0)
+    if (bApplyManufacturingAlbedo)
     {
-        InMaterial->SetTextureParameterValue(
-            FRRMaterialProperty::PROP_NAME_ALBEDO,
-            gameSingleton->GetTexture(URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoTextureNameList)));
+        if (InMaterialInfo.AlbedoTextureNameList.Num() > 0)
+        {
+            InMaterial->SetTextureParameterValue(
+                FRRMaterialProperty::PROP_NAME_ALBEDO,
+                gameSingleton->GetTexture(URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoTextureNameList)));
+        }
+        // Albedo color
+        InMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO,
+                                            (InMaterialInfo.AlbedoColorList.Num() > 0)
+                                                ? URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoColorList)
+                                                : URRMathUtils::GetRandomColor());
+        // Mask Texture: default White
+        InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
+                                             InMaterialInfo.MaskTextureName.IsEmpty()
+                                                 ? whiteMaskTexture
+                                                 : gameSingleton->GetTexture(InMaterialInfo.MaskTextureName));
     }
-
-    // Albedo color
-    InMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO,
-                                        (InMaterialInfo.AlbedoColorList.Num() > 0)
-                                            ? URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoColorList)
-                                            : URRMathUtils::GetRandomColor());
+    else
+    {
+        // Mask Texture: default Black
+        InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK, blackMaskTexture);
+    }
 
     // ORM Texture
     if (false == InMaterialInfo.ORMTextureName.IsEmpty())
@@ -340,13 +480,39 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial, c
         InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_NORMAL,
                                              gameSingleton->GetTexture(InMaterialInfo.NormalTextureName));
     }
+}
 
-    // Mask Texture
-    if (false == InMaterialInfo.MaskTextureName.IsEmpty())
+bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor)
+{
+    UMeshComponent* meshComp = nullptr;
+    if (auto* meshActor = Cast<ARRMeshActor>(InMeshActor))
     {
-        InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
-                                             gameSingleton->GetTexture(InMaterialInfo.MaskTextureName));
+        meshComp = meshActor->BaseMeshComp;
     }
+    else if (auto* staticMeshActor = Cast<AStaticMeshActor>(InMeshActor))
+    {
+        meshComp = staticMeshActor->GetStaticMeshComponent();
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore,
+               Error,
+               TEXT("SetMeshActorColor() [%s] is not ARRMeshActor or AStaticMeshActor"),
+               *InMeshActor->GetName());
+        return false;
+    }
+
+    static UTexture* blackMaskTexture = URRGameSingleton::Get()->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
+    for (auto i = 0; i < meshComp->GetMaterials().Num(); ++i)
+    {
+        UMaterialInstanceDynamic* material = Cast<UMaterialInstanceDynamic>(meshComp->GetMaterial(i));
+        if (material)
+        {
+            material->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK, blackMaskTexture);
+            material->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO, InColor);
+        }
+    }
+    return true;
 }
 
 void URRUObjectUtils::RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData)

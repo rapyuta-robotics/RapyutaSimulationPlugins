@@ -87,7 +87,7 @@ public:
     UFUNCTION()
     void SetCollisionModeAvailable(bool bInCollisionEnabled, bool bInHitEventEnabled = false);
     UFUNCTION()
-    void EnableOverlapping();
+    void EnableOverlapping(bool bOverlapEventEnabled);
 
 protected:
     virtual void BeginPlay() override;

@@ -48,7 +48,7 @@ public:
     APostProcessVolume* MainPostProcessVolume = nullptr;
 
     UPROPERTY()
-    ARRCamera* MainCamera = nullptr;
+    ARRCamera* SceneCamera = nullptr;
 
     UFUNCTION()
     bool HasSceneInitialized()
@@ -60,9 +60,14 @@ public:
 
     virtual bool HasOperationCompleted(bool bIsLogged = false);
 
+    UPROPERTY()
+    double DataCollectionTimeStamp = 0.f;
+
+    UPROPERTY()
+    TArray<int32> SceneEntityMaskValueList;
+
 protected:
     virtual bool Initialize() override;
-    virtual void Tick(float DeltaTime) override;
 
     // Start (Initialize + Run) Operation
     virtual bool InitializeOperation();
@@ -73,6 +78,9 @@ protected:
 
     virtual void OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhase);
     virtual void EndSceneInstance();
+
+    UPROPERTY()
+    FTimerHandle InitializationTimerHandle;
 
     UPROPERTY()
     FTimerHandle DataCollectionTimerHandle;

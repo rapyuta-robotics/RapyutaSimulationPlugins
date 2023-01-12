@@ -80,10 +80,14 @@ enum class ERRFileType : uint8
 
     // Image
     IMAGE_JPG,
+    IMAGE_GRAYSCALE_JPG,
     IMAGE_PNG,
     IMAGE_TGA,
     IMAGE_EXR,
     IMAGE_HDR,
+
+    // Light Profile
+    LIGHT_PROFILE_IES,
 
     // Meta Data
     JSON,
@@ -118,9 +122,32 @@ enum class ERRShapeType : uint8
     MESH,
     TOTAL
 };
+
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FRRStreamingLevelInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    FString AssetPath;
+
+    UPROPERTY()
+    FTransform TargetTransform = FTransform::Identity;
+
+    bool IsValid() const
+    {
+        return !AssetPath.IsEmpty();
+    }
+
+    void PrintSelf() const
+    {
+        UE_LOG(LogTemp, Log, TEXT("- AssetPath: %s"), *AssetPath);
+        UE_LOG(LogTemp, Log, TEXT("- TargetTransform: %s"), *TargetTransform.ToString());
+    }
+};
+
 /**
- * @brief todo
- *
+ * @brief Async job info (task, job name, latest capture batch id)
  */
 // This struct contains TFuture, which has private ctor, thus is move-only and could not be a USTRUCT().
 // and also make itself by default non-copyable without custom copy ctor!
@@ -194,7 +221,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRAsyncJob
         AsyncTasks.Last().Task = MoveTemp(InAsyncTask);
     }
 
-    void AddAsyncTask(const uint64& InCaptureBatchId, TFuture<bool>&& InAsyncTask)
+    void AddAsyncTask(const uint64 InCaptureBatchId, TFuture<bool>&& InAsyncTask)
     {
         LatestCaptureBatchId = InCaptureBatchId;
         AsyncTasks.Emplace(MoveTemp(InAsyncTask));
@@ -252,25 +279,114 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRAsyncJob
     }
 };
 
-// For storing entity info in advance for the Logging task. This might have been updated at the moment of Logging.
+/**
+ * @brief Group of homogeneous-mesh entities
+ */
+USTRUCT()
+struct RAPYUTASIMULATIONPLUGINS_API FRRHomoMeshEntityGroup
+{
+    GENERATED_BODY()
+    FRRHomoMeshEntityGroup()
+    {
+    }
+
+    FRRHomoMeshEntityGroup(TArray<ARRMeshActor*> InEntities) : Entities(MoveTemp(InEntities))
+    {
+    }
+
+    UPROPERTY()
+    TArray<ARRMeshActor*> Entities;
+
+    //! Fetch #Entities as TArray<AActor*>
+    TArray<AActor*> GetActors() const
+    {
+        TArray<AActor*> actors;
+        for (auto& entity : Entities)
+        {
+            actors.Add((AActor*)entity);
+        }
+        return actors;
+    }
+
+    //! Fetch Entities[Index]
+    ARRMeshActor* operator[](int32 Index) const
+    {
+        return Entities[Index];
+    }
+
+    //! Get num of Entities
+    int32 Num() const
+    {
+        return Entities.Num();
+    }
+    //! Get Entities Group's common model name
+    FString GetGroupModelName() const;
+    //! Get unique name of the entities group
+    FString GetGroupName() const;
+};
+
+/**
+ * @brief For storing entity info in advance for the Logging task.
+ * This might have been updated at the moment of Logging.
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRREntityLogInfo
 {
     GENERATED_BODY()
 
+    //  NOTE: CustomDepthStencilValue, being used as segmaskid, is inherent to each meshcomp & assign once at creation
+    // & kept unchanged thus could be fetched directly from [Entity] at the logging moment
     FRREntityLogInfo()
     {
     }
 
-    FRREntityLogInfo(AActor* InEntity, const uint64& InSceneId) : Entity(InEntity), SceneId(InSceneId)
+    FRREntityLogInfo(TArray<AActor*> InEntities,
+                     const FString& InGroupModelName,
+                     const FString& InGroupName,
+                     const FString& InSegMaskDepthStencilStr,
+                     const uint64 InSceneId)
+        : Entities(MoveTemp(InEntities)),
+          GroupModelName(InGroupModelName),
+          GroupName(InGroupName),
+          SegMaskDepthStencilStr(InSegMaskDepthStencilStr),
+          SceneId(InSceneId)
     {
     }
 
     UPROPERTY()
-    AActor* Entity = nullptr;
+    TArray<AActor*> Entities;
 
+    //! Common model name of the Entities group
+    UPROPERTY()
+    FString GroupModelName;
+
+    //! Unique name of the entities group
+    UPROPERTY()
+    FString GroupName;
+
+    //! Segmentation mask custom depth stencil hexa values in string format
+    UPROPERTY()
+    FString SegMaskDepthStencilStr;
+
+    //! Id of the current scene entities group belong to
     UPROPERTY()
     uint64 SceneId = 0;
+
+    //! World transform of the whole entities group
+    UPROPERTY()
+    FTransform WorldTransform = FTransform::Identity;
+
+    //! Bounding box 3D vertices of the whole group in world coordinate
+    UPROPERTY()
+    TArray<FVector> BBVertices3DInWorld;
+
+    //! Bounding box 3D vertices of the whole group in camera coordinate
+    UPROPERTY()
+    TArray<FVector> BBVertices3DInCamera;
+
+    //! Bounding box 2D vertices of the whole group, as projected onto camera
+    UPROPERTY()
+    TArray<FVector2D> BBVertices2D;
 };
 
 template<int8 InBitDepth>
@@ -278,6 +394,7 @@ using FRRColor = typename TChooseClass<(8 == InBitDepth),
                                        FColor,
                                        typename TChooseClass<(16 == InBitDepth), FFloat16Color, FLinearColor>::Result>::Result;
 
+// (NOTE) TImagePixelData could be used instead
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRColorArray
 {
@@ -383,7 +500,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
                       const TArray<FString>& InMaterialNameList = TArray<FString>(),
                       bool bInIsStationary = false,
                       bool bInIsPhysicsEnabled = false,
-                      bool bInIsCollisionEnabled = false);
+                      bool bInIsCollisionEnabled = false,
+                      bool bInIsOverlapEventEnabled = false);
 
     void operator()(const FString& InEntityModelName,
                     const FString& InUniqueName,
@@ -393,7 +511,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
                     const TArray<FString>& InMaterialNameList = TArray<FString>(),
                     bool bInIsStationary = false,
                     bool bInIsPhysicsEnabled = false,
-                    bool bInIsCollisionEnabled = false);
+                    bool bInIsCollisionEnabled = false,
+                    bool bInIsOverlapEventEnabled = false);
 
     void ClearMeshInfo()
     {
@@ -439,6 +558,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
 
     UPROPERTY()
     uint8 bIsSelfCollision : 1;
+
+    UPROPERTY()
+    uint8 bIsOverlapEventEnabled : 1;
 
     UPROPERTY()
     uint8 bIsDataSynthEntity : 1;
@@ -541,19 +663,19 @@ public:
 
     //! Main environment actor if pre-setup in the level
     UPROPERTY()
-    AActor* MainEnvironment = nullptr;
+    AActor* SceneFloor = nullptr;
 
     //! Main floor actor if pre-setup in the level
-    UPROPERTY()
-    AActor* MainFloor = nullptr;
-
     //! Main wall actor if pre-setup in the level
     UPROPERTY()
-    AActor* MainWall = nullptr;
+    AActor* SceneWall = nullptr;
 
     //! Main camera actor used in the scene instance
     UPROPERTY()
-    ARRCamera* MainCamera = nullptr;
+    ARRCamera* SceneCamera = nullptr;
+
+    UPROPERTY()
+    TArray<ALight*> MainLights;
 
     //! Print sim config vars in INI
     virtual void PrintSimConfig() const;
@@ -571,10 +693,6 @@ public:
     }
 
     //! Callback on ARRGameState::Tick() for this scene instance
-    virtual void OnTick(float DeltaTime)
-    {
-    }
-
     /**
      * @brief Whether this scene instance's common object has been initialized
      * @param bIsLogged Whether to log on uninitialized contents
@@ -583,27 +701,48 @@ public:
     //! Setup the scene instance's environment
     virtual void SetupEnvironment();
     //! Move the common main environment to another scene instance
-    void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId);
 
     //! Callback on a mesh actor being fully created in the scene
     FOnMeshActorFullyCreated OnMeshActorFullyCreated;
 
-    //! (NOTE) Currently UE only supports [0-255] CustomDepthStencil values,
-    //! which might probably be extended to a larger range then.
+    // NOTE:
+    // + Currently UE only supports [0-255] CustomDepthStencil values,
+    // which might probably be extended to a larger range then.
+    // + Since deactivated actors do not appear in scene so their custom depth stencil values should be reused
+    // for activated ones in any scene instance.
+    // + Also, actors of different scene instances, due to always appearing in different scenes, could share the same value,
+    // thus each scene instance must have its own [LatestCustomDepthStencilValue]
+
+    // Temp as No of non-zero elements in [DATA_SYNTH_CUSTOM_DEPTH_STENCILS], due to UE5 segmask mismatch issue
+    static constexpr int16 MAX_CUSTOM_DEPTH_STENCIL_VALUES_NUM = 76;
+    static constexpr int8 DEFAULT_CUSTOM_DEPTH_STENCIL_VALUE_VOID = 0;
+
+    // This list contains Static Objects' [CustomDepthStencilValue]s that are assigned once and never change during Sim run!
+    // Example: Bucket's (DropPlatform is also a static object but its custom depth render is disabled due to not being segmasked)
+    static TArray<int32> StaticCustomDepthStencilList;
+
     UPROPERTY()
     int32 LatestCustomDepthStencilValue = 0;
-
     //! Generate a new unique custom depth stencil value for a mesh actor's Segmentation mask
     int32 GenerateUniqueDepthStencilValue()
     {
-        if (255 <= LatestCustomDepthStencilValue)
+        if (LatestCustomDepthStencilValue > MAX_CUSTOM_DEPTH_STENCIL_VALUES_NUM)
         {
-            UE_LOG(LogRapyutaCore,
+            UE_LOG(LogTemp,
                    Error,
-                   TEXT("More than 255 CustomDepthStencil values having been assigned!"
-                        "Segmentation Mask will be duplicated!"));
+                   TEXT("SceneInstance[%d] [%d] More than %d CustomDepthStencil values having been assigned!"
+                        "Segmentation Mask will be duplicated!"),
+                   SceneInstanceId,
+                   LatestCustomDepthStencilValue,
+                   MAX_CUSTOM_DEPTH_STENCIL_VALUES_NUM);
         }
-        return ++LatestCustomDepthStencilValue;
+
+        // Fetch the next non-static [CustomDepthStencilValue]
+        do
+        {
+            ++LatestCustomDepthStencilValue;
+        } while (StaticCustomDepthStencilList.Contains(LatestCustomDepthStencilValue));
+        return LatestCustomDepthStencilValue;
     }
 };
 

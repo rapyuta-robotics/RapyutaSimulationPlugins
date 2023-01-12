@@ -20,22 +20,14 @@ ARRSceneDirector::ARRSceneDirector()
     bIsOperating = false;
 }
 
-void ARRSceneDirector::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-    if (!bSceneInitialized)
-    {
-        TryInitializeOperation();
-    }
-}
-
 bool ARRSceneDirector::Initialize()
 {
     if (false == Super::Initialize())
     {
         return false;
     }
-    SetTickEnabled(true);
+    URRCoreUtils::RegisterRepeatedExecution(
+        this, InitializationTimerHandle, [this] { TryInitializeOperation(); }, 0.1f);
 
     // Run [TryInitializeOperation()] until succeeded!
     UE_LOG(LogRapyutaCore, Display, TEXT("[%d:SCENE DIRECTOR]::[%s] TRYING TO INTIALIZE..."), SceneInstanceId, *GetName());
@@ -60,6 +52,7 @@ void ARRSceneDirector::TryInitializeOperation()
                         "OPERATION!============="),
                    SceneInstanceId,
                    elapsedTime);
+            URRCoreUtils::StopRegisteredExecution(GetWorld(), InitializationTimerHandle);
         }
         else
         {
@@ -82,8 +75,8 @@ bool ARRSceneDirector::InitializeOperation()
     ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
 
     // Camera
-    MainCamera = ActorCommon->MainCamera;
-    verify(MainCamera);
+    SceneCamera = ActorCommon->SceneCamera;
+    verify(SceneCamera);
 
     // PostProcessVolume
     MainPostProcessVolume = Cast<APostProcessVolume>(URRUObjectUtils::FindPostProcessVolume(GetWorld()));
@@ -121,12 +114,24 @@ void ARRSceneDirector::OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhas
     if (bIsFinalDataCollectingPhase)
     {
         bIsDataCollecting = false;
+
+        // PROFILING --
+        if (URRCoreUtils::IsSimProfiling())
+        {
+            // Measure the running of the previous data collection
+            UE_LOG(LogRapyutaCore,
+                   Log,
+                   TEXT("[%d] DATA COLLECTION DONE - TOOK [%lf] secs!"),
+                   SceneInstanceId,
+                   URRCoreUtils::GetElapsedTime(DataCollectionTimeStamp));
+        }
     }
 }
 
 void ARRSceneDirector::ResetScene()
 {
-    GameState->SetAllEntitiesActivated(false);
+    ActorCommon->LatestCustomDepthStencilValue = 0;
+    SceneEntityMaskValueList.Reset();
 }
 
 void ARRSceneDirector::EndSceneInstance()

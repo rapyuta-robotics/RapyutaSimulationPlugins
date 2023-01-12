@@ -15,6 +15,9 @@
 #include "UnrealEd.h"
 #endif
 #include "Delegates/Delegate.h"
+#include "Engine/LatentActionManager.h"
+#include "Engine/LevelStreaming.h"
+#include "Engine/TextureLightProfile.h"
 #include "Engine/World.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
@@ -28,6 +31,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Core/RRTextureData.h"
 #include "Core/RRTypeUtils.h"
 
 #include "RRCoreUtils.generated.h"
@@ -95,7 +99,6 @@ public:
     }
 
     // SIM CONSOLE COMMANDS --
-    // SIM CONSOLE COMMANDS --
     static constexpr const TCHAR* CMD_SIM_QUIT = TEXT("quit");
     static constexpr const TCHAR* CMD_STATS_START = TEXT("stat startfile");
     static constexpr const TCHAR* CMD_STATS_STOP = TEXT("stat stopfile");
@@ -110,6 +113,8 @@ public:
     static constexpr const TCHAR* CMD_CUSTOM_DEPTH_STENCIL_ENABLE = TEXT("r.CustomDepth 3");
     // https://docs.unrealengine.com/4.26/en-US/TestingAndOptimization/PerformanceAndProfiling/ForwardRenderer
     static constexpr const TCHAR* CMD_FORWARD_SHADING_ENABLE = TEXT("r.ForwardShading 1");
+    static constexpr const TCHAR* CMD_HIGHRES_SCREENSHOT_DELAY = TEXT("r.HighResScreenshotDelay");
+    static constexpr const TCHAR* CMD_AUDIO_MIXER_DISABLE = TEXT("au.IsUsingAudioMixer 0");
 
     // SIM FILE EXTENSIONS --
     static constexpr const TCHAR* SimFileExts[] = {
@@ -121,10 +126,14 @@ public:
 
         // Image
         TEXT(".jpg"),    // ERRFileType::IMAGE_JPG
+        TEXT(".jpg"),    // ERRFileType::IMAGE_GRAYSCALE_JPG
         TEXT(".png"),    // ERRFileType::IMAGE_PNG
         TEXT(".tga"),    // ERRFileType::IMAGE_TGA
         TEXT(".exr"),    // ERRFileType::IMAGE_EXR
         TEXT(".hdr"),    // ERRFileType::IMAGE_HDR
+
+        // Light Profile
+        TEXT(".ies"),    // ERRFileType::LIGHT_PROFILE_IES
 
         // Meta data
         TEXT(".json"),    // ERRFileType::JSON
@@ -292,6 +301,7 @@ public:
             OutPlayerControllerList.Add(newPlayer);
         }
     }
+    static bool HasPlayerControllerListInitialized(const UObject* InContextObject, bool bIsLogged = false);
 
     // This value could be configured in [DefaultEngine.ini]
     static int32 GetMaxSplitscreenPlayers(const UObject* InContextObject);
@@ -312,7 +322,7 @@ public:
         return InContextObject->GetClass()->GetConfigName();
     }
 
-    static bool HasPlayerControllerListInitialized(const UObject* InContextObject, bool bIsLogged = false);
+    static bool IsSimProfiling();
 
     // GameState & PlayerController should be able to be recognized polymorphically!
     static bool HasSimInitialized(const UObject* InContextObject, bool bIsLogged = false);
@@ -328,6 +338,52 @@ public:
     static uint32 GetNewGuid()
     {
         return GetTypeHash(FGuid::NewGuid());
+    }
+
+    // Each level could be streamed into an unique [ULevelStreaming]
+    // Refer to ULevelStreamingDynamic::LoadLevelInstance() for creating multiple streaming instances of the same level
+    static ULevelStreamingDynamic* CreateStreamingLevel(const UObject* InContextObject, const FRRStreamingLevelInfo& InLevelInfo)
+    {
+        bool bSucceeded = false;
+        ULevelStreamingDynamic* streamLevel =
+            ULevelStreamingDynamic::LoadLevelInstance(InContextObject->GetWorld(),
+                                                      InLevelInfo.AssetPath,
+                                                      InLevelInfo.TargetTransform.GetTranslation(),
+                                                      InLevelInfo.TargetTransform.Rotator(),
+                                                      /*out*/ bSucceeded);
+        UE_LOG(LogTemp, Log, TEXT("%d Streaming level creation from path: %s"), bSucceeded, *InLevelInfo.AssetPath);
+        return streamLevel;
+    }
+
+    static void StreamLevel(const UObject* InContextObject,
+                            const FString& InLevelName,
+                            UObject* InTargetObject = nullptr,
+                            const FName& InExecuteFunctionName = NAME_None)
+    {
+        static int32 sLatentActionUUID = 0;
+        FLatentActionInfo latentActionInfo;
+        latentActionInfo.CallbackTarget = InTargetObject;
+        latentActionInfo.ExecutionFunction = InExecuteFunctionName;
+        latentActionInfo.UUID = ++sLatentActionUUID;
+        latentActionInfo.Linkage = 0;
+        UGameplayStatics::LoadStreamLevel(InContextObject, *InLevelName, true, true, latentActionInfo);
+    }
+
+    static void UnstreamLevel(const UObject* InContextObject, const FName& InLevelName)
+    {
+        UGameplayStatics::UnloadStreamLevel(InContextObject, InLevelName, FLatentActionInfo(), true);
+    }
+
+    static void MoveStreamingLevelBetweenSceneInstances(ULevelStreaming* InStreamingLevel,
+                                                        int8 InStartSceneInstanceId,
+                                                        int8 InTargetSceneInstanceId)
+    {
+        if (InStartSceneInstanceId != InTargetSceneInstanceId)
+        {
+            const FVector startSceneInstanceLoc = GetSceneInstanceLocation(InStartSceneInstanceId);
+            const FVector targetSceneInstanceLoc = GetSceneInstanceLocation(InTargetSceneInstanceId);
+            InStreamingLevel->GetLoadedLevel()->ApplyWorldOffset(targetSceneInstanceLoc - startSceneInstanceLoc, false);
+        }
     }
 
     // -------------------------------------------------------------------------------------------------------------------------
@@ -375,7 +431,22 @@ public:
     FORCEINLINE static float GetSeconds()
     {
         // `GetWorld()->GetTimeSeconds()` relies on a context object's World and thus is less robust.
+        // typedef FUnixTime FPlatformTime, used by:
+        // + UEngine::UpdateTimeAndHandleMaxTickRate() to set FApp::CurrentTime
+        // + UGameplayStatics::GetAccurateRealTime()
         return FPlatformTime::Seconds();
+    }
+
+    template<typename T, typename = TEnableIf<TIsFloatingPoint<T>::Value>>
+    static void MarkCurrentTime(T& OutTimestamp)
+    {
+        OutTimestamp = GetSeconds();
+    }
+
+    template<typename T, typename = TEnableIf<TIsFloatingPoint<T>::Value>>
+    static T GetElapsedTime(T& InLastTimestamp)
+    {
+        return GetSeconds() - InLastTimestamp;
     }
 
     // It was observed that with high polling frequency as [0.01] or sometimes [0.1] second, we got crash on AutomationTest
@@ -419,7 +490,7 @@ public:
     template<typename T>
     FORCEINLINE static void RegisterRepeatedExecution(T* InObj,
                                                       FTimerHandle& InTimerHandle,
-                                                      typename FTimerDelegate::TUObjectMethodDelegate<T>::FMethodPtr InMethod,
+                                                      typename FTimerDelegate::template TMethodPtr<T>::FMethodPtr InMethod,
                                                       float InRate = 0.5f)
     {
         check(IsValid(InObj));
@@ -468,6 +539,14 @@ public:
                                      TArray<UTexture*>& OutImageTextureList,
                                      bool bIsLogged = false);
 
+    static FRRLightProfileData SLightProfileData;
+    static UTextureLightProfile* LoadIESProfile(const FString& InFullFilePath, const FString& InLightProfileName);
+    static bool LoadIESProfilesFromFolder(const FString& InFolderPath,
+                                          TArray<UTextureLightProfile*>& OutLightProfileList,
+                                          bool bIsLogged = false);
+
+    static TFunction<void(uint8*, const FUpdateTextureRegion2D*)> CleanupLightProfileData;
+
     static bool IsValidBitDepth(int32 InBitDepth)
     {
         return (URRActorCommon::IMAGE_BIT_DEPTH_INT8 == InBitDepth) || (URRActorCommon::IMAGE_BIT_DEPTH_FLOAT16 == InBitDepth) ||
@@ -485,13 +564,35 @@ public:
         TSharedPtr<IImageWrapper> imageWrapper = URRCoreUtils::SImageWrappers[InImageFileType];
         verify(imageWrapper.IsValid());
         const auto& bitmap = InImageData.GetImageData<InBitDepth>();
-        imageWrapper->SetRaw(bitmap.GetData(), bitmap.GetAllocatedSize(), ImageSize.X, ImageSize.Y, RGBFormat, BitDepth);
+
+        if (ERGBFormat::Gray == RGBFormat)
+        {
+            // Ref :FLandscapeWeightmapFileFormat_Png::Export
+            verify(URRActorCommon::IMAGE_BIT_DEPTH_INT8 == InBitDepth);
+            TArray<uint8> grayBitmap;
+            for (const auto& color : bitmap)
+            {
+                grayBitmap.Add(color.R);
+            }
+            imageWrapper->SetRaw(grayBitmap.GetData(),
+                                 grayBitmap.Num(),
+                                 ImageSize.X,
+                                 ImageSize.Y,
+                                 ERGBFormat::Gray,
+                                 URRActorCommon::IMAGE_BIT_DEPTH_INT8);
+        }
+        else
+        {
+            imageWrapper->SetRaw(
+                bitmap.GetData(), bitmap.Num() * bitmap.GetTypeSize(), ImageSize.X, ImageSize.Y, RGBFormat, BitDepth);
+        }
 
         // Get compressed data because uncompressed is the same fidelity, but much larger
         // EImageCompressionQuality::Default will make the Quality as 85, which is not optimal
         // Besides, this Quality value only matters to JPG, PNG compression is always lossless
         // Please refer to FJpegImageWrapper, FPngImageWrapper for details
-        OutCompressedData = imageWrapper->GetCompressed(100);
+        OutCompressedData = imageWrapper->GetCompressed(
+            (ERRFileType::IMAGE_JPG == InImageFileType) ? 100 : static_cast<int32>(EImageCompressionQuality::Default));
     }
 
     // -------------------------------------------------------------------------------------------------------------------------

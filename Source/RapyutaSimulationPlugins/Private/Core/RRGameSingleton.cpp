@@ -16,14 +16,22 @@ TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_
     {ERRResourceDataType::UE_SKELETON, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_PHYSICS_ASSET, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_MATERIAL, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
+    {ERRResourceDataType::UE_TEXTURE, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
 };
 
-URRGameSingleton::URRGameSingleton(){
-    UE_LOG(LogRapyutaCore, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"))}
+URRGameSingleton::URRGameSingleton()
+{
+    UE_LOG(LogRapyutaCore, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"));
+}
 
 URRGameSingleton::~URRGameSingleton()
 {
     // AssetDataList.Empty();
+}
+
+void URRGameSingleton::PrintSimConfig() const
+{
+    UE_LOG(LogRapyutaCore, Display, TEXT("- SIM PROFILING: %d"), BSIM_PROFILING);
 }
 
 URRGameSingleton* URRGameSingleton::Get()
@@ -96,8 +104,11 @@ bool URRGameSingleton::InitializeResources()
     verify(RequestResourcesLoading(dataType));
 
     // [TEXTURE] --
-    // Textures are only externally loaded for now
-    GetSimResourceInfo(ERRResourceDataType::UE_TEXTURE).HasBeenAllLoaded = true;
+    dataType = ERRResourceDataType::UE_TEXTURE;
+    CollateAssetsInfo<UTexture>(dataType, FOLDER_PATH_ASSET_TEXTURES);
+    // Request Texture resource async loading
+    GetSimResourceInfo(dataType).HasBeenAllLoaded = false;
+    verify(RequestResourcesLoading(dataType));
 
     // [BODY SETUP] --
     // Body setups are dynamically created in runtime
