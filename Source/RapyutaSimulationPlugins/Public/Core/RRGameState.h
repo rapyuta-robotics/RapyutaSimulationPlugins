@@ -159,14 +159,18 @@ public:
         }
     }
 
+    //! Move all env static actors to a scene instance
     virtual void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId);
 
 protected:
     virtual void CreateSceneInstance(int8 InSceneInstanceId);
     virtual void InitializeSim(int8 InSceneInstanceId);
     virtual void StartSubSim(int8 InSceneInstanceId);
+    //! Create scene's common objects
     virtual void CreateServiceObjects(int8 InSceneInstanceId);
+    //! Stream level & Fetch static-env actors
     virtual void SetupEnvironment();
+    //! Fetch env static actors (floors, walls, lights, etc.) if setup in the scene/level
     virtual void FetchEnvStaticActors();
 
     virtual void FinalizeSim();

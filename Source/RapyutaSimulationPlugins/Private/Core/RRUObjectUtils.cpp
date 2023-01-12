@@ -12,6 +12,8 @@
 #include "Core/RRMathUtils.h"
 #include "Core/RRMeshActor.h"
 
+//! Hardcoded [DATA_SYNTH_CUSTOM_DEPTH_STENCILS], due to UE5 mismatched pixels in captured image vs ones written into the custom depth buffer
+//! https://superyateam.com/2019/06/17/custom-depth-and-custom-depth-stencil-in-ue4/
 static TArray<uint8> DATA_SYNTH_CUSTOM_DEPTH_STENCILS = []()
 {
     TArray<uint8> data = {

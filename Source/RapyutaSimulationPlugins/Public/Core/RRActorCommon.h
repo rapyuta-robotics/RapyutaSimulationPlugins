@@ -297,6 +297,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRHomoMeshEntityGroup
     UPROPERTY()
     TArray<ARRMeshActor*> Entities;
 
+    //! Fetch #Entities as TArray<AActor*>
     TArray<AActor*> GetActors() const
     {
         TArray<AActor*> actors;
@@ -307,16 +308,20 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRHomoMeshEntityGroup
         return actors;
     }
 
+    //! Fetch Entities[Index]
     ARRMeshActor* operator[](int32 Index) const
     {
         return Entities[Index];
     }
 
+    //! Get num of Entities
     int32 Num() const
     {
         return Entities.Num();
     }
+    //! Get Entities Group's common model name
     FString GetGroupModelName() const;
+    //! Get unique name of the entities group
     FString GetGroupName() const;
 };
 
@@ -351,27 +356,35 @@ struct RAPYUTASIMULATIONPLUGINS_API FRREntityLogInfo
     UPROPERTY()
     TArray<AActor*> Entities;
 
+    //! Common model name of the Entities group
     UPROPERTY()
     FString GroupModelName;
 
+    //! Unique name of the entities group
     UPROPERTY()
     FString GroupName;
 
+    //! Segmentation mask custom depth stencil hexa values in string format
     UPROPERTY()
     FString SegMaskDepthStencilStr;
 
+    //! Id of the current scene entities group belong to
     UPROPERTY()
     uint64 SceneId = 0;
 
+    //! World transform of the whole entities group
     UPROPERTY()
     FTransform WorldTransform = FTransform::Identity;
 
+    //! Bounding box 3D vertices of the whole group in world coordinate
     UPROPERTY()
     TArray<FVector> BBVertices3DInWorld;
 
+    //! Bounding box 3D vertices of the whole group in camera coordinate
     UPROPERTY()
     TArray<FVector> BBVertices3DInCamera;
 
+    //! Bounding box 2D vertices of the whole group, as projected onto camera
     UPROPERTY()
     TArray<FVector2D> BBVertices2D;
 };
