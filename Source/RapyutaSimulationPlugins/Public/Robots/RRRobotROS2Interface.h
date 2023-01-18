@@ -15,6 +15,9 @@
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/RRROS2OdomPublisher.h"
 
+// RapyutaSimulationPlugins
+#include "Core/RRUObjectUtils.h"
+
 #include "RRRobotROS2Interface.generated.h"
 
 class ARRBaseRobot;
@@ -39,7 +42,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
 
 public:
     //! Target robot
-    UPROPERTY(Transient, Replicated)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     ARRBaseRobot* Robot = nullptr;
 
     virtual bool IsSupportedForNetworking() const override
@@ -56,7 +59,7 @@ public:
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     //! ROS2 node of this interface created by #InitRobotROS2Node
-    UPROPERTY(Transient, Replicated)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     UROS2NodeComponent* RobotROS2Node = nullptr;
 
     //! ROS2SpawnParameters which is created when robot is spawn from /SpawnEntity srv provided by #ASimulationState.
@@ -68,7 +71,15 @@ public:
      * This method is mainly used by #ARRBaseoRbotROSController via #ARRBaseRobot::InitROS2Interface.
      * @param InRobot
      */
+     UFUNCTION(BlueprintCallable)
     virtual void Initialize(ARRBaseRobot* InRobot);
+
+    /**
+     * @brief AdditionalInitialization implemented in BP.
+     * Child BP class can use this method to add initialization behaviour
+     */
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPInitialize();
 
     /**
      * @brief DeInitialize robot's ROS2 interface by stopping publisher
@@ -140,6 +151,37 @@ public:
     UPROPERTY(Transient, BlueprintReadWrite, Replicated)
     UROS2Subscriber* CmdVelPublisher = nullptr;
 
+    //! You can add your publishers here to ask ROS2Interface to manage.
+    //! Other option is to create child class to overwrite each method.
+    UPROPERTY(Transient, BlueprintReadWrite)
+    TMap<FString, UROS2Publisher*> Publishers;
+
+    //! You can add your subscribers here to ask ROS2Interface to manage.
+    //! Other option is to create child class to overwrite each method.
+    UPROPERTY(Transient, BlueprintReadWrite)
+    TMap<FString, UROS2Subscriber*> Subscribers;
+
+    //! You can add your publishers here to ask ROS2Interface to manage.
+    //! Other option is to create child class to overwrite each method.
+    UPROPERTY(Transient, BlueprintReadWrite)
+    TMap<FString, UROS2ServiceClient*> ServiceClients;
+
+    //! You can add your publishers here to ask ROS2Interface to manage.
+    //! Other option is to create child class to overwrite each method.
+    UPROPERTY(Transient, BlueprintReadWrite)
+    TMap<FString, UROS2ServiceServer*> ServiceServers;
+
+    //! You can add your publishers here to ask ROS2Interface to manage.
+    //! Other option is to create child class to overwrite each method.
+    UPROPERTY(Transient, BlueprintReadWrite)
+    TMap<FString, UROS2ActionClient*> ActionClients;
+
+    //! You can add your publishers here to ask ROS2Interface to manage.
+    //! Other option is to create child class to overwrite each method.
+    UPROPERTY(Transient, BlueprintReadWrite)
+    TMap<FString, UROS2ActionServer*> ActionServers;
+
+
     /**
      * @brief Initialize non sensor basic publishers such as odometry.
      * Overidden in child robot ROS2 interface classes for specialized publishers.
@@ -162,11 +204,33 @@ public:
     virtual bool InitSubscriptions();
 
     /**
-     * @brief Initialize services clients
+     * @brief Initialize service clients
      * Overidden in child robot ROS2 interface classes for specialized services clients.
      */
     UFUNCTION()
-    virtual bool InitServicesClients();
+    virtual bool InitServiceClients();
+
+    /**
+     * @brief Initialize service servers
+     * Overidden in child robot ROS2 interface classes for specialized services servers.
+     */
+    UFUNCTION()
+    virtual bool InitServiceServers();
+
+    /**
+     * @brief Initialize action clients
+     * Overidden in child robot ROS2 interface classes for specialized action clients.
+     */
+    UFUNCTION()
+    virtual bool InitActionClients();
+
+    /**
+     * @brief Initialize service servers
+     * Overidden in child robot ROS2 interface classes for specialized action servers.
+     */
+    UFUNCTION()
+    virtual bool InitActionServers();
+
 
     /**
      * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.
@@ -223,4 +287,31 @@ protected:
             UE_LOG(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName.ToString());
         }
     }
+};
+
+/**
+ * @brief Wrapper class of URRRobotROS2Interfaceas component
+ * This class should be useful to create custom ROSInterface.
+ * 
+ */
+UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2InterfaceComponent : public UActorComponent
+{
+    GENERATED_BODY()
+public:
+    URRRobotROS2InterfaceComponent();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    ARRBaseRobot* Robot = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URRRobotROS2Interface* ROS2Interface = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass = URRRobotROS2Interface::StaticClass();
+
+    //! add all subcomonents of owner to #ROS2Interface
+    //! You can manually add one by one instead of using this class.
+    UFUNCTION(BlueprintCallable)
+    void AddAllSubComponentToROSInterface();
 };
