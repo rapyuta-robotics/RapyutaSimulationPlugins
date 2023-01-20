@@ -102,7 +102,7 @@ public:
      * Robot's ROS2 Interface.
      * With the client-server setup, this is created in the server and replicated to the client and initialized only in the client.
      */
-    UPROPERTY(VisibleAnywhere, BlueprintReadonly, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
     URRRobotROS2Interface* ROS2Interface = nullptr;
 
     /**
@@ -114,7 +114,7 @@ public:
     /**
      * @brief Flag to start/stop ROS2Interfaces. Since RPC can't be used, use replication to trigger initialization.
      */
-    UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_bStartStopROS2Interface)
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated, ReplicatedUsing = OnRep_bStartStopROS2Interface)
     bool bStartStopROS2Interface = false;
 
     /**
@@ -130,7 +130,9 @@ public:
     bool IsAuthorizedInThisClient();
 
     //! ROSSpawn parameters which is passed to ROS2Interface
-    UPROPERTY(VisibleAnywhere, Replicated)
+    //! You can change paramter in BP for manually placed robot but
+    //! Paramerter will be overwirten if you spawn from /SpawnEntity srv.
+    UPROPERTY(BlueprintReadWrite, Replicated)
     UROS2Spawnable* ROSSpawnParameters = nullptr;
 
     /**
