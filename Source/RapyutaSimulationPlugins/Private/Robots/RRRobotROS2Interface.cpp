@@ -8,12 +8,12 @@
 // rclUE
 #include "Msgs/ROS2JointState.h"
 #include "Msgs/ROS2Twist.h"
-#include "ROS2Publisher.h"
-#include "ROS2Subscriber.h"
-#include "ROS2ServiceClient.h"
-#include "ROS2ServiceServer.h"
 #include "ROS2ActionClient.h"
 #include "ROS2ActionServer.h"
+#include "ROS2Publisher.h"
+#include "ROS2ServiceClient.h"
+#include "ROS2ServiceServer.h"
+#include "ROS2Subscriber.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
@@ -60,7 +60,6 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 
     // Additional initialization implemented in BP
     BPInitialize();
-
 }
 
 void URRRobotROS2Interface::DeInitialize()
@@ -145,7 +144,8 @@ bool URRRobotROS2Interface::InitPublishers()
         {
             RobotROS2Node->AddPublisher(pub.Value);
         }
-        else{
+        else
+        {
             UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("[%s][URRRobotROS2Interface][InitPublishers] %s is nullptr. Please create before initialization."),
@@ -163,7 +163,7 @@ void URRRobotROS2Interface::StopPublishers()
     {
         OdomPublisher->RobotVehicle = nullptr;
     }
-    
+
     // Additional publishers by child class or robot
     for (auto& pub : Publishers)
     {
@@ -196,7 +196,8 @@ bool URRRobotROS2Interface::InitSubscriptions()
         {
             RobotROS2Node->AddSubscription(sub.Value);
         }
-        else{
+        else
+        {
             UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("[%s][URRRobotROS2Interface][InitSubscriptions] %s is nullptr. Please create before initialization."),
@@ -221,7 +222,8 @@ bool URRRobotROS2Interface::InitServiceClients()
         {
             RobotROS2Node->AddServiceClient(client.Value);
         }
-        else{
+        else
+        {
             UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("[%s][URRRobotROS2Interface][InitServiceClients] %s is nullptr. Please create before initialization."),
@@ -246,7 +248,8 @@ bool URRRobotROS2Interface::InitServiceServers()
         {
             RobotROS2Node->AddServiceServer(server.Value);
         }
-        else{
+        else
+        {
             UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("[%s][URRRobotROS2Interface][InitServiceServers] %s is nullptr. Please create before initialization."),
@@ -271,7 +274,8 @@ bool URRRobotROS2Interface::InitActionClients()
         {
             RobotROS2Node->AddActionClient(client.Value);
         }
-        else{
+        else
+        {
             UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("[%s][URRRobotROS2Interface][InitActionClients] %s is nullptr. Please create before initialization."),
@@ -296,7 +300,8 @@ bool URRRobotROS2Interface::InitActionServers()
         {
             RobotROS2Node->AddActionServer(server.Value);
         }
-        else{
+        else
+        {
             UE_LOG(LogRapyutaCore,
                    Warning,
                    TEXT("[%s][URRRobotROS2Interface][InitActionServers] %s is nullptr. Please create before initialization."),
@@ -441,25 +446,30 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
     }
 }
 
-
 URRRobotROS2InterfaceComponent::URRRobotROS2InterfaceComponent()
 {
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
 
-    if ( nullptr == Robot )
+    if (nullptr == Robot)
     {
-        UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("[URRRobotROS2InterfaceComponent][URRRobotROS2InterfaceComponent] Robot is nullptr. Trying to get owner as robot."));
+        UE_LOG_WITH_INFO(LogTemp,
+                         Warning,
+                         TEXT("[URRRobotROS2InterfaceComponent][URRRobotROS2InterfaceComponent] Robot is nullptr. Trying to get "
+                              "owner as robot."));
         Robot = Cast<ARRBaseRobot>(GetOwner());
     }
 
-    if ( nullptr != Robot )
+    if (nullptr != Robot)
     {
         ROS2Interface->ROSSpawnParameters = Robot->ROSSpawnParameters;
     }
     else
     {
-        UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[URRRobotROS2InterfaceComponent][URRRobotROS2InterfaceComponent] Robot is nullptr and Owner is not Robot. Can't set Spawnparameter"));
+        UE_LOG_WITH_INFO(LogTemp,
+                         Warning,
+                         TEXT("[URRRobotROS2InterfaceComponent][URRRobotROS2InterfaceComponent] Robot is nullptr and Owner is not "
+                              "Robot. Can't set Spawnparameter"));
     }
 
     ROS2Interface->SetupROSParamsAll();
@@ -467,7 +477,6 @@ URRRobotROS2InterfaceComponent::URRRobotROS2InterfaceComponent()
 
 void URRRobotROS2InterfaceComponent::AddAllSubComponentToROSInterface()
 {
-    
     // add all ros components under this class to ROSInterface to make it initialize with ROSInterface initialization.
     TInlineComponentArray<UROS2PublisherComponent*> pubComps(GetOwner());
     for (auto& pubComp : pubComps)
