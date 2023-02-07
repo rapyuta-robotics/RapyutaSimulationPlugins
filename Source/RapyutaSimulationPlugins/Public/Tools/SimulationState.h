@@ -16,11 +16,9 @@
 #include "Srvs/ROS2DeleteEntity.h"
 #include "Srvs/ROS2GetEntityState.h"
 #include "Srvs/ROS2SetEntityState.h"
-#include "Srvs/ROS2SpawnEntities.h"
 #include "Srvs/ROS2SpawnEntity.h"
 
 // RapyutaSimulationPlugins
-#include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
 
 #include "SimulationState.generated.h"
@@ -246,6 +244,12 @@ public:
     //! Timer handle to fetch #SpawnableEntityInfoList
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle FetchEntityListTimerHandle;
+
+    /**
+     * @brief Matches converted UE strings to original char buffer, for ros messages
+     * This can be needed for unicode encoded strings in ros message when conversion does not work well
+     */
+    TMap<FString, std::string> EncodedStrings;
 
 private:
     /**
