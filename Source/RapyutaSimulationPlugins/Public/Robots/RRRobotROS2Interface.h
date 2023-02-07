@@ -182,11 +182,10 @@ protected:
              typename TRobotMemFuncType = void (TRobot::*)(const TROS2MessageData&)>
     FORCEINLINE void OnMessageReceived(const TROS2Message* InMsg, const TRobotMemFuncType& InMemFunc)
     {
-        const auto* msg = Cast<TROS2Message>(InMsg);
-        if (IsValid(msg))
+        if (IsValid(InMsg))
         {
             TROS2MessageData msgData;
-            msg->GetMsg(msgData);
+            InMsg->GetMsg(msgData);
 
             // (Note) In this callback, which could be invoked from a ROS working thread,
             // thus any direct referencing to its member in this GameThread lambda needs to be verified.
@@ -201,7 +200,7 @@ protected:
                       });
         }
     }
-
+    
     UPROPERTY()
     TMap<FName /*ServiceName*/, UROS2ServiceClient*> ServiceClientList;
 
