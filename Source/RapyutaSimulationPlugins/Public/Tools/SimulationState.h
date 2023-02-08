@@ -246,8 +246,8 @@ public:
     FTimerHandle FetchEntityListTimerHandle;
 
     /**
-     * @brief Matches converted UE strings to original char buffer, for ros messages
-     * This can be needed for unicode encoded strings in ros message when conversion does not work well
+     * @brief Matches UE strings to original char buffers, for ros messages
+     * This can be needed for unicode encoded strings in ros message when ROS->UE->ROS conversion does not work well
      */
     TMap<FString, std::string> EncodedStrings;
 

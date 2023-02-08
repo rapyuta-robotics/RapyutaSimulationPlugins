@@ -208,10 +208,9 @@ protected:
     void MakeServiceRequest(const FName& InServiceName, const TServiceRequest& InRequest)
     {
         // Create and update request
-        auto* clienPtr = ServiceClientList.Find(InServiceName);
-        if (clienPtr)
+        if (auto* clientPtr = ServiceClientList.Find(InServiceName))
         {
-            UROS2ServiceClient* client = *clienPtr;
+            UROS2ServiceClient* client = *clientPtr;
             TService* service = CastChecked<TService>(client->Service);
             client->SendRequest(service, InRequest);
 
