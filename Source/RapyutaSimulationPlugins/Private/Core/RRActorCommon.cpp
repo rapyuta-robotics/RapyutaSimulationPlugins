@@ -162,8 +162,10 @@ void FRRActorSpawnInfo::operator()(const FString& InEntityModelName,
 std::once_flag URRActorCommon::OnceFlag;
 uint64 URRActorCommon::SLatestSceneId = 0;
 TArray<int32> URRActorCommon::StaticCustomDepthStencilList;
-// This is used as a map due to the unequivalence of element order with [ARRGameState::SceneInstanceList]
+
+//! This is used as a map due to the unequivalence of element order with [ARRGameState::SceneInstanceList]
 TMap<int8, URRActorCommon*> URRActorCommon::SActorCommonList;
+
 URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* InActorCommonClass, UObject* InOuter)
 {
     if (!SActorCommonList.Contains(InSceneInstanceId))

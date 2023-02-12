@@ -11,12 +11,11 @@
 #define RAPYUTA_URDF_PARSER_DEBUG (0)
 
 /**
- * URDF Parser to parse the information from the robot's URDF file.
- * References:
- * https://github.com/ros/urdfdom
- * https://github.com/ros/urdf_parser_py/blob/melodic-devel/src/urdf_parser_py/urdf.py
- * https://github.com/robcog-iai/URoboSim/blob/master/Source/URoboSim/Public/RURDFParser.h
- * https://github.com/cconti-rr/GeometryImporterPOC/blob/master/Plugins/URDFImporter/Source/URDFImporter/Public/URDFParser.h
+ * @brief [experimental]  URDF Parser to parse the information from the robot's URDF file.
+ * @sa https://github.com/ros/urdfdom
+ * @sa https://github.com/ros/urdf_parser_py/blob/melodic-devel/src/urdf_parser_py/urdf.py
+ * @sa https://github.com/robcog-iai/URoboSim/blob/master/Source/URoboSim/Public/RURDFParser.h
+ * @sa https://github.com/cconti-rr/GeometryImporterPOC/blob/master/Plugins/URDFImporter/Source/URDFImporter/Public/URDFParser.h
  */
 class RAPYUTASIMULATIONPLUGINS_API FRRURDFParser : public FRRRobotDescriptionParser, private IFastXmlCallback
 {
@@ -29,7 +28,7 @@ private:
     static constexpr const TCHAR* GEOMETRY_TYPE_PREFIX_COLLISION = TEXT("collision");
     static constexpr const TCHAR* GEOMETRY_TYPE_PREFIX_INERTIAL = TEXT("inertial");
 
-    // Local model info properties
+    //! Local model info properties
     FString ModelName;
     bool bHasWorldJoint = false;
     uint32 UEComponentTypeFlags = 0;
@@ -51,10 +50,10 @@ private:
     TArray<FRRRobotWheelProperty> WheelPropList;
     FRRMaterialProperty WholeBodyMaterialInfo;
 
-    // Element stack
+    //! Element stack
     TArray<FString> ElemStack;
 
-    // Elements' Name & Value attributes
+    //! Elements' Name & Value attributes
     TMap<FString, FString> AttMap;
     void Reset()
     {

@@ -23,8 +23,7 @@ class ARRPlayerController;
 class ARRMeshActor;
 
 /**
- * @brief Game state
- *
+ * @brief Game state which handles multiple #URRSceneInstance which spit game in scenes for data gen, large world and etc.
  * @sa [AGameState](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameState/)
  *
  * @todo add documentation
@@ -35,6 +34,12 @@ class RAPYUTASIMULATIONPLUGINS_API ARRGameState : public AGameState
     GENERATED_BODY()
 public:
     ARRGameState();
+
+    /**
+     * @brief Create Scene Instances for #SCENE_INSTANCES_NUM by calling 
+     * #CreateSceneInstance, #CreateServiceObjects, #StartSubSim, and #InitializeSim;
+     * 
+     */
     virtual void StartSim();
 
     UPROPERTY(config)
@@ -57,16 +62,30 @@ public:
     UPROPERTY()
     TArray<URRSceneInstance*> SceneInstanceList;
 
+    /**
+     * @brief Get the Scene Instance object
+     * 
+     * @tparam TScenceInstanceClass 
+     * @param InSceneInstanceId 
+     * @return TScenceInstanceClass* 
+     */
     template<typename TScenceInstanceClass>
     TScenceInstanceClass* GetSceneInstance(int8 InSceneInstanceId) const
     {
         TScenceInstanceClass* instance = SceneInstanceList.IsValidIndex(InSceneInstanceId)
                                              ? Cast<TScenceInstanceClass>(SceneInstanceList[InSceneInstanceId])
                                              : nullptr;
-        verify(instance);
+        ensure(instance);
         return instance;
     }
 
+    /**
+     * @brief Check SceneInstance with given Id is exists.
+     * 
+     * @param InSceneInstanceId 
+     * @return true 
+     * @return false 
+     */
     bool HasSceneInstance(int8 InSceneInstanceId)
     {
         return SceneInstanceList.IsValidIndex(InSceneInstanceId) && SceneInstanceList[InSceneInstanceId];
@@ -94,8 +113,12 @@ public:
     UPROPERTY(config)
     FString SIM_OUTPUTS_BASE_FOLDER_NAME = TEXT("OutputData");
 
-    // To faciliate testing on CI, Outputs base folder need to be cleared during the test.
-    // Thus, it would be clearer as using [ProjectSavedDir()] as the CI default output folder.
+    /**
+     * @brief Get the Sim Outputs Base Folder Path object
+     * To faciliate testing on CI, Outputs base folder need to be cleared during the test.
+     * Thus, it would be clearer as using [ProjectSavedDir()] as the CI default output folder.
+     * @return FString 
+     */
     FString GetSimOutputsBaseFolderPath() const
     {
         return FPaths::IsRelative(SIM_OUTPUTS_BASE_FOLDER_NAME)
@@ -163,32 +186,79 @@ public:
     virtual void MoveEnvironmentToSceneInstance(int8 InSceneInstanceId);
 
 protected:
+    /**
+    * @brief Create a Scene Instance object.
+    * Create SceneInstance and SceneDirector's own PlayerController, which actually creates its instance based on PlayerControllerClass
+    * configured in [GameMode]'s ctor! ! [PlayerController] MUST BE CREATED EARLIER THAN ALL OTHER SIM SCENE'S ACTORS AND
+    * OBJECTS
+    * @param InSceneInstanceId 
+    */
     virtual void CreateSceneInstance(int8 InSceneInstanceId);
+    
+    /**
+     * @brief 
+     * Spawn #ARRSceneDirector, which runs the main operation of the mode
+     * This, due to making use of scene instance's actors, is spawned last.
+     * ALSO, we should not write Scene-specific operation/functionality-related -starting codes inside scene instance's actors
+     * (camera, actors, spawners) and leave it up to [SceneDirector] to decide the start sequence order!
+     * @param InSceneInstanceId 
+     */
     virtual void InitializeSim(int8 InSceneInstanceId);
+
+    /**
+     * @brief Trigger OnStartSim of URRSceneInstance::ActorCommon
+     * 
+     * @param InSceneInstanceId 
+     */
     virtual void StartSubSim(int8 InSceneInstanceId);
-    //! Create scene's common objects
+
+    /**
+     * @brief Create scene's common objects. 
+     * Instantiate Actor Common, of which the ctor should not depend on any play resource.
+     * Common objects in general must be created here first, then will be referenced anywhere else.
+     * @param InSceneInstanceId 
+     */
     virtual void CreateServiceObjects(int8 InSceneInstanceId);
+
     //! Stream level & Fetch static-env actors
     virtual void SetupEnvironment();
+
     //! Fetch env static actors (floors, walls, lights, etc.) if setup in the scene/level
     virtual void FetchEnvStaticActors();
 
     virtual void FinalizeSim();
     virtual void PrintSimConfig() const;
+
+    /**
+     * @brief Call #BeginSubPlay
+     */
     virtual void BeginPlay() override;
+
+    /**
+     * @brief Trigger OnBeginPlay() for plugins' own common artifacts, which have been created earlier in this ::[StartSim()]
+     * 
+     */
     virtual void BeginSubPlay();
+
+    /**
+     * @brief This function works like an unwinding stack. where the children class's contents
+     * are finalized ahead of parent's
+     * => Reaching here means that all ~Common's OnEndPlay() have already finished!
+     * 
+     * @param EndPlayReason 
+     */
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 protected:
     UPROPERTY()
     TSubclassOf<URRSceneInstance> SceneInstanceClass;
 
-    // Pool of all entities having been spawned
+    //! Pool of all entities having been spawned
     UPROPERTY()
     TArray<ARRMeshActor*> AllDynamicMeshEntities;
 
 private:
-    // To avoid early GC, this exists only to keep ones temporarily taken away from [AllDynamicMeshEntities] & recycled later
+    //! To avoid early GC, this exists only to keep ones temporarily taken away from [AllDynamicMeshEntities] & recycled later
     UPROPERTY()
     TArray<AActor*> OrphanEntities;
 };

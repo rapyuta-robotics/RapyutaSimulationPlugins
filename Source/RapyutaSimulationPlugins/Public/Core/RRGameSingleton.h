@@ -26,6 +26,11 @@
 
 #include "RRGameSingleton.generated.h"
 
+/**
+ * @brief GameSingleton class which handles asset loading.
+ * GameSingleton class can exist during editor usage.
+ * @sa [GameSingleton](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UEngine/GameSingleton/)
+ */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API URRGameSingleton : public UObject
 {
@@ -46,7 +51,19 @@ public:
 
     // SIM RESOURCES ==
     //
+
+    /**
+     * @brief Read all sim dynamic resouces(Uassets) info from designated folders
+     * 
+     * @return true 
+     * @return false 
+     */
     bool InitializeResources();
+
+    /**
+     * @brief Finalize #ResourceMap by calling #FRRResourceInfo::Finalize
+     * 
+     */
     void FinalizeResources();
 
     template<typename T>
@@ -79,13 +96,22 @@ public:
     }
 
     // ASSETS --
-    // This list specifically hosts names of which module houses the UE assets based on their data type
+    //! This list specifically hosts names of which module houses the UE assets based on their data type
     static TMap<ERRResourceDataType, TArray<const TCHAR*>> SASSET_OWNING_MODULE_NAMES;
 
-    // This only returns base path of assets residing in Plugin, not from Project level, which should starts with [/Game/]
-    // And please note that the Sim does not store assets in Project, just to make them accessible among plugins.
+    //! This only returns base path of assets residing in Plugin, not from Project level, which should starts with [/Game/]
+    //! And please note that the Sim does not store assets in Project, just to make them accessible among plugins.
     static constexpr const TCHAR* ASSETS_ROOT_PATH = TEXT("/");
     static constexpr const TCHAR* ASSETS_PROJECT_MODULE_NAME = TEXT("Game/RapyutaContents");
+    
+    /**
+     * @brief Get the Assets Base Path object. 
+     * Return #ASSETS_ROOT_PATH / InModuleName
+     * For particular handling, please set the asset path ending with '/'
+     * This concatenation operator ensure only a single '/' is put in between
+     * @param InModuleName 
+     * @return FString #ASSETS_ROOT_PATH / InModuleName
+     */
     static FString GetAssetsBasePath(const TCHAR* InModuleName)
     {
         // For particular handling, please set the asset path ending with '/'
@@ -94,6 +120,12 @@ public:
     }
 
     static constexpr const TCHAR* DYNAMIC_CONTENTS_FOLDER_NAME = TEXT("DynamicContents");
+    /**
+     * @brief Get the Dynamic Assets Path List object
+     * Return the TArray of #SASSET_OWNING_MODULE_NAMES[i] / #DYNAMIC_CONTENTS_FOLDER_NAME
+     * @param InDataType 
+     * @return TArray<FString> 
+     */
     static TArray<FString> GetDynamicAssetsPathList(const ERRResourceDataType InDataType)
     {
         static TArray<FString> runtimeAssetsPathList;
@@ -106,10 +138,26 @@ public:
 
     //  RESOURCE STORE --
     //
+    /**
+     * @brief Check all resources have been loaded or not.
+     * 
+     * @param bIsLogged 
+     * @return true 
+     * @return false 
+     */
     bool HaveAllResourcesBeenLoaded(bool bIsLogged = false) const;
+
+    /**
+     * @brief Load asset with UAssetManager
+     * 
+     * @param InDataType 
+     * @return true 
+     * @return false
+     * @sa [UAssetManager](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UAssetManager/) 
+     */
     bool RequestResourcesLoading(const ERRResourceDataType InDataType);
 
-    // This is used as param to [FStreamableDelegate::CreateUObject()] thus its params could not be constref-ized
+    //! This is used as param to [FStreamableDelegate::CreateUObject()] thus its params could not be constref-ized
     FORCEINLINE void OnResourceLoaded(ERRResourceDataType InDataType, FSoftObjectPath InResourcePath, FString InResourceUniqueName)
     {
         check(IsInGameThread());
@@ -141,13 +189,15 @@ public:
     /**
      * @brief
      * Callback to handle an asynchronously loaded resource, which receives a [FSoftObjectPath] that references a valid [UObject]
-     * Then put it into both [ResourceMap] & [ResourceStore].
+     * Then put it into both #ResourceMap & #ResourceStore.
      *
      * @tparam TResource
      * @param InDataType
      * @param InResourcePath
      * @param InResourceUniqueName
      * @return bool
+     * @sa [FSoftObjectPath](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/FSoftObjectPath/)
+     * @sa [Asynchronous Asset Loading](https://docs.unrealengine.com/5.1/en-US/asynchronous-asset-loading-in-unreal-engine/)
      */
     template<typename TResource>
     FORCEINLINE bool ProcessAsyncLoadedResource(const ERRResourceDataType InDataType,
@@ -187,6 +237,15 @@ public:
         return false;
     }
 
+    /**
+     * @brief Update #ResourceMap and #ResourceStore with dynamically runtime-generated InResourceObject of which soft object path is also created on the fly.
+     * 
+     * @tparam TResource 
+     * @param InDataType 
+     * @param InResourceObject 
+     * @param InResourceUniqueName 
+     * @return  
+     */
     template<typename TResource>
     FORCEINLINE void AddDynamicResource(const ERRResourceDataType InDataType,
                                         TResource* InResourceObject,
@@ -217,6 +276,15 @@ public:
         }
     }
 
+    /**
+     * @brief Get the Sim Resource object
+     * 
+     * @tparam TResource 
+     * @param InDataType 
+     * @param InResourceUniqueName 
+     * @param bIsStaticResource 
+     * @return TResource* 
+     */
     template<typename TResource>
     TResource* GetSimResource(const ERRResourceDataType InDataType,
                               const FString& InResourceUniqueName,
@@ -249,11 +317,25 @@ public:
         return resourceAsset;
     }
 
+    /**
+     * @brief Check resource exist with #GetSimResourceInfo
+     * 
+     * @param InDataType 
+     * @param InResourceUniqueName 
+     * @return true 
+     * @return false 
+     */
     bool HasSimResource(const ERRResourceDataType InDataType, const FString& InResourceUniqueName) const
     {
         return GetSimResourceInfo(InDataType).Data.Contains(InResourceUniqueName);
     }
 
+    /**
+     * @brief Get the Sim Resource List object with #GetSimResourceInfo
+     * 
+     * @param InDataType 
+     * @return const TMap<FString, FRRResource>& 
+     */
     const TMap<FString, FRRResource>& GetSimResourceList(const ERRResourceDataType InDataType) const
     {
         verifyf(ResourceMap.Contains(InDataType),
@@ -262,6 +344,12 @@ public:
         return GetSimResourceInfo(InDataType).Data;
     }
 
+    /**
+     * @brief Get the Sim Resource Info object from #ResourceMap
+     * 
+     * @param InDataType 
+     * @return FRRResourceInfo& 
+     */
     FRRResourceInfo& GetSimResourceInfo(const ERRResourceDataType InDataType)
     {
         verifyf(ResourceMap.Contains(InDataType),
@@ -270,6 +358,12 @@ public:
         return ResourceMap[InDataType];
     }
 
+    /**
+     * @brief Get the Sim Resource Info object from #ResourceMap
+     * 
+     * @param InDataType 
+     * @return const FRRResourceInfo& 
+     */
     const FRRResourceInfo& GetSimResourceInfo(const ERRResourceDataType InDataType) const
     {
         verifyf(ResourceMap.Contains(InDataType),
@@ -319,30 +413,58 @@ public:
                                                       : ERRShapeType::MESH;
     }
 
-    // (NOTE) StaticMesh could be dynamically created
+    /**
+     * @brief Call #GetSimResource with #ERRResourceDataType::UE_STATIC_MESH
+     * (NOTE) StaticMesh could be dynamically created
+     * 
+     * @param InStaticMeshName 
+     * @param bIsStaticResource 
+     * @return FORCEINLINE* 
+     */
     FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName, bool bIsStaticResource = true) const
     {
         return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, InStaticMeshName, bIsStaticResource);
     }
 
     // SKELETAL ASSETS --
+    /**
+     * @brief Call #GetSimResource with #ERRResourceDataType::UE_SKELETAL_MESH
+     * 
+     * @param InSkeletalMeshName 
+     * @param bIsStaticResource 
+     * @return FORCEINLINE* 
+     */
     FORCEINLINE USkeletalMesh* GetSkeletalMesh(const FString& InSkeletalMeshName, bool bIsStaticResource = true)
     {
         return GetSimResource<USkeletalMesh>(ERRResourceDataType::UE_SKELETAL_MESH, InSkeletalMeshName, bIsStaticResource);
     }
 
+    /**
+     * @brief Call #GetSimResource with #ERRResourceDataType::UE_SKELETON
+     * 
+     * @param InSkeletonName 
+     * @param bIsStaticResource 
+     * @return FORCEINLINE* 
+     */
     FORCEINLINE USkeleton* GetSkeleton(const FString& InSkeletonName, bool bIsStaticResource = true)
     {
         return GetSimResource<USkeleton>(ERRResourceDataType::UE_SKELETON, InSkeletonName, bIsStaticResource);
     }
 
+    /**
+     * @brief Call #GetSimResource with #ERRResourceDataType::UE_PHYSICS_ASSET
+     * 
+     * @param InPhysicsAssetName 
+     * @param bIsStaticResource 
+     * @return FORCEINLINE* 
+     */
     FORCEINLINE UPhysicsAsset* GetPhysicsAsset(const FString& InPhysicsAssetName, bool bIsStaticResource = true)
     {
         return GetSimResource<UPhysicsAsset>(ERRResourceDataType::UE_PHYSICS_ASSET, InPhysicsAssetName, bIsStaticResource);
     }
 
     // MATERIALS --
-    // Dynamic Material assets folder path
+    //! Dynamic Material assets folder path
     UPROPERTY(config)
     FString FOLDER_PATH_ASSET_MATERIALS = TEXT("Materials");
 
@@ -352,28 +474,54 @@ public:
     static constexpr const TCHAR* MATERIAL_NAME_PHYSICS_WHEEL = TEXT("PM_Wheel");
     static constexpr const TCHAR* MATERIAL_NAME_TRANSLUCENCE_MASTER = TEXT("M_RapyutaTranslucenceMaster");
 
+    /**
+     * @brief Call #GetSimResource with #ERRResourceDataType::UE_MATERIAL
+     * 
+     * @param InMaterialName 
+     * @return FORCEINLINE* 
+     */
     FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName) const
     {
         return GetSimResource<UMaterialInterface>(ERRResourceDataType::UE_MATERIAL, InMaterialName);
     }
+
+    /**
+     * @brief Call #GetSimResource with #ERRResourceDataType::UE_MATERIAL
+     * 
+     * @param InPhysicalMaterialName 
+     * @return FORCEINLINE* 
+     */
     FORCEINLINE UPhysicalMaterial* GetPhysicalMaterial(const FString& InPhysicalMaterialName)
     {
         return GetSimResource<UPhysicalMaterial>(ERRResourceDataType::UE_MATERIAL, InPhysicalMaterialName);
     }
 
     // TEXTURES --
-    // Dynamic Texture assets folder path
+    //! Dynamic Texture assets folder path
     UPROPERTY(config)
     FString FOLDER_PATH_ASSET_TEXTURES = TEXT("Textures");
 
     static constexpr const TCHAR* TEXTURE_NAME_WHITE_MASK = TEXT("T_WhiteMask");
     static constexpr const TCHAR* TEXTURE_NAME_BLACK_MASK = TEXT("T_BlackMask");
+
+    /**
+     * @brief Call #GetSimResource with #ERRResourceDataType::UE_TEXTURE
+     * 
+     * @param InTextureName 
+     * @return FORCEINLINE* 
+     */
     FORCEINLINE UTexture* GetTexture(const FString& InTextureName) const
     {
         return GetSimResource<UTexture>(ERRResourceDataType::UE_TEXTURE, InTextureName);
     }
 
     // BODY SETUPS --
+    /**
+     * @brief Call #GetSimResource with #ERRResourceDataType::UE_BODY_SETUP
+     * 
+     * @param InBodySetupName 
+     * @return FORCEINLINE* 
+     */
     FORCEINLINE UBodySetup* GetBodySetup(const FString& InBodySetupName) const
     {
         // Body setups are dynamically created, thus not static resources
@@ -381,11 +529,11 @@ public:
     }
 
 private:
-    // Async loaded, thus must be thread safe. A map just helps referencing an item faster, though costs some overheads.
-    // Besides, UE does not support UPROPERTY() on a map yet.
+    //! Async loaded, thus must be thread safe. A map just helps referencing an item faster, though costs some overheads.
+    //! Besides, UE does not support UPROPERTY() on a map yet.
     TMap<ERRResourceDataType, FRRResourceInfo> ResourceMap;
 
-    // We need this to escape UObject-based resource Garbage Collection
+    //! We need this to escape UObject-based resource Garbage Collection
     UPROPERTY()
     TArray<UObject*> ResourceStore;
 };

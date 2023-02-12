@@ -20,8 +20,9 @@
 DECLARE_DELEGATE_OneParam(FOnMeshActorDeactivated, ARRMeshActor*);
 
 /**
- * @brief Mesh actor.
- *
+ * @brief Mesh actor.#ARRBaseActor with list of #UMeshComponent
+ * @sa #RRProceduralMeshComponent
+ * @sa #RRStaticMeshComponent
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRMeshActor : public ARRBaseActor
@@ -29,11 +30,19 @@ class RAPYUTASIMULATIONPLUGINS_API ARRMeshActor : public ARRBaseActor
     GENERATED_BODY()
 public:
     /**
-     * @brief Construct a new ARRMeshActor object
+     * @brief Construct a new ARRMeshActor object. Create and setup a scene component as root.
      */
     ARRMeshActor();
 
 public:
+    /**
+     * @brief ACTOR INTIALIZING GENERAL INFO (Unique name, mesh list, material list, etc.)
+     * 
+     * @tparam TActorSpawnInfo 
+     * @param InActorInfo 
+     * @return true 
+     * @return false 
+     */
     template<typename TActorSpawnInfo>
     bool InitializeWithSpawnInfo(const TActorSpawnInfo& InActorInfo)
     {
@@ -43,8 +52,27 @@ public:
         return Initialize();
     }
 
+    /**
+     * @brief Initialize MeshActor by 1)Create child mesh components, 2)#SetCustomDepthEnabled, 3)Set mobility. 
+     * 
+     * @return true 
+     * @return false 
+     */
     virtual bool Initialize() override;
+
+    /**
+     * @brief Checm #MeshCompList and #BaseMeshComp
+     * 
+     * @param bIsLogged 
+     * @return true 
+     * @return false 
+     */
     virtual bool HasInitialized(bool bIsLogged = false) const override;
+
+    /**
+     * @brief Reset #MeshCompList
+     * 
+     */
     virtual void Reset() override;
     void DrawTransform();
 
@@ -52,9 +80,11 @@ public:
     //! Body mesh component list
     UPROPERTY(VisibleAnywhere)
     TArray<UMeshComponent*> MeshCompList;
+
     //! Created mesh components num up to the moment
     UPROPERTY()
     int32 CreatedMeshesNum = 0;
+
     //! Planned num of mesh components to be created
     UPROPERTY()
     int32 ToBeCreatedMeshesNum = 0;
@@ -62,6 +92,7 @@ public:
     //! Base mesh comp, normally also as the root comp
     UPROPERTY(VisibleAnywhere)
     UMeshComponent* BaseMeshComp = nullptr;
+
     /**
      * @brief Get #BaseMeshComp's material
      * @param InMaterialIndex
@@ -73,6 +104,8 @@ public:
 
     /**
      * @brief Declare mesh actor full creation with all meshes created
+     * 
+     * @param bInCreationResult 
      */
     virtual void DeclareFullCreation(bool bInCreationResult);
 
@@ -86,6 +119,7 @@ public:
      * @param Index
      */
     UMeshComponent* GetMeshComponent(int32 Index = 0) const;
+
     /**
      * @brief Create mesh component list
      * @tparam TMeshComp
@@ -191,29 +225,42 @@ public:
      * @param InMeshBodyComponent
      */
     virtual void OnBodyComponentMeshCreationDone(bool bInCreationResult, UObject* InMeshBodyComponent);
+
     /**
      * @brief Enable/Disable Custom Depth rendering pass
+     * @param bIsCustomDepthEnabled 
      */
     void SetCustomDepthEnabled(bool bIsCustomDepthEnabled);
+    
     /**
      * @brief Set Custom Depth Stencil value uniformly for all child mesh comps
-     */
+      * 
+      * @param InCustomDepthStencilValue 
+      */
     void SetCustomDepthStencilValue(int32 InCustomDepthStencilValue);
+
     /**
      * @brief Whether Custom depth rendering is enabled
-     */
+      * 
+      * @return true 
+      * @return false 
+      */
     bool IsCustomDepthEnabled() const;
 
     /**
      * @brief Get mesh comps' custom depth stencil values
-     */
+      * @return TArray<int32> 
+      */
     TArray<int32> GetCustomDepthStencilValueList() const;
 
     //! Delegate on mesh actor being deactivated
     FOnMeshActorDeactivated OnDeactivated;
+
     /**
      * @brief Activate/Deactivate mesh actor
-     */
+      * 
+      * @param bInIsActivated 
+      */
     FORCEINLINE virtual void SetActivated(bool bInIsActivated)
     {
 #if RAPYUTA_SIM_VISUAL_DEBUG

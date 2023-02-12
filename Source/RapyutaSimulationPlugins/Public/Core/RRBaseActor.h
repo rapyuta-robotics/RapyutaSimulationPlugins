@@ -108,7 +108,7 @@ public:
 
 public:
     /**
-     * @brief
+     * @brief Set #GameMode #GameState #GameSingleton #PlayerController
      * (NOTE) This method, if being called, could only go with a RRGameMode-inheriting game mode setup!
      * Currently, ARRROS2GameMode & ARRGameMode are separate ones.
      * & Maps of ARRROS2GameMode do NOT YET have actors invoking this method.
@@ -135,6 +135,10 @@ public:
     void SetTickEnabled(bool bInIsTickEnabled);
 
 protected:
+    /**
+     * @brief Set #GameMode #GameState #GameSingleton #PlayerController
+     * 
+     */
     virtual void PreInitializeComponents() override;
     virtual void PrintSimConfig() const
     {

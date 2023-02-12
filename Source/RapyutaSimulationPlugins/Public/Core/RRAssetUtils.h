@@ -216,10 +216,17 @@ public:
         verify(IsAssetDataListValid(OutAssetDataList, bIsFullLoad, true));
     }
 
-    //(NOTE) This must not be invoked at Sim initialization since it would flush Async loaders away!
-    // Besides, [ConstructorHelpers::FObjectFinder<T> asset(AssetPathName); will call [StaticFindObject()] instead
-    // and requires to be run inside a ctor.
-    // This loads synchronously, thus should be avoided if possible.
+    /**
+     * @brief 
+     * This must not be invoked at Sim initialization since it would flush Async loaders away!
+     * Besides, [ConstructorHelpers::FObjectFinder<T> asset(AssetPathName); will call [StaticFindObject()] instead
+     * and requires to be run inside a ctor.
+     * This loads synchronously, thus should be avoided if possible.
+     * @tparam T 
+     * @param Outer 
+     * @param InAssetPath 
+     * @return FORCEINLINE* 
+     */
     template<typename T>
     FORCEINLINE static T* LoadObjFromAssetPath(UObject* Outer, const FString& InAssetPath)
     {

@@ -14,6 +14,10 @@
 #define RAPYUTA_FLOAT_MOVEMENT_DEBUG (0)
 /**
  * @brief Base Robot floating movement class
+ * This is MovementComponent to move Robot with UE's AIController.
+ * This is useful to develop/test higher level logics such as multi robot coordination without emulate low level navigation.
+ * Support 2D movement with stick pawn to the floor.
+ * @sa [UFloatingPawnMovement](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UFloatingPawnMovement/)
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRFloatingMovementComponent : public UFloatingPawnMovement
@@ -35,6 +39,7 @@ public:
     {
         bUseDecelerationForPaths = bEnabled;
     }
+
     FORCEINLINE bool UseDecelerationForPathFollowing() const
     {
         return bUseDecelerationForPaths;

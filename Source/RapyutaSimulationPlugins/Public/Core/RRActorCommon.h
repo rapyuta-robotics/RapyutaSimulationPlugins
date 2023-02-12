@@ -148,27 +148,29 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRStreamingLevelInfo
 
 /**
  * @brief Async job info (task, job name, latest capture batch id)
+ * This struct contains TFuture, which has private ctor, thus is move-only and could not be a USTRUCT().
+ * and also make itself by default non-copyable without custom copy ctor!
  */
-// This struct contains TFuture, which has private ctor, thus is move-only and could not be a USTRUCT().
-// and also make itself by default non-copyable without custom copy ctor!
 struct RAPYUTASIMULATIONPLUGINS_API FRRAsyncJob
 {
     template<typename TResult>
     struct RAPYUTASIMULATIONPLUGINS_API FRRSingleAsyncTask
     {
-        // [TSharedFuture] should be considered if [Task] is accessed from multiple threads!
+        //! [TSharedFuture] should be considered if [Task] is accessed from multiple threads!
         TFuture<TResult> Task;
+        
         bool DoneStatus = false;
 
         FRRSingleAsyncTask()
         {
         }
-        // TFuture is move-only, only exposing a move-ctor
+
+        //! TFuture is move-only, only exposing a move-ctor
         FRRSingleAsyncTask(TFuture<TResult>&& InAsyncTask) : Task(MoveTemp(InAsyncTask))
         {
         }
 
-        // TFuture is move-only, thus this is to facilitate this class' Move operation!
+        //! TFuture is move-only, thus this is to facilitate this class' Move operation!
         FRRSingleAsyncTask(FRRSingleAsyncTask&& Other)
         {
             *this = MoveTemp(Other);
@@ -202,8 +204,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRAsyncJob
     static constexpr const int8 TASK_INDEX_NONE = -1;
 
     FString JobName;
-    // This stores the up-to-the-moment capture batch id every time an async task is added to be scheduled for running!
+    
+    //! This stores the up-to-the-moment capture batch id every time an async task is added to be scheduled for running!
     uint64 LatestCaptureBatchId = 0;
+    
     TArray<FRRSingleAsyncTask<bool>> AsyncTasks;
 
     // For the future of UE C++
@@ -214,7 +218,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRAsyncJob
         return AsyncTasks.Num();
     }
 
-    // TFuture is move-only!
+    //! TFuture is move-only!
     void SetAsyncTaskAtLast(TFuture<bool>&& InAsyncTask)
     {
         verify(AsyncTasks.Num());
@@ -321,6 +325,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRHomoMeshEntityGroup
     }
     //! Get Entities Group's common model name
     FString GetGroupModelName() const;
+
     //! Get unique name of the entities group
     FString GetGroupName() const;
 };
@@ -403,7 +408,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRColorArray
     UPROPERTY()
     TArray<FColor> Colors;
 
-    // Why UE does not allow UPROPERTY() on this??
+    //! @note Why UE does not allow UPROPERTY() on this??
     TArray<FFloat16Color> Float16Colors;
 
     UPROPERTY()
@@ -524,11 +529,15 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
     UPROPERTY()
     FString EntityModelName;
 
-    // Actually GetName() is also unique as noted by UE, but we just do not want to rely on it.
-    // Instead, WE CREATE [UniqueName] TO MAKE OUR ID CONTROL MORE INDPENDENT of UE INTERNAL NAME HANDLING.
-    // Reasons: Sometimes,
-    // + UE provided Name Id is updated as Label is updated...
-    // + In pending-kill state, GetName() goes to [None]
+    /**
+     * @brief 
+     * Actually GetName() is also unique as noted by UE, but we just do not want to rely on it.
+     * Instead, WE CREATE [UniqueName] TO MAKE OUR ID CONTROL MORE INDPENDENT of UE INTERNAL NAME HANDLING.
+     * Reasons: Sometimes,
+     * + UE provided Name Id is updated as Label is updated...
+     * + In pending-kill state, GetName() goes to [None]
+     * 
+     */
     UPROPERTY()
     FString UniqueName;
 
@@ -579,16 +588,16 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
 DECLARE_DELEGATE_TwoParams(FOnMeshActorFullyCreated, bool /* bCreationResult */, ARRMeshActor*);
 
 /**
- * @brief Scene instance's common object
- * @note Mostly responsible for holding handles to common scene objects (Main environment, camera, etc.)
+ * @brief Scene instance's common object which houses Plugin-specific dynamic properties and implement objects-related API (Spawning, teleporting, etc.)
+ * @note Mostly responsible for holding handles to #URRSceneInstance  (Main environment, camera, etc.)
  */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API URRActorCommon : public UObject
 {
     GENERATED_BODY()
-    // !! [ActorCommon] OBJECT COULD ONLY BE ACCESSED FROM BEGINPLAY(),
-    // THUS SPECIFC SIM START-UP RELATED CONTENTS & HANDLINGS, WHICH HAPPENS BEFORE BEGINPLAY(), SHOULD BE MOVED TO GameMode or
-    // GameInstance.
+    //! !! [ActorCommon] OBJECT COULD ONLY BE ACCESSED FROM BEGINPLAY(),
+    //! THUS SPECIFC SIM START-UP RELATED CONTENTS & HANDLINGS, WHICH HAPPENS BEFORE BEGINPLAY(), SHOULD BE MOVED TO GameMode or
+    //! GameInstance.
     friend class URRCoreUtils;
 
 private:
@@ -605,7 +614,7 @@ public:
 
     /**
      * @brief Callback for world cleanup end
-     * @note [Ref](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/FWorldDelegates/OnPostWorldCleanup)
+     * @sa [Ref](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/FWorldDelegates/OnPostWorldCleanup)
      * @param InWorld
      * @param bInSessionEnded Whether to notify the viewport that the game session (PIE, Game, etc.) has ended.
      * @param bInCleanupResources Whether resources should be cleaned up
@@ -650,7 +659,7 @@ public:
     FVector SceneInstanceLocation = FVector::ZeroVector;
 
     //! Generate a new scene id
-    // Each scene is assigned with a unique id, regardless of which scene instance it belongs
+    //! Each scene is assigned with a unique id, regardless of which scene instance it belongs
     static uint64 SLatestSceneId;
     FORCEINLINE static uint64 GetNextSceneId()
     {
@@ -682,6 +691,7 @@ public:
 
     //! Callback on ARRGameState::StartSim() for this scene instance
     virtual void OnStartSim();
+    
     //! Callback on ARRGameState::BeginPlay() for this scene instance
     virtual void OnBeginPlay()
     {
@@ -692,7 +702,6 @@ public:
     {
     }
 
-    //! Callback on ARRGameState::Tick() for this scene instance
     /**
      * @brief Whether this scene instance's common object has been initialized
      * @param bIsLogged Whether to log on uninitialized contents
@@ -717,12 +726,13 @@ public:
     static constexpr int16 MAX_CUSTOM_DEPTH_STENCIL_VALUES_NUM = 76;
     static constexpr int8 DEFAULT_CUSTOM_DEPTH_STENCIL_VALUE_VOID = 0;
 
-    // This list contains Static Objects' [CustomDepthStencilValue]s that are assigned once and never change during Sim run!
-    // Example: Bucket's (DropPlatform is also a static object but its custom depth render is disabled due to not being segmasked)
+    //! This list contains Static Objects' [CustomDepthStencilValue]s that are assigned once and never change during Sim run!
+    //! Example: Bucket's (DropPlatform is also a static object but its custom depth render is disabled due to not being segmasked)
     static TArray<int32> StaticCustomDepthStencilList;
 
     UPROPERTY()
     int32 LatestCustomDepthStencilValue = 0;
+
     //! Generate a new unique custom depth stencil value for a mesh actor's Segmentation mask
     int32 GenerateUniqueDepthStencilValue()
     {
@@ -750,7 +760,14 @@ class ARRSceneDirector;
 class ARRPlayerController;
 
 /**
- * @brief Scene Instance, a scene unit among many residing in the same level
+ * @brief Scene Instance, Eg: #ARRSceneDirector,  a scene unit among many residing in the same level.
+ * This provide a feature to split the level into multiple scenes, each of which can be used for different purposes.
+ * Each scene instance contains:
+ * - Scene director: Init/Run/Continue Sim type-specific operations (Data synthesizer or Robot operations, etc. or compound)
+ * - Sim common object: Eg: #URRActorCommon, which houses Plugin-specific dynamic properties and implement objects-related API (Spawning, teleporting, etc.)
+ * - Sim player controller: Eg: #ARRPlayerController
+ * - Each of those is accompanied by TSubclassOf<T>, allowing child Scene Instance class to
+specify custom functional Types
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRSceneInstance : public UObject

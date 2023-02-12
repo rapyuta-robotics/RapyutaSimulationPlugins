@@ -58,10 +58,6 @@ void ARRBaseActor::PreInitializeComponents()
     check(GameSingleton);
 }
 
-// (NOTE) This method, if being called, could only go with a RRGameMode-inheriting game mode setup!
-// Currently, ARRROS2GameMode & ARRGameMode are separate ones.
-// & Maps of ARRROS2GameMode do NOT YET have actors invoking this method.
-// It is up to the Child class, [Initialize()] could be run inside [BeginPlay()] or some place else in advance!
 bool ARRBaseActor::Initialize()
 {
     UClass* thisClass = GetClass();

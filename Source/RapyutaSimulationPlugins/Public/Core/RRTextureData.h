@@ -21,7 +21,10 @@ public:
     UTexture* GetRandomTexture() const;
 };
 
-// Ref: DatasmithRuntime::FTextureData
+/**
+ * @brief 
+ * @sa [DatasmithRuntime::FTextureData](https://docs.unrealengine.com/4.27/en-US/API/Plugins/DatasmithRuntime/)
+ */
 struct RAPYUTASIMULATIONPLUGINS_API FRRLightProfileData
 {
 public:

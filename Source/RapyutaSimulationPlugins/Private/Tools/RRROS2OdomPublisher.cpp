@@ -32,7 +32,7 @@ void URRROS2OdomPublisher::InitializeTFWithROS2(UROS2NodeComponent* InROS2Node)
 {
     if (bPublishOdomTf && nullptr == TFPublisher)
     {
-        TFPublisher = CastChecked<URRROS2TFPublisher>(InROS2Node->CreatePublisherWithClass(URRROS2TFPublisher::StaticClass()));
+        TFPublisher = CastChecked<URRROS2TFPublisher>(InROS2Node->CreateLoopPublisherWithClass(TEXT("/tf"), URRROS2TFPublisher::StaticClass(), PublicationFrequencyHz));
     }
 }
 

@@ -50,7 +50,7 @@ public:
     ASimulationState* MainSimState = nullptr;
 
     //! Provide ROS2 interface of sim-wide operations implemented by #MainSimState.
-    //! @note #ASimulationState and #URRROS2SimulationStateClient are separeted to be used in client-server.
+    //! @note #ASimulationState and #URRROS2SimulationStateClient are separated to be used in client-server.
     UPROPERTY(BlueprintReadOnly)
     URRROS2SimulationStateClient* MainROS2SimStateClient = nullptr;
 
@@ -75,9 +75,20 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual float GetFixedTimeStep() const;
 
+    /**
+     * @brief Set the Target RTF. This works if CustomTimeStep class is #URRLimitRTFFixedSizeCustomTimeStep.
+     * 
+     * @param InTargetRTF 
+     */
     UFUNCTION(BlueprintCallable)
     virtual void SetTargetRTF(const float InTargetRTF);
 
+    UFUNCTION(BlueprintCallable)
+    /**
+     * @brief Get the Target RTF. This works if CustomTimeStep class is #URRLimitRTFFixedSizeCustomTimeStep.
+     * 
+     * @return float 
+     */
     UFUNCTION(BlueprintCallable)
     virtual float GetTargetRTF() const;
 
