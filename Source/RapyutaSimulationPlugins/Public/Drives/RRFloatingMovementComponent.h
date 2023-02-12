@@ -14,6 +14,8 @@
 #define RAPYUTA_FLOAT_MOVEMENT_DEBUG (0)
 /**
  * @brief Base Robot floating movement class
+ * Support 2D movement with stick pawn to the floor.
+ * @sa [UFloatingPawnMovement](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UFloatingPawnMovement/)
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRFloatingMovementComponent : public UFloatingPawnMovement
@@ -35,6 +37,7 @@ public:
     {
         bUseDecelerationForPaths = bEnabled;
     }
+
     FORCEINLINE bool UseDecelerationForPathFollowing() const
     {
         return bUseDecelerationForPaths;

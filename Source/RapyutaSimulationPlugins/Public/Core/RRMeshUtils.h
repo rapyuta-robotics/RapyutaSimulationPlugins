@@ -27,8 +27,9 @@
 #define RAPYUTA_MESH_UTILS_DEBUG (0)
 
 /**
- * @brief MeshUtils
- * @todo add documentation
+ * @brief Mesh utils with assimp
+ * @sa [Open Asset Import Library(assimp)](https://github.com/assimp/assimp)
+ * 
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRMeshUtils : public UBlueprintFunctionLibrary
@@ -36,7 +37,17 @@ class RAPYUTASIMULATIONPLUGINS_API URRMeshUtils : public UBlueprintFunctionLibra
     GENERATED_BODY()
 public:
     static FRRMeshNodeData ProcessMesh(aiMesh* InMesh);
-    // (Note) Use [int] instead of [int32 ,int64] due to the compatibility with Assimp's api
+    
+    /**
+     * @brief 
+     * @note Use [int] instead of [int32 ,int64] due to the compatibility with Assimp's api
+     * 
+     * @param InNode 
+     * @param InScene 
+     * @param InParentNodeIndex 
+     * @param InCurrentIndex 
+     * @param OutMeshData 
+     */
     static void ProcessMeshNode(aiNode* InNode,
                                 const aiScene* InScene,
                                 int InParentNodeIndex,

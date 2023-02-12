@@ -147,10 +147,6 @@ public:
     UPROPERTY(Transient, BlueprintReadWrite, Replicated)
     URRROS2OdomPublisher* OdomPublisher = nullptr;
 
-    //! Odom publisher
-    UPROPERTY(Transient, BlueprintReadWrite, Replicated)
-    UROS2Subscriber* CmdVelPublisher = nullptr;
-
     //! You can add your publishers here to ask ROS2Interface to manage.
     //! Other option is to create child class to overwrite each method.
     UPROPERTY(Transient, BlueprintReadWrite)
@@ -225,7 +221,7 @@ public:
     virtual bool InitActionClients();
 
     /**
-     * @brief Initialize service servers
+     * @brief Initialize action servers
      * Overidden in child robot ROS2 interface classes for specialized action servers.
      */
     UFUNCTION()

@@ -27,8 +27,7 @@
 
 DECLARE_DELEGATE_OneParam(FOnSpawnedActorsSettled, bool /*bIsForNewOperationBatch*/);
 /**
- * @brief SceneDirector
- * @todo add documentation
+ * @brief Execute Init/Run/Continue Sim type-specific operations (Data synthesizer/collection or Robot operations, etc. or compound) with #ARRSceneInstance.
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRSceneDirector : public ARRBaseActor
@@ -67,11 +66,31 @@ public:
     TArray<int32> SceneEntityMaskValueList;
 
 protected:
+    /**
+    * @brief Call #TryInitializeOperation() repeatedly.
+    * 
+    * @return true 
+    * @return false 
+    */
     virtual bool Initialize() override;
 
-    // Start (Initialize + Run) Operation
+    //! Start (Initialize + Run) Operation
+
+
+    /**
+     * @brief Get #RRActorCommon, ScneneCamera, MainPostProcessVolume, and #RunOperation().
+     * 
+     * @return true 
+     * @return false 
+     */
     virtual bool InitializeOperation();
+
+    /**
+     * @brief Called inside from #InitializeOperation and #SpawnActors().
+     * 
+     */
     virtual void RunOperation();
+
     virtual void ContinueOperation(bool bIsLastOperationSuccessful, bool bContinueRGBRandomizing)
     {
     }
@@ -106,6 +125,10 @@ protected:
     virtual void ResetScene();
 
 private:
+    /**
+     * @brief Initialize Scenen by #InitializeOperation() or exit with timeout.
+     * 
+     */
     UFUNCTION()
     void TryInitializeOperation();
 

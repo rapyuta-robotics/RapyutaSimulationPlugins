@@ -49,7 +49,7 @@ public:
     UPROPERTY(VisibleAnywhere)
     int32 ParentIndex = 0;
 
-    // Relative transform to the owner skinned mesh comp, as in EBoneSpaces::ComponentSpace
+    //! Relative transform to the owner skinned mesh comp, as in EBoneSpaces::ComponentSpace
     UPROPERTY(VisibleAnywhere)
     FTransform RelTransform = FTransform::Identity;
 
@@ -86,7 +86,6 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneInfluence
  *	@brief Contains the vertices that are most dominated by that bone. Vertices are in Bone space.
  *	Not used at runtime, but useful for fitting physics assets etc.
  */
-
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
 {
@@ -103,10 +102,6 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRBoneVertInfo
  *
  */
 USTRUCT()
-/**
- * @brief todo
- *
- */
 struct RAPYUTASIMULATIONPLUGINS_API FRRMeshNodeData
 {
     GENERATED_BODY()
@@ -199,7 +194,7 @@ public:
     UPROPERTY()
     FString MeshUniqueName;
 
-    // As doing async mesh loading, we need separate [MeshImporter] for 3D model files
+    //! As doing async mesh loading, we need separate [MeshImporter] for 3D model files
     TSharedPtr<Assimp::Importer> MeshImporter = nullptr;
 
     UPROPERTY()

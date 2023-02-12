@@ -24,6 +24,14 @@ class RAPYUTASIMULATIONPLUGINS_API URRMathUtils : public UBlueprintFunctionLibra
     GENERATED_BODY()
 
 public:
+    /**
+     * @brief Convert uint32 BitFlags to TArray
+     * 
+     * @tparam T 
+     * @param InBitFlags 
+     * @param OutStack 
+     * @return  
+     */
     template<typename T>
     FORCEINLINE static void BitFlagsToStack(uint32 InBitFlags, TArray<T>& OutStack)
     {
@@ -89,62 +97,134 @@ public:
     }
 
     // RANDOM GENERATOR --
-    //
+    /**
+     * @brief Initialize #URRMathUtils::RandomStream by FRandomStream
+     * @sa [FRandomStream](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Math/FRandomStream/)
+     */
     static void InitializeRandomStream();
 
+    /**
+     * @brief Get the Random Element of given array
+     * 
+     * @tparam T 
+     * @param InArray 
+     * @return T 
+     */
     template<typename T>
     FORCEINLINE static T GetRandomElement(const TArray<T>& InArray)
     {
         return (InArray.Num() > 0) ? InArray[GetRandomIntegerInRange(0, InArray.Num() - 1)] : T();
     }
 
-    // Return an almost uniformly distributed float random number in [0, 1]
+    //! Return an almost uniformly distributed float random number in [0, 1]
+    /**
+     * @brief Return an almost uniformly distributed float random number in [0, 1]. Calls GetFraction from #URRMathUtils::RandomStream.
+     * @sa [GetFraction](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Math/FRandomStream/GetFraction/)
+     * @return float 
+     */
     FORCEINLINE static float GetRandomBias()
     {
         return RandomStream.GetFraction();
     }
 
+    /**
+     * @brief Check value get from #GetRandomBias in [0, InBias]
+     * 
+     * @param InBias 
+     * @return bool 
+     */
     FORCEINLINE static bool IsBiased(float InBias)
     {
         const float bias = GetRandomBias();
         return (bias > 0.f) && (bias <= InBias);
     }
 
+    /**
+     * @brief Check value get from #GetRandomBias in [InMinBias, InMaxBias]
+     * 
+     * @param InMinBias 
+     * @param InMaxBias 
+     * @return bool 
+     */
     FORCEINLINE static bool IsBiased(float InMinBias, float InMaxBias)
     {
         return FMath::IsWithin(GetRandomBias(), InMinBias, InMaxBias);
     }
 
+    /**
+     * @brief Check value get from #GetRandomBias > 0.5
+     * 
+     * @return bool 
+     */
     FORCEINLINE static bool GetRandomBool()
     {
         return (GetRandomBias() >= 0.5f);
     }
 
-    // Return an almost uniformly distributed float random number between 2 float values [Min, Max]
+    /**
+     * @brief Return an almost uniformly distributed float random number between 2 float values [Min, Max] by using 
+     * @sa [FRandRange](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Math/FRandomStream/FRandRange/)
+     * @param InValueA 
+     * @param InValueB 
+     * @return float 
+     */
     FORCEINLINE static float GetRandomFloatInRange(float InValueA, float InValueB)
     {
         return RandomStream.FRandRange(InValueA, InValueB);
     }
 
+    /**
+     * @brief Return an almost uniformly distributed float random number between FVector 
+     * @sa [FRandRange](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Math/FRandomStream/FRandRange/)
+     * @param InValueRange 
+     * @return float 
+     */
     FORCEINLINE static float GetRandomFloatInRange(const FVector2f& InValueRange)
     {
         return RandomStream.FRandRange(InValueRange.X, InValueRange.Y);
     }
 
+    /**
+     *@brief Return an almost uniformly distributed int random number between FVector 
+     * @sa [FRandRange](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Math/FRandomStream/FRandRange/)
+     * @param InValueA 
+     * @param InValueB 
+     * @return int32 
+     */
     FORCEINLINE static int32 GetRandomIntegerInRange(int32 InValueA, int32 InValueB)
     {
         return RandomStream.RandRange(InValueA, InValueB);
     }
+    
+    /**
+     * @brief Return an almost uniformly distributed Int random number between 2 int values [0, Max] by using 
+     * @sa [FRandRange](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Math/FRandomStream/FRandRange/)
+     * @param InValueMax 
+     * @return int32 
+     */
     FORCEINLINE static int32 GetRandomIntegerInRange(int32 InValueMax)
     {
         return RandomStream.RandRange(0, InValueMax);
     }
 
+    /**
+    * @brief Return an almost uniformly distributed int random number between FIntPoint 
+    * @sa [FRandRange](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Math/FRandomStream/FRandRange/)
+    * @param InValueRange 
+    * @return int32 
+    */
     FORCEINLINE static int32 GetRandomIntegerInRange(const FIntPoint& InValueRange)
     {
         return RandomStream.RandRange(InValueRange.X, InValueRange.Y);
     }
 
+    /**
+     * @brief Get the Random Location between two vectors.
+     * 
+     * @param InLocationA 
+     * @param InLocationB 
+     * @return FVector 
+     */
     FORCEINLINE static FVector GetRandomLocation(const FVector& InLocationA, const FVector& InLocationB)
     {
         return FVector(GetRandomFloatInRange(InLocationA.X, InLocationB.X),
@@ -152,13 +232,17 @@ public:
                        GetRandomFloatInRange(InLocationA.Z, InLocationB.Z));
     }
 
+    /**
+     * @brief Get uniformly distributed random quaternion
+     * @sa http://planning.cs.uiuc.edu/node151.html#12337
+     * @sa http://planning.cs.uiuc.edu/node198.html
+     * @sa http://kieranwynn.github.io/pyquaternion/#from-elements
+     * @sa https://github.com/KieranWynn/pyquaternion/blob/master/pyquaternion/quaternion.py#L261
+     * @return FQuat 
+     */
     FORCEINLINE static FQuat GetRandomOrientation()
     {
-        // Get uniformly distributed random quaternion
-        // http://planning.cs.uiuc.edu/node151.html#12337
-        // http://planning.cs.uiuc.edu/node198.html
-        // http://kieranwynn.github.io/pyquaternion/#from-elements
-        // https://github.com/KieranWynn/pyquaternion/blob/master/pyquaternion/quaternion.py#L261
+
         static constexpr float C2PI = 2.f * PI;
 
         const float u1 = GetRandomBias();
@@ -175,29 +259,58 @@ public:
         return FQuat(x, y, z, w);
     }
 
+    /**
+     * @brief Return an random number between [0, 360]  
+     * @return float 
+     */
     FORCEINLINE static float GetRandomYawInDegrees()
     {
         return GetRandomFloatInRange(0.f, 360.f);
     }
 
+    /**
+     * @brief  Return an random number between [-InMaxExtent, InMaxExtent]  
+     * 
+     * @param InMaxExtent 
+     * @return float
+     */
     FORCEINLINE static float GetRandomExtent(float InMaxExtent)
     {
         return GetRandomFloatInRange(-InMaxExtent, InMaxExtent);
     }
 
+    /**
+     * @brief Get the Random Spherical Position object
+     * 
+     * @param InCenter 
+     * @param InDistanceRange 
+     * @param InHeightRange 
+     * @return FVector 
+     */
     static FVector GetRandomSphericalPosition(const FVector& InCenter,
                                               const FVector2f& InDistanceRange,
                                               const FVector2f& InHeightRange);
 
-    FORCEINLINE static FLinearColor GetRandomColorFromHSV()
+    /**
+     * @brief Get the Random Color From H S V object
+     * 
+     * @return FLinearColor 
+     */
+    FORCEINLINE static FLinearColor GetRandomColorFromHSV(const float InMin=0.6f)
     {
         FLinearColor color(GetRandomYawInDegrees(),              // Hue
                            GetRandomBias(),                      // Saturation
-                           GetRandomFloatInRange(0.6f, 1.f));    // Value
+                           GetRandomFloatInRange(InMin, 1.f));    // Value
 
         return color.HSVToLinearRGB();
     }
 
+    /**
+     * @brief Get the Random Color From H S V object
+     * 
+     * @param InHSVRange 
+     * @return FLinearColor 
+     */
     FORCEINLINE static FLinearColor GetRandomColorFromHSV(const TArray<FVector2D>& InHSVRange)
     {
         FLinearColor color(GetRandomFloatInRange(InHSVRange[0].X, InHSVRange[0].Y),     // Hue
@@ -207,6 +320,11 @@ public:
         return color.HSVToLinearRGB();
     }
 
+    /**
+     * @brief Get the Random Color 
+     * 
+     * @return FLinearColor 
+     */
     FORCEINLINE static FLinearColor GetRandomColor()
     {
         return FLinearColor(GetRandomBias(), GetRandomBias(), GetRandomBias(), GetRandomBias());

@@ -20,7 +20,7 @@
 
 /**
  * @brief Procedural mesh components. this class is used to spawn robot and object from ROS2 service.
- *
+ * @sa [UProceduralMeshComponent](https://docs.unrealengine.com/5.1/en-US/API/Plugins/ProceduralMeshComponent/UProceduralMeshComponent/)
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRProceduralMeshComponent : public UProceduralMeshComponent
@@ -49,11 +49,18 @@ public:
     UPROPERTY()
     ERRShapeType ShapeType = ERRShapeType::INVALID;
 
+    /**
+     * @brief CustomDepthStencil will be actively set by stakeholders or ARRMeshActor if needs be
+     * 
+     * @param bIsStaticBody 
+     * @param bInIsPhysicsEnabled 
+     */
     void Initialize(bool bIsStaticBody, bool bInIsPhysicsEnabled);
 
     /**
-     * @brief Initialize mesh. initialization is different based on mesh type.
+     * @brief Initialize mesh. initialization is different based on mesh type, #ERRShapeType, which can be get from #URRGameSingleton::GetShapeTypeFromMeshName
      * Uses #URRThreadUtils::DoAsyncTaskInThread and #URRThreadUtils::DoTaskInGameThread to load Mesh
+     * If ShapeType is not #ERRShapeType::MESH i.e. primitive-shape, initialization is done by #SetMeshSize
      * @param InMeshFileName
      * @return true
      * @return false
@@ -68,7 +75,13 @@ public:
     UPROPERTY()
     bool bIsStationary = false;
 
+    /**
+     * @brief Create primitive-shape mesh based on #ShapeType.
+     * 
+     * @param InSize 
+     */
     void SetMeshSize(const FVector& InSize);
+
     FVector GetSize() const
     {
         // TBD

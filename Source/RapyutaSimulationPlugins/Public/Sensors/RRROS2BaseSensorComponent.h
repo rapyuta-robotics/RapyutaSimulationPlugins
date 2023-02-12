@@ -24,7 +24,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
 /**
  * @brief Base ROS2 Sensor Component class. Other sensors class should inherit from this class.
- * Provide features to initialize with [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
+ * Provide features to initialize with [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html)
  * and initialize #URRROS2BaseSensorPublisher.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
@@ -48,7 +48,7 @@ public:
      * @param InTopicName Topic name
      * @param InQoS Topic QoS
      *
-     * @sa [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
+     * @sa [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html)
      * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
     UFUNCTION(BlueprintCallable)

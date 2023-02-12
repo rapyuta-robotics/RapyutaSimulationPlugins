@@ -18,7 +18,7 @@
 class AROS2Node;
 
 /**
- * @brief SRviz marker array publisher class. This class publishes are markers for given actors.
+ * @brief Rviz marker array publisher class. This class publishes markers for given actors.
  * Expected to create child class in BP/C++ to set marker params and actor class.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))

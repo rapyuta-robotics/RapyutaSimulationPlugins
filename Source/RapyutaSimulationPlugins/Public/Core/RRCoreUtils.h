@@ -117,6 +117,8 @@ public:
     static constexpr const TCHAR* CMD_AUDIO_MIXER_DISABLE = TEXT("au.IsUsingAudioMixer 0");
 
     // SIM FILE EXTENSIONS --
+
+    //! Sim file extentions. Corresponds to #ERRFileType.
     static constexpr const TCHAR* SimFileExts[] = {
         TEXT(""),    // ERRFileType::NONE
         // UE & General
@@ -151,6 +153,12 @@ public:
         TEXT(".dae"),    // ERRFileType::CAD_DAE
     };
 
+    /**
+     * @brief Return the file extension for the given file type from #SimFileExts.
+     * 
+     * @param InFileType 
+     * @return FORCEINLINE const* TCHAR*
+     */
     FORCEINLINE static const TCHAR* GetSimFileExt(const ERRFileType InFileType)
     {
         const uint8 fileTypeIdx = static_cast<uint8>(InFileType);
@@ -303,7 +311,7 @@ public:
     }
     static bool HasPlayerControllerListInitialized(const UObject* InContextObject, bool bIsLogged = false);
 
-    // This value could be configured in [DefaultEngine.ini]
+    //! This value could be configured in [DefaultEngine.ini]
     static int32 GetMaxSplitscreenPlayers(const UObject* InContextObject);
 
     template<typename TRRObject>
@@ -325,8 +333,26 @@ public:
     static bool IsSimProfiling();
 
     // GameState & PlayerController should be able to be recognized polymorphically!
+
+    /**
+     * @brief Check #ARRGameState is initialized or not.
+     * 
+     * @param InContextObject 
+     * @param bIsLogged 
+     * @return true 
+     * @return false 
+     */
     static bool HasSimInitialized(const UObject* InContextObject, bool bIsLogged = false);
+
+    /**
+     * @brief Get the Scene Instance. Works only with #ARRGameState
+     * 
+     * @param InContextObject 
+     * @param InSceneInstanceId 
+     * @return URRSceneInstance* 
+     */
     static URRSceneInstance* GetSceneInstance(const UObject* InContextObject, int8 InSceneInstanceId);
+
     static ARRSceneDirector* GetSceneDirector(const UObject* InContextObject, int8 InSceneInstanceId);
     static FVector GetSceneInstanceLocation(int8 InSceneInstanceId);
 
@@ -340,8 +366,15 @@ public:
         return GetTypeHash(FGuid::NewGuid());
     }
 
-    // Each level could be streamed into an unique [ULevelStreaming]
-    // Refer to ULevelStreamingDynamic::LoadLevelInstance() for creating multiple streaming instances of the same level
+    /**
+     * @brief Create a Streaming Level object
+     * Each level could be streamed into an unique [ULevelStreaming]
+     * Refer to ULevelStreamingDynamic::LoadLevelInstance() for creating multiple streaming instances of the same level
+     * @sa [ULevelStreamingDynamic](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/ULevelStreamingDynamic/)
+     * @param InContextObject 
+     * @param InLevelInfo 
+     * @return ULevelStreamingDynamic* 
+     */
     static ULevelStreamingDynamic* CreateStreamingLevel(const UObject* InContextObject, const FRRStreamingLevelInfo& InLevelInfo)
     {
         bool bSucceeded = false;
@@ -355,6 +388,15 @@ public:
         return streamLevel;
     }
 
+    /**
+     * @brief LoadStreamLevel
+     * @sa [Loading and Unloading Levels using C++](https://docs.unrealengine.com/5.1/en-US/loading-and-unloading-levels-using-cplusplus-in-unreal-engine/)
+     * 
+     * @param InContextObject 
+     * @param InLevelName 
+     * @param InTargetObject 
+     * @param InExecuteFunctionName 
+     */
     static void StreamLevel(const UObject* InContextObject,
                             const FString& InLevelName,
                             UObject* InTargetObject = nullptr,
@@ -369,6 +411,12 @@ public:
         UGameplayStatics::LoadStreamLevel(InContextObject, *InLevelName, true, true, latentActionInfo);
     }
 
+    /**
+     * @brief UnloadStreamLevel
+     * @sa [Loading and Unloading Levels using C++](https://docs.unrealengine.com/5.1/en-US/loading-and-unloading-levels-using-cplusplus-in-unreal-engine/)
+     * @param InContextObject 
+     * @param InLevelName 
+     */
     static void UnstreamLevel(const UObject* InContextObject, const FName& InLevelName)
     {
         UGameplayStatics::UnloadStreamLevel(InContextObject, InLevelName, FLatentActionInfo(), true);
@@ -424,6 +472,7 @@ public:
         }
         // else up to various situations, being empty would be acceptable or not.
     }
+
     // -------------------------------------------------------------------------------------------------------------------------
     // TIMER UTILS --
     //
@@ -449,13 +498,32 @@ public:
         return GetSeconds() - InLastTimestamp;
     }
 
-    // It was observed that with high polling frequency as [0.01] or sometimes [0.1] second, we got crash on AutomationTest
-    // module. Thus, [IntervalTimeInSec] as [0.5] sec is used for now.
+    /**
+     * @brief 
+     * It was observed that with high polling frequency as [0.01] or sometimes [0.1] second, we got crash on AutomationTest
+     * module. Thus, [IntervalTimeInSec] as [0.5] sec is used for now.
+     * @param InCond 
+     * @param InPassedCondAct 
+     * @param InTimeoutInSec 
+     * @param InIntervalTimeInSec 
+     * @return true 
+     * @return false 
+     */
     static bool WaitUntilThenAct(TFunctionRef<bool()> InCond,
                                  TFunctionRef<void()> InPassedCondAct,
                                  float InTimeoutInSec,
                                  float InIntervalTimeInSec = 0.5f);
 
+    /**
+     * @brief 
+     * 
+     * @param InCondition 
+     * @param InAction 
+     * @param InBeginTime 
+     * @param InTimeoutInSec 
+     * @return true 
+     * @return false 
+     */
     static bool CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
                                  const TFunctionRef<void()>& InAction,
                                  const FDateTime& InBeginTime,

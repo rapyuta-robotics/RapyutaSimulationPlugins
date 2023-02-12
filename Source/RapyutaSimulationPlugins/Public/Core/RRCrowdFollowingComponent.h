@@ -12,7 +12,7 @@
 
 class URRFloatingMovementComponent;
 /**
- * @brief Base component for crowd path following movement
+ * @brief Base component for crowd path following movement. Use #URRFloatingMovementComponent if IsCrowdSimulationEnabled is false.
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRCrowdFollowingComponent : public UCrowdFollowingComponent

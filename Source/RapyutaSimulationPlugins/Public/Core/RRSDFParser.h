@@ -10,6 +10,10 @@
 
 #define RAPYUTA_SDF_PARSER_DEBUG (0)
 
+/**
+ * @brief [experimental] Parse SDF file and generate FRRRobotModelInfo. Uses ignition library to parse SDF file.
+ * 
+ */
 class RAPYUTASIMULATIONPLUGINS_API FRRSDFParser : public FRRRobotDescriptionParser
 {
 public:
