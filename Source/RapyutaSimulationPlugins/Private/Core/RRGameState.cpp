@@ -67,6 +67,9 @@ void ARRGameState::StartSim()
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("MAX SPLIT SCREEN PLAYERS: %d"), maxSplitscreenPlayers);
     verify(SCENE_INSTANCES_NUM <= maxSplitscreenPlayers);
 
+    // Register BP spawnable classes
+    RegisterSpawnableBPClasses();
+
     // 0- Stream level & Fetch static-env actors
     SetupEnvironment();
 
@@ -86,6 +89,19 @@ void ARRGameState::StartSim()
         InitializeSim(i);
 
         UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SIM SCENE INSTANCE [%d] STARTED SUCCESSFULLY! "), i);
+    }
+}
+
+void ARRGameState::RegisterSpawnableBPClasses()
+{
+    auto* mainSimState = GameMode->MainSimState;
+    for (const auto& bpName : BPSpawnableClassNames)
+    {
+        UClass* bpClass = URRAssetUtils::FindBlueprintClass(bpName);
+        if (bpClass)
+        {
+            mainSimState->AddSpawnableEntityTypes({{bpName, bpClass}});
+        }
     }
 }
 

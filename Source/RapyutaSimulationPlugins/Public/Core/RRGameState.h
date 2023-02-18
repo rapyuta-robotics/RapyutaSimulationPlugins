@@ -194,7 +194,7 @@ protected:
     * @param InSceneInstanceId 
     */
     virtual void CreateSceneInstance(int8 InSceneInstanceId);
-    
+
     /**
      * @brief 
      * Spawn #ARRSceneDirector, which runs the main operation of the mode
@@ -256,6 +256,10 @@ protected:
     //! Pool of all entities having been spawned
     UPROPERTY()
     TArray<ARRMeshActor*> AllDynamicMeshEntities;
+
+    UPROPERTY()
+    TArray<FString> BPSpawnableClassNames;
+    virtual void RegisterSpawnableBPClasses();
 
 private:
     //! To avoid early GC, this exists only to keep ones temporarily taken away from [AllDynamicMeshEntities] & recycled later
