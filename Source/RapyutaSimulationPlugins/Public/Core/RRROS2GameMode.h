@@ -77,17 +77,16 @@ public:
 
     /**
      * @brief Set the Target RTF. This works if CustomTimeStep class is #URRLimitRTFFixedSizeCustomTimeStep.
-     * 
-     * @param InTargetRTF 
+     *
+     * @param InTargetRTF
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetTargetRTF(const float InTargetRTF);
 
-    UFUNCTION(BlueprintCallable)
     /**
      * @brief Get the Target RTF. This works if CustomTimeStep class is #URRLimitRTFFixedSizeCustomTimeStep.
-     * 
-     * @return float 
+     *
+     * @return float
      */
     UFUNCTION(BlueprintCallable)
     virtual float GetTargetRTF() const;
