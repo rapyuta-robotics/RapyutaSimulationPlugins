@@ -125,7 +125,8 @@ public:
     virtual void OnRep_bStartStopROS2Interface();
 
     /**
-     * @brief Check necessary variables has initialized and PlayerId which spend robot is match the this client PlayerId
+     * @brief Check necessary variables has initialized and PlayerId which spawned robot is match to this client PlayerId
+
      * @return true if playerId matches robot spawn playerId
      */
     bool IsAuthorizedInThisClient();
