@@ -270,7 +270,8 @@ public:
     }
 
     /**
-     * @brief  Return an random number between [-InMaxExtent, InMaxExtent]  
+     * @brief  Return a random number between [-InMaxExtent, InMaxExtent]  
+
      * 
      * @param InMaxExtent 
      * @return float
