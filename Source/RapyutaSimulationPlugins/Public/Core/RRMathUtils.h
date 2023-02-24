@@ -260,7 +260,8 @@ public:
     }
 
     /**
-     * @brief Return an random number between [0, 360]  
+     * @brief Return a random number between [0, 360]  
+
      * @return float 
      */
     FORCEINLINE static float GetRandomYawInDegrees()
