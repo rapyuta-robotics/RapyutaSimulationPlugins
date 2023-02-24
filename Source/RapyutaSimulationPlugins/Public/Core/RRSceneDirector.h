@@ -126,7 +126,7 @@ protected:
 
 private:
     /**
-     * @brief Initialize Scenen by #InitializeOperation() or exit with timeout.
+     * @brief Initialize Scene by #InitializeOperation() or exit with timeout.
      * 
      */
     UFUNCTION()
