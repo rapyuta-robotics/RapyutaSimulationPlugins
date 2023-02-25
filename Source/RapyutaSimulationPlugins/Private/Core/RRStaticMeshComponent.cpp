@@ -34,9 +34,6 @@ void URRStaticMeshComponent::BeginPlay()
     ActorCommon = URRActorCommon::GetActorCommon(SceneInstanceId);
     // [Initialize()] should be invoked right after the mesh comp is created!
     // Please refer to [URRUObjectUtils::CreateMeshComponent()]
-
-    // It is considered that a mesh component should only be physically activated if its Owning Actor is Physically Enabled,
-    // thus not auto activating physics here! Rather, it is left to the Owning actor to do it!
 }
 
 void URRStaticMeshComponent::Initialize(bool bInIsStationary, bool bInIsPhysicsEnabled)

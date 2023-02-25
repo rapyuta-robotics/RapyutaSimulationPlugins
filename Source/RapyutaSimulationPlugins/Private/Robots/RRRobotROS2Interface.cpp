@@ -52,10 +52,10 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     // Initialize service servers
     InitServiceServers();
 
-    // Initialize service clients
+    // Initialize action clients
     InitActionClients();
 
-    // Initialize service servers
+    // Initialize action servers
     InitActionServers();
 
     // Additional initialization implemented in BP

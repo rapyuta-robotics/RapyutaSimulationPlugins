@@ -35,8 +35,28 @@ class RAPYUTASIMULATIONPLUGINS_API URRStaticMeshComponent : public UStaticMeshCo
 public:
     URRStaticMeshComponent();
     static constexpr int8 CUSTOM_DEPTH_STENCIL_VOID = 0;
+
+    /**
+     * @brief Set Mobility and Physics Enabled.
+     * @note Upon creation, DO NOT enable physics here yet, which will makes mesh comp detached from its parent.
+     * Physics should only be enabled after children mesh comps have also been created, so they will be welded.
+     * Refer to [FBodyInstance::SetInstanceSimulatePhysics()]
+     * 
+     * @param bInIsStationary 
+     * @param bInIsPhysicsEnabled 
+     */
     void Initialize(bool bInIsStationary, bool bInIsPhysicsEnabled);
+
+    /**
+     * @brief Initialize mesh. initialization is different based on mesh type, #ERRShapeType, which can be get from #URRGameSingleton::GetShapeTypeFromMeshName
+     * Uses #URRThreadUtils::DoAsyncTaskInThread and #URRThreadUtils::DoTaskInGameThread to load Mesh
+     * If ShapeType is not #ERRShapeType::MESH i.e. primitive-shape, initialization is done by #SetMesh
+     * @param InMeshFileName 
+     * @return true 
+     * @return false 
+     */
     bool InitializeMesh(const FString& InMeshFileName);
+
     FOnMeshCreationDone OnMeshCreationDone;
 
     UPROPERTY()
@@ -47,9 +67,22 @@ public:
 
     UPROPERTY()
     FString MeshUniqueName;
+    /**
+     * @brief Create a Mesh Body object
+     * @note This function could be invoked from an async task running in GameThread
+     * @param InMeshData 
+     * @return UStaticMesh* 
+     */
     UStaticMesh* CreateMeshBody(const FRRMeshData& InMeshData);
 
+    /**
+     * @brief Set Static mesh from UstaticMesh
+     * @sa [SetStaticMesh](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Components/UStaticMeshComponent/SetStaticMesh/)
+     * 
+     * @param InStaticMesh 
+     */
     void SetMesh(UStaticMesh* InStaticMesh);
+
     void SetMeshSize(const FVector& InSize)
     {
         SetWorldScale3D(InSize / GetStaticMesh()->GetBoundingBox().GetSize());
@@ -64,9 +97,19 @@ public:
     UPROPERTY()
     bool bIsStationary = false;
 
+    /**
+     * @brief Get the Size of bounding box of the mesh.
+     * 
+     * @return FVector 
+     */
     UFUNCTION()
     FVector GetSize() const;
 
+    /**
+     * @brief Get the extent of bounding box of the mesh.
+     * 
+     * @return FVector 
+     */
     UFUNCTION()
     FVector GetExtent() const;
 
@@ -84,12 +127,24 @@ public:
     void HideSelf(bool bInHidden);
 
     // Collision/Overlapping --
+    /**
+     * @brief Set the Collision Mode with some preset parameters
+     * @todo is preset parameter cover all use case?
+     * @param bInCollisionEnabled 
+     * @param bInHitEventEnabled 
+     */
     UFUNCTION()
     void SetCollisionModeAvailable(bool bInCollisionEnabled, bool bInHitEventEnabled = false);
+
     UFUNCTION()
     void EnableOverlapping(bool bOverlapEventEnabled);
 
 protected:
+    /**
+    * @brief 
+    * It is considered that a mesh component should only be physically activated if its Owning Actor is Physically Enabled,
+    * thus not auto activating physics here! Rather, it is left to the Owning actor to do it!
+    */
     virtual void BeginPlay() override;
 
 private:

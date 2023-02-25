@@ -53,6 +53,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnRobotCreationDone, bool /* bCreationResul
 /**
  * @brief Base Robot class. Other robot class should inherit from this class.
  * This actor use #URRRobotROS2Interface as the main ROS2 communication tool.
+ * This actor has basic functionality to use with client-server, e.g. replication setting
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRBaseRobot : public ARRBaseActor
@@ -124,7 +125,8 @@ public:
     virtual void OnRep_bStartStopROS2Interface();
 
     /**
-     * @brief Check necessary variables has initialized and PlayerId which spaned robot is match the this client PlayerId
+     * @brief Check necessary variables has initialized and PlayerId which spawned robot is match to this client PlayerId
+
      * @return true if playerId matches robot spawn playerId
      */
     bool IsAuthorizedInThisClient();
@@ -145,6 +147,7 @@ public:
     /**
      * @brief Instantiate ROS2 Interface without initializing yet
      * @note Not uses RPC but replication since the robot is not always owned by the same connection with the client's PlayerController.
+     * @sa #ARRBaseRobotROSController::OnPossess
      * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      *
      */
@@ -154,6 +157,7 @@ public:
     /**
      * @brief Initialize ROS2 Interface. Directly call #URRRobotROS2Interface::Initialize or execute in client via #OnRep_bStartStopROS2Interface.
      * @note Not uses RPC but replication since the robot is not always owned by the same connection with the client's PlayerController.
+     * @sa #ARRBaseRobotROSController::OnPossess
      * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)

@@ -15,6 +15,7 @@
 // (NOTE) To avoid cyclic inclusion, except for utils, please DO NOT include any other component header files here!
 
 class ARRSkeletalRobot;
+
 UENUM(meta = (Bitflags))
 enum class ERRUEComponentType : uint8
 {
@@ -33,15 +34,19 @@ enum class ERRRobotDescriptionType : uint8
     SDF
 };
 
+/**
+ * @brief
+ *
+ */
 UENUM()
 enum class ERRRobotStatus : uint8
 {
-    INVALID,             // Invalid type, or not loaded successfully
-    CREATING,            // Being built up (loading the meshses, building the structure, etc.)
-    IDLE,                // Idling, ready for command order
-    ORDER_PROCESSING,    // Received command and in middle of processing
-    MOVING,              // On the move
-    ERROR,               // Having some internal errors
+    INVALID,             //! Invalid type, or not loaded successfully
+    CREATING,            //! Being built up (loading the meshses, building the structure, etc.)
+    IDLE,                //! Idling, ready for command order
+    ORDER_PROCESSING,    //! Received command and in middle of processing
+    MOVING,              //! On the move
+    ERROR,               //! Having some internal errors
     TOTAL
 };
 
@@ -177,19 +182,24 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
               Category = "Spring-Damper",
               meta = (ClampMin = "0.0", ClampMax = "10000000.0", UIMin = "0.0", UIMax = "10000000.0"))
     float MaxForceLimit = 100000000.f;
-    // Rad(m)/s
+
+    //! Rad(m)/s
     UPROPERTY(EditAnywhere)
     float MaxVelocity = 1000000.f;
-    // Safety Controller
+
+    //! Safety Controller
     UPROPERTY(EditAnywhere)
     float KVelocity = 0.f;
-    // For PID Control Mode --
-    // P, I: Decrease Rise-Time, Increase Overshoot (and Fluctuation)
-    // D: Decrease Overshoot
+
+    //! PID Controller P Gain
     UPROPERTY(EditAnywhere)
     float P = 0.1f;
+
+    //! PID Controller I Gain
     UPROPERTY(EditAnywhere)
     float I = 0.5f;
+
+    //! PID Controller D Gain
     UPROPERTY(EditAnywhere)
     float D = 0.01f;
 
@@ -203,8 +213,12 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
 };
 // [ROBOT JOINT] --
 //
-// http://sdformat.org/spec?ver=1.6&elem=joint
-// http://wiki.ros.org/urdf/XML/joint
+/**
+ * @brief The FRRRobotJointProperty struct
+ *  [rad] for REVOLUTE joint, [m] for Prismatic Joint. (Both URDF and SDF)
+ * @sa http://sdformat.org/spec?ver=1.6&elem=joint
+ * @sa http://wiki.ros.org/urdf/XML/joint
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointProperty
 {
@@ -212,12 +226,15 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointProperty
 public:
     UPROPERTY(VisibleAnywhere)
     FString Name;
+
     UPROPERTY(VisibleAnywhere)
     ERRRobotJointType Type = ERRRobotJointType::INVALID;
+
     FORCEINLINE static ERRRobotJointType GetERRRobotJointTypeValueFromString(const FString& InEnumStringValue)
     {
         return static_cast<ERRRobotJointType>(URRTypeUtils::GetEnumValueFromString(TEXT("ERRRobotJointType"), InEnumStringValue));
     }
+
     FORCEINLINE static FString GetJointTypeName(const ERRRobotJointType InJointType)
     {
         return URRTypeUtils::GetEnumValueAsString(TEXT("ERRRobotJointType"), InJointType);
@@ -225,14 +242,19 @@ public:
 
     UPROPERTY(VisibleAnywhere)
     ERRRobotJointStatus Status = ERRRobotJointStatus::INVALID;
-    // In URDF/SDF: Child Link's relative Location & Rotation to its Parent
+
+    //! In URDF/SDF: Child Link's relative Location to its Parent
     UPROPERTY(VisibleAnywhere)
     FVector Location = FVector::ZeroVector;
+
+    //! In URDF/SDF: Child Link's relative Rotation to its Parent
     UPROPERTY(VisibleAnywhere)
     FQuat Rotation = FQuat::Identity;
-    // Whether Rotation & Location are absolute or relative
+
+    //! Whether Rotation & Location are absolute or relative
     UPROPERTY(VisibleAnywhere)
     bool bIsTransformRelative = true;
+
     FTransform GetTransform() const
     {
         return FTransform(Rotation, Location);
@@ -256,11 +278,14 @@ public:
         return bIsLocal ? Axis : AxisInParentFrame;
     }
 
-    // [rad] for REVOLUTE joint, [m] for Prismatic Joint. (Both URDF and SDF)
+    //! [rad] for REVOLUTE joint, [m] for Prismatic Joint. (Both URDF and SDF)
     UPROPERTY(VisibleAnywhere)
     float LowerLimit = 0.f;
+
+    //! [rad] for REVOLUTE joint, [m] for Prismatic Joint. (Both URDF and SDF)
     UPROPERTY(VisibleAnywhere)
     float UpperLimit = 0.f;
+
     UPROPERTY(EditAnywhere)
     FRRRobotJointDynamicProperties DynamicParams;
     bool operator==(const FRRRobotJointProperty& JointProp)
@@ -318,24 +343,62 @@ public:
                 return ACM_Locked;
         }
     }
+
+    /**
+     * @brief Get the Joint Axis object
+     * @param bIsGlobal
+     * @param InLinkQuat
+     * @return FVector
+     */
     FVector GetJointAxis(bool bIsGlobal = false, const FQuat& InLinkQuat = FQuat::Identity) const
     {
         // https://github.com/ros-visualization/rviz/blob/noetic-devel/src/rviz/robot/robot_joint.cpp#L425
         return bIsGlobal ? InLinkQuat.RotateVector(Axis) : Axis;
     }
-    // Twist(X), Swing1(Z), Swing2(Y)
-    // https://forums.unrealengine.com/t/can-someone-explain-swing-1-2-and-twist/103357/3
-    // https://documentation.help/NVIDIA-PhysX-SDK-Guide/Joints.html
-    // https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/Manual/Joints.html
-    // FPhysicsInterface_PhysX::GetCurrentSwing2
+
+    /**
+     * @brief
+     * Twist(X), Swing1(Z), Swing2(Y)
+     * @sa https://forums.unrealengine.com/t/can-someone-explain-swing-1-2-and-twist/103357/3
+     * @sa https://documentation.help/NVIDIA-PhysX-SDK-Guide/Joints.html
+     * @sa https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/Manual/Joints.html
+     * FPhysicsInterface_PhysX::GetCurrentSwing2
+     * @param InAxis
+     * @return true
+     * @return false
+     */
     bool IsTwisting(const FVector& InAxis) const
     {
         return FMath::IsNearlyEqual(FMath::Abs(InAxis.X), 1.f, 1.e-3f);
     }
+
+    /**
+     * @brief
+     * Twist(X), Swing1(Z), Swing2(Y)
+     * @sa https://forums.unrealengine.com/t/can-someone-explain-swing-1-2-and-twist/103357/3
+     * @sa https://documentation.help/NVIDIA-PhysX-SDK-Guide/Joints.html
+     * @sa https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/Manual/Joints.html
+     * FPhysicsInterface_PhysX::GetCurrentSwing2
+     * @param InAxis
+     * @return true
+     * @return false
+     */
     bool IsSwing1(const FVector& InAxis) const
     {
         return FMath::IsNearlyEqual(FMath::Abs(InAxis.Z), 1.f, 1.e-3f);
     }
+
+    /**
+     * @brief
+     * Twist(X), Swing1(Z), Swing2(Y)
+     * @sa https://forums.unrealengine.com/t/can-someone-explain-swing-1-2-and-twist/103357/3
+     * @sa https://documentation.help/NVIDIA-PhysX-SDK-Guide/Joints.html
+     * @sa https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/Manual/Joints.html
+     * FPhysicsInterface_PhysX::GetCurrentSwing2
+     * @param InAxis
+     * @return true
+     * @return false
+     */
     bool IsSwing2(const FVector& InAxis) const
     {
         return FMath::IsNearlyEqual(FMath::Abs(InAxis.Y), 1.f, 1.e-3f);
@@ -387,7 +450,7 @@ USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointValue
 {
     GENERATED_BODY()
-    // [rad] for REVOLUTE joint, [m] for Prismatic Joint
+    //! [rad] for REVOLUTE joint, [m] for Prismatic Joint
     UPROPERTY(EditAnywhere, meta = (ToopTip = "rad or m", ClampMin = "-100.0", ClampMax = "100.0", UIMin = "-100", UIMax = "100.0"))
     double Position = 0;
     UPROPERTY(EditAnywhere, meta = (ToopTip = "m/s", ClampMin = "-100.0", ClampMax = "100.0", UIMin = "-100.0", UIMax = "100.0"))
@@ -412,12 +475,14 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointValue
         return (false == (*this == Other));
     }
 };
+
 // [ROBOT LINK] --
 //
 // Note: Nested struct does not support USTRUCT(), and so forth also could not affort UPROPERTY members
 // A structure representing a SDF/URDF Link
 // http://sdformat.org/spec?ver=1.6&elem=link
 // http://wiki.ros.org/urdf/XML/link
+
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotLinkInertia
 {
@@ -450,15 +515,19 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotGeometryInfo
     FString Name;
     UPROPERTY(VisibleAnywhere)
     FString MeshName;
-    // This size is mostly used for Collision info in case of links being Runtime mesh components.
-    // For static mesh based linkes, the collision is already auto-generated by UE.
+
+    //! This size is mostly used for Collision info in case of links being Runtime mesh components.
+    //! For static mesh based linkes, the collision is already auto-generated by UE.
     UPROPERTY(VisibleAnywhere)
     FVector Size = FVector::ZeroVector;
+
     UPROPERTY(VisibleAnywhere)
     FVector WorldScale = FVector::OneVector;
-    // Owner Link info
+
+    //! Owner Link info
     UPROPERTY(VisibleAnywhere)
     ERRShapeType LinkType = ERRShapeType::INVALID;
+
     UPROPERTY(VisibleAnywhere)
     FString LinkName;
     UPROPERTY(VisibleAnywhere)
@@ -472,6 +541,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotGeometryInfo
     UPROPERTY(VisibleAnywhere)
     FRRMaterialProperty MaterialInfo;
 };
+
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo
 {
@@ -479,11 +549,15 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo
     UPROPERTY(VisibleAnywhere)
     ERRLidarSensorType LidarType = ERRLidarSensorType::NONE;
 
-    // Scan (angle in deg)
+    //! Scan (angle in deg)
     UPROPERTY(VisibleAnywhere)
     int32 NHorSamplesPerScan = 360;
+
+    //! Scan (angle in deg)
     UPROPERTY(VisibleAnywhere)
     int32 NVerSamplesPerScan = 360;
+
+    //! Scan (angle in deg)
     UPROPERTY(VisibleAnywhere)
     float HMinAngle = 0.f;
     UPROPERTY(VisibleAnywhere)
@@ -513,6 +587,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo
     UPROPERTY(VisibleAnywhere)
     double NoiseStdDev = 0;
 };
+
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRSensorProperty
 {
@@ -526,6 +601,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRSensorProperty
     UPROPERTY(VisibleAnywhere)
     FRRSensorLidarInfo LidarInfo;
 };
+
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotLinkProperty
 {
@@ -533,19 +609,22 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotLinkProperty
 public:
     UPROPERTY(VisibleAnywhere)
     FString Name;
-    // Only available in SDF
+
+    //! Only available in SDF
     UPROPERTY(VisibleAnywhere)
     FString ParentFrameName;
+
     UPROPERTY(VisibleAnywhere)
     int8 LinkIndex = INDEX_NONE;
     UPROPERTY(VisibleAnywhere)
     int8 ParentLinkIndex = INDEX_NONE;
 
-    // Relative to the parent link
-    // In URDF: <joint>�s <origin xyz= "" rpy="">
-    // In SDF : <joint> -> <pose> 6 values (xyz + rpy)
+    //! Relative to the parent link
+    //! In URDF: <joint>�s <origin xyz= "" rpy="">
+    //! In SDF : <joint> -> <pose> 6 values (xyz + rpy)
     UPROPERTY(VisibleAnywhere)
     FVector Location = FVector::ZeroVector;
+
     UPROPERTY(VisibleAnywhere)
     FQuat Rotation = FQuat::Identity;
     FTransform GetRelativeTransformToParent() const
@@ -554,9 +633,10 @@ public:
     }
     UPROPERTY(VisibleAnywhere)
     FRRRobotLinkInertia Inertia;
-    // Relative visual offset to the link itself(URDF) or parent frame(SDF)
-    // In URDF: <visual>�s <origin xyz= "" rpy="">
-    // In SDF : <link> -> <pose> 6 values (xyz + rpy)
+
+    //! Relative visual offset to the link itself(URDF) or parent frame(SDF)
+    //! In URDF: <visual>�s <origin xyz= "" rpy="">
+    //! In SDF : <link> -> <pose> 6 values (xyz + rpy)
     UPROPERTY(VisibleAnywhere)
     TArray<FRRRobotGeometryInfo> VisualList;
     FTransform GetVisualOffset(int32 InVisualIndex = 0) const
@@ -656,6 +736,11 @@ public:
 };
 
 // Ref: UChaosVehicleWheel
+
+/**
+ * @brief Wheel property for the robot
+ * @sa [UChaosVehicleWheel](https://docs.unrealengine.com/5.1/en-US/API/Plugins/ChaosVehicles/UChaosVehicleWheel/)
+ */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotWheelProperty
 {
@@ -673,7 +758,8 @@ public:
 
     UPROPERTY()
     FString WheelName;
-    /** If left undefined then the bAffectedByEngine value is used, if defined then bAffectedByEngine is ignored and the
+
+    /** If left undefined then the #bAffectedByEngine value is used, if defined then #bAffectedByEngine is ignored and the
      * differential setup on the vehicle defines which wheels get power from the engine */
     UPROPERTY()
     EAxleType AxleType = EAxleType::Undefined;
@@ -906,13 +992,13 @@ public:
         return meshesNum;
     }
 
-    // Robot Model Description File (URDF/SDF)
+    //! Robot Model Description File (URDF/SDF)
     FString DescriptionFilePath;
     uint32 CreatedNum = 0;
     FString ParentFrameName;
     FTransform RelativeTransform = FTransform::Identity;
 
-    // UE Component types
+    //! UE Component types
     uint32 UEComponentTypeFlags = 0;
     bool IsUEComponentEnabled(const uint32 InTypeMask) const
     {
@@ -945,19 +1031,22 @@ public:
     TArray<FRRRobotJointProperty> JointPropList;
 
     TArray<FRRRobotModelInfo> ChildModelsInfo;
+
+    /**
+     * @brief
+    * http://wiki.ros.org/urdf/XML/joint
+    * This is only applied to link/joint properties read from URDF, where the joint locates at the origin of the child
+    * link. JointProp's loc info is a relative location of child link to its parent link. Since every Link other than the
+    * base link has to be connected to another link, the number of joints is fixed.
+    * JointInfo's Location --> Child Link Info
+    *
+    * http://sdformat.org/spec?elem=joint
+    * http://sdformat.org/tutorials?tut=pose_frame_semantics
+    * For SDF, typically link visual pose (as relative to child link) is defined independently of joint, which is also
+    * attached to child link.
+     */
     void UpdateLinksLocationFromJoints()
     {
-        /* http://wiki.ros.org/urdf/XML/joint
-         * This is only applied to link/joint properties read from URDF, where the joint locates at the origin of the child
-         * link. JointProp's loc info is a relative location of child link to its parent link. Since every Link other than the
-         * base link has to be connected to another link, the number of joints is fixed.
-         * JointInfo's Location --> Child Link Info
-         *
-         * http://sdformat.org/spec?elem=joint
-         * http://sdformat.org/tutorials?tut=pose_frame_semantics
-         * For SDF, typically link visual pose (as relative to child link) is defined independently of joint, which is also
-         * attached to child link.
-         */
         for (const auto& jointProp : JointPropList)
         {
             for (auto& linkProp : LinkPropList)
@@ -1374,8 +1463,11 @@ public:
         }
     }
 };
-// This class will co-parent with [IFastXmlCallback], which is not a USTRUCT,
-// thus it could not be also either.
+
+/**
+ * @brief  This class will co-parent with [IFastXmlCallback], which is not a USTRUCT.
+ *
+ */
 class RAPYUTASIMULATIONPLUGINS_API FRRRobotDescriptionParser
 {
 public:

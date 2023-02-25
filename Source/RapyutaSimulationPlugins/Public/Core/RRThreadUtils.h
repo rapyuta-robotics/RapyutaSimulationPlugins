@@ -20,6 +20,10 @@
 
 #include "RRThreadUtils.generated.h"
 
+/**
+ * @brief ThreadUtils with Async
+ * @sa [Async](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Async/)
+ */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRThreadUtils : public UBlueprintFunctionLibrary
 {

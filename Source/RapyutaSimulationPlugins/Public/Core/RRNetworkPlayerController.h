@@ -24,7 +24,7 @@
 
 /**
  * @brief Network Player controller provides functionality for client-server. Major functionalites are
- * - [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html),  #URRROS2ClockPublisher,  #URRROS2SimulationStateClient are created for each client to provide ROS2 services which are provided by #ARRROS2GameMode in standalone game.
+ * - [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html),  #URRROS2ClockPublisher,  #URRROS2SimulationStateClient are created for each client to provide ROS2 services which are provided by #ARRROS2GameMode in standalone game.
  * - Clock sync between server and the clients with delay compensation
  * - RPC call to sync Robot movements between serer and clients.
  */
@@ -49,7 +49,7 @@ public:
     UPROPERTY(Transient)
     UROS2NodeComponent* SimStateClientROS2Node = nullptr;
 
-    //! Publish /clock.
+    //! /clock publisher
     UPROPERTY(BlueprintReadOnly)
     URRROS2ClockPublisher* SimStateClientClockPublisher = nullptr;
 
@@ -107,12 +107,21 @@ public:
     }
 
     /**
-     * @brief Request server time update from client via #ServerRequestLocalClockUpdate
+     * @brief [Time Sync Step1] Request server time update from client via #ServerRequestLocalClockUpdate
      */
     void RequestServerTimeUpdate();
 
     /**
-     * @brief Called from the server and execute in the client via RPC.
+     * @brief [Time Sync Step2] Called from the client and execute in the server via RPC.
+     * Get current server time and call #ClientSendLocalClockUpdate with current server time and given InClientRequestTime
+     *
+     * @param InClientRequestTime Client Time when client call this method.
+     */
+    UFUNCTION(Server, Reliable)
+    void ServerRequestLocalClockUpdate(float InClientRequestTime);
+
+    /**
+     * @brief [Time Sync Step3] Called from the server and execute in the client via RPC.
      * Sync client time with InServerCurrentTime + delay compendation.
      * Delay is estimated as 0.5 * (current client time - InClientRequestTime)
      *
@@ -121,15 +130,6 @@ public:
      */
     UFUNCTION(Client, Reliable)
     void ClientSendLocalClockUpdate(float InClientRequestTime, float InServerCurrentTime);
-
-    /**
-     * @brief Called from the client and execute in the server via RPC.
-     * Get current server time and call #ClientSendLocalClockUpdate with current server time and given InClientRequestTime
-     *
-     * @param InClientRequestTime Client Time when client call this method.
-     */
-    UFUNCTION(Server, Reliable)
-    void ServerRequestLocalClockUpdate(float InClientRequestTime);
 
     /**
      * @brief Increase local clock's time by delta seconds
@@ -166,6 +166,11 @@ public:
                                      const FVector& InAngularVel);
 
 protected:
+    /**
+     * @brief 
+     * Standalone game mode will call this method to call #ClientInitSimStateClientROS2lient.
+     * Client server game mode will start timer to sync time with server.
+     */
     virtual void BeginPlay() override;
     virtual void ReceivedPlayer() override;
 };

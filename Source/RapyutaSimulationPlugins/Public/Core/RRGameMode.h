@@ -30,7 +30,8 @@ enum class ERRSimType : uint8
 };
 
 /**
- * @brief GameMode with specific setting, asset loading and ROS2 interface via #ClockPublisher and #ASimulationState.
+ * @brief GameMode with specific setting, asset loading. Parent class, #ARRROS2GameMode, 
+ * handles ROS2 interface via #ClockPublisher and #ASimulationState.
  * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)
  */
 UCLASS(Config = RapyutaSimSettings)

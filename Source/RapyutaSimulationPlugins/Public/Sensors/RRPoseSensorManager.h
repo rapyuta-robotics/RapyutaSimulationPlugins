@@ -65,7 +65,7 @@ public:
      * @param InTopicName Topic name
      * @param InQoS Topic QoS
      *
-     * @sa [AROS2Node](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dcb/class_a_r_o_s2_node.html)
+     * @sa [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html)
      * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
     virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,

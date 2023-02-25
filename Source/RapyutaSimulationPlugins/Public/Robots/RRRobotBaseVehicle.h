@@ -69,10 +69,11 @@ public:
     FVector TargetAngularVel = FVector::ZeroVector;
 
     //! Main robot movement component (kinematics/diff-drive or wheels-drive comp)
+    //! #MovementComponent and #RobotVehicleMoveComponent should point to same pointer.
     UPROPERTY(VisibleAnywhere)
     UMovementComponent* MovementComponent = nullptr;
 
-    //! Main robot vehicle movement component
+    //! Movecomponent casted to #URobotVehicleMovementComponent for utility.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 

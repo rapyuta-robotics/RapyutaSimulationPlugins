@@ -13,7 +13,7 @@
 class URRRobotROS2Interface;
 
 /**
- * @brief Base Crowd ROS Controller for ARRBaseRobot descedent classes, utilizing URRCrowdFollowingComponent
+ * @brief Base Crowd ROS Controller for #ARRBaseRobot descedent classes, utilizing #URRCrowdFollowingComponent
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRCrowdROSController : public ARRCrowdAIController

@@ -11,7 +11,7 @@
 #include "RRCrowdAIController.generated.h"
 
 /**
- * @brief Base Crowd AI Controller for Pawn-based classes, utilizing URRCrowdFollowingComponent
+ * @brief Base Crowd AI Controller for Pawn-based classes, utilizing #URRCrowdFollowingComponent
  *
  * @sa [AAIController](https://docs.unrealengine.com/5.1/en-US/API/Runtime/AIModule/AAIController/)
  * @sa https://answers.unrealengine.com/questions/871116/view.html

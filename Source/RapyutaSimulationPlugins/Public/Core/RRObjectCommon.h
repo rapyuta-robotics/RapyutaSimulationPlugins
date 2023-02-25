@@ -133,6 +133,13 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
         Data.Add(InUniqueName, FRRResource(InUniqueName, InAssetPath, InAssetData));
     }
 
+    /**
+     * @brief Finalize object by using UBodySetup::ClearPhysicsMeshes and MarkAsGarbage.
+     * BodySetup's collision mesh data are manually created from the underlying Physics engine, thus needs manual flush.
+     * Besides, body setup data is shared among proc mesh comps, thus could not be destroyed in a dtor or OnComponentDestroyed()
+     * @sa [UBodySetup::ClearPhysicsMeshes](https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/PhysicsEngine/UBodySetup/ClearPhysicsMeshes/)
+     * @sa [MarkAsGarbage](https://docs.unrealengine.com/5.0/en-US/API/Runtime/Engine/EdGraph/UEdGraphPin/MarkAsGarbage/)
+     */
     void Finalize()
     {
         DataType = ERRResourceDataType::NONE;
