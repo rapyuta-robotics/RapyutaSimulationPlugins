@@ -19,6 +19,9 @@
 #include "Math/Color.h"
 #include "Misc/Paths.h"
 
+// rclUE
+#include "logUtilities.h"
+
 // RapyutaSimulationPlugins
 #include "RapyutaSimulationPlugins.h"
 
@@ -141,8 +144,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRStreamingLevelInfo
 
     void PrintSelf() const
     {
-        UE_LOG(LogTemp, Log, TEXT("- AssetPath: %s"), *AssetPath);
-        UE_LOG(LogTemp, Log, TEXT("- TargetTransform: %s"), *TargetTransform.ToString());
+        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("- AssetPath: %s"), *AssetPath);
+        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("- TargetTransform: %s"), *TargetTransform.ToString());
     }
 };
 
@@ -253,12 +256,13 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRAsyncJob
         {
             AsyncTasks[TaskIndex].DoneStatus = true;
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogTemp, Display, TEXT("[%s] Async Task done [%d]/[%d]!"), *TaskName, (TaskIndex + 1), GetTasksNum());
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("[%s] Async Task done [%d]/[%d]!"), *TaskName, (TaskIndex + 1), GetTasksNum());
 #endif
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("[%s] FRRAsyncJob Invalid Async Task Index: %d/%d"), *TaskName, TaskIndex, GetTasksNum());
+            UE_LOG_WITH_INFO(
+                LogTemp, Error, TEXT("[%s] FRRAsyncJob Invalid Async Task Index: %d/%d"), *TaskName, TaskIndex, GetTasksNum());
         }
     }
 
@@ -431,7 +435,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRColorArray
         }
         else
         {
-            UE_LOG(LogRapyutaCore, Fatal, TEXT("FRRColorArray::GetImageData(): unsupported bit-depth [%d]"), InBitDepth);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("unsupported bit-depth [%d]"), InBitDepth);
         }
     }
 
@@ -452,7 +456,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRColorArray
             case 32:
                 return GetImageData<32>().Num();
             default:
-                UE_LOG(LogTemp, Fatal, TEXT("FRRColorArray::Num(): unsupported bit-depth [%d]"), InBitDepth);
+                UE_LOG_WITH_INFO(LogTemp, Fatal, TEXT("FRRColorArray::Num(): unsupported bit-depth [%d]"), InBitDepth);
                 return 0;
         }
     }
@@ -485,7 +489,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRColorArray
                 }
                 break;
             default:
-                UE_LOG(LogRapyutaCore, Fatal, TEXT("FRRColorArray::ToggleAlpha(): unsupported bit-depth [%d]"), InBitDepth);
+                UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("unsupported bit-depth [%d]"), InBitDepth);
                 break;
         }
     }
@@ -738,13 +742,13 @@ public:
     {
         if (LatestCustomDepthStencilValue > MAX_CUSTOM_DEPTH_STENCIL_VALUES_NUM)
         {
-            UE_LOG(LogTemp,
-                   Error,
-                   TEXT("SceneInstance[%d] [%d] More than %d CustomDepthStencil values having been assigned!"
-                        "Segmentation Mask will be duplicated!"),
-                   SceneInstanceId,
-                   LatestCustomDepthStencilValue,
-                   MAX_CUSTOM_DEPTH_STENCIL_VALUES_NUM);
+            UE_LOG_WITH_INFO(LogTemp,
+                             Error,
+                             TEXT("SceneInstance[%d] [%d] More than %d CustomDepthStencil values having been assigned!"
+                                  "Segmentation Mask will be duplicated!"),
+                             SceneInstanceId,
+                             LatestCustomDepthStencilValue,
+                             MAX_CUSTOM_DEPTH_STENCIL_VALUES_NUM);
         }
 
         // Fetch the next non-static [CustomDepthStencilValue]

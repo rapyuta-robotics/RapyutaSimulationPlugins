@@ -205,10 +205,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
 
     void PrintSelf() const
     {
-        UE_LOG(LogTemp, Display, TEXT("- SpringStiff %f LimitSpringStiff %f"), SpringStiff, LimitSpringStiff);
-        UE_LOG(LogTemp, Display, TEXT("- Damping %f LimitDamping %f"), Damping, LimitDamping);
-        UE_LOG(LogTemp, Display, TEXT("- Friction %f SpringRef %f"), Friction, SpringRef);
-        UE_LOG(LogTemp, Display, TEXT("- MaxForceLimit %f MaxVelocity %f"), MaxForceLimit, MaxVelocity);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- SpringStiff %f LimitSpringStiff %f"), SpringStiff, LimitSpringStiff);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Damping %f LimitDamping %f"), Damping, LimitDamping);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Friction %f SpringRef %f"), Friction, SpringRef);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- MaxForceLimit %f MaxVelocity %f"), MaxForceLimit, MaxVelocity);
     }
 };
 // [ROBOT JOINT] --
@@ -427,21 +427,21 @@ public:
     }
     void PrintSelf() const
     {
-        UE_LOG(LogTemp,
-               Warning,
-               TEXT("Joint Name: %s - Type %s"),
-               *Name,
-               *URRTypeUtils::GetEnumValueAsString(TEXT("ERRRobotJointType"), Type));
-        UE_LOG(LogTemp, Display, TEXT("- Location: %s"), *Location.ToString());
-        UE_LOG(LogTemp, Display, TEXT("- Rotation: %s - %s"), *Rotation.ToString(), *FRotator(Rotation).ToString());
-        UE_LOG(LogTemp, Display, TEXT("- ParentLinkName: %s"), *ParentLinkName);
-        UE_LOG(LogTemp, Display, TEXT("- ChildLinkName: %s"), *ChildLinkName);
-        UE_LOG(LogTemp, Display, TEXT("- Axis: %s"), *Axis.ToString());
-        UE_LOG(LogTemp, Display, TEXT("- MimicJointName: %s"), *MimicJointName);
-        UE_LOG(LogTemp, Display, TEXT("- MimicMultiplier: %f"), MimicMultiplier);
-        UE_LOG(LogTemp, Display, TEXT("- MimicOffset: %f"), MimicOffset);
-        UE_LOG(LogTemp, Display, TEXT("- LowerLimit: %f"), LowerLimit);
-        UE_LOG(LogTemp, Display, TEXT("- UpperLimit: %f"), UpperLimit);
+        UE_LOG_WITH_INFO(LogTemp,
+                         Warning,
+                         TEXT("Joint Name: %s - Type %s"),
+                         *Name,
+                         *URRTypeUtils::GetEnumValueAsString(TEXT("ERRRobotJointType"), Type));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Location: %s"), *Location.ToString());
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Rotation: %s - %s"), *Rotation.ToString(), *FRotator(Rotation).ToString());
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- ParentLinkName: %s"), *ParentLinkName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- ChildLinkName: %s"), *ChildLinkName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Axis: %s"), *Axis.ToString());
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- MimicJointName: %s"), *MimicJointName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- MimicMultiplier: %f"), MimicMultiplier);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- MimicOffset: %f"), MimicOffset);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- LowerLimit: %f"), LowerLimit);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- UpperLimit: %f"), UpperLimit);
         DynamicParams.PrintSelf();
     }
 };
@@ -662,75 +662,76 @@ public:
     TArray<FRRSensorProperty> SensorList;
     void PrintSelf() const
     {
-        UE_LOG(LogTemp, Warning, TEXT("Link Name: %s -> ParentFrameName: %s"), *Name, *ParentFrameName);
-        UE_LOG(LogTemp, Display, TEXT("- Location: %s"), *Location.ToString());
-        UE_LOG(LogTemp, Display, TEXT("- Rotation: %s - %s"), *Rotation.ToString(), *FRotator(Rotation).ToString());
+        UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Link Name: %s -> ParentFrameName: %s"), *Name, *ParentFrameName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Location: %s"), *Location.ToString());
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Rotation: %s - %s"), *Rotation.ToString(), *FRotator(Rotation).ToString());
         // Visuals
         for (const auto& visual : VisualList)
         {
-            UE_LOG(LogTemp, Warning, TEXT("Visual: %s"), *visual.Name);
-            UE_LOG(LogTemp, Display, TEXT("- Link: %s"), *visual.LinkName);
-            UE_LOG(LogTemp, Display, TEXT("- MeshName: %s"), *visual.MeshName);
-            UE_LOG(LogTemp, Display, TEXT("- Size: %s - WorldScale: %s"), *visual.Size.ToString(), *visual.WorldScale.ToString());
-            UE_LOG(LogTemp, Display, TEXT("- Location: %s"), *visual.Location.ToString());
-            UE_LOG(
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Visual: %s"), *visual.Name);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Link: %s"), *visual.LinkName);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- MeshName: %s"), *visual.MeshName);
+            UE_LOG_WITH_INFO(
+                LogTemp, Display, TEXT("- Size: %s - WorldScale: %s"), *visual.Size.ToString(), *visual.WorldScale.ToString());
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Location: %s"), *visual.Location.ToString());
+            UE_LOG_WITH_INFO(
                 LogTemp, Display, TEXT("- Rotation: %s - %s"), *visual.Rotation.ToString(), *FRotator(visual.Rotation).ToString());
             visual.MaterialInfo.PrintSelf();
         }
         // Collisions
         for (const auto& collision : CollisionList)
         {
-            UE_LOG(LogTemp, Warning, TEXT("Collision: %s"), *collision.Name);
-            UE_LOG(LogTemp, Display, TEXT("- Link: %s"), *collision.LinkName);
-            UE_LOG(LogTemp, Display, TEXT("- MeshName: %s"), *collision.MeshName);
-            UE_LOG(LogTemp,
-                   Display,
-                   TEXT("- Size: %s - WorldScale: %s"),
-                   *collision.Size.ToString(),
-                   *collision.WorldScale.ToString());
-            UE_LOG(LogTemp, Display, TEXT("- Location: %s"), *collision.Location.ToString());
-            UE_LOG(LogTemp,
-                   Display,
-                   TEXT("- Rotation: %s - %s"),
-                   *collision.Rotation.ToString(),
-                   *FRotator(collision.Rotation).ToString());
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Collision: %s"), *collision.Name);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Link: %s"), *collision.LinkName);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- MeshName: %s"), *collision.MeshName);
+            UE_LOG_WITH_INFO(LogTemp,
+                             Display,
+                             TEXT("- Size: %s - WorldScale: %s"),
+                             *collision.Size.ToString(),
+                             *collision.WorldScale.ToString());
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Location: %s"), *collision.Location.ToString());
+            UE_LOG_WITH_INFO(LogTemp,
+                             Display,
+                             TEXT("- Rotation: %s - %s"),
+                             *collision.Rotation.ToString(),
+                             *FRotator(collision.Rotation).ToString());
         }
         // Sensors
         for (const auto& sensor : SensorList)
         {
-            UE_LOG(LogTemp,
-                   Warning,
-                   TEXT("Sensor: %s %s"),
-                   *URRTypeUtils::GetEnumValueAsString(TEXT("ERRSensorType"), sensor.SensorType),
-                   *sensor.SensorName);
-            UE_LOG(LogTemp, Display, TEXT("- Link: %s"), *sensor.LinkName);
+            UE_LOG_WITH_INFO(LogTemp,
+                             Warning,
+                             TEXT("Sensor: %s %s"),
+                             *URRTypeUtils::GetEnumValueAsString(TEXT("ERRSensorType"), sensor.SensorType),
+                             *sensor.SensorName);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Link: %s"), *sensor.LinkName);
 
             const auto& lidarInfo = sensor.LidarInfo;
-            UE_LOG(LogTemp,
-                   Display,
-                   TEXT("- Lidar: %s"),
-                   *URRTypeUtils::GetEnumValueAsString(TEXT("ERRLidarSensorType"), lidarInfo.LidarType));
-            UE_LOG(LogTemp, Display, TEXT("- Scan horizontal"));
-            UE_LOG(LogTemp, Display, TEXT("+ NHorSamplesPerScan: %d"), lidarInfo.NHorSamplesPerScan);
-            UE_LOG(LogTemp, Display, TEXT("+ HMinAngle: %f"), lidarInfo.HMinAngle);
-            UE_LOG(LogTemp, Display, TEXT("+ HMaxAngle: %f"), lidarInfo.HMaxAngle);
-            UE_LOG(LogTemp, Display, TEXT("+ HResolution: %f"), lidarInfo.HResolution);
+            UE_LOG_WITH_INFO(LogTemp,
+                             Display,
+                             TEXT("- Lidar: %s"),
+                             *URRTypeUtils::GetEnumValueAsString(TEXT("ERRLidarSensorType"), lidarInfo.LidarType));
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Scan horizontal"));
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ NHorSamplesPerScan: %d"), lidarInfo.NHorSamplesPerScan);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ HMinAngle: %f"), lidarInfo.HMinAngle);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ HMaxAngle: %f"), lidarInfo.HMaxAngle);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ HResolution: %f"), lidarInfo.HResolution);
 
-            UE_LOG(LogTemp, Display, TEXT("- Scan vertical"));
-            UE_LOG(LogTemp, Display, TEXT("+ NVerSamplesPerScan: %d"), lidarInfo.NVerSamplesPerScan);
-            UE_LOG(LogTemp, Display, TEXT("+ VMinAngle: %f"), lidarInfo.VMinAngle);
-            UE_LOG(LogTemp, Display, TEXT("+ VMaxAngle: %f"), lidarInfo.VMaxAngle);
-            UE_LOG(LogTemp, Display, TEXT("+ VResolution: %f"), lidarInfo.VResolution);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Scan vertical"));
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ NVerSamplesPerScan: %d"), lidarInfo.NVerSamplesPerScan);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ VMinAngle: %f"), lidarInfo.VMinAngle);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ VMaxAngle: %f"), lidarInfo.VMaxAngle);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ VResolution: %f"), lidarInfo.VResolution);
 
-            UE_LOG(LogTemp, Display, TEXT("- Range"));
-            UE_LOG(LogTemp, Display, TEXT("+ MinRange: %f"), lidarInfo.MinRange);
-            UE_LOG(LogTemp, Display, TEXT("+ MinRange: %f"), lidarInfo.MaxRange);
-            UE_LOG(LogTemp, Display, TEXT("+ Resolution: %f"), lidarInfo.RangeResolution);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Range"));
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ MinRange: %f"), lidarInfo.MinRange);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ MinRange: %f"), lidarInfo.MaxRange);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ Resolution: %f"), lidarInfo.RangeResolution);
 
-            UE_LOG(LogTemp, Display, TEXT("- Noise"));
-            UE_LOG(LogTemp, Display, TEXT("+ Type: %s"), *lidarInfo.NoiseTypeName);
-            UE_LOG(LogTemp, Display, TEXT("+ Mean: %f"), lidarInfo.NoiseMean);
-            UE_LOG(LogTemp, Display, TEXT("+ StdDev: %f"), lidarInfo.NoiseStdDev);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Noise"));
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ Type: %s"), *lidarInfo.NoiseTypeName);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ Mean: %f"), lidarInfo.NoiseMean);
+            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ StdDev: %f"), lidarInfo.NoiseStdDev);
         }
     }
 };
@@ -889,7 +890,7 @@ public:
 
     void PrintSelf() const
     {
-        UE_LOG(LogTemp, Display, TEXT("WheelName: %s Radius %f Width %f"), *WheelName, WheelRadius, WheelWidth);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("WheelName: %s Radius %f Width %f"), *WheelName, WheelRadius, WheelWidth);
     }
 
     static FRRRobotWheelProperty ComposeWheelProperty(FString InWheelName)
@@ -1069,7 +1070,7 @@ public:
                 if (InJointProp.ParentLinkName == InLinkName)
                 {
 #if RAPYUTA_SIM_DEBUG
-                    UE_LOG(
+                    UE_LOG_WITH_INFO(
                         LogTemp, Error, TEXT("Rem joint from parent [%s] %s"), *InLinkName, *InJointProp.GetTransform().ToString());
 #endif
                     return true;
@@ -1274,10 +1275,8 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogTemp,
-                       Log,
-                       TEXT("[FRRRobotModelInfo] %s ModelDescType has not been set!"),
-                       *FString::Join(ModelNameList, TEXT(",")));
+                UE_LOG_WITH_INFO(
+                    LogTemp, Log, TEXT("%s ModelDescType has not been set!"), *FString::Join(ModelNameList, TEXT(",")));
             }
             return false;
         }
@@ -1286,7 +1285,7 @@ public:
             // Either a world or entity model
             if (bIsLogged)
             {
-                UE_LOG(LogTemp, Log, TEXT("[FRRRobotModelInfo] %s ModelNameList EMPTY!"), *DescriptionFilePath);
+                UE_LOG_WITH_INFO(LogTemp, Log, TEXT("%s ModelNameList EMPTY!"), *DescriptionFilePath);
             }
             return false;
         }
@@ -1294,10 +1293,7 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogTemp,
-                       Log,
-                       TEXT("[FRRRobotModelInfo] %s DescriptionFilePath EMPTY!"),
-                       *FString::Join(ModelNameList, TEXT(",")));
+                UE_LOG_WITH_INFO(LogTemp, Log, TEXT("%s DescriptionFilePath EMPTY!"), *FString::Join(ModelNameList, TEXT(",")));
             }
             return false;
         }
@@ -1305,7 +1301,7 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogTemp, Log, TEXT("[FRRRobotModelInfo] %s LinkPropList EMPTY!"), *FString::Join(ModelNameList, TEXT(",")));
+                UE_LOG_WITH_INFO(LogTemp, Log, TEXT("%s LinkPropList EMPTY!"), *FString::Join(ModelNameList, TEXT(",")));
             }
             return false;
         }
@@ -1313,10 +1309,8 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogTemp,
-                       Log,
-                       TEXT("[FRRRobotModelInfo] [%s] This should be a single model only!"),
-                       *FString::Join(ModelNameList, TEXT(",")));
+                UE_LOG_WITH_INFO(
+                    LogTemp, Log, TEXT("[%s] This should be a single model only!"), *FString::Join(ModelNameList, TEXT(",")));
             }
             return false;
         }
@@ -1335,7 +1329,7 @@ public:
             {
                 if (bIsLogged)
                 {
-                    UE_LOG(LogTemp, Log, TEXT("[FRRRobotModelInfo] BaseLinkName [%s] is not a link name!"), *BaseLinkName);
+                    UE_LOG_WITH_INFO(LogTemp, Log, TEXT("BaseLinkName [%s] is not a link name!"), *BaseLinkName);
                 }
                 return false;
             }
@@ -1359,7 +1353,7 @@ public:
                     bAllArtLinksFound = false;
                     if (bIsLogged)
                     {
-                        UE_LOG(LogTemp, Log, TEXT("[FRRRobotModelInfo] Articulatedl link [%s] is not a link name!"), *artLinkName);
+                        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("Articulated link [%s] is not a link name!"), *artLinkName);
                     }
                     break;
                 }
@@ -1388,7 +1382,7 @@ public:
                     bAllEELinksFound = false;
                     if (bIsLogged)
                     {
-                        UE_LOG(LogTemp, Log, TEXT("[FRRRobotModelInfo] EndEffector [%s] is not a link name!"), *eeName);
+                        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("EndEffector [%s] is not a link name!"), *eeName);
                     }
                     break;
                 }
@@ -1417,7 +1411,7 @@ public:
                     bAllWheelsFound = false;
                     if (bIsLogged)
                     {
-                        UE_LOG(LogTemp, Log, TEXT("[FRRRobotModelInfo] Wheel [%s] is not a link name!"), *wheelProp.WheelName);
+                        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("Wheel [%s] is not a link name!"), *wheelProp.WheelName);
                     }
                     break;
                 }
@@ -1431,14 +1425,15 @@ public:
     }
     void PrintSelf() const
     {
-        UE_LOG(LogTemp, Display, TEXT("WorldName: %s"), *WorldName);
-        UE_LOG(LogTemp, Display, TEXT("UEComponentTypeFlags: %d"), UEComponentTypeFlags);
-        UE_LOG(LogTemp, Display, TEXT("bHasWorldJoint: %d"), bHasWorldJoint);
-        UE_LOG(LogTemp, Display, TEXT("ModelNameList: %s"), *FString::Join(ModelNameList, TEXT(",")));
-        UE_LOG(LogTemp, Display, TEXT("DescriptionFilePath: %s"), *FPaths::ConvertRelativePathToFull(DescriptionFilePath));
-        UE_LOG(LogTemp, Display, TEXT("ParentFrameName: %s"), *ParentFrameName);
-        UE_LOG(LogTemp, Display, TEXT("RelativeTransform: %s"), *RelativeTransform.ToString());
-        UE_LOG(LogTemp, Display, TEXT("BaseLinkName: %s"), *BaseLinkName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("WorldName: %s"), *WorldName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("UEComponentTypeFlags: %d"), UEComponentTypeFlags);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("bHasWorldJoint: %d"), bHasWorldJoint);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("ModelNameList: %s"), *FString::Join(ModelNameList, TEXT(",")));
+        UE_LOG_WITH_INFO(
+            LogTemp, Display, TEXT("DescriptionFilePath: %s"), *FPaths::ConvertRelativePathToFull(DescriptionFilePath));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("ParentFrameName: %s"), *ParentFrameName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("RelativeTransform: %s"), *RelativeTransform.ToString());
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("BaseLinkName: %s"), *BaseLinkName);
         for (const auto& linkProp : LinkPropList)
         {
             linkProp.PrintSelf();
@@ -1447,18 +1442,18 @@ public:
         {
             jointProp.PrintSelf();
         }
-        UE_LOG(LogTemp, Display, TEXT("ArticulatedLinksNames: %s"), *FString::Join(ArticulatedLinksNames, TEXT(",")));
-        UE_LOG(LogTemp, Display, TEXT("EndEffectorNames: %s"), *FString::Join(EndEffectorNames, TEXT(",")));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("ArticulatedLinksNames: %s"), *FString::Join(ArticulatedLinksNames, TEXT(",")));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("EndEffectorNames: %s"), *FString::Join(EndEffectorNames, TEXT(",")));
         for (const auto& wheelProp : WheelPropList)
         {
             wheelProp.PrintSelf();
         }
-        UE_LOG(LogTemp, Display, TEXT("WholeBodyStaticMeshName: %s"), *WholeBodyStaticMeshName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("WholeBodyStaticMeshName: %s"), *WholeBodyStaticMeshName);
         WholeBodyMaterialInfo.PrintSelf();
 
         for (const auto& modelInfo : ChildModelsInfo)
         {
-            UE_LOG(LogTemp, Warning, TEXT("SUBMODEL"));
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("SUBMODEL"));
             modelInfo.PrintSelf();
         }
     }

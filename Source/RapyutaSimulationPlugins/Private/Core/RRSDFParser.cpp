@@ -43,19 +43,19 @@ FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
     sdf::SDFPtr outSDFContent = sdf::readFile(URRCoreUtils::FToStdString(InSDFPath), outErrors);
     if (nullptr == outSDFContent)
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("Failed reading SDF file [%s]"), *InSDFPath);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed reading SDF file [%s]"), *InSDFPath);
         for (const auto& error : outErrors)
         {
-            UE_LOG(LogRapyutaCore,
-                   Error,
-                   TEXT("SDF Error: %d %s"),
-                   static_cast<uint8>(error.Code()),
-                   *URRCoreUtils::StdToFString(error.Message()));
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Error,
+                             TEXT("SDF Error: %d %s"),
+                             static_cast<uint8>(error.Code()),
+                             *URRCoreUtils::StdToFString(error.Message()));
         }
         return FRRRobotModelInfo();
     }
 
-    UE_LOG(LogRapyutaCore, Warning, TEXT("PARSE SDF CONTENT FROM FILE %s"), *InSDFPath);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PARSE SDF CONTENT FROM FILE %s"), *InSDFPath);
     FRRRobotModelInfo robotModelInfo;
     robotModelInfo.ModelDescType = ERRRobotDescriptionType::SDF;
     robotModelInfo.DescriptionFilePath = InSDFPath;
@@ -63,13 +63,13 @@ FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
     {
         robotModelInfo.UpdateLinksLocationFromJoints();
 #if RAPYUTA_SDF_PARSER_DEBUG
-        UE_LOG(
+        UE_LOG_WITH_INFO(
             LogRapyutaCore, Warning, TEXT("PARSING SDF SUCCEEDED[%s]!"), *FString::Join(robotModelInfo.ModelNameList, TEXT(",")));
 #endif
     }
     else
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("PARSING SDF FAILED[%s]!"), *InSDFPath);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("PARSING SDF FAILED[%s]!"), *InSDFPath);
     }
     return robotModelInfo;
 }
@@ -81,7 +81,7 @@ bool FRRSDFParser::LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRRRobo
     const sdf::ElementPtr modelElement = rootElement->FindElement(SDF_ELEMENT_MODEL);
     if ((nullptr == worldElement) && (nullptr == modelElement))
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("SDF top is NOT either World OR Model Element!"));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("SDF top is NOT either World OR Model Element!"));
         return false;
     }
 
@@ -131,7 +131,7 @@ bool FRRSDFParser::LoadChildModelsInfo(const sdf::ElementPtr& InParentElement, F
         // To make sure each of [ModelNameList] is unique
         FString modelFullName = FString::Printf(TEXT("%s%s"), *OutRobotModelInfo.WorldName, *modelName);
         verify(false == OutRobotModelInfo.ModelNameList.Contains(modelName));
-        UE_LOG(LogRapyutaCore, Warning, TEXT("Model %s"), *modelName);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Model %s"), *modelName);
 
         FRRRobotModelInfo modelInfo({modelFullName});
         modelInfo.ModelDescType = ERRRobotDescriptionType::SDF;
@@ -324,18 +324,18 @@ bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRR
         const FString linkName = URRCoreUtils::StdToFString(linkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
         if (linkName.IsEmpty())
         {
-            UE_LOG(LogRapyutaCore, Error, TEXT("Missing name in link element."));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Missing name in link element."));
             linkElement = linkElement->GetNextElement(SDF_ELEMENT_LINK);
             continue;
         }
         else if (linkName.Equals(TEXT("world"), ESearchCase::IgnoreCase))
         {
-            UE_LOG(LogRapyutaCore, Verbose, TEXT("Ignore [world] link!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("Ignore [world] link!"));
             linkElement = linkElement->GetNextElement(SDF_ELEMENT_LINK);
             continue;
         }
 #if RAPYUTA_SDF_PARSER_DEBUG
-        UE_LOG(LogRapyutaCore, Warning, TEXT("Found [%s] link!"), *linkName);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Found [%s] link!"), *linkName);
 #endif
 
         FRRRobotLinkProperty newLinkProp;
@@ -546,10 +546,10 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
         {
             geometryInfo.MeshName = TEXT("box");
             geometryInfo.LinkType = ERRShapeType::BOX;
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("Missing mesh name for custom mesh in robot description for [%s] -> Auto assigned as [Box]"),
-                   *geometryInfo.LinkName);
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Warning,
+                             TEXT("Missing mesh name for custom mesh in robot description for [%s] -> Auto assigned as [Box]"),
+                             *geometryInfo.LinkName);
         }
         // Add new geometry info prop to the list
         OutGeometryInfoList.Emplace(MoveTemp(geometryInfo));
@@ -652,7 +652,7 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
         if (parentLinkName.Equals(TEXT("world"), ESearchCase::IgnoreCase))
         {
 #if RAPYUTA_SDF_PARSER_DEBUG
-            UE_LOG(LogRapyutaCore, Warning, TEXT("Ignore attached-to-world-link joint!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Ignore attached-to-world-link joint!"));
 #endif
             jointElement = jointElement->GetNextElement(SDF_ELEMENT_JOINT);
             OutRobotModelInfo.bHasWorldJoint = true;
@@ -665,7 +665,8 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
         const FString childLinkName = URRCoreUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_JOINT_CHILD));
         verify(false == childLinkName.IsEmpty());
 #if RAPYUTA_SDF_PARSER_DEBUG
-        UE_LOG(LogRapyutaCore, Warning, TEXT("Found Joint[%s] : %s link -> %s link"), *jointName, *parentLinkName, *childLinkName);
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Warning, TEXT("Found Joint[%s] : %s link -> %s link"), *jointName, *parentLinkName, *childLinkName);
 #endif
 
         // Creates the joint and set the values of the struct
@@ -681,12 +682,12 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
                 URRCoreUtils::StdToFString(jointPoseElement->Get<std::string>(SDF_ELEMENT_ATTR_RELATIVE_TO));
             if (false == parentLinkName.Equals(parentBodyName))
             {
-                UE_LOG(LogRapyutaCore,
-                       Warning,
-                       TEXT("Joint[%s] has its parent link[%s] # parent body[%s]"),
-                       *jointName,
-                       *parentLinkName,
-                       *parentBodyName);
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Warning,
+                                 TEXT("Joint[%s] has its parent link[%s] # parent body[%s]"),
+                                 *jointName,
+                                 *parentLinkName,
+                                 *parentBodyName);
             }
 
             const auto jointPose = jointPoseElement->Get<ignition::math::Pose3d>();

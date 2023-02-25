@@ -82,13 +82,13 @@ public:
         for (const auto& asset : totalAssetDataList)
         {
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogTemp,
-                   Warning,
-                   TEXT("[%s] ASSET [%s] [%s]"),
-                   *asset.AssetName.ToString(),
-                   *asset.PackagePath.ToString(),
-                   *asset.GetFullName(),
-                   *asset.ToSoftObjectPath().ToString());
+            UE_LOG_WITH_INFO(LogTemp,
+                             Warning,
+                             TEXT("[%s] ASSET [%s] [%s]"),
+                             *asset.AssetName.ToString(),
+                             *asset.PackagePath.ToString(),
+                             *asset.GetFullName(),
+                             *asset.ToSoftObjectPath().ToString());
 #endif
             outResourceInfo.AddResource(asset.AssetName.ToString(), asset.ToSoftObjectPath().ToString(), nullptr);
         }
@@ -214,14 +214,14 @@ public:
             resourceInfo.AddResource(InResourceUniqueName, InResourcePath, resource);
             resourceInfo.ToBeAsyncLoadedResourceNum--;
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogTemp,
-                   Warning,
-                   TEXT("%d [%s] [%s:%s] RESOURCE LOADED %d"),
-                   resourceInfo.ToBeAsyncLoadedResourceNum,
-                   *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-                   *InResourceUniqueName,
-                   *InResourcePath.ToString(),
-                   resource);
+            UE_LOG_WITH_INFO(LogTemp,
+                             Warning,
+                             TEXT("%d [%s] [%s:%s] RESOURCE LOADED %d"),
+                             resourceInfo.ToBeAsyncLoadedResourceNum,
+                             *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                             *InResourceUniqueName,
+                             *InResourcePath.ToString(),
+                             resource);
 #endif
             if (resourceInfo.ToBeAsyncLoadedResourceNum == 0)
             {
@@ -259,12 +259,12 @@ public:
         resourceInfo.HasBeenAllLoaded = true;
 
 #if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogTemp,
-               Warning,
-               TEXT("[%s] [%s] DYNAMIC RUNTIME RESOURCE ADDED %s"),
-               *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-               *InResourceUniqueName,
-               *InResourceObject->GetName());
+        UE_LOG_WITH_INFO(LogTemp,
+                         Warning,
+                         TEXT("[%s] [%s] DYNAMIC RUNTIME RESOURCE ADDED %s"),
+                         *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                         *InResourceUniqueName,
+                         *InResourceObject->GetName());
 #endif
 
         // Resource Data
@@ -296,22 +296,22 @@ public:
         {
             // For some reason, [LogRapyutaCore] could not be used here due to a linking error as being invoked from project
             // sources.
-            UE_LOG(LogTemp,
-                   Fatal,
-                   TEXT("[%s] [Unique Name: %s] INVALID STATIC RESOURCE %d!"),
-                   *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-                   *InResourceUniqueName,
-                   resourceAsset)
+            UE_LOG_WITH_INFO(LogTemp,
+                             Fatal,
+                             TEXT("[%s] [Unique Name: %s] INVALID STATIC RESOURCE %d!"),
+                             *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                             *InResourceUniqueName,
+                             resourceAsset)
             return nullptr;
         }
         else if (resourceAsset && !resourceAsset->IsValidLowLevelFast())
         {
-            UE_LOG(LogTemp,
-                   Error,
-                   TEXT("[%s] [Unique Name: %s] INVALID-AT-LOW-LEVEL RESOURCE %d!"),
-                   *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-                   *InResourceUniqueName,
-                   resourceAsset)
+            UE_LOG_WITH_INFO(LogTemp,
+                             Error,
+                             TEXT("[%s] [Unique Name: %s] INVALID-AT-LOW-LEVEL RESOURCE %d!"),
+                             *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                             *InResourceUniqueName,
+                             resourceAsset)
             return nullptr;
         }
         return resourceAsset;
@@ -405,12 +405,12 @@ public:
 
     static ERRShapeType GetShapeTypeFromMeshName(const FString& InMeshName)
     {
-        return InMeshName.Equals(SHAPE_NAME_PLANE)    ? ERRShapeType::PLANE
-             : InMeshName.Equals(SHAPE_NAME_CUBE)     ? ERRShapeType::BOX
-             : InMeshName.Equals(SHAPE_NAME_CYLINDER) ? ERRShapeType::CYLINDER
-             : InMeshName.Equals(SHAPE_NAME_SPHERE)   ? ERRShapeType::SPHERE
-             : InMeshName.Equals(SHAPE_NAME_CAPSULE)  ? ERRShapeType::CAPSULE
-                                                      : ERRShapeType::MESH;
+        return InMeshName.Equals(SHAPE_NAME_PLANE)      ? ERRShapeType::PLANE
+               : InMeshName.Equals(SHAPE_NAME_CUBE)     ? ERRShapeType::BOX
+               : InMeshName.Equals(SHAPE_NAME_CYLINDER) ? ERRShapeType::CYLINDER
+               : InMeshName.Equals(SHAPE_NAME_SPHERE)   ? ERRShapeType::SPHERE
+               : InMeshName.Equals(SHAPE_NAME_CAPSULE)  ? ERRShapeType::CAPSULE
+                                                        : ERRShapeType::MESH;
     }
 
     /**

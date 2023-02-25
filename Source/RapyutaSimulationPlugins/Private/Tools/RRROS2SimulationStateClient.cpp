@@ -79,11 +79,8 @@ bool URRROS2SimulationStateClient::CheckEntity(TMap<FString, T>& InEntities, con
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] Entity named [%s] gets invalid -> removed from Entities"),
-                   *GetName(),
-                   *InEntityName);
+            UE_LOG_WITH_INFO_NAMED(
+                LogRapyutaCore, Warning, TEXT("Entity named [%s] gets invalid -> removed from Entities"), *InEntityName);
             InEntities.Remove(InEntityName);
         }
     }
@@ -93,11 +90,11 @@ bool URRROS2SimulationStateClient::CheckEntity(TMap<FString, T>& InEntities, con
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s] Entity named [%s] is not under SimulationState control. Please register it to SimulationState!"),
-               *GetName(),
-               *InEntityName);
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore,
+            Warning,
+            TEXT("Entity named [%s] is not under SimulationState control. Please register it to SimulationState!"),
+            *InEntityName);
     }
     return result;
 }
@@ -190,14 +187,11 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
     }
     else
     {
-        UE_LOG(
+        UE_LOG_WITH_INFO_NAMED(
             LogRapyutaCore,
             Warning,
-            TEXT(
-                "[%s] Entity %s and/or %s not exit or not under SimulationState Actor control. Please call ServerAddEntity to make "
-                "Actors "
-                "under SimulationState control."),
-            *GetName(),
+            TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call ServerAddEntity to make "
+                 "Actors under SimulationState control."),
             *request.Name1,
             *request.Name2);
     }
@@ -252,7 +246,7 @@ void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
             response.bSuccess = false;
             response.StatusMessage = FString::Printf(
                 TEXT("[%s] Failed to spawn entity named %s,  given name actor already exists!"), *GetName(), *entityName);
-            UE_LOG(LogRapyutaCore, Error, TEXT("%s"), *response.StatusMessage);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("%s"), *response.StatusMessage);
         }
     }
     SpawnEntityService->SetResponse(response);
@@ -268,11 +262,11 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
     FString statusMessage;
     for (uint32 i = 0; i < entityListRequest.State.Num(); ++i)
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("Spawning Entity : %s (name: %s)"),
-               *entityListRequest.Type[i],
-               *entityListRequest.State[i].Name);
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("Spawning Entity : %s (name: %s)"),
+                         *entityListRequest.Type[i],
+                         *entityListRequest.State[i].Name);
         FROSSpawnEntityReq entityRequest;
         entityRequest.Xml = entityListRequest.Type[i];
         entityRequest.RobotNamespace = EMPTY_STR;
@@ -289,11 +283,10 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
             }
             else
             {
-                UE_LOG(LogRapyutaCore,
-                       Error,
-                       TEXT("[%s] Failed to spawn entity named %s,  given name actor already exists!"),
-                       *GetName(),
-                       *entityRequest.State.Name);
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Error,
+                                 TEXT("Failed to spawn entity named %s,  given name actor already exists!"),
+                                 *entityRequest.State.Name);
             }
         }
 
@@ -345,7 +338,7 @@ void URRROS2SimulationStateClient::SpawnEntityCheck()
         {
             SpawnResponse.bSuccess = true;
             SpawnResponse.StatusMessage = FString::Printf(TEXT("Newly spawned Entity: %s"), *request.State.Name);
-            UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *SpawnResponse.StatusMessage);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("%s"), *SpawnResponse.StatusMessage);
             SpawnEntityService->SetResponse(SpawnResponse);
             GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
         }
@@ -353,7 +346,7 @@ void URRROS2SimulationStateClient::SpawnEntityCheck()
         {
             SpawnResponse.bSuccess = false;
             SpawnResponse.StatusMessage = FString::Printf(TEXT("Entity spawning failed for actor [%s]"), *request.State.Name);
-            UE_LOG(LogRapyutaCore, Error, TEXT("%s"), *SpawnResponse.StatusMessage);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("%s"), *SpawnResponse.StatusMessage);
         }
     }
 }
@@ -372,7 +365,7 @@ void URRROS2SimulationStateClient::DeleteEntitySrv(UROS2GenericSrv* InService)
     FROSDeleteEntityReq request;
     deleteEntityService->GetRequest(request);
 
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] Deleting %s"), *GetName(), *request.Name);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Deleting %s"), *request.Name);
 
     FROSDeleteEntityRes response;
     response.bSuccess = false;
@@ -382,13 +375,13 @@ void URRROS2SimulationStateClient::DeleteEntitySrv(UROS2GenericSrv* InService)
         ServerDeleteEntity(request);
         response.bSuccess = true;
         response.StatusMessage = FString::Printf(TEXT("[%s] Deleted Entity named %s"), *GetName(), *request.Name);
-        UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *response.StatusMessage);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("%s"), *response.StatusMessage);
     }
     else
     {
         response.StatusMessage = FString::Printf(
             TEXT("[%s] Failed to delete entity named %s. %s do not exist."), *GetName(), *request.Name, *request.Name);
-        UE_LOG(LogRapyutaCore, Error, TEXT("%s"), *response.StatusMessage);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("%s"), *response.StatusMessage);
     }
 
     deleteEntityService->SetResponse(response);

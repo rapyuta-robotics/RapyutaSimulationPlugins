@@ -20,8 +20,8 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     auto* networkPlayerController = CastChecked<ARRNetworkPlayerController>(InPlayerController);
 #if WITH_EDITOR
     FString pcName = (NetworkClientControllerList.Num() == 0)
-                       ? URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME
-                       : FString::Printf(TEXT("NetworkPC%d"), NetworkClientControllerList.Num());
+                         ? URRCoreUtils::PIXEL_STREAMER_PLAYER_NAME
+                         : FString::Printf(TEXT("NetworkPC%d"), NetworkClientControllerList.Num());
     // pc's server name
     networkPlayerController->SetName(pcName);
     // pc's client local name
@@ -38,12 +38,12 @@ void ARRNetworkGameMode::PostLogin(APlayerController* InPlayerController)
     check(MainSimState);
     networkPlayerController->ROS2SimStateClient->ServerSimState = MainSimState;
     networkPlayerController->ServerSimState = MainSimState;
-    UE_LOG(LogRapyutaCore,
-           Log,
-           TEXT("ARRNetworkGameMode::PostLogin Logged-in PC[%d] Name=%s, Id=%d"),
-           NetworkClientControllerList.Num(),
-           *networkPlayerController->GetName(),
-           networkPlayerController->GetPlayerState<APlayerState>()->GetPlayerId());
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Log,
+                     TEXT("Logged-in PC[%d] Name=%s, Id=%d"),
+                     NetworkClientControllerList.Num(),
+                     *networkPlayerController->GetName(),
+                     networkPlayerController->GetPlayerState<APlayerState>()->GetPlayerId());
 
     // Add to [ClientControllerList]
     NetworkClientControllerList.Add(networkPlayerController);

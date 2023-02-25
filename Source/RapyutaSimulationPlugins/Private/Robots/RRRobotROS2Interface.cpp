@@ -23,10 +23,10 @@
 
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [URRRobotROS2Interface::Initialize] InitializeROS2Node"), *GetName());
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("InitializeROS2Node"));
     if (nullptr == InRobot)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [URRRobotROS2Interface::Initialize] No pawn is given."), *GetName());
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No pawn is given."));
         return;
     }
 
@@ -146,11 +146,8 @@ bool URRRobotROS2Interface::InitPublishers()
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s][URRRobotROS2Interface][InitPublishers] %s is nullptr. Please create before initialization."),
-                   *pub.Key,
-                   *GetName());
+            UE_LOG_WITH_INFO(
+                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *pub.Key, *GetName());
         }
     }
 
@@ -198,11 +195,8 @@ bool URRRobotROS2Interface::InitSubscriptions()
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s][URRRobotROS2Interface][InitSubscriptions] %s is nullptr. Please create before initialization."),
-                   *sub.Key,
-                   *GetName());
+            UE_LOG_WITH_INFO(
+                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *sub.Key, *GetName());
         }
     }
     return true;
@@ -224,11 +218,8 @@ bool URRRobotROS2Interface::InitServiceClients()
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s][URRRobotROS2Interface][InitServiceClients] %s is nullptr. Please create before initialization."),
-                   *client.Key,
-                   *GetName());
+            UE_LOG_WITH_INFO(
+                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *client.Key, *GetName());
         }
     }
     return true;
@@ -250,11 +241,8 @@ bool URRRobotROS2Interface::InitServiceServers()
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s][URRRobotROS2Interface][InitServiceServers] %s is nullptr. Please create before initialization."),
-                   *server.Key,
-                   *GetName());
+            UE_LOG_WITH_INFO(
+                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *server.Key, *GetName());
         }
     }
     return true;
@@ -276,11 +264,8 @@ bool URRRobotROS2Interface::InitActionClients()
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s][URRRobotROS2Interface][InitActionClients] %s is nullptr. Please create before initialization."),
-                   *client.Key,
-                   *GetName());
+            UE_LOG_WITH_INFO(
+                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *client.Key, *GetName());
         }
     }
     return true;
@@ -302,11 +287,8 @@ bool URRRobotROS2Interface::InitActionServers()
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s][URRRobotROS2Interface][InitActionServers] %s is nullptr. Please create before initialization."),
-                   *server.Key,
-                   *GetName());
+            UE_LOG_WITH_INFO(
+                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *server.Key, *GetName());
         }
     }
     return true;
@@ -360,19 +342,13 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
         else if (jointState.Name.Num() == jointState.Effort.Num())
         {
             jointControlType = ERRJointControlType::EFFORT;
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] Effort control is not supported."),
-                   *GetName());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Effort control is not supported."));
             return;
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] position, velocity or effort array must be same "
-                        "size of name array"),
-                   *GetName());
+            UE_LOG_WITH_INFO_NAMED(
+                LogRapyutaCore, Warning, TEXT("[position, velocity or effort array must be same size of name array"));
             return;
         }
 
@@ -384,11 +360,8 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
             {
                 if (bWarnAboutMissingLink)
                 {
-                    UE_LOG(LogRapyutaCore,
-                           Warning,
-                           TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] vehicle do not have joint named %s."),
-                           *GetName(),
-                           *jointState.Name[i]);
+                    UE_LOG_WITH_INFO_NAMED(
+                        LogRapyutaCore, Warning, TEXT("vehicle do not have joint named %s."), *jointState.Name[i]);
                 }
                 continue;
             }
@@ -404,11 +377,8 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
             }
             else
             {
-                UE_LOG(LogRapyutaCore,
-                       Warning,
-                       TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] position, velocity or effort array must be same "
-                            "size of name array"),
-                       *GetName());
+                UE_LOG_WITH_INFO(
+                    LogRapyutaCore, Warning, TEXT("position, velocity or effort array must be same size of name array"));
                 continue;
             }
 
@@ -423,13 +393,13 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
             }
             else
             {
-                UE_LOG(LogRapyutaCore,
-                       Warning,
-                       TEXT("[%s] [URRRobotROS2Interface] [JointStateCallback] Supports only single DOF joint. %s has %d "
-                            "linear DOF and %d rotational DOF"),
-                       *jointState.Name[i],
-                       Robot->Joints[jointState.Name[i]]->LinearDOF,
-                       Robot->Joints[jointState.Name[i]]->RotationalDOF);
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Warning,
+                                 TEXT("[%s] Supports only single DOF joint. %s has %d "
+                                      "linear DOF and %d rotational DOF"),
+                                 *jointState.Name[i],
+                                 Robot->Joints[jointState.Name[i]]->LinearDOF,
+                                 Robot->Joints[jointState.Name[i]]->RotationalDOF);
             }
 
             joints.Emplace(jointState.Name[i], input);
@@ -453,10 +423,10 @@ URRRobotROS2InterfaceComponent::URRRobotROS2InterfaceComponent()
 
     if (nullptr == Robot)
     {
-        UE_LOG_WITH_INFO(LogTemp,
-                         Warning,
-                         TEXT("[URRRobotROS2InterfaceComponent][URRRobotROS2InterfaceComponent] Robot is nullptr. Trying to get "
-                              "owner as robot."));
+        UE_LOG_WITH_INFO_NAMED(LogTemp,
+                               Warning,
+                               TEXT("Robot is nullptr. Trying to get "
+                                    "owner as robot."));
         Robot = Cast<ARRBaseRobot>(GetOwner());
     }
 
@@ -466,10 +436,10 @@ URRRobotROS2InterfaceComponent::URRRobotROS2InterfaceComponent()
     }
     else
     {
-        UE_LOG_WITH_INFO(LogTemp,
-                         Warning,
-                         TEXT("[URRRobotROS2InterfaceComponent][URRRobotROS2InterfaceComponent] Robot is nullptr and Owner is not "
-                              "Robot. Can't set Spawnparameter"));
+        UE_LOG_WITH_INFO_NAMED(LogTemp,
+                               Warning,
+                               TEXT("Robot is nullptr and Owner is not "
+                                    "Robot. Can't set Spawnparameter"));
     }
 
     ROS2Interface->SetupROSParamsAll();
@@ -484,7 +454,7 @@ void URRRobotROS2InterfaceComponent::AddAllSubComponentToROSInterface()
         if (nullptr != pubComp)
         {
             ROS2Interface->Publishers.Add(*pubComp->TopicName, pubComp->Publisher);
-            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[URRRobotROS2InterfaceComponent] %s is added"), *pubComp->TopicName);
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("%s is added"), *pubComp->TopicName);
         }
     }
     TInlineComponentArray<UROS2SubscriberComponent*> subComps(GetOwner());
@@ -493,7 +463,7 @@ void URRRobotROS2InterfaceComponent::AddAllSubComponentToROSInterface()
         if (nullptr != subComp)
         {
             ROS2Interface->Subscribers.Add(*subComp->TopicName, subComp->Subscriber);
-            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[URRRobotROS2InterfaceComponent] %s is added"), *subComp->TopicName);
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("%s is added"), *subComp->TopicName);
         }
     }
     TInlineComponentArray<UROS2ServiceClientComponent*> srvClientComps(GetOwner());
@@ -502,7 +472,7 @@ void URRRobotROS2InterfaceComponent::AddAllSubComponentToROSInterface()
         if (nullptr != srvClientComp)
         {
             ROS2Interface->ServiceClients.Add(*srvClientComp->ServiceName, srvClientComp->ServiceClient);
-            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[URRRobotROS2InterfaceComponent] %s is added"), *srvClientComp->ServiceName);
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("%s is added"), *srvClientComp->ServiceName);
         }
     }
     TInlineComponentArray<UROS2ServiceServerComponent*> srvServerComps(GetOwner());
@@ -511,7 +481,7 @@ void URRRobotROS2InterfaceComponent::AddAllSubComponentToROSInterface()
         if (nullptr != srvServerComp)
         {
             ROS2Interface->ServiceServers.Add(*srvServerComp->ServiceName, srvServerComp->ServiceServer);
-            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[URRRobotROS2InterfaceComponent] %s is added"), *srvServerComp->ServiceName);
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("%s is added"), *srvServerComp->ServiceName);
         }
     }
     TInlineComponentArray<UROS2ActionClientComponent*> actClientComps(GetOwner());
@@ -520,7 +490,7 @@ void URRRobotROS2InterfaceComponent::AddAllSubComponentToROSInterface()
         if (nullptr != actClientComp)
         {
             ROS2Interface->ActionClients.Add(*actClientComp->ActionName, actClientComp->ActionClient);
-            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[URRRobotROS2InterfaceComponent] %s is added"), *actClientComp->ActionName);
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("%s is added"), *actClientComp->ActionName);
         }
     }
     TInlineComponentArray<UROS2ActionServerComponent*> actServerComps(GetOwner());
@@ -529,7 +499,7 @@ void URRRobotROS2InterfaceComponent::AddAllSubComponentToROSInterface()
         if (nullptr != actServerComp)
         {
             ROS2Interface->ActionServers.Add(*actServerComp->ActionName, actServerComp->ActionServer);
-            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[URRRobotROS2InterfaceComponent] %s is added"), *actServerComp->ActionName);
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("%s is added"), *actServerComp->ActionName);
         }
     }
 }

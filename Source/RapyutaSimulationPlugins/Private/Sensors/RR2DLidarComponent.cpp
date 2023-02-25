@@ -153,7 +153,7 @@ void URR2DLidarComponent::SensorUpdate()
                     // retroreflective material
                     if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
                     {
-                        // UE_LOG(LogTemp, Warning, TEXT("retroreflective surface type hit"));
+                        // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("retroreflective surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorReflected, 10, .5, dt);
                         LineBatcher->DrawPoint(h.ImpactPoint,
                                                InterpColorFromIntensity(GetIntensityFromDist(IntensityReflective, Distance)),
@@ -164,7 +164,7 @@ void URR2DLidarComponent::SensorUpdate()
                     // non reflective material
                     else if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
                     {
-                        // UE_LOG(LogTemp, Warning, TEXT("default surface type hit"));
+                        // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("default surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
                         LineBatcher->DrawPoint(h.ImpactPoint,
                                                InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)),
@@ -201,7 +201,7 @@ void URR2DLidarComponent::SensorUpdate()
                 }
                 else
                 {
-                    // UE_LOG(LogTemp, Warning, TEXT("no physics material"));
+                    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("no physics material"));
                     // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
                     LineBatcher->DrawPoint(
                         h.ImpactPoint, InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)), 5, 10, Dt);

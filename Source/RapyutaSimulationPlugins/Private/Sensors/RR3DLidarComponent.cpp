@@ -158,7 +158,7 @@ void URR3DLidarComponent::SensorUpdate()
                     // retroreflective material
                     if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
                     {
-                        // UE_LOG(LogTemp, Warning, TEXT("retroreflective surface type hit"));
+                        // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("retroreflective surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorReflected, 10, .5, dt);
                         LineBatcher->DrawPoint(h.ImpactPoint,
                                                InterpColorFromIntensity(GetIntensityFromDist(IntensityReflective, Distance)),
@@ -169,7 +169,7 @@ void URR3DLidarComponent::SensorUpdate()
                     // non reflective material
                     else if (h.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
                     {
-                        // UE_LOG(LogTemp, Warning, TEXT("default surface type hit"));
+                        // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("default surface type hit"));
                         // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
                         LineBatcher->DrawPoint(h.ImpactPoint,
                                                InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)),
@@ -206,7 +206,7 @@ void URR3DLidarComponent::SensorUpdate()
                 }
                 else
                 {
-                    // UE_LOG(LogTemp, Warning, TEXT("no physics material"));
+                    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("no physics material"));
                     // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
                     LineBatcher->DrawPoint(
                         h.ImpactPoint, InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)), 5, 10, Dt);
@@ -285,15 +285,9 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
     retValue.Height = NChannelsPerScan;
     retValue.Width = NSamplesPerScan;
 
-    static TArray<const TCHAR*> FIELDS = {
-        TEXT("x"),
-        TEXT("y"),
-        TEXT("z"),
-        TEXT("distance"),
-        TEXT("intensity")
-    };
+    static TArray<const TCHAR*> FIELDS = {TEXT("x"), TEXT("y"), TEXT("z"), TEXT("distance"), TEXT("intensity")};
 
-    for(int32 Index = 0; Index != FIELDS.Num(); ++Index)
+    for (int32 Index = 0; Index != FIELDS.Num(); ++Index)
     {
         FROSPointField f;
         f.Name = FIELDS[Index];
@@ -302,7 +296,6 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
         f.Count = 1;
         retValue.Fields.Add(f);
     }
-
 
     retValue.bIsBigendian = false;
 

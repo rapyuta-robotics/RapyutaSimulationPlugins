@@ -22,10 +22,7 @@ void ARRCrowdROSController::OnPossess(APawn* InPawn)
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s][ARRCrowdROSController::OnPossess] Pawn is not child class of ARRBaseRobot "),
-               *GetName());
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Pawn is not child class of ARRBaseRobot "));
     }
 }
 
@@ -38,10 +35,7 @@ void ARRCrowdROSController::OnUnPossess()
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s][ARRCrowdROSController::OnUnPossess] Pawn is not child class of ARRBaseRobot "),
-               *GetName());
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Pawn is not child class of ARRBaseRobot "));
     }
     Super::OnUnPossess();
 }

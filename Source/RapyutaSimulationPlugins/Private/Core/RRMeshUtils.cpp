@@ -38,12 +38,12 @@ void URRMeshUtils::ProcessMeshNode(aiNode* InNode,
                                                     FPlane(nodeTransf.a4, nodeTransf.b4, nodeTransf.c4, nodeTransf.d4)));
 
 #if RAPYUTA_MESH_UTILS_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Display,
-           TEXT("Node(%s): mNumMeshes: %d, mNumChildren: %d"),
-           *FString(InNode->mName.C_Str()),
-           InNode->mNumMeshes,
-           InNode->mNumChildren);
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Display,
+                     TEXT("Node(%s): mNumMeshes: %d, mNumChildren: %d"),
+                     *FString(InNode->mName.C_Str()),
+                     InNode->mNumMeshes,
+                     InNode->mNumChildren);
 #endif
     if ((InNode->mNumMeshes > 0) && InNode->mMeshes)
     {
@@ -51,7 +51,7 @@ void URRMeshUtils::ProcessMeshNode(aiNode* InNode,
         {
             auto meshIndex = InNode->mMeshes[i];
 #if RAPYUTA_MESH_UTILS_DEBUG
-            UE_LOG(LogRapyutaCore, Log, TEXT("Loading Mesh at index: %d"), meshIndex);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Log, TEXT("Loading Mesh at index: %d"), meshIndex);
 #endif
             aiMesh* mesh = InScene->mMeshes[meshIndex];
             if (mesh)
@@ -85,12 +85,12 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
     const bool bHasFaces = InMesh->HasFaces();
 
 #if RAPYUTA_MESH_UTILS_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("ProcessMesh - Vertices num: %u Faces num: %u %d"),
-           InMesh->mNumVertices,
-           InMesh->mNumFaces,
-           bHasFaces);
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Warning,
+                     TEXT("ProcessMesh - Vertices num: %u Faces num: %u %d"),
+                     InMesh->mNumVertices,
+                     InMesh->mNumFaces,
+                     bHasFaces);
 #endif
     // Fetch mesh data, also Converting handedness from Assimp(right) ->UE (left)
     for (auto i = 0; i < InMesh->mNumVertices; ++i)
@@ -129,7 +129,8 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
         if (bone)
         {
 #if RAPYUTA_MESH_UTILS_DEBUG
-            UE_LOG(LogRapyutaCore, Warning, TEXT("Bone %s mNumWeights: %u"), *FString(bone->mName.data), bone->mNumWeights);
+            UE_LOG_WITH_INFO(
+                LogRapyutaCore, Warning, TEXT("Bone %s mNumWeights: %u"), *FString(bone->mName.data), bone->mNumWeights);
 #endif
             for (auto wi = 0; wi < bone->mNumWeights; ++wi)
             {
@@ -147,7 +148,7 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
     if (bHasFaces)
     {
 #if RAPYUTA_MESH_UTILS_DEBUG
-        UE_LOG(LogRapyutaCore, Warning, TEXT("mNumFaces: %u at %u"), InMesh->mNumFaces, InMesh->mFaces);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("mNumFaces: %u at %u"), InMesh->mNumFaces, InMesh->mFaces);
 #endif
         for (auto f = 0; f < InMesh->mNumFaces; ++f)
         {
@@ -155,7 +156,8 @@ FRRMeshNodeData URRMeshUtils::ProcessMesh(aiMesh* InMesh)
             if (nullptr != face.mIndices)
             {
 #if RAPYUTA_SIM_DEBUG
-                UE_LOG(LogRapyutaCore, Warning, TEXT("face[%d].mNumIndices: %u at %u"), f, face.mNumIndices, face.mIndices);
+                UE_LOG_WITH_INFO(
+                    LogRapyutaCore, Warning, TEXT("face[%d].mNumIndices: %u at %u"), f, face.mNumIndices, face.mIndices);
 #endif
                 for (auto i = 0; i < face.mNumIndices; ++i)
                 {
@@ -180,11 +182,11 @@ bool URRMeshUtils::ProcessTexture(aiMaterial* InMaterial,
 {
     static uint64 sTextureNameCount = 0;
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("Loading Material texture map [%s]...%d"),
-           InTextureTypeName,
-           InMaterial->GetTextureCount(InTextureType));
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Warning,
+                     TEXT("Loading Material texture map [%s]...%d"),
+                     InTextureTypeName,
+                     InMaterial->GetTextureCount(InTextureType));
 #endif
 
     aiString outTextureName;
@@ -201,11 +203,11 @@ bool URRMeshUtils::ProcessTexture(aiMaterial* InMaterial,
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Error,
-                   TEXT("URRCoreUtils::LoadImageToTexture [%s] map failed %s"),
-                   InTextureTypeName,
-                   *fullTexturePath);
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Error,
+                             TEXT("URRCoreUtils::LoadImageToTexture [%s] map failed %s"),
+                             InTextureTypeName,
+                             *fullTexturePath);
             return false;
         }
     }
@@ -283,7 +285,8 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
     FRRMeshData outMeshData;
     if (false == FPaths::FileExists(InMeshFilePath))
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("Runtime Mesh Loader: InMeshFilePath does not exist at [%s]."), *InMeshFilePath);
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Error, TEXT("Runtime Mesh Loader: InMeshFilePath does not exist at [%s]."), *InMeshFilePath);
         return outMeshData;
     }
 
@@ -336,45 +339,35 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
     }
     catch (std::exception&)
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("URRMeshUtils::LoadMeshFromFile exception: %s"), *InMeshFilePath);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Exception: %s"), *InMeshFilePath);
         return outMeshData;
     }
 
     if (nullptr == scene)
     {
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("URRMeshUtils::LoadMeshFromFile error: %s - %s"),
-               *FString(InMeshImporter.GetErrorString()),
-               *InMeshFilePath);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Error: %s - %s"), *FString(InMeshImporter.GetErrorString()), *InMeshFilePath);
         return outMeshData;
     }
     else if (false == scene->HasMeshes())
     {
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("URRMeshUtils::LoadMeshFromFile scene has no mesh: %s - %s"),
-               *FString(InMeshImporter.GetErrorString()),
-               *InMeshFilePath);
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Error, TEXT("Scene has no mesh: %s - %s"), *FString(InMeshImporter.GetErrorString()), *InMeshFilePath);
         return outMeshData;
     }
     else if (nullptr == scene->mRootNode)
     {
         // (Note) [scene->mRootNode->mNumMeshes] could be zero but its children should also have meshes
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("URRMeshUtils::LoadMeshFromFile NULL ROOT NODE: %s - %s"),
-               *FString(InMeshImporter.GetErrorString()),
-               *InMeshFilePath);
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Error, TEXT("NULL ROOT NODE: %s - %s"), *FString(InMeshImporter.GetErrorString()), *InMeshFilePath);
         return outMeshData;
     }
 
     float unitScaleFactor = 1.f;
     scene->mMetaData->Get("UnitScaleFactor", unitScaleFactor);
 #if RAPYUTA_MESH_UTILS_DEBUG
-    UE_LOG(
-        LogRapyutaCore, Warning, TEXT("URRMeshUtils::LoadMeshFromFile UnitScaleFactor: %f %s"), unitScaleFactor, *InMeshFilePath);
-    UE_LOG(LogRapyutaCore, Warning, TEXT("MESHES NUM: Scene(%u) RootNode(%u)"), scene->mNumMeshes, scene->mRootNode->mNumMeshes);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("UnitScaleFactor: %f %s"), unitScaleFactor, *InMeshFilePath);
+    UE_LOG_WITH_INFO(
+        LogRapyutaCore, Warning, TEXT("MESHES NUM: Scene(%u) RootNode(%u)"), scene->mNumMeshes, scene->mRootNode->mNumMeshes);
 #endif
 
     // [Meshes] --
@@ -383,7 +376,7 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
     ProcessMeshNode(scene->mRootNode, scene, -1, nodeIndexPtr, outMeshData);
 
 #if RAPYUTA_MESH_UTILS_DEBUG
-    UE_LOG(LogRapyutaCore, Warning, TEXT("MATERIALS NUM: %d"), scene->mNumMaterials);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("MATERIALS NUM: %d"), scene->mNumMaterials);
 #endif
     // Create Material instance dynamic in [outMeshData]
     // [Materials/Textures] --
@@ -396,7 +389,7 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
     }
 
 #if RAPYUTA_MESH_UTILS_DEBUG
-    UE_LOG(LogRapyutaCore, Warning, TEXT("NODES NUM: %d"), outMeshData.Nodes.Num());
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("NODES NUM: %d"), outMeshData.Nodes.Num());
 #endif
     outMeshData.bIsValid = (outMeshData.Nodes.Num() > 0);
     return outMeshData;

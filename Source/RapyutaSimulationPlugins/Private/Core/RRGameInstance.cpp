@@ -11,17 +11,13 @@
 FString URRGameInstance::SMapName;
 void URRGameInstance::PreloadContentForURL(FURL InURL)
 {
-    UE_LOG(LogRapyutaCore, Display, TEXT("[URRGameInstance]: Preload Content for Map [%s]"), *InURL.Map)
+    UE_LOG(LogRapyutaCore, Display, TEXT("Preload Content for Map [%s]"), *InURL.Map)
     Super::PreloadContentForURL(InURL);
 }
 
 AGameModeBase* URRGameInstance::CreateGameModeForURL(FURL InURL, UWorld* InWorld)
 {
-    UE_LOG(LogRapyutaCore,
-           Display,
-           TEXT("[URRGameInstance]: URL MAP PATH [%s] loaded into WORLD [%s]"),
-           *InURL.Map,
-           *InWorld->GetName());
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT(" URL MAP PATH [%s] loaded into WORLD [%s]"), *InURL.Map, *InWorld->GetName());
 
     SMapName = InWorld->GetName();
     URRCoreUtils::ScreenMsg(FColor::Yellow, FString::Printf(TEXT("MAP: %s"), *SMapName));
@@ -30,13 +26,13 @@ AGameModeBase* URRGameInstance::CreateGameModeForURL(FURL InURL, UWorld* InWorld
 
 void URRGameInstance::StartGameInstance()
 {
-    UE_LOG(LogRapyutaCore, Display, TEXT("URRGameInstance: StartGameInstance()!"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("StartGameInstance!"));
     Super::StartGameInstance();
 }
 
 void URRGameInstance::Init()
 {
-    UE_LOG(LogRapyutaCore, Display, TEXT("URRGameInstance: INIT!"))
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("INIT!"))
     Super::Init();
     URRMathUtils::InitializeRandomStream();
 }
@@ -44,11 +40,11 @@ void URRGameInstance::Init()
 void URRGameInstance::LoadComplete(const float InLoadTime, const FString& InMapName)
 {
     Super::LoadComplete(InLoadTime, InMapName);
-    UE_LOG(LogRapyutaCore, Display, TEXT("URRGameInstance: [%s] LOADING COMPLETED!"), *InMapName);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("[%s] LOADING COMPLETED!"), *InMapName);
 }
 
 void URRGameInstance::OnStart()
 {
-    UE_LOG(LogRapyutaCore, Display, TEXT("URRGameInstance: ON START!"))
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("ON START!"))
     Super::OnStart();
 }

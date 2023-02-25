@@ -147,7 +147,7 @@ USceneComponent* URRUObjectUtils::SetupDefaultRootComponent(AActor* InActor)
 {
     if (InActor->GetRootComponent())
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] RootComponent has already been set up!"), *InActor->GetName());
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("[%s] RootComponent has already been set up!"), *InActor->GetName());
         return InActor->GetRootComponent();
     }
 
@@ -155,7 +155,7 @@ USceneComponent* URRUObjectUtils::SetupDefaultRootComponent(AActor* InActor)
 
     if (!(defaultRoot && InActor->SetRootComponent(defaultRoot)))
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] Failed setting up root component!"), *InActor->GetName());
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("[%s] Failed setting up root component!"), *InActor->GetName());
         return nullptr;
     }
 #if WITH_EDITOR
@@ -203,12 +203,12 @@ void URRUObjectUtils::AttachComponentToComponent(USceneComponent* InChildComp,
     {
         if (InChildComp->GetAttachParent() != InParentComp)
         {
-            UE_LOG(LogRapyutaCore,
-                   Fatal,
-                   TEXT("%s's AttachParent (%s) # (%s) Parent"),
-                   *InChildComp->GetName(),
-                   *InChildComp->GetAttachParent()->GetName(),
-                   *InParentComp->GetName());
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Fatal,
+                             TEXT("%s's AttachParent (%s) # (%s) Parent"),
+                             *InChildComp->GetName(),
+                             *InChildComp->GetAttachParent()->GetName(),
+                             *InParentComp->GetName());
         }
     }
 }
@@ -250,13 +250,13 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("SceneInstance[%d] Failed spawning actor [%s] of model [%d] as class[%s]"),
-               InSceneInstanceId,
-               *InActorName,
-               *InEntityModelName,
-               *InActorClass->GetName());
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Error,
+                         TEXT("SceneInstance[%d] Failed spawning actor [%s] of model [%d] as class[%s]"),
+                         InSceneInstanceId,
+                         *InActorName,
+                         *InEntityModelName,
+                         *InActorClass->GetName());
     }
 
     return newActor;
@@ -495,10 +495,10 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("SetMeshActorColor() [%s] is not ARRMeshActor or AStaticMeshActor"),
-               *InMeshActor->GetName());
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Error,
+                         TEXT("SetMeshActorColor() [%s] is not ARRMeshActor or AStaticMeshActor"),
+                         *InMeshActor->GetName());
         return false;
     }
 

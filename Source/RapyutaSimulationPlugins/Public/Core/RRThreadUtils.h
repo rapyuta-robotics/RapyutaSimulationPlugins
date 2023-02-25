@@ -104,12 +104,12 @@ public:
                                          TFunction<void()> InCompletionCallback)
     {
 #if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogTemp,
-               Warning,
-               TEXT("[%ld:%s] ASYNC JOB NUM: %d"),
-               InCurrentCaptureBatchId,
-               *OutAsyncJob.JobName,
-               OutAsyncJob.GetTasksNum());
+        UE_LOG_WITH_INFO(LogTemp,
+                         Warning,
+                         TEXT("[%ld:%s] ASYNC JOB NUM: %d"),
+                         InCurrentCaptureBatchId,
+                         *OutAsyncJob.JobName,
+                         OutAsyncJob.GetTasksNum());
 #endif
         OutAsyncJob.AddAsyncTask(InCurrentCaptureBatchId, DoAsyncTaskInThread(MoveTemp(InTask), MoveTemp(InCompletionCallback)));
     }
@@ -122,12 +122,12 @@ public:
                                   const EAsyncExecution InExecutionThread = EAsyncExecution::ThreadPool)
     {
 #if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogTemp,
-               Warning,
-               TEXT("[%ld:%s] ASYNC JOB NUM: %d"),
-               InCurrentCaptureBatchId,
-               *OutAsyncJob.JobName,
-               OutAsyncJob.GetTasksNum());
+        UE_LOG_WITH_INFO(LogTemp,
+                         Warning,
+                         TEXT("[%ld:%s] ASYNC JOB NUM: %d"),
+                         InCurrentCaptureBatchId,
+                         *OutAsyncJob.JobName,
+                         OutAsyncJob.GetTasksNum());
 #endif
         OutAsyncJob.AddAsyncTask(InCurrentCaptureBatchId,
                                  DoAsyncTaskInThread(MoveTemp(InTask), MoveTemp(InCompletionCallback), InExecutionThread));

@@ -43,7 +43,8 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogRapyutaCore, Error, TEXT("[%s] asset's package is not available!"), *InAssetData.AssetName.ToString());
+                UE_LOG_WITH_INFO(
+                    LogRapyutaCore, Error, TEXT("[%s] asset's package is not available!"), *InAssetData.AssetName.ToString());
             }
             return false;
         }
@@ -58,11 +59,11 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogRapyutaCore,
-                       Error,
-                       TEXT("[%s] asset's package [%s] does not exist!"),
-                       *InAssetData.AssetName.ToString(),
-                       *packageFileName);
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Error,
+                                 TEXT("[%s] asset's package [%s] does not exist!"),
+                                 *InAssetData.AssetName.ToString(),
+                                 *packageFileName);
             }
             return false;
         }
@@ -73,7 +74,7 @@ public:
         TUniquePtr<FArchive> packageReader = TUniquePtr<FArchive>(IFileManager::Get().CreateFileReader(*packageFileName));
         if (nullptr == packageReader)
         {
-            UE_LOG(LogRapyutaCore, Error, TEXT("Failed creating Package reader for package [%s]!"), *packageFileName);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed creating Package reader for package [%s]!"), *packageFileName);
             return false;
         }
 
@@ -92,13 +93,14 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogRapyutaCore,
-                       Error,
-                       TEXT("[%s] asset was saved by a previous UE version which is not backward compatible with this one."
-                            "Min Required version: [%d] vs Package version: [%d]"),
-                       *InAssetData.AssetName.ToString(),
-                       static_cast<int32>(VER_UE4_OLDEST_LOADABLE_PACKAGE),
-                       packageFileVersionUE);
+                UE_LOG_WITH_INFO(
+                    LogRapyutaCore,
+                    Error,
+                    TEXT("[%s] asset was saved by a previous UE version which is not backward compatible with this one."
+                         "Min Required version: [%d] vs Package version: [%d]"),
+                    *InAssetData.AssetName.ToString(),
+                    static_cast<int32>(VER_UE4_OLDEST_LOADABLE_PACKAGE),
+                    packageFileVersionUE);
             }
             return false;
         }
@@ -114,13 +116,13 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogRapyutaCore,
-                       Error,
-                       TEXT("[%s] asset was saved by a newer UE version [%d], which is not forward compatible "
-                            "with the current one[%d]"),
-                       *InAssetData.AssetName.ToString(),
-                       packageFileVersionUE,
-                       packageFileVersionUEGlobal);
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Error,
+                                 TEXT("[%s] asset was saved by a newer UE version [%d], which is not forward compatible "
+                                      "with the current one[%d]"),
+                                 *InAssetData.AssetName.ToString(),
+                                 packageFileVersionUE,
+                                 packageFileVersionUEGlobal);
             }
             return false;
         }
@@ -130,12 +132,12 @@ public:
         {
             if (bIsLogged)
             {
-                UE_LOG(LogRapyutaCore,
-                       Error,
-                       TEXT("[%s] asset's package's version [%s] is incompatible with the current UE version[%s]!"),
-                       *InAssetData.AssetName.ToString(),
-                       *packageSummary.CompatibleWithEngineVersion.ToString(),
-                       *FEngineVersion::Current().ToString());
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Error,
+                                 TEXT("[%s] asset's package's version [%s] is incompatible with the current UE version[%s]!"),
+                                 *InAssetData.AssetName.ToString(),
+                                 *packageSummary.CompatibleWithEngineVersion.ToString(),
+                                 *FEngineVersion::Current().ToString());
             }
             return false;
         }
@@ -153,7 +155,8 @@ public:
                 bIsAssetValid = false;
                 if (bIsLogged)
                 {
-                    UE_LOG(LogRapyutaCore, Error, TEXT("[%s] asset data info is invalid!"), *assetData.AssetName.ToString());
+                    UE_LOG_WITH_INFO(
+                        LogRapyutaCore, Error, TEXT("[%s] asset data info is invalid!"), *assetData.AssetName.ToString());
                 }
             }
             else if (false == IsAssetPackageValid(assetData, bIsLogged))
@@ -165,7 +168,8 @@ public:
                 bIsAssetValid = false;
                 if (bIsLogged)
                 {
-                    UE_LOG(LogRapyutaCore, Error, TEXT("[%s] asset failed to be loaded!"), *assetData.AssetName.ToString());
+                    UE_LOG_WITH_INFO(
+                        LogRapyutaCore, Error, TEXT("[%s] asset failed to be loaded!"), *assetData.AssetName.ToString());
                 }
             }
 
@@ -232,7 +236,7 @@ public:
     {
         if (InAssetPath.IsEmpty())
         {
-            UE_LOG(LogTemp, Error, TEXT("[LoadObjFromAssetPath]::EMPTY PATH!"))
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[EMPTY PATH!"))
             return nullptr;
         }
         // This invokes [StaticLoadObject()]

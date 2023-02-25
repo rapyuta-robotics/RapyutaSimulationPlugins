@@ -62,26 +62,20 @@ bool ARRMeshActor::HasInitialized(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[%s] [MeshCompList] has not been created!"), *GetName());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Display, TEXT("[MeshCompList] has not been created!"));
         }
 
         if (meshCompNum)
         {
-            UE_LOG(LogRapyutaCore,
-                   Fatal,
-                   TEXT("[%s] Actor has mesh info [%d] but [MeshCompList] has not been created!"),
-                   *GetName(),
-                   meshCompNum);
+            UE_LOG_WITH_INFO_NAMED(
+                LogRapyutaCore, Fatal, TEXT("Actor has mesh info [%d] but [MeshCompList] has not been created!"), meshCompNum);
             return false;
         }
     }
     else if (nullptr == BaseMeshComp)
     {
-        UE_LOG(LogRapyutaCore,
-               Fatal,
-               TEXT("[%s] [MeshCompList] [%d] was created but [BaseMeshComp] is NULL!"),
-               *GetName(),
-               meshCompNum);
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore, Fatal, TEXT("[MeshCompList] [%d] was created but [BaseMeshComp] is NULL!"), meshCompNum);
         return false;
     }
 
@@ -184,12 +178,12 @@ void ARRMeshActor::DeclareFullCreation(bool bInCreationResult)
     if (bInCreationResult)
     {
 #if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] MESH ACTOR CREATED!"), *GetName());
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("[%s] MESH ACTOR CREATED!"));
 #endif
     }
     else
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] MESH ACTOR CREATION FAILED!"), *GetName());
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("MESH ACTOR CREATION FAILED!"));
     }
 
     // (NOTE) Since each of [MeshCompList] also created default material instance once mesh section is created,

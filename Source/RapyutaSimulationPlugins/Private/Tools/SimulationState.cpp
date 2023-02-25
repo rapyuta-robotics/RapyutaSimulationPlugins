@@ -42,7 +42,7 @@ bool ASimulationState::VerifyIsServerCall(const FString& InFunctionName)
 {
     if (IsNetMode(NM_Client))
     {
-        UE_LOG(LogRapyutaCore, Fatal, TEXT("[%s] should be called by server only"), *InFunctionName);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("[%s] should be called by server only"), *InFunctionName);
         return false;
     }
     return true;
@@ -53,7 +53,7 @@ void ASimulationState::InitEntities()
 #if RAPYUTA_SIM_DEBUG
     TArray<AActor*> allActors;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), allActors);
-    UE_LOG(LogTemp, Warning, TEXT("Found %d actors in the scene"), allActors.Num());
+    UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Found %d actors in the scene"), allActors.Num());
 #endif
     // add all actors
     for (TActorIterator<AActor> It(GetWorld(), AActor::StaticClass()); It; ++It)
@@ -278,12 +278,13 @@ void ASimulationState::ServerAttach(const FROSAttachReq& InRequest)
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors "
-                    "under SimulationState control."),
-               *InRequest.Name1,
-               *InRequest.Name2);
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore,
+            Warning,
+            TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors "
+                 "under SimulationState control."),
+            *InRequest.Name1,
+            *InRequest.Name2);
     }
 
     PrevAttachEntityRequest = InRequest;
@@ -360,11 +361,11 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
     }
 
     // Add tags
-    UE_LOG(LogRapyutaCore,
-           Log,
-           TEXT("[%s] tag from spawn request %s"),
-           *newEntity->GetName(),
-           *FString::Join(InROSSpawnRequest.Tags, TEXT(",")));
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Log,
+                     TEXT("[%s] tag from spawn request %s"),
+                     *newEntity->GetName(),
+                     *FString::Join(InROSSpawnRequest.Tags, TEXT(",")));
     for (const auto& tag : InROSSpawnRequest.Tags)
     {
         newEntity->Tags.Emplace(tag);
@@ -410,13 +411,13 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InRequest,
             newEntity = ServerSpawnEntity(InRequest, SpawnableEntityTypes[entityModelName], worldTransf, InNetworkPlayerId);
             if (newEntity)
             {
-                UE_LOG(LogRapyutaCore,
-                       Warning,
-                       TEXT("Spawned Entity of model [%s] as [%s] to world pose: %s - ReferenceFrame: %s"),
-                       *entityModelName,
-                       *entityName,
-                       *worldTransf.ToString(),
-                       *referenceFrame);
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Warning,
+                                 TEXT("Spawned Entity of model [%s] as [%s] to world pose: %s - ReferenceFrame: %s"),
+                                 *entityModelName,
+                                 *entityName,
+                                 *worldTransf.ToString(),
+                                 *referenceFrame);
             }
             else
             {
@@ -425,15 +426,16 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InRequest,
                 // response.StatusMessage =
                 //     FString::Printf(TEXT("[%s] Failed to spawn entity named %s, probably out collision!"), *GetName(),
                 //     *entityName);
-                UE_LOG(LogRapyutaCore,
-                       Error,
-                       TEXT("[ASimulationState] Failed to spawn entity named %s, probably out collision!"),
-                       *entityName);
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Error,
+                                 TEXT("[ASimulationState] Failed to spawn entity named %s, probably out collision!"),
+                                 *entityName);
             }
         }
         else
         {
-            UE_LOG(LogRapyutaCore, Error, TEXT("Entity spawning failed - [%s] given name actor already exists!"), *entityName);
+            UE_LOG_WITH_INFO(
+                LogRapyutaCore, Error, TEXT("Entity spawning failed - [%s] given name actor already exists!"), *entityName);
         }
     }
     PrevSpawnEntityRequest = InRequest;

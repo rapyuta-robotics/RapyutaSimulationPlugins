@@ -221,7 +221,7 @@ public:
 
         if (!bResult && bIsLogged)
         {
-            UE_LOG(LogTemp, Error, TEXT("Command line argument not found under the name [%s]"), InArgName);
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("Command line argument not found under the name [%s]"), InArgName);
         }
         return bResult;
     }
@@ -244,7 +244,7 @@ public:
 
         if (!bResult && bIsLogged)
         {
-            UE_LOG(LogTemp, Error, TEXT("[%s] does not contain an argument named [%s]"), *InParams, InArgName);
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[%s] does not contain an argument named [%s]"), *InParams, InArgName);
         }
         return bResult;
     }
@@ -384,7 +384,7 @@ public:
                                                       InLevelInfo.TargetTransform.GetTranslation(),
                                                       InLevelInfo.TargetTransform.Rotator(),
                                                       /*out*/ bSucceeded);
-        UE_LOG(LogTemp, Log, TEXT("%d Streaming level creation from path: %s"), bSucceeded, *InLevelInfo.AssetPath);
+        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("%d Streaming level creation from path: %s"), bSucceeded, *InLevelInfo.AssetPath);
         return streamLevel;
     }
 
@@ -451,7 +451,7 @@ public:
             bool res = FPlatformFileManager::Get().GetPlatformFile().CreateDirectoryTree(*dirFullPath);
             if (!res)
             {
-                UE_LOG(LogTemp, Error, TEXT("Failed to create dir %s"), *dirFullPath)
+                UE_LOG_WITH_INFO(LogTemp, Error, TEXT("Failed to create dir %s"), *dirFullPath)
             }
             return res;
         }
@@ -463,11 +463,11 @@ public:
         {
             if (FPaths::IsRelative(InDirPath))
             {
-                UE_LOG(LogTemp, Fatal, TEXT("[%s] directory path is required to be an absolute path."), *InDirPath);
+                UE_LOG_WITH_INFO(LogTemp, Fatal, TEXT("[%s] directory path is required to be an absolute path."), *InDirPath);
             }
             else if (false == FPaths::DirectoryExists(InDirPath))
             {
-                UE_LOG(LogTemp, Fatal, TEXT("[%s] directory does not exist."), *InDirPath);
+                UE_LOG_WITH_INFO(LogTemp, Fatal, TEXT("[%s] directory does not exist."), *InDirPath);
             }
         }
         // else up to various situations, being empty would be acceptable or not.

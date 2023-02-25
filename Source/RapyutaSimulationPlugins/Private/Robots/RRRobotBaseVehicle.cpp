@@ -79,19 +79,17 @@ bool ARRRobotBaseVehicle::InitMoveComponent()
         // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
         // to the owner actor's root
 
-        UE_LOG(LogRapyutaCore,
-               Display,
-               TEXT("[%s] created from class %s!"),
-               *MovementComponent->GetName(),
-               *VehicleMoveComponentClass->GetName());
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Display,
+                         TEXT("[%s] created from class %s!"),
+                         *MovementComponent->GetName(),
+                         *VehicleMoveComponentClass->GetName());
         return true;
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s] [VehicleMoveComponentClass] has not been configured, probably later in child BP class!"),
-               *GetName());
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore, Warning, TEXT("VehicleMoveComponentClass has not been configured, probably later in child BP class!"));
         return false;
     }
 }
@@ -169,11 +167,11 @@ void ARRRobotBaseVehicle::SetLocalLinearVel(const FVector& InLinearVel)
 {
     TargetLinearVel = InLinearVel;
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("PLAYER [%s] SetLocalLinearVel %s"),
-           *PlayerController->PlayerState->GetPlayerName(),
-           *InLinearVel.ToString());
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Warning,
+                     TEXT("PLAYER [%s] SetLocalLinearVel %s"),
+                     *PlayerController->PlayerState->GetPlayerName(),
+                     *InLinearVel.ToString());
 #endif
 }
 
@@ -181,10 +179,10 @@ void ARRRobotBaseVehicle::SetLocalAngularVel(const FVector& InAngularVel)
 {
     TargetAngularVel = InAngularVel;
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("PLAYER [%s] SetLocalAngularVel %s"),
-           *PlayerController->PlayerState->GetPlayerName(),
-           *InAngularVel.ToString());
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Warning,
+                     TEXT("PLAYER [%s] SetLocalAngularVel %s"),
+                     *PlayerController->PlayerState->GetPlayerName(),
+                     *InAngularVel.ToString());
 #endif
 }

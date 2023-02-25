@@ -200,16 +200,17 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
 
     void PrintSelf() const
     {
-        UE_LOG(LogTemp, Warning, TEXT("Material: %s"), *Name);
-        UE_LOG(LogTemp, Display, TEXT("- Color: %s"), *Color.ToString());
-        UE_LOG(LogTemp, Display, TEXT("- AlbedoTextureNameList: %s"), *FString::Join(AlbedoTextureNameList, TEXT(",")));
-        UE_LOG(LogTemp,
-               Display,
-               TEXT("- AlbedoColorList: %s"),
-               *FString::JoinBy(AlbedoColorList, TEXT(","), [](const FLinearColor& InColor) { return InColor.ToString(); }));
-        UE_LOG(LogTemp, Display, TEXT("- MaskTextureName: %s"), *MaskTextureName);
-        UE_LOG(LogTemp, Display, TEXT("- ORMTextureName: %s"), *ORMTextureName);
-        UE_LOG(LogTemp, Display, TEXT("- NormalTextureName: %s"), *NormalTextureName);
+        UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Material: %s"), *Name);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Color: %s"), *Color.ToString());
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- AlbedoTextureNameList: %s"), *FString::Join(AlbedoTextureNameList, TEXT(",")));
+        UE_LOG_WITH_INFO(
+            LogTemp,
+            Display,
+            TEXT("- AlbedoColorList: %s"),
+            *FString::JoinBy(AlbedoColorList, TEXT(","), [](const FLinearColor& InColor) { return InColor.ToString(); }));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- MaskTextureName: %s"), *MaskTextureName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- ORMTextureName: %s"), *ORMTextureName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- NormalTextureName: %s"), *NormalTextureName);
     }
 
     bool HasTexture(const FString& InTextureName)

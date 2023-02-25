@@ -85,7 +85,7 @@ public:
         {
             if (defaultSubobjects[index]->GetName() == InChildName)
             {
-                UE_LOG(LogTemp, Display, TEXT("FOUND SUBOBJECT %d - %s"), index, *InChildName);
+                UE_LOG_WITH_INFO(LogTemp, Display, TEXT("FOUND SUBOBJECT %d - %s"), index, *InChildName);
                 break;
             }
             else
@@ -275,13 +275,13 @@ public:
         meshComp->MeshUniqueName = InObjMeshUniqueName;
 
 #if RAPYUTA_SIM_VISUAL_DEBUG
-        UE_LOG(LogTemp,
-               Display,
-               TEXT("[%s] MESH COMP [%s] ATTACHED TO %s|%s"),
-               *InActor->GetName(),
-               *meshComp->GetName(),
-               *meshComp->GetAttachParent()->GetName(),
-               *InRelativeTransf.ToString());
+        UE_LOG_WITH_INFO(LogTemp,
+                         Display,
+                         TEXT("[%s] MESH COMP [%s] ATTACHED TO %s|%s"),
+                         *InActor->GetName(),
+                         *meshComp->GetName(),
+                         *meshComp->GetAttachParent()->GetName(),
+                         *InRelativeTransf.ToString());
 #endif
 
         // 2 - Initialize --
@@ -353,7 +353,7 @@ public:
                 return *actorItr;
             }
         }
-        UE_LOG(LogTemp, Log, TEXT("Actor named [%s] is unavailable."), *InName);
+        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("Actor named [%s] is unavailable."), *InName);
         return nullptr;
     }
 
@@ -378,7 +378,7 @@ public:
                 return *actorItr;
             }
         }
-        UE_LOG(LogTemp, Log, TEXT("Actor name containing [%s] is unavailable."), *InSubname);
+        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("Actor name containing [%s] is unavailable."), *InSubname);
         return nullptr;
     }
 
@@ -503,7 +503,7 @@ public:
         if ((InActorSpawnInfo.TypeClass == nullptr) && (T::StaticClass() != AActor::StaticClass()) &&
             (false == T::StaticClass()->IsChildOf(AActor::StaticClass())))
         {
-            UE_LOG(LogTemp, Fatal, TEXT("[SpawnSimActor]: NULL SPAWN TYPE-CLASS && A NON-AACTOR CLASS!"));
+            UE_LOG_WITH_INFO(LogTemp, Fatal, TEXT("NULL SPAWN TYPE-CLASS && A NON-AACTOR CLASS!"));
             return nullptr;
         }
 
@@ -531,20 +531,20 @@ public:
 #endif
 
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogTemp,
-                   Warning,
-                   TEXT("[%s:%d] SIM ACTOR SPAWNED: [%s] => [%s]\nat %s -> %s"),
-                   *InActorSpawnInfo.UniqueName,
-                   newSimActor,
-                   *spawnInfo.Name.ToString(),
-                   *newSimActor->GetName(),
-                   *InActorSpawnInfo.ActorTransform.ToString(),
-                   *newSimActor->GetActorTransform().ToString());
+            UE_LOG_WITH_INFO(LogTemp,
+                             Warning,
+                             TEXT("[%s:%d] SIM ACTOR SPAWNED: [%s] => [%s]\nat %s -> %s"),
+                             *InActorSpawnInfo.UniqueName,
+                             newSimActor,
+                             *spawnInfo.Name.ToString(),
+                             *newSimActor->GetName(),
+                             *InActorSpawnInfo.ActorTransform.ToString(),
+                             *newSimActor->GetActorTransform().ToString());
 #endif
         }
         else
         {
-            UE_LOG(LogTemp, Warning, TEXT("[%s] FAILED SPAWNING OBJECT ACTOR!!!"), *InActorSpawnInfo.UniqueName);
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("[%s] FAILED SPAWNING OBJECT ACTOR!!!"), *InActorSpawnInfo.UniqueName);
             return nullptr;
         }
 
@@ -727,7 +727,7 @@ public:
         {
             if (!actorItr->GetStaticMeshComponent()->GetGenerateOverlapEvents())
             {
-                UE_LOG(LogTemp, Display, TEXT("%s GenerateOverlapEvents disabled"), *actorItr->GetName());
+                UE_LOG_WITH_INFO(LogTemp, Display, TEXT("%s GenerateOverlapEvents disabled"), *actorItr->GetName());
                 return false;
             }
         }
@@ -775,7 +775,8 @@ public:
     static bool ApplyMeshActorMaterialProps(AActor* InActor,
                                             const FRRMaterialProperty& InMaterialInfo,
                                             bool bApplyManufacturingAlbedo = true);
-    static void ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial, const FRRMaterialProperty& InMaterialInfo,
+    static void ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
+                                   const FRRMaterialProperty& InMaterialInfo,
                                    bool bApplyManufacturingAlbedo = true);
     static bool SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor);
     static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);

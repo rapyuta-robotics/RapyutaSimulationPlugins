@@ -28,29 +28,29 @@ ARRGameState::ARRGameState()
 
 void ARRGameState::PrintSimConfig() const
 {
-    UE_LOG(LogRapyutaCore, Log, TEXT("GAME STATE CONFIG -----------------------------"));
-    UE_LOG(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_NUM: %d"), SCENE_INSTANCES_NUM);
-    UE_LOG(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_DISTANCE_INTERVAL: %f(cm)"), SCENE_INSTANCES_DISTANCE_INTERVAL);
-    UE_LOG(LogRapyutaCore,
-           Display,
-           TEXT("SIM_OUTPUTS_BASE_FOLDER_NAME: %s -> %s"),
-           *SIM_OUTPUTS_BASE_FOLDER_NAME,
-           *GetSimOutputsBaseFolderPath());
+    UE_LOG_WITH_INFO(LogRapyutaCore, Log, TEXT("GAME STATE CONFIG -----------------------------"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_NUM: %d"), SCENE_INSTANCES_NUM);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SCENE_INSTANCES_DISTANCE_INTERVAL: %f(cm)"), SCENE_INSTANCES_DISTANCE_INTERVAL);
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Display,
+                     TEXT("SIM_OUTPUTS_BASE_FOLDER_NAME: %s -> %s"),
+                     *SIM_OUTPUTS_BASE_FOLDER_NAME,
+                     *GetSimOutputsBaseFolderPath());
 
-    UE_LOG(LogRapyutaCore, Display, TEXT("OPERATION_BATCHES_NUM: %d"), OPERATION_BATCHES_NUM);
-    UE_LOG(LogRapyutaCore, Display, TEXT("ENTITY_BOUNDING_BOX_VERTEX_NORMALS:"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("OPERATION_BATCHES_NUM: %d"), OPERATION_BATCHES_NUM);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("ENTITY_BOUNDING_BOX_VERTEX_NORMALS:"));
     for (const auto& vertexNormal : ENTITY_BOUNDING_BOX_VERTEX_NORMALS)
     {
-        UE_LOG(LogRapyutaCore,
-               Display,
-               TEXT("%s"),
-               *FString::Printf(TEXT("%f, %f, %f"), vertexNormal.X, vertexNormal.Y, vertexNormal.Z));
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Display,
+                         TEXT("%s"),
+                         *FString::Printf(TEXT("%f, %f, %f"), vertexNormal.X, vertexNormal.Y, vertexNormal.Z));
     }
 }
 
 void ARRGameState::StartSim()
 {
-    UE_LOG(LogRapyutaCore, Display, TEXT("[ARRGameState::StartSim() with Num of SceneInstances: %d]"), SCENE_INSTANCES_NUM);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("[Start Sim with Num of SceneInstances: %d]"), SCENE_INSTANCES_NUM);
 
     URRGameSingleton::Get()->PrintSimConfig();
     PrintSimConfig();
@@ -64,7 +64,7 @@ void ARRGameState::StartSim()
     // Each Sim scene instance has a Player Controller on its own, the max number of which is defined by
     // [UGameViewportClient::MaxSplitscreenPlayers]
     const int32 maxSplitscreenPlayers = URRCoreUtils::GetMaxSplitscreenPlayers(this);
-    UE_LOG(LogRapyutaCore, Display, TEXT("MAX SPLIT SCREEN PLAYERS: %d"), maxSplitscreenPlayers);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("MAX SPLIT SCREEN PLAYERS: %d"), maxSplitscreenPlayers);
     verify(SCENE_INSTANCES_NUM <= maxSplitscreenPlayers);
 
     // 0- Stream level & Fetch static-env actors
@@ -85,7 +85,7 @@ void ARRGameState::StartSim()
         // 4 - Do preliminary configuration/spawning for the Sim operation
         InitializeSim(i);
 
-        UE_LOG(LogRapyutaCore, Display, TEXT("[ARRGameState]:: SIM SCENE INSTANCE [%d] STARTED SUCCESSFULLY! "), i);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SIM SCENE INSTANCE [%d] STARTED SUCCESSFULLY! "), i);
     }
 }
 
@@ -98,7 +98,7 @@ void ARRGameState::FetchEnvStaticActors()
 {
     // Fetch env actors
     UWorld* currentWorld = GetWorld();
-    checkf(currentWorld, TEXT("[ARRGameState::SetupEnvironment] Failed fetching Game World"));
+    checkf(currentWorld, TEXT("Failed fetching Game World"));
 
     // Fetch Main background environment
     MainEnvironment = URRUObjectUtils::FindEnvironmentActor(currentWorld);
@@ -157,7 +157,7 @@ bool ARRGameState::HasSceneInstanceListBeenCreated(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[ARRGameState]:: [SceneInstanceList] is EMPTY!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SceneInstanceList is EMPTY!"));
         }
         return false;
     }
@@ -183,11 +183,11 @@ void ARRGameState::InitializeSim(int8 InSceneInstanceId)
     sceneInstance->SceneDirector = Cast<ARRSceneDirector>(
         URRUObjectUtils::SpawnSimActor(GetWorld(), InSceneInstanceId, sceneInstance->SceneDirectorClass, TEXT("SceneDirector")));
     verify(sceneInstance->SceneDirector);
-    UE_LOG(LogRapyutaCore,
-           Display,
-           TEXT("[ARRGameState::InitializeSim] Scene Director actor named [%s] - SceneInstanceId(%d): SPAWNED!"),
-           *sceneInstance->SceneDirector->GetName(),
-           sceneInstance->SceneDirector->SceneInstanceId);
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Display,
+                     TEXT("Scene Director actor named [%s] - SceneInstanceId(%d): SPAWNED!"),
+                     *sceneInstance->SceneDirector->GetName(),
+                     sceneInstance->SceneDirector->SceneInstanceId);
 }
 
 bool ARRGameState::HasInitialized(bool bIsLogged) const
@@ -197,7 +197,7 @@ bool ARRGameState::HasInitialized(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRGameState]:: [SceneInstanceList]: Not yet created!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("[SceneInstanceList]: Not yet created!"));
         }
         return false;
     }
@@ -209,7 +209,7 @@ bool ARRGameState::HasInitialized(bool bIsLogged) const
         {
             if (bIsLogged)
             {
-                UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRGameState]:: [sceneInstance index[%d]]: is invalid!"), i);
+                UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("[sceneInstance index[%d]]: is invalid!"), i);
             }
             return false;
         }

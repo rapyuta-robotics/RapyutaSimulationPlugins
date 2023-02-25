@@ -80,21 +80,22 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
 #if RAPYUTA_FLOAT_MOVEMENT_DEBUG
             if (hit.bBlockingHit)
             {
-                UE_LOG(LogRapyutaCore,
-                       Error,
-                       TEXT("ResolvePenetration: %s.%s at location %s inside %s.%s at location %s by %.3f (netmode: %d)\n"
-                            "TraceStart %s TraceEnd %s Bone %s"),
-                       *UpdatedComponent->GetOwner()->GetName(),
-                       *UpdatedComponent->GetName(),
-                       *UpdatedComponent->GetComponentLocation().ToString(),
-                       *GetNameSafe(hit.GetActor()),
-                       *GetNameSafe(hit.GetComponent()),
-                       hit.Component.IsValid() ? *hit.GetComponent()->GetComponentLocation().ToString() : TEXT("<unknown>"),
-                       hit.PenetrationDepth,
-                       static_cast<uint32>(GetNetMode()),
-                       *hit.TraceStart.ToString(),
-                       *hit.TraceEnd.ToString(),
-                       *hit.BoneName.ToString());
+                UE_LOG_WITH_INFO(
+                    LogRapyutaCore,
+                    Error,
+                    TEXT("ResolvePenetration: %s.%s at location %s inside %s.%s at location %s by %.3f (netmode: %d)\n"
+                         "TraceStart %s TraceEnd %s Bone %s"),
+                    *UpdatedComponent->GetOwner()->GetName(),
+                    *UpdatedComponent->GetName(),
+                    *UpdatedComponent->GetComponentLocation().ToString(),
+                    *GetNameSafe(hit.GetActor()),
+                    *GetNameSafe(hit.GetComponent()),
+                    hit.Component.IsValid() ? *hit.GetComponent()->GetComponentLocation().ToString() : TEXT("<unknown>"),
+                    hit.PenetrationDepth,
+                    static_cast<uint32>(GetNetMode()),
+                    *hit.TraceStart.ToString(),
+                    *hit.TraceEnd.ToString(),
+                    *hit.BoneName.ToString());
             }
 #endif
 
@@ -147,23 +148,23 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
             return false;
         }
 
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("ResolvePenetration: %s.%s at location %s inside %s.%s at location %s by %.3f (netmode: %d)\n"
-                    "TraceStart %s TraceEnd %s Bone %s"),
-               *ownerActor->GetName(),
-               *UpdatedComponent->GetName(),
-               *UpdatedComponent->GetComponentLocation().ToString(),
-               *GetNameSafe(InHit.GetActor()),
-               *GetNameSafe(InHit.GetComponent()),
-               InHit.Component.IsValid() ? *InHit.GetComponent()->GetComponentLocation().ToString() : TEXT("<unknown>"),
-               InHit.PenetrationDepth,
-               static_cast<uint32>(GetNetMode()),
-               *InHit.TraceStart.ToString(),
-               *InHit.TraceEnd.ToString(),
-               *InHit.BoneName.ToString());
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Error,
+                         TEXT("%s.%s at location %s inside %s.%s at location %s by %.3f (netmode: %d)\n"
+                              "TraceStart %s TraceEnd %s Bone %s"),
+                         *ownerActor->GetName(),
+                         *UpdatedComponent->GetName(),
+                         *UpdatedComponent->GetComponentLocation().ToString(),
+                         *GetNameSafe(InHit.GetActor()),
+                         *GetNameSafe(InHit.GetComponent()),
+                         InHit.Component.IsValid() ? *InHit.GetComponent()->GetComponentLocation().ToString() : TEXT("<unknown>"),
+                         InHit.PenetrationDepth,
+                         static_cast<uint32>(GetNetMode()),
+                         *InHit.TraceStart.ToString(),
+                         *InHit.TraceEnd.ToString(),
+                         *InHit.BoneName.ToString());
 
-        UE_LOG(LogRapyutaCore, Error, TEXT("ResolvePenetration: proposed Adjustment %s"), *constrainedAdjustment.ToString());
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("proposed Adjustment %s"), *constrainedAdjustment.ToString());
 
         // We really want to make sure that precision differences or differences between the overlap test and sweep tests don't put us into another overlap,
         // so make the overlap test a bit more restrictive.
@@ -177,7 +178,7 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
         {
             // Move without sweeping.
             MoveUpdatedComponent(constrainedAdjustment, InNewRotationQuat, false, nullptr, ETeleportType::TeleportPhysics);
-            UE_LOG(LogRapyutaCore, Error, TEXT("ResolvePenetration: teleport by %s"), *constrainedAdjustment.ToString());
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("teleport by %s"), *constrainedAdjustment.ToString());
             return true;
         }
         else
@@ -191,11 +192,7 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
             bool bMoved =
                 MoveUpdatedComponent(constrainedAdjustment, InNewRotationQuat, true, &outSweepHit, ETeleportType::TeleportPhysics);
 
-            UE_LOG(LogRapyutaCore,
-                   Error,
-                   TEXT("ResolvePenetration: sweep by %s (success = %d)"),
-                   *constrainedAdjustment.ToString(),
-                   bMoved);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("sweep by %s (success = %d)"), *constrainedAdjustment.ToString(), bMoved);
 
             // Try sweep again - 1st
             if (!bMoved && outSweepHit.bStartPenetrating)
@@ -206,11 +203,8 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
                 if (secondMTD != constrainedAdjustment && !combinedMTD.IsZero())
                 {
                     bMoved = MoveUpdatedComponent(combinedMTD, InNewRotationQuat, true, nullptr, ETeleportType::TeleportPhysics);
-                    UE_LOG(LogRapyutaCore,
-                           Error,
-                           TEXT("ResolvePenetration: sweep by %s (MTD combo success = %d)"),
-                           *combinedMTD.ToString(),
-                           bMoved);
+                    UE_LOG_WITH_INFO(
+                        LogRapyutaCore, Error, TEXT("sweep by %s (MTD combo success = %d)"), *combinedMTD.ToString(), bMoved);
                 }
             }
 
@@ -223,11 +217,11 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
                 {
                     bMoved = MoveUpdatedComponent(
                         constrainedAdjustment + moveDelta, InNewRotationQuat, true, nullptr, ETeleportType::TeleportPhysics);
-                    UE_LOG(LogRapyutaCore,
-                           Error,
-                           TEXT("ResolvePenetration: sweep by %s (adjusted attempt success = %d)"),
-                           *(constrainedAdjustment + moveDelta).ToString(),
-                           bMoved);
+                    UE_LOG_WITH_INFO(LogRapyutaCore,
+                                     Error,
+                                     TEXT("sweep by %s (adjusted attempt success = %d)"),
+                                     *(constrainedAdjustment + moveDelta).ToString(),
+                                     bMoved);
 
                     // Finally, try the original move without MTD adjustments, but allowing depenetration along the MTD normal.
                     // This was blocked because MOVECOMP_NeverIgnoreBlockingOverlaps was true for the original move to try a better depenetration normal, but we might be running in to other geometry in the attempt.
@@ -235,11 +229,11 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
                     if (!bMoved && FVector::DotProduct(moveDelta, constrainedAdjustment) > 0.f)
                     {
                         bMoved = MoveUpdatedComponent(moveDelta, InNewRotationQuat, true, nullptr, ETeleportType::TeleportPhysics);
-                        UE_LOG(LogRapyutaCore,
-                               Error,
-                               TEXT("ResolvePenetration:   sweep by %s (Original move, attempt success = %d)"),
-                               *(moveDelta).ToString(),
-                               bMoved);
+                        UE_LOG_WITH_INFO(LogRapyutaCore,
+                                         Error,
+                                         TEXT("  sweep by %s (Original move, attempt success = %d)"),
+                                         *(moveDelta).ToString(),
+                                         bMoved);
                     }
                 }
             }

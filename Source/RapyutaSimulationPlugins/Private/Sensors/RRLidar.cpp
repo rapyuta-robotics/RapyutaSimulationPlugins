@@ -26,6 +26,6 @@ void ARRLidar::PostInitializeComponents()
     else
     {
         // [OnConstruction] could run in various Editor BP actions, thus could not do Fatal log here
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [LidarComponentClass] has not been configured!"), *GetName());
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("[LidarComponentClass] has not been configured!"));
     }
 }

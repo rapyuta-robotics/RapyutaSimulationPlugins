@@ -88,7 +88,7 @@ bool ARRBaseActor::HasInitialized(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[%s] [ActorInfo] has not been instantiated!!"), *GetName());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Display, TEXT("ActorInfo has not been instantiated!!"));
         }
         return false;
     }

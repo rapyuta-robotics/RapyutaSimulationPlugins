@@ -57,13 +57,13 @@ void ARRNetworkPlayerController::CreateROS2SimStateClient(const TSubclassOf<URRR
     ROS2SimStateClient->RegisterComponent();
     AddOwnedComponent(ROS2SimStateClient);
 
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("[PC:%u][NetworkPlayerId:%d] ROS2SimStateClient[%s:%u] created"),
-           this,
-           ROS2SimStateClient->GetNetworkPlayerId(),
-           *ROS2SimStateClient->GetName(),
-           ROS2SimStateClient);
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Warning,
+                     TEXT("[PC:%u][NetworkPlayerId:%d] ROS2SimStateClient[%s:%u] created"),
+                     this,
+                     ROS2SimStateClient->GetNetworkPlayerId(),
+                     *ROS2SimStateClient->GetName(),
+                     ROS2SimStateClient);
 }
 
 void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
@@ -75,10 +75,7 @@ void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
 
     if (nullptr == ROS2SimStateClient)
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s][ARRNetworkPlayerController::ClientInitSimStateClientROS2] ROS2SimStateClient not found."),
-               *GetName());
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("ROS2SimStateClient not found."));
         return;
     }
 
@@ -101,17 +98,15 @@ void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
     // ClockPublisher's RegisterComponent() is done by [AROS2Node::AddPublisher()]
     SimStateClientClockPublisher->InitializeWithROS2(SimStateClientROS2Node);
 
-    UE_LOG(LogRapyutaCore, Log, TEXT("[%s] SimStateClient ROS2Node[%s] created"), *PlayerName, *SimStateClientROS2Node->Name);
+    UE_LOG_WITH_INFO(
+        LogRapyutaCore, Log, TEXT("[%s] SimStateClient ROS2Node[%s] created"), *PlayerName, *SimStateClientROS2Node->Name);
 }
 
 void ARRNetworkPlayerController::OnRep_SimStateClient()
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient] Playername: %s, IsNetMode(NM_Client):%d."),
-           *GetName(),
-           (true == IsNetMode(NM_Client)), );
+    UE_LOG_WITH_INFO_NAMED(
+        LogRapyutaCore, Warning, TEXT("PlayerName: %s, IsNetMode(NM_Client):%d."), *PlayerName, (true == IsNetMode(NM_Client)), );
 
 #endif
     if (IsLocalController())
@@ -121,7 +116,7 @@ void ARRNetworkPlayerController::OnRep_SimStateClient()
             // 1- Init [SimStateClientROS2Node] only once [ROS2SimStateClient] is created
             TInlineComponentArray<URRROS2SimulationStateClient*> simStateComponents(this);
             ROS2SimStateClient = (simStateComponents.Num() > 0) ? simStateComponents[0] : nullptr;
-            UE_LOG(LogRapyutaCore, Log, TEXT("[%s] [ARRNetworkPlayerController::OnRep_SimStateClient"), *GetName());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT(""));
 
             ClientInitSimStateClientROS2();
         }
@@ -131,7 +126,7 @@ void ARRNetworkPlayerController::OnRep_SimStateClient()
 void ARRNetworkPlayerController::BeginPlay()
 {
     Super::BeginPlay();
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRNetworkPlayerController::BeginPlay]"), *GetName());
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT(""));
 
     if (IsLocalController())
     {
@@ -205,12 +200,8 @@ void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot*
 {
     // todo: donot work with physics model. GetActoLocaion return constant values.
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("[%s] [ServerSetLinearVel_Implementation] %s %s"),
-           *GetName(),
-           *InClientRobotPosition.ToString(),
-           *InServerRobot->GetActorLocation().ToString());
+    UE_LOG_WITH_INFO_NAMED(
+        LogRapyutaCore, Warning, TEXT("%s %s"), *InClientRobotPosition.ToString(), *InServerRobot->GetActorLocation().ToString());
 #endif
     auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
     if (robot)
@@ -229,12 +220,8 @@ void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot
                                                                     const FVector& InAngularVel)
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("[%s] [ServerSetAngularVel_Implementation] %s %s"),
-           *GetName(),
-           *InClientRobotRotation.ToString(),
-           *InServerRobot->GetActorRotation().ToString());
+    UE_LOG_WITH_INFO_NAMED(
+        LogRapyutaCore, Warning, TEXT("%s %s"), *InClientRobotRotation.ToString(), *InServerRobot->GetActorRotation().ToString());
 #endif
     auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
     if (robot)
