@@ -8,7 +8,7 @@
 
 URRCrowdFollowingComponent::URRCrowdFollowingComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-    SimulationState = ECrowdSimulationState::ObstacleOnly;
+    AvoidanceQuality = ECrowdAvoidanceQuality::Good;
 }
 
 bool URRCrowdFollowingComponent::Is2DMovement() const
@@ -20,6 +20,10 @@ void URRCrowdFollowingComponent::SetMovementComponent(UNavMovementComponent* InM
 {
     Super::SetMovementComponent(InMoveComp);
     FloatMovementComp = Cast<URRFloatingMovementComponent>(InMoveComp);
+    if (FloatMovementComp)
+    {
+        bEnableSlowdownAtGoal = FloatMovementComp->UseDecelerationForPathFollowing();
+    }
 }
 
 void URRCrowdFollowingComponent::FollowPathSegment(float InDeltaTime)
@@ -39,15 +43,16 @@ void URRCrowdFollowingComponent::FollowPathSegment(float InDeltaTime)
         bIsDecelerating = false;
 
         // New instantaneous vel
+        const float maxSpeed = GetCrowdAgentMaxSpeed();
         FVector newVelocity = (GetCurrentTargetLocation() - MovementComp->GetActorFeetLocation()) / InDeltaTime;
         if (FloatMovementComp && (false == FloatMovementComp->UseDecelerationForPathFollowing()))
         {
-            // NON-DECELERATION movement: Always keep the vel's magnitude as [MaxCrowdSpeed]
-            URRMathUtils::SetVectorClampedToMaxMagnitude(newVelocity, MaxCrowdSpeed, Is2DMovement());
+            // NON-DECELERATION movement: Always keep the vel's magnitude as [maxSpeed]
+            URRMathUtils::SetVectorClampedToMaxMagnitude(newVelocity, maxSpeed, Is2DMovement());
         }
         else
         {
-            URRMathUtils::ClampVectorToMaxMagnitude(newVelocity, MaxCrowdSpeed, Is2DMovement());
+            URRMathUtils::ClampVectorToMaxMagnitude(newVelocity, maxSpeed, Is2DMovement());
         }
 
         const int32 lastSegmentStartIndex = Path->GetPathPoints().Num() - 2;
@@ -64,8 +69,8 @@ void URRCrowdFollowingComponent::ApplyCrowdAgentVelocity(const FVector& InNewVel
                                                          bool bInNearEndOfPath)
 {
     FVector newVel = InNewVelocity;
-    URRMathUtils::ClampVectorToMaxMagnitude(newVel, MaxCrowdSpeed, Is2DMovement());
-    Super::ApplyCrowdAgentVelocity(newVel, InDestPathCorner, bInTraversingLink, bInNearEndOfPath);
+    URRMathUtils::ClampVectorToMaxMagnitude(newVel, GetCrowdAgentMaxSpeed(), Is2DMovement());
+    Super::ApplyCrowdAgentVelocity(InNewVelocity, InDestPathCorner, bInTraversingLink, bInNearEndOfPath);
 }
 
 void URRCrowdFollowingComponent::OnPathFinished(const FPathFollowingResult& InResult)

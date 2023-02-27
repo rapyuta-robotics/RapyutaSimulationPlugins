@@ -23,9 +23,6 @@ public:
     URRCrowdFollowingComponent(const FObjectInitializer& ObjectInitializer);
 
     UPROPERTY()
-    float MaxCrowdSpeed = 0.f;
-
-    UPROPERTY()
     URRFloatingMovementComponent* FloatMovementComp = nullptr;
     virtual void SetMovementComponent(UNavMovementComponent* InMoveComp) override;
     bool Is2DMovement() const;
