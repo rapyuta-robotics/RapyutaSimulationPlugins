@@ -39,12 +39,11 @@ void URRStaticMeshComponent::BeginPlay()
 void URRStaticMeshComponent::Initialize(bool bInIsStationary, bool bInIsPhysicsEnabled)
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore,
-           Warning,
-           TEXT("[%s] STATIC MESH COMP INITIALIZED - Stationary: %d Physics Enabled: %d!"),
-           *GetName(),
-           bInIsStationary,
-           bInIsPhysicsEnabled);
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
+                           Warning,
+                           TEXT("STATIC MESH COMP INITIALIZED - Stationary: %d Physics Enabled: %d!"),
+                           bInIsStationary,
+                           bInIsPhysicsEnabled);
 #endif
 
     bIsStationary = bInIsStationary;
@@ -91,7 +90,7 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
     ShapeType = URRGameSingleton::GetShapeTypeFromMeshName(InMeshFileName);
 
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore, Warning, TEXT("URRStaticMeshComponent::InitializeMesh: %s - %s"), *GetName(), *InMeshFileName);
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("- %s"), *InMeshFileName);
 #endif
 
     switch (ShapeType)
@@ -182,11 +181,7 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
     // (NOTE) This function could be invoked from an async task running in GameThread
     if (false == InMeshData.IsValid())
     {
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("[%s] CreateMeshBody() STATIC MESH DATA BUFFER [%s] IS INVALID"),
-               *GetName(),
-               *MeshUniqueName);
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("STATIC MESH DATA BUFFER [%s] IS INVALID"), *MeshUniqueName);
         return nullptr;
     }
 
@@ -277,21 +272,21 @@ void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& In
         }
 
 #if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s]CREATE STATIC MESH SECTION[%u]: Vertices(%u) - VertexColors(%u) - TriangleIndices(%u) - Normals(%u) - "
-                    "UVs(%u) - "
-                    "ProcTangents(%u) - "
-                    "Material(%u)"),
-               *GetName(),
-               meshSectionIndex,
-               mesh.Vertices.Num(),
-               mesh.VertexColors.Num(),
-               mesh.TriangleIndices.Num(),
-               mesh.Normals.Num(),
-               mesh.UVs.Num(),
-               mesh.ProcTangents.Num(),
-               mesh.MaterialIndex);
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore,
+            Warning,
+            TEXT("CREATE STATIC MESH SECTION[%u]: Vertices(%u) - VertexColors(%u) - TriangleIndices(%u) - Normals(%u) - "
+                 "UVs(%u) - "
+                 "ProcTangents(%u) - "
+                 "Material(%u)"),
+            meshSectionIndex,
+            mesh.Vertices.Num(),
+            mesh.VertexColors.Num(),
+            mesh.TriangleIndices.Num(),
+            mesh.Normals.Num(),
+            mesh.UVs.Num(),
+            mesh.ProcTangents.Num(),
+            mesh.MaterialIndex);
 #endif
 
         // Create vertex instances (3 per face)

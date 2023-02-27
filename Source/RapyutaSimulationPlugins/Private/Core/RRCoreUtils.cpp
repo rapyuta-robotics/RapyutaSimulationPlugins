@@ -128,11 +128,11 @@ bool URRCoreUtils::HasEnoughDiskSpace(const FString& InPath, uint64 InRequiredMe
     bool bEnoughMemory = (freeDiskSize >= InRequiredMemorySizeInBytes);
     if (!bEnoughMemory)
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("Not enough memory: FreeSizeOfDisk [%ld] < [%ld] InRequiredMemorySizeInBytes"),
-               totalDiskSize,
-               InRequiredMemorySizeInBytes);
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("Not enough memory: FreeSizeOfDisk [%ld] < [%ld] InRequiredMemorySizeInBytes"),
+                         totalDiskSize,
+                         InRequiredMemorySizeInBytes);
         URRCoreUtils::ExecuteConsoleCommand(URRActorCommon::GetActorCommon(), URRCoreUtils::CMD_MEMORY_REPORT_FULL);
     }
 
@@ -162,10 +162,11 @@ bool URRCoreUtils::ShutDownSim(const UObject* InContextObject, uint64 InSimCompl
                     }
                     else
                     {
-                        UE_LOG(LogRapyutaCore,
-                               Warning,
-                               TEXT("[ShutDownSim failed] GameState has gone invalid. Please make sure no level transition was in "
-                                    "progress!"));
+                        UE_LOG_WITH_INFO(
+                            LogRapyutaCore,
+                            Warning,
+                            TEXT("[ShutDownSim failed] GameState has gone invalid. Please make sure no level transition was in "
+                                 "progress!"));
                         return false;
                     }
                 },
@@ -224,16 +225,17 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
         {
             const FString& fileTypesStr = FString::JoinBy(
                 InFileTypes, TEXT(","), [](const ERRFileType& InFileType) { return URRCoreUtils::GetSimFileExt(InFileType); });
-            UE_LOG(LogRapyutaCore,
-                   Error,
-                   TEXT("Failed to find any files of extension [%s] inside [%s]"),
-                   *fileTypesStr,
-                   *InFolderPath);
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Error,
+                             TEXT("Failed to find any files of extension [%s] inside [%s]"),
+                             *fileTypesStr,
+                             *InFolderPath);
         }
     }
     else
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] Directory NOT exist!"), *FPaths::ConvertRelativePathToFull(InFolderPath));
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Error, TEXT("[%s] Directory NOT exist!"), *FPaths::ConvertRelativePathToFull(InFolderPath));
     }
     return bResult;
 }
@@ -310,14 +312,14 @@ bool URRCoreUtils::LoadImagesFromFolder(const FString& InImageFolderPath,
             {
                 // Continue the loading regardless of some being failed.
                 bResult = false;
-                UE_LOG(LogRapyutaCore, Error, TEXT("Failed to load image to texture: [%s]"), *imagePath);
+                UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed to load image to texture: [%s]"), *imagePath);
             }
         }
     }
 
     if (!bResult && bIsLogged)
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("Failed to load all images from [%s] into textures!"), *InImageFolderPath);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed to load all images from [%s] into textures!"), *InImageFolderPath);
     }
 
     return bResult;
@@ -329,7 +331,7 @@ UTextureLightProfile* URRCoreUtils::LoadIESProfile(const FString& InFullFilePath
     TArray<uint8> buffer;
     if (!(FFileHelper::LoadFileToArray(buffer, *InFullFilePath) && buffer.Num() > 0))
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("[URRCoreUtils::LoadIESProfile] Failed loading file to array [%s]"), *InFullFilePath);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed loading file to array [%s]"), *InFullFilePath);
         return nullptr;
     }
 
@@ -337,10 +339,8 @@ UTextureLightProfile* URRCoreUtils::LoadIESProfile(const FString& InFullFilePath
     FIESConverter iesConverter(buffer.GetData(), buffer.Num());
     if (false == iesConverter.IsValid())
     {
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("[URRCoreUtils::LoadIESProfile] IESConverter failed creating buffer from image loaded from [%s]"),
-               *InFullFilePath);
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Error, TEXT("IESConverter failed creating buffer from image loaded from [%s]"), *InFullFilePath);
         return nullptr;
     }
 
@@ -424,14 +424,15 @@ bool URRCoreUtils::LoadIESProfilesFromFolder(const FString& InFolderPath,
             {
                 // Continue the loading regardless of some being failed.
                 bResult = false;
-                UE_LOG(LogRapyutaCore, Error, TEXT("Failed to load ies profile to light texture [%s]"), *iesProfilePath);
+                UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed to load ies profile to light texture [%s]"), *iesProfilePath);
             }
         }
     }
 
     if (!bResult && bIsLogged)
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("Failed to load all ies profiles from [%s] into light textures!"), *InFolderPath);
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Error, TEXT("Failed to load all ies profiles from [%s] into light textures!"), *InFolderPath);
     }
 
     return bResult;

@@ -62,11 +62,10 @@ void ARRBaseRobot::PreInitializeComponents()
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s] [ARRBaseRobot::PreInitializeComponents()] ROS2InterfaceClass has not been configured, "
-                    "probably later in child BP class!"),
-               *GetName());
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
+                               Warning,
+                               TEXT("ROS2InterfaceClass has not been configured, "
+                                    "probably later in child BP class!"));
     }
 
     // Super::, for EAutoPossessAI::PlacedInWorldOrSpawned, spawn APawn's default controller,
@@ -77,7 +76,7 @@ void ARRBaseRobot::PreInitializeComponents()
 void ARRBaseRobot::OnRep_ROS2Interface()
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::OnRep_ROS2Interface]."), *GetName());
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT(""));
 #endif
     // Since Replication order of ROS2Interface, bStartStopROS2Interface, ROSSpawnParameters can be shuffled,
     // Trigger init ROS2 interface in each OnRep function.
@@ -92,7 +91,7 @@ void ARRBaseRobot::OnRep_ROS2Interface()
 void ARRBaseRobot::OnRep_bStartStopROS2Interface()
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::OnRep_bStartStopROS2Interface]"), *GetName());
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("");)
 #endif
     if (bStartStopROS2Interface)
     {
@@ -115,51 +114,38 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
         if (nullptr == ROS2Interface)
         {
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(
-                LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ROS2Controller found"), *GetName());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No ROS2Controller found"));
 #endif
             res = false;
         }
         else if (nullptr == ROS2Interface->ROSSpawnParameters)
         {
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ROS2Controller->ROSSpawnParameters found"),
-                   *GetName());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No ROS2Controller->ROSSpawnParameters found"));
 #endif
             res = false;
         }
         else if (nullptr == npc)
         {
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient] No ARRNetworkPlayerController found"),
-                   *GetName());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No ARRNetworkPlayerController found"));
 #endif
             res = false;
         }
         else if (ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId() == npc->ROS2SimStateClient->GetNetworkPlayerId())
         {
-            UE_LOG(LogRapyutaCore,
-                   Log,
-                   TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient()] PlayerId is matched. PlayerId=%d."),
-                   *GetName(),
-                   npc->GetPlayerState<APlayerState>()->GetPlayerId());
+            UE_LOG_WITH_INFO_NAMED(
+                LogRapyutaCore, Log, TEXT("PlayerId is matched. PlayerId=%d."), npc->GetPlayerState<APlayerState>()->GetPlayerId());
             res = true;
         }
         else
         {
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(
-                LogRapyutaCore,
-                Warning,
-                TEXT("[%s] [ARRBaseRobot::IsAuthorizedInThisClient()] PlayerId is mismatched. This robot spawned by PlaeyrId=%d. "
-                     "This Client's PlayerId=%d. "),
-                *GetName(),
-                ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId(),
-                npc->GetPlayerState<APlayerState>()->GetPlayerId());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
+                                   Warning,
+                                   TEXT("PlayerId is mismatched. This robot spawned by PlaeyrId=%d. This Client's PlayerId=%d. "),
+                                   ROS2Interface->ROSSpawnParameters->GetNetworkPlayerId(),
+                                   npc->GetPlayerState<APlayerState>()->GetPlayerId());
 #endif
             res = false;
         }
@@ -170,8 +156,7 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
 
 void ARRBaseRobot::CreateROS2Interface()
 {
-    UE_LOG(
-        LogRapyutaCore, Display, TEXT("[%s][ARRBaseRobot::CreateROS2Interface] IsNetMode: %d"), *GetName(), IsNetMode(NM_Client));
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Display, TEXT("IsNetMode: %d"), IsNetMode(NM_Client));
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;
@@ -203,7 +188,7 @@ void ARRBaseRobot::InitROS2Interface()
 bool ARRBaseRobot::InitROS2InterfaceImpl()
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::InitROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("%d"), IsAuthorizedInThisClient());
 #endif
     if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
     {
@@ -227,7 +212,7 @@ bool ARRBaseRobot::InitROS2InterfaceImpl()
 void ARRBaseRobot::DeInitROS2Interface()
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][ARRBaseRobot::StopROS2Interface] %d"), *GetName(), IsAuthorizedInThisClient());
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%d"), IsAuthorizedInThisClient());
 #endif
 
     if ((IsNetMode(NM_Standalone) && nullptr != ROS2Interface) || (IsNetMode(NM_Client) && IsAuthorizedInThisClient()))
@@ -309,20 +294,14 @@ void ARRBaseRobot::SetJointState(const TMap<FString, TArray<float>>& InJointStat
                     Joints[joint.Key]->SetVelocityWithArray(joint.Value);
                     break;
                 case ERRJointControlType::EFFORT:
-                    UE_LOG(LogRapyutaCore,
-                           Warning,
-                           TEXT("[%s] [ARRBaseRobot] [SetJointState] Effort control is not supported."),
-                           *GetName());
+                    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Effort control is not supported."));
                     break;
             }
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] [ARRBaseRobot] [SetJointState] do not have joint named %s "),
-                   *GetName(),
-                   *joint.Key);
+            UE_LOG_WITH_INFO_NAMED(
+                LogRapyutaCore, Warning, TEXT("[%s] [ARRBaseRobot] [SetJointState] do not have joint named %s "), *joint.Key);
         }
     }
 }

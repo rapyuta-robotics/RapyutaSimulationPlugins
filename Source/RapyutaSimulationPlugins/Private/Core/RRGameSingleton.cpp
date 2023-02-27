@@ -21,7 +21,7 @@ TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_
 
 URRGameSingleton::URRGameSingleton()
 {
-    UE_LOG(LogRapyutaCore, Display, TEXT("[RR GAME SINGLETON] INSTANTIATED! ======================"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("INSTANTIATED! ======================"));
 }
 
 URRGameSingleton::~URRGameSingleton()
@@ -31,7 +31,7 @@ URRGameSingleton::~URRGameSingleton()
 
 void URRGameSingleton::PrintSimConfig() const
 {
-    UE_LOG(LogRapyutaCore, Display, TEXT("- SIM PROFILING: %d"), BSIM_PROFILING);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("- SIM PROFILING: %d"), BSIM_PROFILING);
 }
 
 URRGameSingleton* URRGameSingleton::Get()
@@ -39,7 +39,7 @@ URRGameSingleton* URRGameSingleton::Get()
     URRGameSingleton* singleton = Cast<URRGameSingleton>(GEngine->GameSingleton);
     if (!singleton)
     {
-        UE_LOG(LogRapyutaCore, Fatal, TEXT("[URRGameSingleton] NOT YET SET AS GAME SINGLETON!!"));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("NOT YET SET AS GAME SINGLETON!!"));
         return nullptr;
     }
 
@@ -49,14 +49,14 @@ URRGameSingleton* URRGameSingleton::Get()
         {
             if (!singleton->HasAnyFlags(EObjectFlags::RF_Standalone))
             {
-                UE_LOG(LogRapyutaCore, Warning, TEXT("[URRGameSingleton] RF_Standalone!!"));
+                UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("RF_Standalone!!"));
                 singleton->SetFlags(EObjectFlags::RF_Standalone);
                 // If needed, also hook it to Root set
             }
         }
         else
         {
-            UE_LOG(LogRapyutaCore, Error, TEXT("[URRGameSingleton] Not valid or pending kill!!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Not valid or pending kill!!"));
         }
     }
 
@@ -114,7 +114,7 @@ bool URRGameSingleton::InitializeResources()
     // Body setups are dynamically created in runtime
     GetSimResourceInfo(ERRResourceDataType::UE_BODY_SETUP).HasBeenAllLoaded = true;
 
-    UE_LOG(LogRapyutaCore, Display, TEXT("[InitializeResources] => RESOURCES REGISTERED TO BE LOADED!"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("RESOURCES REGISTERED TO BE LOADED!"));
     return true;
 }
 
@@ -124,25 +124,26 @@ bool URRGameSingleton::RequestResourcesLoading(const ERRResourceDataType InDataT
     const int32 resourceNum = resourceInfo.Data.Num();
     if (resourceInfo.HasBeenAllLoaded)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("All resources have been loaded. No need to request the resources loading again."));
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Warning, TEXT("All resources have been loaded. No need to request the resources loading again."));
         return true;
     }
     else if (0 == resourceNum)
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("THERE ARE NO [%] TO BE LOADED."),
-               *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("THERE ARE NO [%s] TO BE LOADED."),
+                         *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
         return true;
     }
 
     // REQUEST FOR LOADING THE RESOURCES ASYNCHRONOUSLY
     GetSimResourceInfo(InDataType).ToBeAsyncLoadedResourceNum = resourceNum;
-    UE_LOG(LogRapyutaCore,
-           Display,
-           TEXT("[%s] TO BE LOADED NUM: %d"),
-           *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-           resourceNum);
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Display,
+                     TEXT("[%s] TO BE LOADED NUM: %d"),
+                     *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                     resourceNum);
 
     UAssetManager* assetManager = UAssetManager::GetIfValid();
     if (assetManager)
@@ -161,7 +162,7 @@ bool URRGameSingleton::RequestResourcesLoading(const ERRResourceDataType InDataT
     }
     else
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("[InitializeResources] UNABLE TO GET ASSET MANAGER!"))
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("UNABLE TO GET ASSET MANAGER!"))
         return false;
     }
 }
@@ -184,10 +185,10 @@ bool URRGameSingleton::HaveAllResourcesBeenLoaded(bool bIsLogged) const
         bResult &= resourceInfo.Value.HasBeenAllLoaded;
         if (!bResult && bIsLogged)
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] Resources have not yet been fully loaded!"),
-                   *URRTypeUtils::GetERRResourceDataTypeAsString(resourceInfo.Key));
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Warning,
+                             TEXT("[%s] Resources have not yet been fully loaded!"),
+                             *URRTypeUtils::GetERRResourceDataTypeAsString(resourceInfo.Key));
         }
     }
 

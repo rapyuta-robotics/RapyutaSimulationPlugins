@@ -17,11 +17,7 @@ URRLimitRTFFixedSizeCustomTimeStep::URRLimitRTFFixedSizeCustomTimeStep(const FOb
     FApp::SetFixedDeltaTime(StepSize);
 
     GConfig->GetFloat(TEXT("/Script/Engine.Engine"), TEXT("TargetRTF"), TargetRTF, GEngineIni);
-    UE_LOG(LogRapyutaCore,
-           Display,
-           TEXT("[URRLimitRTFFixedSizeCustomTimeStep][URRLimitRTFFixedSizeCustomTimeStep]: StepSize: %f, TargetRTFL %f"),
-           StepSize,
-           TargetRTF);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("StepSize: %f, TargetRTFL %f"), StepSize, TargetRTF);
 
     LastPlatformTime = FPlatformTime::Seconds();
 }
@@ -60,15 +56,13 @@ void URRLimitRTFFixedSizeCustomTimeStep::SetStepSize(const float InStepSize)
     float stepSize = InStepSize;
     if (InStepSize < 1e-10)
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[URRLimitRTFFixedSizeCustomTimeStep][SetStepSize]: Given step size is too small. Set to 0.001"));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Given step size is too small. Set to 0.001"));
         stepSize = 0.001f;
     }
 
     if (TargetRTF < stepSize)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[URRLimitRTFFixedSizeCustomTimeStep][SetStepSize]: TargetRTF must be > StepSize."));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("TargetRTF must be > StepSize."));
         return;
     }
 
@@ -86,15 +80,13 @@ void URRLimitRTFFixedSizeCustomTimeStep::SetTargetRTF(const float InTargetRTF)
     float targetRTF = InTargetRTF;
     if (targetRTF < 0)
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[URRLimitRTFFixedSizeCustomTimeStep][SetTargetRTF]: TargetRTF must be > 0. Set to default value 1."));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("TargetRTF must be > 0. Set to default value 1."));
         targetRTF = 1.f;
     }
 
     if (targetRTF < StepSize)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[URRLimitRTFFixedSizeCustomTimeStep][SetTargetRTF]: TargetRTF must be > StepSize."));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("TargetRTF must be > StepSize."));
         return;
     }
 

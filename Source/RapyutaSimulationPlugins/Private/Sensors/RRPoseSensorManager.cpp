@@ -34,7 +34,7 @@ void URRPoseSensorManager::InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                              const FString& InTopicName,
                                              const TEnumAsByte<UROS2QoS> InQoS)
 {
-    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s][URRPoseSensorManager][InitalizeWithROS2] %s"), *GetName(), *ReferenceTag);
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s"), *ReferenceTag);
     Super::InitalizeWithROS2(InROS2Node, InPublisherName, InTopicName, InQoS);
     MapOriginPoseSensor->InitalizeWithROS2(InROS2Node);
     ServerSimState = CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
@@ -54,16 +54,14 @@ void URRPoseSensorManager::UpdateReferenceActorWithTag()
 {
     if (ReferenceTag.IsEmpty())
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[URRPoseSensorManager] RefActorSelectMode is AUTO but reference tag %s is empty."),
-               *ReferenceTag);
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore, Warning, TEXT("RefActorSelectMode is AUTO but reference tag %s is empty."), *ReferenceTag);
         return;
     }
 
     if (ServerSimState == nullptr)
     {
-        UE_LOG(LogRapyutaCore, Warning, TEXT("[URRPoseSensorManager]ServerSimState is null."));
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("ServerSimState is null."));
         ServerSimState =
             CastChecked<ASimulationState>(UGameplayStatics::GetActorOfClass(GetWorld(), ASimulationState::StaticClass()));
         return;
@@ -93,10 +91,8 @@ void URRPoseSensorManager::UpdateReferenceActorWithTag()
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[URRPoseSensorManager] ServerSimState's EntitiesWithTag for [%s] tag is empty"),
-               *ReferenceTag);
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore, Warning, TEXT("ServerSimState's EntitiesWithTag for [%s] tag is empty"), *ReferenceTag);
     }
 
     if (nearestActor != nullptr)
@@ -107,12 +103,11 @@ void URRPoseSensorManager::UpdateReferenceActorWithTag()
             MapOriginPoseSensor->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
             MapOriginPoseSensor->AttachToComponent(nearestActor->GetRootComponent(),
                                                    FAttachmentTransformRules::KeepRelativeTransform);
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s]'s [MapOriginPoseSensor] attached to [%s]'s comp: %s"),
-                   *GetName(),
-                   *nearestActor->GetName(),
-                   *nearestActor->GetRootComponent()->GetName());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
+                                   Warning,
+                                   TEXT("'s [MapOriginPoseSensor] attached to [%s]'s comp: %s"),
+                                   *nearestActor->GetName(),
+                                   *nearestActor->GetRootComponent()->GetName());
 
             // 2- Update [ReferenceActor] -> [nearestActor], signalling [OnNewReferenceActorDetected]
             SetReferenceActorByActor(nearestActor);
@@ -120,11 +115,8 @@ void URRPoseSensorManager::UpdateReferenceActorWithTag()
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[URRPoseSensorManager] No Actor with [%s] tag found in ServerSimState's "
-                    "EntitiesWithTag."),
-               *ReferenceTag);
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore, Warning, TEXT("No Actor with [%s] tag found in ServerSimState's EntitiesWithTag."), *ReferenceTag);
     }
 }
 

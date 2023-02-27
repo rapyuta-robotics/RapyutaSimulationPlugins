@@ -77,7 +77,7 @@ bool ARRPlayerController::HasInitialized(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRPlayerController]:: ActorCommon is NULL!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("ActorCommon is NULL!"));
         }
         return false;
     }
@@ -86,7 +86,7 @@ bool ARRPlayerController::HasInitialized(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Warning, TEXT("[ARRPlayerController]:: SceneCamera is NULL!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("SceneCamera is NULL!"));
         }
         return false;
     }

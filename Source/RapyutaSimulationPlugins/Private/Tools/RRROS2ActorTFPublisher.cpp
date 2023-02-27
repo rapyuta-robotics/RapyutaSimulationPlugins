@@ -69,7 +69,7 @@ void URRROS2ActorTFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
         if (bIsValid)
         {
             // warning output once
-            UE_LOG(LogRapyutaCore, Warning, TEXT("Target Actor %s is not valid."), *TargetActor->GetName());
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Target Actor %s is not valid."), *TargetActor->GetName());
         }
         bIsValid = false;
         return;
@@ -80,7 +80,7 @@ void URRROS2ActorTFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
         if (bIsValid)
         {
             // warning output once
-            UE_LOG(LogRapyutaCore, Warning, TEXT("Reference Actor %s is not valid."), *ReferenceActorName);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Reference Actor %s is not valid."), *ReferenceActorName);
         }
         bIsValid = false;
         return;

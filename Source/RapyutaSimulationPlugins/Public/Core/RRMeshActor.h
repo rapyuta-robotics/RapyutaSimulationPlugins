@@ -153,7 +153,7 @@ public:
             // [ProcMeshComp] Verify path as absolute & existing
             if ((false == FPaths::IsRelative(meshUniqueName)) && (false == FPaths::FileExists(meshUniqueName)))
             {
-                UE_LOG(LogTemp, Error, TEXT("Mesh invalid [%s] is non-existent"), *meshUniqueName);
+                UE_LOG_WITH_INFO(LogTemp, Error, TEXT("Mesh invalid [%s] is non-existent"), *meshUniqueName);
                 continue;
             }
 
@@ -179,17 +179,17 @@ public:
                 }
                 else
                 {
-                    UE_LOG(LogTemp, Error, TEXT("%s: Failed initializing mesh comp[%s]"), *GetName(), *meshUniqueName);
+                    UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("Failed initializing mesh comp[%s]"), *meshUniqueName);
                 }
             }
             else
             {
-                UE_LOG(LogTemp,
-                       Error,
-                       TEXT("[%s:%d] - Failed creating child Mesh Component [%s]!"),
-                       *ActorInfo->UniqueName,
-                       this,
-                       *meshUniqueName);
+                UE_LOG_WITH_INFO(LogTemp,
+                                 Error,
+                                 TEXT("[%s:%d] - Failed creating child Mesh Component [%s]!"),
+                                 *ActorInfo->UniqueName,
+                                 this,
+                                 *meshUniqueName);
             }
 
             // [MeshCompList] <- [addedMeshCompList]

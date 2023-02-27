@@ -6,7 +6,8 @@ FRandomStream URRMathUtils::RandomStream = FRandomStream();
 void URRMathUtils::InitializeRandomStream()
 {
     RandomStream.GenerateNewSeed();
-    UE_LOG(LogRapyutaCore, Display, TEXT("RRSim Random generator was initialized with seed: %d"), RandomStream.GetCurrentSeed());
+    UE_LOG_WITH_INFO(
+        LogRapyutaCore, Display, TEXT("RRSim Random generator was initialized with seed: %d"), RandomStream.GetCurrentSeed());
 }
 
 FVector URRMathUtils::GetRandomSphericalPosition(const FVector& InCenter,

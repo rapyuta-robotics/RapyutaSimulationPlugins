@@ -71,7 +71,7 @@ public:
      * This method is mainly used by #ARRBaseoRbotROSController via #ARRBaseRobot::InitROS2Interface.
      * @param InRobot
      */
-     UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable)
     virtual void Initialize(ARRBaseRobot* InRobot);
 
     /**
@@ -177,7 +177,6 @@ public:
     UPROPERTY(Transient, BlueprintReadWrite)
     TMap<FString, UROS2ActionServer*> ActionServers;
 
-
     /**
      * @brief Initialize non sensor basic publishers such as odometry.
      * Overidden in child robot ROS2 interface classes for specialized publishers.
@@ -227,7 +226,6 @@ public:
     UFUNCTION()
     virtual bool InitActionServers();
 
-
     /**
      * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.
      * Typically this receive Twist msg to move robot.
@@ -276,11 +274,11 @@ protected:
             TService* service = CastChecked<TService>(client->Service);
             client->SendRequest(service, InRequest);
 
-            UE_LOG(LogTemp, Warning, TEXT("%s [%s] Request made"), *InServiceName.ToString(), *GetName());
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("%s [%s] Request made"), *InServiceName.ToString(), *GetName());
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName.ToString());
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName.ToString());
         }
     }
 };
@@ -288,7 +286,7 @@ protected:
 /**
  * @brief Wrapper class of URRRobotROS2Interfaceas component
  * This class should be useful to create custom ROSInterface.
- * 
+ *
  */
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2InterfaceComponent : public UActorComponent

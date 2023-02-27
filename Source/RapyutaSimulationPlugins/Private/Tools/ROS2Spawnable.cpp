@@ -26,11 +26,11 @@ void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityReq& InRequest)
 {
     ActorModelName = InRequest.Xml;
     ActorName = InRequest.State.Name;
-    UE_LOG(LogTemp,
-           Warning,
-           TEXT("Pruning / from received namespace %s, namespace in UE will be set as: %s"),
-           *InRequest.RobotNamespace,
-           *InRequest.RobotNamespace.Replace(TEXT("/"), TEXT("")));
+    UE_LOG_WITH_INFO(LogTemp,
+                     Warning,
+                     TEXT("Pruning / from received namespace %s, namespace in UE will be set as: %s"),
+                     *InRequest.RobotNamespace,
+                     *InRequest.RobotNamespace.Replace(TEXT("/"), TEXT("")));
     ActorNamespace = InRequest.RobotNamespace.Replace(TEXT("/"), TEXT(""));
 }
 

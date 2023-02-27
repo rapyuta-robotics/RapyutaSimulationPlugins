@@ -147,7 +147,7 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
     }
     else
     {
-        UE_LOG(LogTurtlebotBurger, Error, TEXT("Turtlebot not initialized - can't setup constraints!"));
+        UE_LOG_WITH_INFO(LogTurtlebotBurger, Error, TEXT("Turtlebot not initialized - can't setup constraints!"));
     }
 }
 

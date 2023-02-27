@@ -26,6 +26,18 @@
 #include "RRSceneDirector.generated.h"
 
 DECLARE_DELEGATE_OneParam(FOnSpawnedActorsSettled, bool /*bIsForNewOperationBatch*/);
+
+/**
+ * UE_LOG with function info with __FUNCTION__ and __LINE__ .
+ * @param CategoryName name of the logging category
+ * @param Verbosity, verbosity level to test against
+ * @param Format, format text
+*/
+#define UE_LOG_WITH_SCENE_ID(CategoryName, Verbosity, ...)                                                                       \
+    {                                                                                                                            \
+        UE_LOG_WITH_INFO(CategoryName, Verbosity, TEXT("SceneInstance[%d] %s"), SceneInstanceId, *FString::Printf(__VA_ARGS__)); \
+    }
+
 /**
  * @brief Execute Init/Run/Continue Sim type-specific operations (Data synthesizer/collection or Robot operations, etc. or compound) with #ARRSceneInstance.
  */

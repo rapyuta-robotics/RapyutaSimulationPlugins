@@ -30,7 +30,7 @@ bool ARRSceneDirector::Initialize()
         this, InitializationTimerHandle, [this] { TryInitializeOperation(); }, 0.1f);
 
     // Run [TryInitializeOperation()] until succeeded!
-    UE_LOG(LogRapyutaCore, Display, TEXT("[%d:SCENE DIRECTOR]::[%s] TRYING TO INTIALIZE..."), SceneInstanceId, *GetName());
+    UE_LOG_WITH_SCENE_ID(LogRapyutaCore, Display, TEXT("[%s] TRYING TO INTIALIZE..."), *GetName());
     LastTimeStamp = FDateTime::UtcNow();
     return true;
 }
@@ -46,21 +46,19 @@ void ARRSceneDirector::TryInitializeOperation()
     {
         if (bSceneInitialized)
         {
-            UE_LOG(LogRapyutaCore,
-                   Display,
-                   TEXT("[%d:ARRSceneDirector] SCENE INITIALIZED! - TOOK [%lf] secs => ABOUT TO START "
-                        "OPERATION!============="),
-                   SceneInstanceId,
-                   elapsedTime);
+            UE_LOG_WITH_SCENE_ID(LogRapyutaCore,
+                                 Display,
+                                 TEXT("SCENE INITIALIZED! - TOOK [%lf] secs => ABOUT TO START "
+                                      "OPERATION!============="),
+                                 elapsedTime);
             URRCoreUtils::StopRegisteredExecution(GetWorld(), InitializationTimerHandle);
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Error,
-                   TEXT("[%d:ARRSceneDirector] SCENE FAILED INITIALIZING! - TIMEOUT IS [%lf] secs"),
-                   SceneInstanceId,
-                   ARRGameMode::SIM_START_TIMEOUT_SECS);
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Error,
+                             TEXT("SCENE FAILED INITIALIZING! - TIMEOUT IS [%lf] secs"),
+                             ARRGameMode::SIM_START_TIMEOUT_SECS);
             EndSceneInstance();
         }
     }
@@ -99,11 +97,11 @@ bool ARRSceneDirector::HasOperationCompleted(bool bIsLogged)
     {
         if (bIsDataCollecting)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("SceneInstance[%d] is still collecting data!"), SceneInstanceId);
+            UE_LOG_WITH_SCENE_ID(LogRapyutaCore, Display, TEXT("is still collecting data!"));
         }
         else if (bIsOperating)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("SceneInstance[%d] is still operating!"), SceneInstanceId);
+            UE_LOG_WITH_SCENE_ID(LogRapyutaCore, Display, TEXT("is still operating!"));
         }
     }
     return !(bIsDataCollecting || bIsOperating);
@@ -119,11 +117,10 @@ void ARRSceneDirector::OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhas
         if (URRCoreUtils::IsSimProfiling())
         {
             // Measure the running of the previous data collection
-            UE_LOG(LogRapyutaCore,
-                   Log,
-                   TEXT("[%d] DATA COLLECTION DONE - TOOK [%lf] secs!"),
-                   SceneInstanceId,
-                   URRCoreUtils::GetElapsedTime(DataCollectionTimeStamp));
+            UE_LOG_WITH_SCENE_ID(LogRapyutaCore,
+                                 Log,
+                                 TEXT("DATA COLLECTION DONE - TOOK [%lf] secs!"),
+                                 URRCoreUtils::GetElapsedTime(DataCollectionTimeStamp));
         }
     }
 }
@@ -140,10 +137,6 @@ void ARRSceneDirector::EndSceneInstance()
 
     // [EndSceneInstance()] is virtual, and also wait polling for Sim's completion, thus it must be run on another thread,
     // then end the Sim in GameThread upon the waiting return.
-    UE_LOG(LogRapyutaCore,
-           Display,
-           TEXT("SCENE INSTANCE (%d) [%s] - Still collecting data %d - THE END!"),
-           SceneInstanceId,
-           *SceneName,
-           bIsDataCollecting);
+    UE_LOG_WITH_SCENE_ID(
+        LogRapyutaCore, Display, TEXT("[%s] - Still collecting data %d - THE END!"), *SceneName, bIsDataCollecting);
 }

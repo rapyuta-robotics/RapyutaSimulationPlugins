@@ -36,12 +36,12 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRCameraProperties
 
     FORCEINLINE void PrintSelf() const
     {
-        UE_LOG(LogRapyutaCore, Display, TEXT("CameraProperties:"));
-        UE_LOG(LogRapyutaCore, Display, TEXT("- DistanceRangeInCm: %s"), *DistanceRangeInCm.ToString());
+        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("CameraProperties:"));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("- DistanceRangeInCm: %s"), *DistanceRangeInCm.ToString());
         verify(FMath::IsWithinInclusive(double(DistanceRangeInCm.X), double(0), double(DistanceRangeInCm.Y)));
-        UE_LOG(LogRapyutaCore, Display, TEXT("- HeightRangeInCm: %s"), *HeightRangeInCm.ToString());
+        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("- HeightRangeInCm: %s"), *HeightRangeInCm.ToString());
         verify(FMath::IsWithinInclusive(double(HeightRangeInCm.X), double(0), double(HeightRangeInCm.Y)));
-        UE_LOG(LogRapyutaCore, Display, TEXT("- HFoVRangeInDegree: %s"), *HFoVRangeInDegree.ToString());
+        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("- HFoVRangeInDegree: %s"), *HFoVRangeInDegree.ToString());
         verify(FMath::IsWithinInclusive(double(HFoVRangeInDegree.X), double(0), double(HFoVRangeInDegree.Y)));
     }
 };

@@ -27,10 +27,8 @@ void URRKinematicTricycleDriveComponent::TickComponent(float InDeltaTime,
         }
         else
         {
-            UE_LOG(LogRRKinematicTricycleDriveComponent,
-                   Warning,
-                   TEXT("[%s] [URRKinematicTricycleDriveComponent] Steering and/or drive joints are not speciied"),
-                   *GetName());
+            UE_LOG_WITH_INFO_NAMED(
+                LogRRKinematicTricycleDriveComponent, Warning, TEXT("Steering and/or drive joints are not speciied"));
         }
     }
 }
@@ -49,10 +47,8 @@ void URRKinematicTricycleDriveComponent::BeginPlay()
     }
     else
     {
-        UE_LOG(LogRRKinematicTricycleDriveComponent,
-               Warning,
-               TEXT("[%s] [URRKinematicTricycleDriveComponent] Steering and/or drive joints are not speciied"),
-               *GetName());
+        UE_LOG_WITH_INFO_NAMED(
+            LogRRKinematicTricycleDriveComponent, Warning, TEXT("Steering and/or drive joints are not speciied"));
     }
     Super::BeginPlay();
 }

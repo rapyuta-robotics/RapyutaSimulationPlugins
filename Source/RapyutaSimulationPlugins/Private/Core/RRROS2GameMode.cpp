@@ -22,20 +22,21 @@ ARRROS2GameMode::ARRROS2GameMode()
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
 {
     Super::InitGame(InMapName, InOptions, OutErrorMessage);
-    UE_LOG(LogRapyutaCore,
-           Log,
-           TEXT("[ARRROS2GameMode] INIT GAME [%s/%s] - Options: %s\n%s"),
-           *InMapName,
-           *GetWorld()->GetName(),
-           *InOptions,
-           *OutErrorMessage);
-    UE_LOG(LogRapyutaCore,
-           Log,
-           TEXT("NUM OF CPU CORES: [%d] - WITH HYPERTHREADS: [%d] - RECOMMENDED NUM OF WORKER THREADS: [%d]"),
-           FPlatformMisc::NumberOfCores(),
-           FPlatformMisc::NumberOfCoresIncludingHyperthreads(),
-           FPlatformMisc::NumberOfWorkerThreadsToSpawn());
-    UE_LOG(LogRapyutaCore, Display, TEXT("ShouldUseThreadingForPerformance: %d"), FApp::ShouldUseThreadingForPerformance());
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Log,
+                     TEXT("INIT GAME [%s/%s] - Options: %s\n%s"),
+                     *InMapName,
+                     *GetWorld()->GetName(),
+                     *InOptions,
+                     *OutErrorMessage);
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Log,
+                     TEXT("NUM OF CPU CORES: [%d] - WITH HYPERTHREADS: [%d] - RECOMMENDED NUM OF WORKER THREADS: [%d]"),
+                     FPlatformMisc::NumberOfCores(),
+                     FPlatformMisc::NumberOfCoresIncludingHyperthreads(),
+                     FPlatformMisc::NumberOfWorkerThreadsToSpawn());
+    UE_LOG_WITH_INFO(
+        LogRapyutaCore, Display, TEXT("ShouldUseThreadingForPerformance: %d"), FApp::ShouldUseThreadingForPerformance());
 
     // Init Sim main components
     InitSim();
@@ -57,7 +58,7 @@ void ARRROS2GameMode::InitSim()
 #if WITH_EDITOR    // Since ROSNode in each client is namespaced with editor in network mode, need clock publsiher without namespace
     else if (nullptr != Cast<ARRNetworkGameMode>(this))
     {
-        UE_LOG(LogRapyutaCore, Display, TEXT("[ARRROS2GameMode] Init ROS2 Node with editor in gamemode"));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("Init ROS2 Node with editor in gamemode"));
         InitROS2();
     }
 #endif
@@ -91,7 +92,7 @@ void ARRROS2GameMode::StartPlay()
 {
     Super::StartPlay();
 
-    UE_LOG(LogRapyutaCore, Display, TEXT("[ARRROS2GameMode]: START PLAY!"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("START PLAY!"));
 }
 
 void ARRROS2GameMode::SetFixedTimeStep(const float InStepSize)
@@ -119,10 +120,10 @@ void ARRROS2GameMode::SetTargetRTF(const float InTargetRTF)
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[ARRROS2GameMode][SetTargetRTF]: CustomTimeStep Class needs to be URRLimitRTFFixedSizeCustomTimeStep. "
-                    "Return 0."));
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("CustomTimeStep Class needs to be URRLimitRTFFixedSizeCustomTimeStep. "
+                              "Return 0."));
     }
 }
 float ARRROS2GameMode::GetTargetRTF() const
@@ -135,10 +136,10 @@ float ARRROS2GameMode::GetTargetRTF() const
     }
     else
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[ARRROS2GameMode][GetTargetRTF]: CustomTimeStep Class needs to be URRLimitRTFFixedSizeCustomTimeStep. "
-                    "Return 0."));
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("CustomTimeStep Class needs to be URRLimitRTFFixedSizeCustomTimeStep. "
+                              "Return 0."));
     }
     return targetRTF;
 }

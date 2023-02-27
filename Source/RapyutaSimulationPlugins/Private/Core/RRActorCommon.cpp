@@ -28,7 +28,7 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[URRSceneInstance] PlayerController is NULL!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("PlayerController is NULL!"));
         }
         return false;
     }
@@ -37,7 +37,7 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[URRSceneInstance] ActorCommon object is NULL!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("ActorCommon object is NULL!"));
         }
         return false;
     }
@@ -46,7 +46,7 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[URRSceneInstance] ActorCommon: Not yet initialized!"))
+            UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("ActorCommon: Not yet initialized!"))
         }
         return false;
     }
@@ -58,7 +58,7 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[URRSceneInstance] [SceneDirector] is NULL!"));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SceneDirector is NULL!"));
         }
         return false;
     }
@@ -71,17 +71,17 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
 FString FRRHomoMeshEntityGroup::GetGroupModelName() const
 {
     const int32 num = Num();
-    return (num == 1) ? Entities[0]->EntityModelName
-         : (num > 1)  ? FString::Printf(TEXT("Merged%d_%s"), num, *Entities[0]->EntityModelName)
-                      : FString();
+    return (num == 1)  ? Entities[0]->EntityModelName
+           : (num > 1) ? FString::Printf(TEXT("Merged%d_%s"), num, *Entities[0]->EntityModelName)
+                       : FString();
 }
 
 FString FRRHomoMeshEntityGroup::GetGroupName() const
 {
     const int32 num = Num();
-    return (num == 1) ? Entities[0]->GetName()
-         : (num > 1)  ? FString::Printf(TEXT("Merged%d_%s"), num, *Entities[0]->GetName())
-                      : FString();
+    return (num == 1)  ? Entities[0]->GetName()
+           : (num > 1) ? FString::Printf(TEXT("Merged%d_%s"), num, *Entities[0]->GetName())
+                       : FString();
 }
 // ===================================================================================================================================
 // [FRRActorSpawnInfo] --
@@ -261,7 +261,7 @@ bool URRActorCommon::HasInitialized(bool bIsLogged) const
     {
         if (bIsLogged)
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("[URRActorCommon]:: SceneCamera is NULL!"))
+            UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SceneCamera is NULL!"))
         }
         return false;
     }

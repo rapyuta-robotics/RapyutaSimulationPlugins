@@ -18,11 +18,11 @@ void URRJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
 {
     if (InVelocity.Num() != LinearDOF + RotationalDOF)
     {
-        UE_LOG(LogTemp,
-               Warning,
-               TEXT("Given joint command num is not much with joint DOF. Linear DOF %i and Rotational DOF %i"),
-               LinearDOF,
-               RotationalDOF);
+        UE_LOG_WITH_INFO(LogTemp,
+                         Warning,
+                         TEXT("Given joint command num is not much with joint DOF. Linear DOF %i and Rotational DOF %i"),
+                         LinearDOF,
+                         RotationalDOF);
         return;
     }
 
@@ -61,12 +61,13 @@ void URRJointComponent::PoseFromArray(const TArray<float>& InPose, FVector& OutP
 {
     if (InPose.Num() != LinearDOF + RotationalDOF)
     {
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("Given joint pose values num (%u) does not match joint total DOF (Linear DOF %i & Rotational DOF %i)"),
-               InPose.Num(),
-               LinearDOF,
-               RotationalDOF);
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore,
+            Warning,
+            TEXT("Given joint pose values num (%u) does not match joint total DOF (Linear DOF %i & Rotational DOF %i)"),
+            InPose.Num(),
+            LinearDOF,
+            RotationalDOF);
         return;
     }
 

@@ -48,12 +48,7 @@ bool URRProceduralMeshComponent::InitializeMesh(const FString& InMeshFileName)
         {
             TSharedPtr<FRRMeshData> meshData = FRRMeshData::GetMeshData(MeshUniqueName);
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("URRProceduralMeshComponent::InitializeMesh: %s - %s - Already loaded %d"),
-                   *GetName(),
-                   *InMeshFileName,
-                   meshData.IsValid());
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT(" - %s - Already loaded %d"), *InMeshFileName, meshData.IsValid());
 #endif
             if (meshData.IsValid())
             {
@@ -112,11 +107,7 @@ bool URRProceduralMeshComponent::CreateMeshBody(const FRRMeshData& InBodyMeshDat
     // (NOTE) This function is hooked up from an async task running in GameThread
     if (false == InBodyMeshData.IsValid())
     {
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("[%s] CreateMeshBody() PROC MESH DATA BUFFER [%s] IS INVALID"),
-               *GetName(),
-               *MeshUniqueName);
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("PROC MESH DATA BUFFER [%s] IS INVALID"), *MeshUniqueName);
         return false;
     }
 
@@ -186,7 +177,7 @@ bool URRProceduralMeshComponent::CreateMeshBody(const FRRMeshData& InBodyMeshDat
                 convexMeshes.Emplace(mesh.Vertices);
             }
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogRapyutaCore, Display, TEXT("Proc mesh-Convex Collision added: %d"), node.Meshes.Num());
+            UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("Proc mesh-Convex Collision added: %d"), node.Meshes.Num());
 #endif
         }
 
@@ -252,21 +243,21 @@ void URRProceduralMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>
         }
 
 #if RAPYUTA_SIM_DEBUG
-        UE_LOG(LogRapyutaCore,
-               Warning,
-               TEXT("[%s]CREATE PROCEDURAL MESH SECTION[%u]: Vertices(%u) - VertexColors(%u) - TriangleIndices(%u) - Normals(%u) - "
-                    "UVs(%u) - "
-                    "ProcTangents(%u) - "
-                    "Material(%u)"),
-               *GetName(),
-               meshSectionIndex,
-               mesh.Vertices.Num(),
-               mesh.VertexColors.Num(),
-               mesh.TriangleIndices.Num(),
-               mesh.Normals.Num(),
-               mesh.UVs.Num(),
-               mesh.ProcTangents.Num(),
-               mesh.MaterialIndex);
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore,
+            Warning,
+            TEXT("CREATE PROCEDURAL MESH SECTION[%u]: Vertices(%u) - VertexColors(%u) - TriangleIndices(%u) - Normals(%u) - "
+                 "UVs(%u) - "
+                 "ProcTangents(%u) - "
+                 "Material(%u)"),
+            meshSectionIndex,
+            mesh.Vertices.Num(),
+            mesh.VertexColors.Num(),
+            mesh.TriangleIndices.Num(),
+            mesh.Normals.Num(),
+            mesh.UVs.Num(),
+            mesh.ProcTangents.Num(),
+            mesh.MaterialIndex);
 #endif
 
         // Create Mesh Section
@@ -306,11 +297,8 @@ bool URRProceduralMeshComponent::GetMeshData(FRRMeshData& OutMeshData, bool bFro
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Warning,
-                   TEXT("[%s] GetMeshData() PROC MESH DATA BUFFER [%s] IS INVALID"),
-                   *GetName(),
-                   *MeshUniqueName);
+            UE_LOG_WITH_INFO_NAMED(
+                LogRapyutaCore, Warning, TEXT("GetMeshData() PROC MESH DATA BUFFER [%s] IS INVALID"), *MeshUniqueName);
         }
     }
     else

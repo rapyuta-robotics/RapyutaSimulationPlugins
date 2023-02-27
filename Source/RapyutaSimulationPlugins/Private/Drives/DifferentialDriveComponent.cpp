@@ -23,7 +23,7 @@ void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheel
         }
         else
         {
-            UE_LOG(LogDifferentialDriveComponent, Error, TEXT("[%s] SetWheels() NewWheel is invalid!"), *GetName());
+            UE_LOG_WITH_INFO_NAMED(LogDifferentialDriveComponent, Error, TEXT("NewWheel is invalid!"));
         }
     };
 
@@ -36,10 +36,8 @@ void UDifferentialDriveComponent::SetPerimeter()
     if (WheelRadius <= 1e-6)
     {
         WheelRadius = 1.0f;
-        UE_LOG(LogDifferentialDriveComponent,
-               Warning,
-               TEXT("[%s] Wheel radius is too small. Wheel radius is reset to 1.0"),
-               *GetName());
+        UE_LOG_WITH_INFO_NAMED(
+            LogDifferentialDriveComponent, Warning, TEXT("Wheel radius is too small. Wheel radius is reset to 1.0"));
     }
     WheelPerimeter = WheelRadius * 2.f * M_PI;
 }
@@ -58,7 +56,7 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
     }
     else
     {
-        UE_LOG(LogDifferentialDriveComponent, Error, TEXT("[%s] Wheel Joints are not set"), *GetName());
+        UE_LOG_WITH_INFO_NAMED(LogDifferentialDriveComponent, Error, TEXT("Wheel Joints are not set"));
     }
 }
 
@@ -135,13 +133,13 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     OdomData.Twist.Covariance[28] = 1e+12;
     OdomData.Twist.Covariance[35] = 0.01;
 
-    // UE_LOG(LogTemp, Warning, TEXT("Input:"));
-    // UE_LOG(LogTemp, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
-    // UE_LOG(LogTemp, Warning, TEXT("Odometry:"));
-    // UE_LOG(LogTemp, Warning, TEXT("\tOdom Positon:\t\t\t\t%f %f from %f %f (%f)"), PoseEncoderX, PoseEncoderY, dx, dy,
-    // Velocity.X); UE_LOG(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s (%f)"), *OdomData.Pose.Pose.Orientation.ToString(),
-    // PoseEncoderTheta); UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.Twist.Twist.Linear.ToString(),
-    // OdomData.Twist.Twist.Linear.Size()); UE_LOG(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"),
+    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Input:"));
+    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
+    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Odometry:"));
+    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tOdom Positon:\t\t\t\t%f %f from %f %f (%f)"), PoseEncoderX, PoseEncoderY, dx, dy,
+    // Velocity.X); UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s (%f)"), *OdomData.Pose.Pose.Orientation.ToString(),
+    // PoseEncoderTheta); UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.Twist.Twist.Linear.ToString(),
+    // OdomData.Twist.Twist.Linear.Size()); UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"),
     // *OdomData.Twist.Twist.Angular.ToString());
 }
 

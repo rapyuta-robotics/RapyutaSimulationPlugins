@@ -31,8 +31,7 @@ void URRROS2EntityStateSensorComponent::SetReferenceActorByName(const FString& I
     }
     else
     {
-        UE_LOG(
-            LogRapyutaCore, Error, TEXT("[URRROS2EntityStateSensorComponent::SetReferenceActorByName] %s is not found"), *InName);
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("%s is not found"), *InName);
     }
 }
 
@@ -60,7 +59,7 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
         if (bIsValid)
         {
             // warning output once
-            UE_LOG(LogRapyutaCore, Warning, TEXT("Reference Actor %s is not valid."), *ReferenceActorName);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Reference Actor %s is not valid."), *ReferenceActorName);
         }
         bIsValid = false;
         return;

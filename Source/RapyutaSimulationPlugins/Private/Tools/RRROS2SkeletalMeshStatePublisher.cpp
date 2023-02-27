@@ -34,13 +34,13 @@ void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(ARobotVehicle* InRobot)
     {
         SkeletalMeshComp = skeletalMeshComponents[0];
         const auto bonesNum = SkeletalMeshComp->GetBoneSpaceTransforms().Num();
-        UE_LOG(LogRapyutaCore, Log, TEXT("[%s] has %d bones"), *SkeletalMeshComp->GetName(), bonesNum);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Log, TEXT("[%s] has %d bones"), *SkeletalMeshComp->GetName(), bonesNum);
         check(bonesNum > 0);
     }
     else
     {
         SkeletalMeshComp = nullptr;
-        UE_LOG(LogRapyutaCore, Fatal, TEXT("[%s] No child SkeletalMeshComp found!"), *SkeletalMeshComp->GetName());
+        UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("[%s] No child SkeletalMeshComp found!"), *SkeletalMeshComp->GetName());
     }
 }
 
