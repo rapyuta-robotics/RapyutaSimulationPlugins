@@ -89,7 +89,7 @@ public:
     }
     FORCEINLINE bool IsStaticBPRobot() const
     {
-        return RobotModelName.IsEmpty() || GetClass()->GetName().StartsWith(TEXT("BP"));
+        return GetClass()->GetName().StartsWith(TEXT("BP"));
     }
 
     //! Robot creation done delegate
