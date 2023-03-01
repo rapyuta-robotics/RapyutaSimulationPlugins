@@ -89,7 +89,9 @@ public:
     }
     FORCEINLINE bool IsStaticBPRobot() const
     {
-        return GetClass()->GetName().StartsWith(TEXT("BP")) || GetClass()->GetName().StartsWith(TEXT("SKEL_BP"));
+        const FString className = GetClass()->GetName();
+        return className.StartsWith(TEXT("BP"))             // In-Editor
+               || className.StartsWith(TEXT("SKEL_BP"));    // In-Package auto prefixed [SKEL_]
     }
 
     //! Robot creation done delegate
