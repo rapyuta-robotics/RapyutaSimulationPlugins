@@ -90,6 +90,12 @@ public:
 
 public:
     /**
+     * @brief Register entity types from Blueprint class names, that are configured in #ARRROS2GameMode
+     */
+    UFUNCTION(BlueprintCallable)
+    void RegisterSpawnableBPEntities(const TArray<FString>& InBPSpawnableClassNames);
+
+    /**
      * @brief Fetch all entities in the current map under control of this Actor.
      */
     UFUNCTION(BlueprintCallable)

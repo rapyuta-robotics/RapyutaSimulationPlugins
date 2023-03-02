@@ -257,10 +257,6 @@ protected:
     UPROPERTY()
     TArray<ARRMeshActor*> AllDynamicMeshEntities;
 
-    UPROPERTY()
-    TArray<FString> BPSpawnableClassNames;
-    virtual void RegisterSpawnableBPClasses();
-
 private:
     //! To avoid early GC, this exists only to keep ones temporarily taken away from [AllDynamicMeshEntities] & recycled later
     UPROPERTY()

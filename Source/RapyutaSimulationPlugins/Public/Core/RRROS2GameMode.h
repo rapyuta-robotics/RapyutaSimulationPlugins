@@ -114,6 +114,9 @@ protected:
      */
     virtual void StartPlay() override;
 
+    UPROPERTY()
+    TArray<FString> BPSpawnableClassNames;
+
 private:
     /**
      * @brief Create and initialize #MainROS2Node, #ClockPublisher and #MainSimState.
