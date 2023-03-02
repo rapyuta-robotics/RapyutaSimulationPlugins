@@ -114,6 +114,7 @@ protected:
      */
     virtual void StartPlay() override;
 
+    //! Blueprint class names to be registered as spawnable entity types
     UPROPERTY()
     TArray<FString> BPSpawnableClassNames;
 
