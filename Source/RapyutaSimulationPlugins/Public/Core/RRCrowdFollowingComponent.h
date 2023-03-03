@@ -23,7 +23,7 @@ public:
     URRCrowdFollowingComponent(const FObjectInitializer& ObjectInitializer);
 
     UPROPERTY()
-    URRFloatingMovementComponent* FloatMovementComp = nullptr;
+    TObjectPtr<URRFloatingMovementComponent> FloatMovementComp = nullptr;
     virtual void SetMovementComponent(UNavMovementComponent* InMoveComp) override;
     bool Is2DMovement() const;
 
