@@ -38,18 +38,15 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
     UE_LOG_WITH_INFO(
         LogRapyutaCore, Display, TEXT("ShouldUseThreadingForPerformance: %d"), FApp::ShouldUseThreadingForPerformance());
 
-    // Init Sim main components
-    InitSim();
-}
-
-void ARRROS2GameMode::InitSim()
-{
     // 1- Simulation state
     MainSimState = GetWorld()->SpawnActor<ASimulationState>();
     // Fetch Entities in the map first regardless of ROS2
     MainSimState->InitEntities();
+}
 
-    // 2 - Init Sim-wide Main ROS2 node, but only in case of a Network standalone app
+void ARRROS2GameMode::InitSim()
+{
+    // 1 - Init Sim-wide Main ROS2 node, but only in case of a Network standalone app
     // For Server-client app, each client will have its own ROS2 Node inited upon Network player controller possessing
     if (IsNetMode(NM_Standalone) && (nullptr == Cast<ARRNetworkGameMode>(this)))
     {
@@ -91,6 +88,9 @@ void ARRROS2GameMode::InitROS2()
 void ARRROS2GameMode::StartPlay()
 {
     Super::StartPlay();
+
+    // Init Sim main components
+    InitSim();
 
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("START PLAY!"));
 }
