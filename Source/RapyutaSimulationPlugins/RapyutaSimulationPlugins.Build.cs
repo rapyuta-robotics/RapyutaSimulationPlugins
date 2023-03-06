@@ -44,7 +44,7 @@ public class RapyutaSimulationPlugins : ModuleRules
         bEnableExceptions = true;
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "Renderer", "RHI", "PhysicsCore", "XmlParser", "IESFile",
-                                                            "AIModule", "NavigationSystem", "TimeManagement", "Json",
+                                                            "AIModule", "NavigationSystem", "TimeManagement", "Json", "PhysicsUtilities",
                                                             "ChaosVehicles",
                                                             "ProceduralMeshComponent", "MeshDescription", "StaticMeshDescription", "MeshConversion",
                                                             "rclUE"});

@@ -2,6 +2,7 @@
 #include "Core/RRStaticMeshComponent.h"
 
 // UE
+#include "ConvexDecompTool.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "MeshDescription.h"
@@ -66,11 +67,15 @@ void URRStaticMeshComponent::SetMesh(UStaticMesh* InStaticMesh)
         UBodySetup* bodySetup = InStaticMesh->GetBodySetup();
         verify(bodySetup);
         verify(EBodyCollisionResponse::BodyCollision_Enabled == bodySetup->CollisionReponse);
-        verify(bodySetup->bCreatedPhysicsMeshes);
-        verify(false == bodySetup->bFailedToCreatePhysicsMeshes);
-        verify(bodySetup->bHasCookedCollisionData);
+        if (bUseDefaultSimpleCollision)
+        {
+            verify(bodySetup->bCreatedPhysicsMeshes);
+            verify(false == bodySetup->bFailedToCreatePhysicsMeshes);
+            verify(bodySetup->bHasCookedCollisionData);
+        }
     }
 
+    // NOTE: [MarkRenderStateDirty() & [RecreatePhysicsState()] already called here-in
     SetStaticMesh(InStaticMesh);
 
     // Signal [[OnMeshCreationDone]] async
@@ -176,7 +181,7 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
     return true;
 }
 
-UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshData)
+UStaticMesh* URRStaticMeshComponent::CreateMesh(const FRRMeshData& InMeshData, bool bInAsVisualMesh)
 {
     // (NOTE) This function could be invoked from an async task running in GameThread
     if (false == InMeshData.IsValid())
@@ -203,59 +208,111 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
 
     // Build static mesh
     UStaticMesh::FBuildMeshDescriptionsParams meshDescParams;
+    meshDescParams.bUseHashAsGuid = true;
     // NOTE: bFastBuild off is only supported for WITH_EDITOR
     meshDescParams.bFastBuild = true;
-    meshDescParams.bBuildSimpleCollision = true;
-    UStaticMesh* staticMesh = NewObject<UStaticMesh>(this, FName(*MeshUniqueName));
-    staticMesh->SetLightMapCoordinateIndex(0);
-#if WITH_EDITOR
-    // Ref: FStaticMeshFactoryImpl::SetupMeshBuildSettings()
-    // LOD
-    ITargetPlatform* currentPlatform = GetTargetPlatformManagerRef().GetRunningTargetPlatform();
-    check(currentPlatform);
-    const FStaticMeshLODGroup& lodGroup = currentPlatform->GetStaticMeshLODSettings().GetLODGroup(NAME_None);
-    int32 lodsNum = lodGroup.GetDefaultNumLODs();
-    while (staticMesh->GetNumSourceModels() < lodsNum)
-    {
-        staticMesh->AddSourceModel();
-    }
-    for (auto lodIndex = 0; lodIndex < lodsNum; ++lodIndex)
-    {
-        auto& sourceModel = staticMesh->GetSourceModel(lodIndex);
-        sourceModel.ReductionSettings = lodGroup.GetDefaultSettings(lodIndex);
-        sourceModel.BuildSettings.bGenerateLightmapUVs = true;
-        sourceModel.BuildSettings.SrcLightmapIndex = 0;
-        sourceModel.BuildSettings.DstLightmapIndex = 0;
-        sourceModel.BuildSettings.bRecomputeNormals = false;
-        sourceModel.BuildSettings.bRecomputeTangents = false;
+    meshDescParams.bBuildSimpleCollision = false;
+#if RAPYUTA_SIM_DEBUG
+    // If this function runs in thread, do not mark the package dirty since MarkPackageDirty is not thread safe
+    // This also requires MarkPackageDirty() to be called later in game thread
+    meshDescParams.bMarkPackageDirty = false;
+#endif
+    // Do not commit since we only need the render data and commit is slow
+    meshDescParams.bCommitMeshDescription = false;
 
-        // LOD Section
-        auto& sectionInfoMap = staticMesh->GetSectionInfoMap();
-        for (auto meshSectionIndex = 0; meshSectionIndex < InMeshData.Nodes.Num(); ++meshSectionIndex)
-        {
-            FMeshSectionInfo info = sectionInfoMap.Get(lodIndex, meshSectionIndex);
-            info.MaterialIndex = 0;
-            sectionInfoMap.Remove(lodIndex, meshSectionIndex);
-            sectionInfoMap.Set(lodIndex, meshSectionIndex, info);
-        }
-    }
-    staticMesh->SetLightMapResolution(lodGroup.GetDefaultLightMapResolution());
+#if !WITH_EDITOR
+    // Force build process to keep index buffer for complex collision when in game
+    meshDescParams.bAllowCpuAccess = true;
 #endif
 
-    // Mesh's static materials
-    for (const auto& materialInstance : InMeshData.MaterialInstances)
+    UStaticMesh* staticMesh = NewObject<UStaticMesh>(
+        this, bInAsVisualMesh ? FName(*MeshUniqueName) : FName(*FString::Printf(TEXT("UCX_%s"), *MeshUniqueName)));
+    if (bInAsVisualMesh)
     {
-        staticMesh->AddMaterial(materialInstance->GetBaseMaterial());
+        staticMesh->SetLightMapCoordinateIndex(0);
+#if WITH_EDITOR
+        // Ref: FStaticMeshFactoryImpl::SetupMeshBuildSettings()
+        // LOD
+        ITargetPlatform* currentPlatform = GetTargetPlatformManagerRef().GetRunningTargetPlatform();
+        check(currentPlatform);
+        const FStaticMeshLODGroup& lodGroup = currentPlatform->GetStaticMeshLODSettings().GetLODGroup(NAME_None);
+        int32 lodsNum = lodGroup.GetDefaultNumLODs();
+        while (staticMesh->GetNumSourceModels() < lodsNum)
+        {
+            staticMesh->AddSourceModel();
+        }
+        for (auto lodIndex = 0; lodIndex < lodsNum; ++lodIndex)
+        {
+            auto& sourceModel = staticMesh->GetSourceModel(lodIndex);
+            sourceModel.ReductionSettings = lodGroup.GetDefaultSettings(lodIndex);
+            sourceModel.BuildSettings.bGenerateLightmapUVs = true;
+            sourceModel.BuildSettings.SrcLightmapIndex = 0;
+            sourceModel.BuildSettings.DstLightmapIndex = 0;
+            sourceModel.BuildSettings.bRecomputeNormals = false;
+            sourceModel.BuildSettings.bRecomputeTangents = false;
+
+            // LOD Section
+            auto& sectionInfoMap = staticMesh->GetSectionInfoMap();
+            for (auto meshSectionIndex = 0; meshSectionIndex < InMeshData.Nodes.Num(); ++meshSectionIndex)
+            {
+                FMeshSectionInfo info = sectionInfoMap.Get(lodIndex, meshSectionIndex);
+                info.MaterialIndex = 0;
+                sectionInfoMap.Remove(lodIndex, meshSectionIndex);
+                sectionInfoMap.Set(lodIndex, meshSectionIndex, info);
+            }
+        }
+        staticMesh->SetLightMapResolution(lodGroup.GetDefaultLightMapResolution());
+#endif
+
+        // Mesh's static materials
+        for (const auto& materialInstance : InMeshData.MaterialInstances)
+        {
+            staticMesh->AddMaterial(materialInstance->GetBaseMaterial());
+        }
     }
+
+    // Build mesh
     staticMesh->BuildFromMeshDescriptions({&meshDesc}, meshDescParams);
-    // staticMesh->PostLoad();
+    return staticMesh;
+}
+
+UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshData)
+{
+    UStaticMesh* visualMesh = CreateMesh(InMeshData, true);
+    // Generate complex in case of no simple collision
+    if (false == bUseDefaultSimpleCollision)
+    {
+        auto* bodySetup = visualMesh->GetBodySetup();
+        if (bUseComplexCollision)
+        {
+            visualMesh->ComplexCollisionMesh = CreateMesh(InMeshData, false);
+            bodySetup->CollisionTraceFlag = ECollisionTraceFlag::CTF_UseComplexAsSimple;
+        }
+        else
+        {
+            // Ref: UProceduralMeshComponent::UpdateCollision()
+            GenerateCustomSimpleCollision(InMeshData, bodySetup);
+            bodySetup->BodySetupGuid = FGuid::NewGuid();
+            bodySetup->CollisionTraceFlag = ECollisionTraceFlag::CTF_UseSimpleAsComplex;
+            bodySetup->bHasCookedCollisionData = true;
+            bodySetup->bMeshCollideAll = true;
+            bodySetup->InvalidatePhysicsData();
+            bodySetup->CreatePhysicsMeshes();
+#if RAPYUTA_SIM_DEBUG
+            // These would cause crash & are not surely required, kept purely for debug reference
+            visualMesh->Build(true);
+            visualMesh->PostLoad();
+#endif
+        }
+    }
+    check(visualMesh->GetRenderData() && visualMesh->GetRenderData()->IsInitialized());
 
     // Add to the global resource store
-    URRGameSingleton::Get()->AddDynamicResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, staticMesh, MeshUniqueName);
+    URRGameSingleton::Get()->AddDynamicResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, visualMesh, MeshUniqueName);
 
     // This also signals [OnMeshCreationDone] async
-    SetMesh(staticMesh);
-    return staticMesh;
+    SetMesh(visualMesh);
+    return visualMesh;
 }
 
 void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& InMeshSectionData,
@@ -321,6 +378,27 @@ void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& In
         meshSectionIndex++;
 #endif
     }
+}
+
+void URRStaticMeshComponent::GenerateCustomSimpleCollision(const FRRMeshData& InMeshData, UBodySetup* OutBodySetup)
+{
+    TArray<FVector3f> verts;
+    TArray<uint32> indices;
+    for (auto& meshNode : InMeshData.Nodes)
+    {
+        for (auto& mesh : meshNode.Meshes)
+        {
+            for (const auto& vertex : mesh.Vertices)
+            {
+                verts.Add(FVector3f(vertex));
+            }
+            for (const auto& triangleIdx : mesh.TriangleIndices)
+            {
+                indices.Add(triangleIdx);
+            }
+        }
+    }
+    DecomposeMeshToHulls(OutBodySetup, verts, indices, 64, 100000);
 }
 
 FVector URRStaticMeshComponent::GetSize() const
