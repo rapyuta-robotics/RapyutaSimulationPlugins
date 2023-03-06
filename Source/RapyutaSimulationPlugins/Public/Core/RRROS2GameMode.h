@@ -114,6 +114,10 @@ protected:
      */
     virtual void StartPlay() override;
 
+    //! Blueprint class names to be registered as spawnable entity types
+    UPROPERTY()
+    TArray<FString> BPSpawnableClassNames;
+
 private:
     /**
      * @brief Create and initialize #MainROS2Node, #ClockPublisher and #MainSimState.

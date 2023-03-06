@@ -194,7 +194,7 @@ protected:
     * @param InSceneInstanceId 
     */
     virtual void CreateSceneInstance(int8 InSceneInstanceId);
-    
+
     /**
      * @brief 
      * Spawn #ARRSceneDirector, which runs the main operation of the mode

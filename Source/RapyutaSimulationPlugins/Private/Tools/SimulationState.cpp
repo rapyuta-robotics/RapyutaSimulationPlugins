@@ -18,6 +18,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Core/RRAssetUtils.h"
 #include "Core/RRConversionUtils.h"
 #include "Core/RRUObjectUtils.h"
 #include "Net/UnrealNetwork.h"
@@ -46,6 +47,18 @@ bool ASimulationState::VerifyIsServerCall(const FString& InFunctionName)
         return false;
     }
     return true;
+}
+
+void ASimulationState::RegisterSpawnableBPEntities(const TArray<FString>& InBPSpawnableClassNames)
+{
+    for (const auto& bpName : InBPSpawnableClassNames)
+    {
+        UClass* bpClass = URRAssetUtils::FindBlueprintClass(bpName);
+        if (bpClass)
+        {
+            AddSpawnableEntityTypes({{bpName, bpClass}});
+        }
+    }
 }
 
 void ASimulationState::InitEntities()

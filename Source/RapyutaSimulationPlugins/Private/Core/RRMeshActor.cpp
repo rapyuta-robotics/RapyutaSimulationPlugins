@@ -11,7 +11,7 @@
 #include "Core/RRUObjectUtils.h"
 
 using URRMeshComponent =
-    typename TChooseClass<RAPYUTA_DATA_SYNTH_USE_ENTITY_STATIC_MESH, URRStaticMeshComponent, URRProceduralMeshComponent>::Result;
+    typename TChooseClass<RAPYUTA_RUNTIME_MESH_ENTITY_USE_STATIC_MESH, URRStaticMeshComponent, URRProceduralMeshComponent>::Result;
 
 ARRMeshActor::ARRMeshActor()
 {

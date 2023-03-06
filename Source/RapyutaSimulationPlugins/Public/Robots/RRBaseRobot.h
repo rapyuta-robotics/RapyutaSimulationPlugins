@@ -85,11 +85,13 @@ public:
 
     FORCEINLINE bool IsDynamicRuntimeRobot() const
     {
-        return (false == RobotModelName.IsEmpty());
+        return (false == IsStaticBPRobot());
     }
     FORCEINLINE bool IsStaticBPRobot() const
     {
-        return RobotModelName.IsEmpty();
+        const FString className = GetClass()->GetName();
+        return className.StartsWith(TEXT("BP"))             // In-Editor
+               || className.StartsWith(TEXT("SKEL_BP"));    // In-Package auto prefixed [SKEL_]
     }
 
     //! Robot creation done delegate

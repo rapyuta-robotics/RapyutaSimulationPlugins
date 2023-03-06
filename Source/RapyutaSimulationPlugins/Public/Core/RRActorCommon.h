@@ -30,8 +30,8 @@
 #define RAPYUTA_SIM_DEBUG (0)
 #define RAPYUTA_SIM_VISUAL_DEBUG (0)
 
-#define RAPYUTA_DATA_SYNTH_USE_ENTITY_STATIC_MESH (0)
-#define RAPYUTA_DATA_SYNTH_USE_ENTITY_PROCEDURAL_MESH (!RAPYUTA_DATA_SYNTH_USE_ENTITY_STATIC_MESH)
+#define RAPYUTA_RUNTIME_MESH_ENTITY_USE_STATIC_MESH (1)
+#define RAPYUTA_RUNTIME_MESH_ENTITY_USE_PROCEDURAL_MESH (!RAPYUTA_RUNTIME_MESH_ENTITY_USE_STATIC_MESH)
 
 class ARRGameMode;
 class ARRGameState;
@@ -161,7 +161,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRAsyncJob
     {
         //! [TSharedFuture] should be considered if [Task] is accessed from multiple threads!
         TFuture<TResult> Task;
-        
+
         bool DoneStatus = false;
 
         FRRSingleAsyncTask()
@@ -207,10 +207,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRAsyncJob
     static constexpr const int8 TASK_INDEX_NONE = -1;
 
     FString JobName;
-    
+
     //! This stores the up-to-the-moment capture batch id every time an async task is added to be scheduled for running!
     uint64 LatestCaptureBatchId = 0;
-    
+
     TArray<FRRSingleAsyncTask<bool>> AsyncTasks;
 
     // For the future of UE C++
@@ -695,7 +695,7 @@ public:
 
     //! Callback on ARRGameState::StartSim() for this scene instance
     virtual void OnStartSim();
-    
+
     //! Callback on ARRGameState::BeginPlay() for this scene instance
     virtual void OnBeginPlay()
     {

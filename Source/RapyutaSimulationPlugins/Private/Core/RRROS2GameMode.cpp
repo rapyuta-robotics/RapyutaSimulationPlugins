@@ -46,7 +46,9 @@ void ARRROS2GameMode::InitSim()
 {
     // 1- Simulation state
     MainSimState = GetWorld()->SpawnActor<ASimulationState>();
-    // Fetch Entities in the map first regardless of ROS2
+    // 1.1- Register BP spawnable classes
+    MainSimState->RegisterSpawnableBPEntities(BPSpawnableClassNames);
+    // 1.2- Fetch Entities in the map first regardless of ROS2
     MainSimState->InitEntities();
 
     // 2 - Init Sim-wide Main ROS2 node, but only in case of a Network standalone app
