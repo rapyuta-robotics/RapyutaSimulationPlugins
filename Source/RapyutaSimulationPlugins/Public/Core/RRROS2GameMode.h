@@ -93,7 +93,7 @@ public:
 
 protected:
     /**
-     * @brief Initialize Game and call #InitSim.
+     * @brief Initialize Game.
      *
      * @param InMapName
      * @param InOptions
@@ -110,7 +110,7 @@ protected:
     virtual void InitSim();
 
     /**
-     * @brief Set timestep with startplay.
+     * @brief Set timestep with startplay and call #InitSim
      */
     virtual void StartPlay() override;
 
