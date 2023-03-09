@@ -85,6 +85,9 @@ void ARRROS2GameMode::InitROS2()
     // Create Clock publisher
     ClockPublisher =
         CastChecked<URRROS2ClockPublisher>(MainROS2Node->CreatePublisherWithClass(URRROS2ClockPublisher::StaticClass()));
+
+    // Signal [OnROS2Initialized]
+    OnROS2Initialized.Broadcast();
 }
 
 void ARRROS2GameMode::StartPlay()

@@ -20,6 +20,8 @@
 class AROS2Node;
 class URRROS2ClockPublisher;
 
+DECLARE_MULTICAST_DELEGATE(FRROnROS2Initialized);
+
 /**
  * @brief ROS2 GameMode which have Clock publisher and ROS2 services to interact with ROS2.
  * @sa [AGameMode](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
@@ -58,6 +60,8 @@ public:
     UPROPERTY(BlueprintReadOnly)
     TSubclassOf<URRROS2SimulationStateClient> ROS2SimStateClientClass = URRROS2SimulationStateClient::StaticClass();
 
+    //! Delegate signalling ROS2 having been initialized with #MainROS2Node, #MainROS2SimStateClient, #ClockPublisher ready
+    FRROnROS2Initialized OnROS2Initialized;
     /**
      * @brief Set timestep by FApp::SetFixedDeltaTime.
      *

@@ -260,6 +260,29 @@ protected:
         }
     }
 
+    template<typename TROS2Message, typename TROS2MessageData, typename TRobot>
+    FORCEINLINE void OnMessageReceivedFunc(const TROS2Message* InMsg, const TFunction<void(const TROS2MessageData&)>& InFunc)
+    {
+        const auto* msg = Cast<TROS2Message>(InMsg);
+        if (IsValid(msg))
+        {
+            TROS2MessageData msgData;
+            msg->GetMsg(msgData);
+
+            // (Note) In this callback, which could be invoked from a ROS working thread,
+            // thus any direct referencing to its member in this GameThread lambda needs to be verified.
+            AsyncTask(ENamedThreads::GameThread,
+                      [this, InFunc, msgData]
+                      {
+                          auto* robot = CastChecked<TRobot>(Robot);
+                          if (IsValid(Cast<UObject>(robot)))
+                          {
+                              InFunc(msgData);
+                          }
+                      });
+        }
+    }
+
     UPROPERTY()
     TMap<FName /*ServiceName*/, UROS2ServiceClient*> ServiceClientList;
 
