@@ -243,6 +243,32 @@ public:
         return LoadObject<T>(Outer, *InAssetPath);
     }
 
+    /**
+     * @brief Fetch UObject from asset, called in Constructor only
+     * @tparam T
+     * @param InAssetPath
+     * @return T*
+     */
+    template<typename T>
+    FORCEINLINE static T* FetchObjectFromAsset(const TCHAR* InAssetPath)
+    {
+        return ConstructorHelpers::FObjectFinderOptional<T>(InAssetPath).Get();
+    }
+
+    /**
+     * @brief Fetch UClass from asset, called in Constructor only
+     * * @tparam T
+     * @param InClassAssetPath, which requires trailing "_C"
+     * @return TSubclassOf<T>
+     */
+    template<typename T>
+    FORCEINLINE static TSubclassOf<T> FetchClassFromAsset(const TCHAR* InClassAssetPath)
+    {
+        // NOTE: For class asset, "_C" is required at the end of class path
+        ConstructorHelpers::FClassFinder<T> classFinder(InClassAssetPath);
+        return classFinder.Class;
+    }
+
     // Ref: EditorUtilitySubsystem
     FORCEINLINE static UClass* FindBlueprintClass(const FString& InBlueprintClassName)
     {
