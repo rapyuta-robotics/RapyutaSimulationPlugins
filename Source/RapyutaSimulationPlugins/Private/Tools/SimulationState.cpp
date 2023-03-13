@@ -255,7 +255,9 @@ void ASimulationState::ServerAttach(const FROSAttachReq& InRequest)
         return;
     }
 
-    if (ServerCheckAttachRequest(InRequest))
+    // TODO: Add proper server check
+    //if (ServerCheckAttachRequest(InRequest))
+    if (true)
     {
         AActor* entity1 = Entities[InRequest.Name1];
         AActor* entity2 = Entities[InRequest.Name2];
