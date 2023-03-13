@@ -83,10 +83,18 @@ public:
     UPROPERTY(VisibleAnywhere, Replicated)
     USceneComponent* DefaultRoot = nullptr;
 
+    /**
+     * @brief DynamicRuntime robot: Implemented purely in cpp, built & loaded up at runtime from raw CAD + metadata (URDF/SDF)
+     */
     FORCEINLINE bool IsDynamicRuntimeRobot() const
     {
         return (false == IsStaticBPRobot());
     }
+
+    /**
+     * @brief Static BP robot: implemented in BP, possibly inheriting from #ARBaseRobot or its children classes,
+     * built from pre-designed static UE assets (StaticMesh, SkeletalMesh, Skeleton, Physics Asset, etc.)
+     */
     FORCEINLINE bool IsStaticBPRobot() const
     {
         const FString className = GetClass()->GetName();
