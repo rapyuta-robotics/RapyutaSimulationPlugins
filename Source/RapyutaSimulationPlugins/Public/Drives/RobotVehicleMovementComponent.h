@@ -19,6 +19,7 @@
 #include "RobotVehicleMovementComponent.generated.h"
 
 class ARRRobotBaseVehicle;
+class URRFloatingMovementComponent;
 /**
  * @brief Type of odometry frame origin.
  * World provide odometry from world origin and Encoder provide odometry from initial pose.
@@ -73,6 +74,22 @@ public:
     UPROPERTY(VisibleAnywhere, Replicated)
     ARRRobotBaseVehicle* OwnerVehicle = nullptr;
 
+    UPROPERTY()
+    TObjectPtr<URRFloatingMovementComponent> AIMovementComp = nullptr;
+    /**
+     * @brief Init #AIMovementComp, which drives the robot kinematically using UE AI Navigation
+     */
+    void InitAIMovementComp();
+
+    /**
+     * @brief Assign a #USceneComponent as #UpdatedComponent
+     * @param InNewUpdatedComponent
+     * @sa
+     * [SetUpdatedComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/SetUpdatedComponent)
+     */
+    virtual void SetUpdatedComponent(USceneComponent* InNewUpdatedComponent) override;
+
+    //! AngularVelocity control input for [UpdatedComponent]
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
     FVector AngularVelocity = FVector::ZeroVector;
 
@@ -181,6 +198,18 @@ protected:
     }
 
     /**
+     * @brief Call #UpdateMovement, #UpdateOdom, and UpdateComponentVelocity
+     *
+     * @param DeltaTime
+     * @param TickType
+     * @param ThisTickFunction
+     *
+     * @sa
+     * [UpdateComponentVelocity](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdateComponentVelocity/)
+     */
+    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+    /**
      * @brief Move actor by using SafeMoveUpdatedComponent and SlideAlongSurface.
      * Calculate #DesiredMovement and #DesiredRotation from deltatime, UpdatedComponent and #AngularVelocity.
      *
@@ -238,17 +267,4 @@ protected:
     //! Add noise or not
     UPROPERTY(EditAnywhere, Category = "Noise")
     bool WithNoise = true;
-
-public:
-    /**
-     * @brief Call #UpdateMovement, #UpdateOdom, and UpdateComponentVelocity
-     *
-     * @param DeltaTime
-     * @param TickType
-     * @param ThisTickFunction
-     *
-     * @sa
-     * [UpdateComponentVelocity](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdateComponentVelocity/)
-     */
-    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };
