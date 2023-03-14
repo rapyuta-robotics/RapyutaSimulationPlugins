@@ -11,6 +11,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
+#include "Drives/RRFloatingMovementComponent.h"
 #include "Robots/RRRobotBaseVehicle.h"
 
 // rclUE
@@ -31,8 +32,67 @@ void URobotVehicleMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetime
     DOREPLIFETIME(URobotVehicleMovementComponent, OwnerVehicle);
 }
 
+void URobotVehicleMovementComponent::InitAIMovementComp()
+{
+    // NOTE: By default [AIMovementComp] is NOT auto-instantiated, leaving its creation to owner robot's decision
+    if (nullptr == AIMovementComp)
+    {
+        AIMovementComp = URRUObjectUtils::CreateChildComponent<URRFloatingMovementComponent>(
+            GetOwner(), *FString::Printf(TEXT("%sAIMoveComp"), *GetName()));
+    }
+}
+
+void URobotVehicleMovementComponent::SetUpdatedComponent(USceneComponent* InNewUpdatedComponent)
+{
+    Super::SetUpdatedComponent(InNewUpdatedComponent);
+    if (AIMovementComp)
+    {
+        AIMovementComp->SetUpdatedComponent(InNewUpdatedComponent);
+    }
+}
+
+void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
+                                                   enum ELevelTick TickType,
+                                                   FActorComponentTickFunction* ThisTickFunction)
+{
+    if (!ShouldSkipUpdate(InDeltaTime))
+    {
+        if (AIMovementComp)
+        {
+            // Let the tick handled by [AIMovementComp] update [UpdatedComponent]'s velocity
+            // NOTE:[AIMovementComp->UpdatedComponent & GetPawnOwner()] could be assigned after the 1st tick
+            return;
+        }
+        else
+        {
+            Super::TickComponent(InDeltaTime, TickType, ThisTickFunction);
+
+            // Make sure that everything is still valid, and that we are allowed to move.
+            if (IsValid(UpdatedComponent))
+            {
+                //1- Update vels to OwnerVehicle's target vels
+                Velocity = OwnerVehicle->TargetLinearVel;
+                AngularVelocity = OwnerVehicle->TargetAngularVel;
+
+                //2- Movement control for OwnerVehicle
+                UpdateMovement(InDeltaTime);
+                UpdateOdom(InDeltaTime);
+
+                //3- Update OwnerVehicle's velocity to [Velocity], must be after [UpdateMovement()]
+                UpdateComponentVelocity();
+            }
+        }
+    }
+}
+
 void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 {
+    if (AIMovementComp)
+    {
+        // Let [AIMovementComp] drive the movement
+        return;
+    }
+
     const FQuat oldRotation = UpdatedComponent->GetComponentQuat();
 
     FVector position = UpdatedComponent->ComponentVelocity * InDeltaTime;
@@ -264,31 +324,6 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
         FMath::DegreesToRadians((rot * previousEstimatedRot.Inverse()).GetNormalized().Euler()) / InDeltaTime;
 
     OdomData.Pose.Pose.Orientation *= RootOffset.GetRotation();
-}
-
-void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
-                                                   enum ELevelTick TickType,
-                                                   FActorComponentTickFunction* ThisTickFunction)
-{
-    if (!ShouldSkipUpdate(InDeltaTime))
-    {
-        Super::TickComponent(InDeltaTime, TickType, ThisTickFunction);
-
-        // Make sure that everything is still valid, and that we are allowed to move.
-        if (IsValid(UpdatedComponent))
-        {
-            //1- Update vels to OwnerVehicle's target vels
-            Velocity = OwnerVehicle->TargetLinearVel;
-            AngularVelocity = OwnerVehicle->TargetAngularVel;
-
-            //2- Movement control for OwnerVehicle
-            UpdateMovement(InDeltaTime);
-            UpdateOdom(InDeltaTime);
-
-            //3- Update OwnerVehicle's velocity to [Velocity], must be after [UpdateMovement()]
-            UpdateComponentVelocity();
-        }
-    }
 }
 
 FTransform URobotVehicleMovementComponent::GetOdomTF() const

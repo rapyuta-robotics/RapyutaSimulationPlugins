@@ -11,7 +11,13 @@ void URRKinematicTricycleDriveComponent::TickComponent(float InDeltaTime,
     {
         Super::TickComponent(InDeltaTime, TickType, ThisTickFunction);
 
-        if (SteeringJoint != nullptr && DriveJoint != nullptr)
+        if (AIMovementComp)
+        {
+            // Let the tick handled by [AIMovementComp] update [UpdatedComponent]'s velocity
+            return;
+        }
+
+        if ((SteeringJoint != nullptr) && (DriveJoint != nullptr))
         {
             float steerAngle = FMath::DegreesToRadians(SteeringJoint->Orientation.Roll);
             float wheelAngle = FMath::DegreesToRadians(DriveJoint->Orientation.Roll);
