@@ -34,6 +34,9 @@ public:
     FString ActorNamespace;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    FString ActorReferenceFrame;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TArray<FString> ActorTags;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated)
@@ -70,6 +73,9 @@ public:
 
     UFUNCTION(BlueprintCallable)
     virtual void SetNetworkPlayerId(const int32 InNetworkPlayerId);
+
+    UFUNCTION(BlueprintCallable)
+    virtual void SetReferenceFrame(const FString InReferenceFrame);
 
 protected:
     virtual void OnComponentCreated() override;

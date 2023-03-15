@@ -32,6 +32,7 @@ void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityReq& InRequest)
            *InRequest.RobotNamespace,
            *InRequest.RobotNamespace.Replace(TEXT("/"), TEXT("")));
     ActorNamespace = InRequest.RobotNamespace.Replace(TEXT("/"), TEXT(""));
+    ActorReferenceFrame = InRequest.State.ReferenceFrame;
 }
 
 void UROS2Spawnable::SetActorModelName(const FString& InModelName)
@@ -72,4 +73,9 @@ int32 UROS2Spawnable::GetNetworkPlayerId() const
 void UROS2Spawnable::SetNetworkPlayerId(const int32 InNetworkPlayerId)
 {
     NetworkPlayerId = InNetworkPlayerId;
+}
+
+void UROS2Spawnable::SetReferenceFrame(const FString InReferenceFrame)
+{
+    ActorReferenceFrame = InReferenceFrame;
 }

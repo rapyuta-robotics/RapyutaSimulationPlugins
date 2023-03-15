@@ -190,7 +190,7 @@ void ASimulationState::GetSpawnableEntityInfoList()
 
 bool ASimulationState::ServerCheckSetEntityStateRequest(const FROSSetEntityStateReq& InRequest)
 {
-    if (PrevSetEntityStateRequest.State.Name == InRequest.State.Name &&
+    /*if (PrevSetEntityStateRequest.State.Name == InRequest.State.Name &&
         PrevSetEntityStateRequest.State.ReferenceFrame == InRequest.State.ReferenceFrame &&
         PrevSetEntityStateRequest.State.Pose.Position == InRequest.State.Pose.Position &&
         PrevSetEntityStateRequest.State.Pose.Orientation == InRequest.State.Pose.Orientation)
@@ -200,7 +200,8 @@ bool ASimulationState::ServerCheckSetEntityStateRequest(const FROSSetEntityState
     else
     {
         return true;
-    }
+    }*/
+    return true; /*TODO FIX SERVER DUPLICATE REQUEST CHECKS*/
 }
 
 void ASimulationState::ServerSetEntityState(const FROSSetEntityStateReq& InRequest)
@@ -228,11 +229,11 @@ void ASimulationState::ServerSetEntityState(const FROSSetEntityStateReq& InReque
 
 bool ASimulationState::ServerCheckAttachRequest(const FROSAttachReq& InRequest)
 {
-    if (false == VerifyIsServerCall(TEXT("ServerCheckAttachRequest")))
-    {
-        return false;
-    }
-    return ((PrevAttachEntityRequest.Name1 != InRequest.Name1) || (PrevAttachEntityRequest.Name2 != InRequest.Name2));
+//    if (false == VerifyIsServerCall(TEXT("ServerCheckAttachRequest")))
+//    {
+//        return false;
+//    }
+    return true; /*TODO FIX SERVER DUPLICATE REQUEST CHECKS*/
 }
 
 void ASimulationState::ServerAttach(const FROSAttachReq& InRequest)
@@ -291,7 +292,7 @@ void ASimulationState::ServerAttach(const FROSAttachReq& InRequest)
 
 bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityReq& InRequest)
 {
-    if (false == VerifyIsServerCall(TEXT("ServerCheckSpawnRequest")))
+    /*if (false == VerifyIsServerCall(TEXT("ServerCheckSpawnRequest")))
     {
         return false;
     }
@@ -307,7 +308,8 @@ bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityReq& InReque
     else
     {
         return true;
-    }
+    }*/
+    return true; /*TODO FIX SERVER DUPLICATE REQUEST CHECKS*/
 }
 
 AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawnRequest,
@@ -442,11 +444,11 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InRequest,
 
 bool ASimulationState::ServerCheckDeleteRequest(const FROSDeleteEntityReq& InRequest)
 {
-    if (false == VerifyIsServerCall(TEXT("ServerCheckDeleteRequest")))
+    /*if (false == VerifyIsServerCall(TEXT("ServerCheckDeleteRequest")))
     {
         return false;
-    }
-    return (PrevDeleteEntityRequest.Name != InRequest.Name);
+    }*/
+    return true; /*TODO FIX SERVER DUPLICATE REQUEST CHECKS*/
 }
 
 void ASimulationState::ServerDeleteEntity(const FROSDeleteEntityReq& InRequest)
