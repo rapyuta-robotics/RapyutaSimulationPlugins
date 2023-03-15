@@ -120,8 +120,7 @@ bool URRRobotROS2Interface::InitPublishers()
     }
 
     // OdomPublisher (with TF)
-    auto* robotVehicle = Cast<ARRBaseRobot>(Robot);
-    if (bPublishOdom && robotVehicle != nullptr)
+    if (bPublishOdom && Robot)
     {
         if (nullptr == OdomPublisher)
         {
@@ -134,7 +133,7 @@ bool URRRobotROS2Interface::InitPublishers()
 
         // If publishing odom, it must be an [ARRBaseRobot]
         // todo separate ROS2Interface for mobile robot.
-        OdomPublisher->RobotVehicle = robotVehicle;
+        OdomPublisher->RobotVehicle = Robot;
     }
 
     // Additional publishers by child class or robot
@@ -311,10 +310,11 @@ void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)
         AsyncTask(ENamedThreads::GameThread,
                   [this, linear, angular]
                   {
-                      ARRBaseRobot* robotVehicle = CastChecked<ARRBaseRobot>(Robot);
-                      check(IsValid(robotVehicle));
-                      robotVehicle->SetLinearVel(linear);
-                      robotVehicle->SetAngularVel(angular);
+                      if (IsValid(Robot))
+                      {
+                          Robot->SetLinearVel(linear);
+                          Robot->SetAngularVel(angular);
+                      }
                   });
     }
 }
