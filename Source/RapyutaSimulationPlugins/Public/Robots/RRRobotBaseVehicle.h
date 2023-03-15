@@ -10,6 +10,7 @@
 /**
  * @brief Base robot vehicle class, inherited by other robot vehicle classes.
  * @todo temporary class for backward compatibility of child BPs
+ * @deprecated Use #ARRBaseRobot instead
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRRobotBaseVehicle : public ARRBaseRobot
