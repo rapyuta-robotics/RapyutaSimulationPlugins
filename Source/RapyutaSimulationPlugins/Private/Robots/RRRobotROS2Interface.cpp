@@ -19,7 +19,6 @@
 #include "Core/RRConversionUtils.h"
 #include "Core/RRGeneralUtils.h"
 #include "Robots/RRBaseRobot.h"
-#include "Robots/RRRobotBaseVehicle.h"
 
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
@@ -84,6 +83,7 @@ void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(URRRobotROS2Interface, OdomPublisher);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdom);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdomTf);
+    DOREPLIFETIME(URRRobotROS2Interface, OdomPublicationFrequencyHz);
     DOREPLIFETIME(URRRobotROS2Interface, CmdVelTopicName);
     DOREPLIFETIME(URRRobotROS2Interface, JointsCmdTopicName);
     DOREPLIFETIME(URRRobotROS2Interface, bWarnAboutMissingLink);
@@ -120,7 +120,7 @@ bool URRRobotROS2Interface::InitPublishers()
     }
 
     // OdomPublisher (with TF)
-    auto* robotVehicle = Cast<ARRRobotBaseVehicle>(Robot);
+    auto* robotVehicle = Cast<ARRBaseRobot>(Robot);
     if (bPublishOdom && robotVehicle != nullptr)
     {
         if (nullptr == OdomPublisher)
@@ -132,7 +132,7 @@ bool URRRobotROS2Interface::InitPublishers()
         }
         OdomPublisher->InitializeWithROS2(RobotROS2Node);
 
-        // If publishing odom, it must be an [ARRRobotBaseVehicle]
+        // If publishing odom, it must be an [ARRBaseRobot]
         // todo separate ROS2Interface for mobile robot.
         OdomPublisher->RobotVehicle = robotVehicle;
     }
@@ -311,7 +311,7 @@ void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)
         AsyncTask(ENamedThreads::GameThread,
                   [this, linear, angular]
                   {
-                      ARRRobotBaseVehicle* robotVehicle = CastChecked<ARRRobotBaseVehicle>(Robot);
+                      ARRBaseRobot* robotVehicle = CastChecked<ARRBaseRobot>(Robot);
                       check(IsValid(robotVehicle));
                       robotVehicle->SetLinearVel(linear);
                       robotVehicle->SetAngularVel(angular);

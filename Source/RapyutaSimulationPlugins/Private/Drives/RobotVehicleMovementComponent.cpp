@@ -12,14 +12,14 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 #include "Drives/RRFloatingMovementComponent.h"
-#include "Robots/RRRobotBaseVehicle.h"
+#include "Robots/RRBaseRobot.h"
 
 // rclUE
 #include "rclcUtilities.h"
 
 void URobotVehicleMovementComponent::Initialize()
 {
-    OwnerVehicle = CastChecked<ARRRobotBaseVehicle>(GetOwner());
+    OwnerVehicle = CastChecked<ARRBaseRobot>(GetOwner());
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
 

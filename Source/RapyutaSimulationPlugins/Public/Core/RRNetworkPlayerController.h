@@ -143,7 +143,7 @@ public:
      * @param InClientTimeStamp
      * @param InClientRobotPosition
      * @param InLinearVel
-     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player.
+     * @note This method is because RRBaseRobot can't use rpc since it is not controlled/possessed by the Player.
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
     virtual void ServerSetLinearVel(ARRBaseRobot* InServerRobot,
@@ -157,7 +157,7 @@ public:
      * @param InClientTimeStamp
      * @param InClientRobotRotation
      * @param InAngularVel
-     * @note This method is because RRRobotBaseVehicle can't use rpc since it is not controlled/possessed by the Player.
+     * @note This method is because RRBaseRobot can't use rpc since it is not controlled/possessed by the Player.
      */
     UFUNCTION(BlueprintCallable, Server, Reliable)
     virtual void ServerSetAngularVel(ARRBaseRobot* InServerRobot,
