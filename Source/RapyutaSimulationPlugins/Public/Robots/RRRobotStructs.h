@@ -909,6 +909,9 @@ public:
         // [Sundries]
         wheelProp.CorneringStiffness = bFrontWheel ? 1000.f : 10000.f;
         wheelProp.FrictionForceMultiplier = bFrontWheel ? 2.f : 20.f;
+        //wheelProp.FrictionForceMultiplier = bFrontWheel ? 100.f : 10000.f;
+        //wheelProp.SideSlipModifier = 100.f;
+        //wheelProp.WheelLoadRatio = 0.5f;
 
         wheelProp.bAffectedByHandbrake = !bFrontWheel;
         wheelProp.bAffectedByEngine = !bFrontWheel;

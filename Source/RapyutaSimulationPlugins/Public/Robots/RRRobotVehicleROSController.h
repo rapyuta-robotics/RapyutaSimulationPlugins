@@ -19,6 +19,7 @@ class URRRobotROS2Interface;
 /**
  * @brief Base ROS Controller class for Robot Vehicle
  * @todo temporary class for backward compatibility
+ * @deprecated Use #ARRBaseRobotROSController instead
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API ARRRobotVehicleROSController : public ARRBaseRobotROSController

@@ -18,7 +18,7 @@
 
 #include "RobotVehicleMovementComponent.generated.h"
 
-class ARRRobotBaseVehicle;
+class ARRBaseRobot;
 class URRFloatingMovementComponent;
 /**
  * @brief Type of odometry frame origin.
@@ -72,7 +72,7 @@ private:
 
 public:
     UPROPERTY(VisibleAnywhere, Replicated)
-    ARRRobotBaseVehicle* OwnerVehicle = nullptr;
+    ARRBaseRobot* OwnerVehicle = nullptr;
 
     UPROPERTY()
     TObjectPtr<URRFloatingMovementComponent> AIMovementComp = nullptr;

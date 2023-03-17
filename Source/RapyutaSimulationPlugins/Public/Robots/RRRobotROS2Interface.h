@@ -251,7 +251,7 @@ protected:
             AsyncTask(ENamedThreads::GameThread,
                       [this, InMemFunc, msgData]
                       {
-                          auto* robot = CastChecked<TRobot>(Robot);
+                          auto* robot = Cast<TRobot>(Robot);
                           if (IsValid(Cast<UObject>(robot)))
                           {
                               ::Invoke(InMemFunc, robot, msgData);
@@ -274,7 +274,7 @@ protected:
             AsyncTask(ENamedThreads::GameThread,
                       [this, InFunc, msgData]
                       {
-                          auto* robot = CastChecked<TRobot>(Robot);
+                          auto* robot = Cast<TRobot>(Robot);
                           if (IsValid(Cast<UObject>(robot)))
                           {
                               InFunc(msgData);

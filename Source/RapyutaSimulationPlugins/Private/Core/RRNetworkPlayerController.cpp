@@ -17,7 +17,7 @@
 #include "Core/RRCoreUtils.h"
 #include "Core/RRUObjectUtils.h"
 #include "Robots/RRBaseRobot.h"
-#include "Robots/RRRobotBaseVehicle.h"
+#include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotROS2Interface.h"
 #include "Tools/RRROS2SimulationStateClient.h"
 #include "Tools/SimulationState.h"
@@ -203,13 +203,13 @@ void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot*
     UE_LOG_WITH_INFO_NAMED(
         LogRapyutaCore, Warning, TEXT("%s %s"), *InClientRobotPosition.ToString(), *InServerRobot->GetActorLocation().ToString());
 #endif
-    auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
+    auto* robot = Cast<ARRBaseRobot>(InServerRobot);
     if (robot)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
         robot->SetActorLocation(InClientRobotTransform.GetTranslation() +
                                 InClientRobotTransform.GetRotation() * InLinearVel * (serverCurrentTime - InClientTimeStamp));
-        //NOTE: Don't use ARRRobotBaseVehicle::SetLinearVel() here, which is only for client
+        //NOTE: Don't use ARRBaseRobot::SetLinearVel() here, which is only for client
         robot->TargetLinearVel = InLinearVel;
     }
 }
@@ -223,12 +223,12 @@ void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot
     UE_LOG_WITH_INFO_NAMED(
         LogRapyutaCore, Warning, TEXT("%s %s"), *InClientRobotRotation.ToString(), *InServerRobot->GetActorRotation().ToString());
 #endif
-    auto* robot = Cast<ARRRobotBaseVehicle>(InServerRobot);
+    auto* robot = Cast<ARRBaseRobot>(InServerRobot);
     if (robot)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
         robot->SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
-        //NOTE: Don't use ARRRobotBaseVehicle::SetAngularVel() here, which is only for client
+        //NOTE: Don't use ARRBaseRobot::SetAngularVel() here, which is only for client
         robot->TargetAngularVel = InAngularVel;
     }
 }

@@ -12,7 +12,7 @@
 #include "CoreMinimal.h"
 
 // RapyutaSimulationPlugins
-#include "Robots/RRRobotBaseVehicle.h"
+#include "Robots/RRBaseRobot.h"
 
 // rclUE
 #include "ROS2NodeComponent.h"
@@ -24,7 +24,7 @@
  * This class represents robot vehicles built up from a Skeletal Mesh component that is also its Root.
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARRRobotBaseVehicle
+class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARRBaseRobot
 {
     GENERATED_BODY()
 
