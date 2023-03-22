@@ -739,7 +739,7 @@ public:
 // Ref: UChaosVehicleWheel
 
 /**
- * @brief Wheel property for the robot
+ * @brief Wheel property for the robot, used to store configurations for runtime #UChaosVehicleWheel setup
  * @sa [UChaosVehicleWheel](https://docs.unrealengine.com/5.1/en-US/API/Plugins/ChaosVehicles/UChaosVehicleWheel/)
  */
 USTRUCT()
@@ -891,45 +891,6 @@ public:
     void PrintSelf() const
     {
         UE_LOG_WITH_INFO(LogTemp, Display, TEXT("WheelName: %s Radius %f Width %f"), *WheelName, WheelRadius, WheelWidth);
-    }
-
-    static FRRRobotWheelProperty ComposeWheelProperty(FString InWheelName)
-    {
-        // NOTE: Experimental wheel data for forklift
-        const bool bFrontWheel = InWheelName.Contains(TEXT("load")) || InWheelName.Contains(TEXT("front"));
-
-        FRRRobotWheelProperty wheelProp(MoveTemp(InWheelName));
-        // [Radius/Width]
-        wheelProp.WheelRadius = bFrontWheel ? 13.f : (wheelProp.WheelName.Contains(TEXT("caster")) ? 9.f : 16.f);
-        wheelProp.WheelWidth = bFrontWheel ? 10.f : (wheelProp.WheelName.Contains(TEXT("caster")) ? 25.f : 14.f);
-
-        // [AxleType]
-        wheelProp.AxleType = bFrontWheel ? EAxleType::Front : EAxleType::Rear;
-
-        // [Sundries]
-        wheelProp.CorneringStiffness = bFrontWheel ? 1000.f : 10000.f;
-        wheelProp.FrictionForceMultiplier = bFrontWheel ? 2.f : 20.f;
-#if RAPYUTA_SIM_DEBUG
-        wheelProp.SideSlipModifier = 1.f;
-        wheelProp.WheelLoadRatio = 0.5f;
-#endif
-
-        wheelProp.bAffectedByHandbrake = !bFrontWheel;
-        wheelProp.bAffectedByEngine = !bFrontWheel;
-        wheelProp.bAffectedBySteering = !bFrontWheel;
-        wheelProp.MaxSteerAngleDeg = bFrontWheel ? 50.f : 90.f;
-
-        // [Suspension]
-        wheelProp.SuspensionMaxRaise = 1.f;
-        wheelProp.SuspensionMaxDrop = 1.f;
-        wheelProp.SuspensionDampingRatio = bFrontWheel ? 1.f : 0.5f;
-        wheelProp.SuspensionSmoothing = 10.f;
-
-        // [Spring]
-        wheelProp.SpringRate = bFrontWheel ? 100.f : 250.f;
-        wheelProp.SpringPreload = bFrontWheel ? 10.f : 50.f;
-
-        return wheelProp;
     }
 };
 
