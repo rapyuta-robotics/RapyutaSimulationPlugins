@@ -51,7 +51,7 @@ public class RapyutaSimulationPlugins : ModuleRules
 
         PrivateDependencyModuleNames.AddRange(new string[] { });
 
-        if (Target.bBuildEditor == true)
+        if (Target.bBuildEditor)
         {
             PrivateDependencyModuleNames.AddRange(
                 new string[]

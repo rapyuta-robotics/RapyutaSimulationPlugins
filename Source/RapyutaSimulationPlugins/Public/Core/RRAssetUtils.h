@@ -8,17 +8,18 @@
 
 // UE
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "AssetToolsModule.h"
 #include "Engine/ObjectLibrary.h"
 #include "Engine/StaticMesh.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#if WITH_EDITOR
-#include "BlueprintCompilationManager.h"
-#include "Kismet2/KismetEditorUtilities.h"
-#endif
-#include "KismetCompilerModule.h"
 #include "Materials/Material.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+
+#if WITH_EDITOR
+#include "AssetToolsModule.h"
+#include "BlueprintCompilationManager.h"
+#include "Kismet2/KismetEditorUtilities.h"
+#include "KismetCompilerModule.h"
+#endif
 
 // RapyutaSim
 #include "RapyutaSimulationPlugins.h"
