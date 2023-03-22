@@ -44,12 +44,22 @@ public class RapyutaSimulationPlugins : ModuleRules
         bEnableExceptions = true;
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "Renderer", "RHI", "PhysicsCore", "XmlParser", "IESFile",
-                                                            "AIModule", "NavigationSystem", "TimeManagement", "Json", "AssetTools",
+                                                            "AIModule", "NavigationSystem", "TimeManagement", "Json",
                                                             "ChaosVehicles",
                                                             "ProceduralMeshComponent", "MeshDescription", "StaticMeshDescription", "MeshConversion",
                                                             "rclUE"});
 
         PrivateDependencyModuleNames.AddRange(new string[] { });
+
+        if (Target.bBuildEditor == true)
+        {
+            PrivateDependencyModuleNames.AddRange(
+                new string[]
+                {
+                    "AssetTools"
+                }
+            );
+        }
 
         // assimp
         bool bIsAssimpLibDynamic = true;
