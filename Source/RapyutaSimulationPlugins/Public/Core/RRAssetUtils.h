@@ -323,12 +323,12 @@ public:
     }
 
     /**
-     * @brief Create a child UClass from parent UClass
+     * @brief Create a child UClass from parent UClass.
+     * Ref: [FKismetEditorUtilities::CreateBlueprintFromClass()]
      * @param InParentClass
      * @param InCDOFunc
      * @return UClass*
      */
-    // Ref: [FKismetEditorUtilities::CreateBlueprintFromClass()], [FBlueprintEditorUtils::PostDuplicateBlueprint()]
     FORCEINLINE static UClass* CreateUClass(UClass* InParentClass,
                                             const FName& InClassName,
                                             const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr)
