@@ -359,15 +359,8 @@ public:
                                                                         blueprintGeneratedClass);
         if (blueprint)
         {
-            // 4- Create class from the Blueprint
-            UClass* newClass = NewObject<UClass>(blueprint->GetOutermost(),
-                                                 blueprint->GetBlueprintClass(),
-                                                 InClassName,
-                                                 RF_Public | RF_Transactional | RF_Standalone);
-            // NOTE: This is different from [blueprintGeneratedClass]
-            blueprint->GeneratedClass = newClass;
-            newClass->ClassGeneratedBy = blueprint;
-            newClass->SetSuperStruct(InParentClass);
+            // 4- Make sure blueprint is not early GCed
+            blueprint->SetFlags(EObjectFlags::RF_Standalone);
 
             // Notify the asset registry
             FAssetRegistryModule::AssetCreated(blueprint);
@@ -385,8 +378,23 @@ public:
                 EBlueprintCompileOptions::SkipFiBSearchMetaUpdate | EBlueprintCompileOptions::SkipNewVariableDefaultsDetection;
             FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
 
+            // NOTE: This is different from [blueprintGeneratedClass] above, which is [UBlueprintGeneratedClass::StaticClass()]
+            auto& bpGeneratedClass = blueprint->GeneratedClass;
+            if (nullptr == bpGeneratedClass)
+            {
+                UE_LOG_WITH_INFO(LogTemp, Error, TEXT("After compiling [blueprint->GeneratedClass] is null"));
+                return nullptr;
+            }
+#if RAPYUTA_SIM_DEBUG
+            UE_LOG(LogTemp,
+                   Warning,
+                   TEXT("bpGeneratedClass[%s] # blueprintGeneratedClass[%s]"),
+                   *bpGeneratedClass->GetName(),
+                   *blueprintGeneratedClass->GetName());
+#endif
+
             // 4.2- Create its CDO
-            UObject* cdo = newClass->GetDefaultObject();
+            UObject* cdo = bpGeneratedClass->GetDefaultObject();
 
             // 5- Call [InCDOFunc] on CDO
             if (InCDOFunc)
@@ -396,7 +404,7 @@ public:
                 FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
             }
 
-            return newClass;
+            return bpGeneratedClass;
         }
 #else
         UE_LOG_WITH_INFO(LogTemp, Error, TEXT("UClass runtime creation requires WITH_EDITOR"));
