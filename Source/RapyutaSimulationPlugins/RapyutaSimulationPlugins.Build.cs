@@ -51,6 +51,16 @@ public class RapyutaSimulationPlugins : ModuleRules
 
         PrivateDependencyModuleNames.AddRange(new string[] { });
 
+        if (Target.bBuildEditor)
+        {
+            PrivateDependencyModuleNames.AddRange(
+                new string[]
+                {
+                    "AssetTools"
+                }
+            );
+        }
+
         // assimp
         bool bIsAssimpLibDynamic = true;
         string AssimpPath = GetLibPath("assimp");

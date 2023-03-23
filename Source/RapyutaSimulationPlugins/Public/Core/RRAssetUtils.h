@@ -14,6 +14,13 @@
 #include "Materials/Material.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 
+#if WITH_EDITOR
+#include "AssetToolsModule.h"
+#include "BlueprintCompilationManager.h"
+#include "Kismet2/KismetEditorUtilities.h"
+#include "KismetCompilerModule.h"
+#endif
+
 // RapyutaSim
 #include "RapyutaSimulationPlugins.h"
 
@@ -257,7 +264,7 @@ public:
 
     /**
      * @brief Fetch UClass from asset, called in Constructor only
-     * * @tparam T
+     * @tparam T
      * @param InClassAssetPath, which requires trailing "_C"
      * @return TSubclassOf<T>
      */
@@ -269,6 +276,11 @@ public:
         return classFinder.Class;
     }
 
+    /**
+     * @brief Find generated UClass from blueprint class name
+     * @param InBlueprintClassName
+     * @return UClass*
+     */
     // Ref: EditorUtilitySubsystem
     FORCEINLINE static UClass* FindBlueprintClass(const FString& InBlueprintClassName)
     {
@@ -308,5 +320,95 @@ public:
             });
 
         return foundClass;
+    }
+
+    /**
+     * @brief Create a child UClass from parent UClass.
+     * Ref: [FKismetEditorUtilities::CreateBlueprintFromClass()]
+     * @param InParentClass
+     * @param InCDOFunc
+     * @return UClass*
+     */
+    FORCEINLINE static UClass* CreateUClass(UClass* InParentClass,
+                                            const FName& InClassName,
+                                            const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr)
+    {
+#if WITH_EDITOR
+        static IKismetCompilerInterface& kismetCompilerModule =
+            FModuleManager::LoadModuleChecked<IKismetCompilerInterface>(KISMET_COMPILER_MODULENAME);
+        static FAssetToolsModule& assetToolsModule = FAssetToolsModule::GetModule();
+
+        // 1 - Create blueprint class & generated class
+        UClass* blueprintClass = nullptr;
+        UClass* blueprintGeneratedClass = nullptr;
+        kismetCompilerModule.GetBlueprintTypesForClass(InParentClass, blueprintClass, blueprintGeneratedClass);
+
+        // 2- Create package for the class asset
+        FString packageName = FString::Printf(TEXT("/Game/Blueprints/%s"), *InClassName.ToString());
+        FString assetName;
+        assetToolsModule.Get().CreateUniqueAssetName(packageName, TEXT(""), packageName, assetName);
+        UPackage* package = CreatePackage(*packageName);
+        check(package);
+
+        // 3- Create and init a new Blueprint
+        UBlueprint* blueprint = FKismetEditorUtilities::CreateBlueprint(InParentClass,
+                                                                        package,
+                                                                        *FString::Printf(TEXT("BP_%s"), *InClassName.ToString()),
+                                                                        EBlueprintType::BPTYPE_Normal,
+                                                                        blueprintClass,
+                                                                        blueprintGeneratedClass);
+        if (blueprint)
+        {
+            // 4- Make sure blueprint is not early GCed
+            blueprint->SetFlags(EObjectFlags::RF_Standalone);
+
+            // Notify the asset registry
+            FAssetRegistryModule::AssetCreated(blueprint);
+
+            // Mark the package dirty
+            package->MarkPackageDirty();
+
+            // 4.1- Compile the blueprint, required before creating its CDO
+            // Skip validation of the class default object here for reasons:
+            // (1) The new CDO may fail validation because this is a new Blueprint having no modified defaults.
+            // (2) Fefault value propagation to the new Blueprint's CDO may be deferred until after compilation (e.g. reparenting).
+            // Skip the Blueprint search data update, which will be handled by an OnAssetAdded() delegate in the FiB manager.
+            const EBlueprintCompileOptions bpCompileOptions =
+                EBlueprintCompileOptions::SkipGarbageCollection | EBlueprintCompileOptions::SkipDefaultObjectValidation |
+                EBlueprintCompileOptions::SkipFiBSearchMetaUpdate | EBlueprintCompileOptions::SkipNewVariableDefaultsDetection;
+            FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
+
+            // NOTE: This is different from [blueprintGeneratedClass] above, which is [UBlueprintGeneratedClass::StaticClass()]
+            auto& bpGeneratedClass = blueprint->GeneratedClass;
+            if (nullptr == bpGeneratedClass)
+            {
+                UE_LOG_WITH_INFO(LogTemp, Error, TEXT("After compiling [blueprint->GeneratedClass] is null"));
+                return nullptr;
+            }
+#if RAPYUTA_SIM_DEBUG
+            UE_LOG(LogTemp,
+                   Warning,
+                   TEXT("bpGeneratedClass[%s] # blueprintGeneratedClass[%s]"),
+                   *bpGeneratedClass->GetName(),
+                   *blueprintGeneratedClass->GetName());
+#endif
+
+            // 4.2- Create its CDO
+            UObject* cdo = bpGeneratedClass->GetDefaultObject();
+
+            // 5- Call [InCDOFunc] on CDO
+            if (InCDOFunc)
+            {
+                InCDOFunc(cdo);
+                // 5.1- Compile BP again after modifying CDO
+                FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
+            }
+
+            return bpGeneratedClass;
+        }
+#else
+        UE_LOG_WITH_INFO(LogTemp, Error, TEXT("UClass runtime creation requires WITH_EDITOR"));
+#endif
+        return nullptr;
     }
 };
