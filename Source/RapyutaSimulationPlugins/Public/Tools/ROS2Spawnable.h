@@ -39,6 +39,9 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated)
     FString ActorJsonConfigs;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated)
+    FString ActorReferenceFrame;
+    
     /**
      * @brief Set Actor name and ROS2 namespace from SpawnEntity service request.
      * @sa [ue_msgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
