@@ -262,33 +262,44 @@ void ASimulationState::ServerAttach(const FROSAttachReq& InRequest)
         AActor* entity1 = Entities[InRequest.Name1];
         AActor* entity2 = Entities[InRequest.Name2];
 
-        if (!entity2->IsAttachedTo(entity1))
+        if (entity2->IsRootComponentMovable())
         {
-            entity2->AttachToActor(entity1, FAttachmentTransformRules::KeepWorldTransform);
-
-            // disable collision check with attached actor (Entity2) when entity1 moves
-            for (auto component : entity1->GetComponents())
+            if (!entity2->IsAttachedTo(entity1))
             {
-                auto primitiveComp = Cast<UPrimitiveComponent>(component);
-                if (primitiveComp)
+                entity2->AttachToActor(entity1, FAttachmentTransformRules::KeepWorldTransform);
+
+                // disable collision check with attached actor (Entity2) when entity1 moves
+                for (auto component : entity1->GetComponents())
                 {
-                    primitiveComp->IgnoreActorWhenMoving(entity2, true);
+                    auto primitiveComp = Cast<UPrimitiveComponent>(component);
+                    if (primitiveComp)
+                    {
+                        primitiveComp->IgnoreActorWhenMoving(entity2, true);
+                    }
+                }
+            }
+            else
+            {
+                entity2->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+                // enable collisions between the 2 actors when entity1 moves
+                for (auto component : entity1->GetComponents())
+                {
+                    auto primitiveComp = Cast<UPrimitiveComponent>(component);
+                    if (primitiveComp)
+                    {
+                        primitiveComp->IgnoreActorWhenMoving(entity2, false);
+                    }
                 }
             }
         }
         else
         {
-            entity2->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-
-            // enable collisions between the 2 actors when entity1 moves
-            for (auto component : entity1->GetComponents())
-            {
-                auto primitiveComp = Cast<UPrimitiveComponent>(component);
-                if (primitiveComp)
-                {
-                    primitiveComp->IgnoreActorWhenMoving(entity2, false);
-                }
-            }
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Warning,
+                             TEXT("entity2 to attach or detach %s has its Mobility not set as Movable. Please set Mobility of "
+                                  "entity2 as Movable for Attach service to work properly."),
+                             *InRequest.Name2);
         }
     }
     else
