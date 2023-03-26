@@ -45,12 +45,10 @@ void URRROS2BaseSensorComponent::PreInitializePublisher(UROS2NodeComponent* InRO
 
         // Update [SensorPublisher]'s topic name
         SensorPublisher->TopicName = InTopicName.IsEmpty() ? TopicName : InTopicName;
-        verify(false == SensorPublisher->TopicName.IsEmpty());
 
         if (bAppendNodeNamespace)
         {
             FrameId = URRGeneralUtils::ComposeROSFullFrameId(InROS2Node->Namespace, *FrameId);
-            verify(false == FrameId.IsEmpty());
         }
     }
 }

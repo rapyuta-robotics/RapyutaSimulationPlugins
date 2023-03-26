@@ -144,7 +144,7 @@ void ARRBaseRobot::PreInitializeComponents()
         // ROS2Interface is created at server and replicated to client.
         if (!IsNetMode(NM_Client) && ROS2Interface == nullptr)
         {
-            CreateROS2Interface();
+            CreateROS2Interface();            
         }
     }
     else
@@ -198,10 +198,7 @@ void ARRBaseRobot::OnRep_bStartStopROS2Interface()
 
 void ARRBaseRobot::SetRootOffset(const FTransform& InRootOffset)
 {
-    if (RobotVehicleMoveComponent)
-    {
-        RobotVehicleMoveComponent->RootOffset = InRootOffset;
-    }
+    RootOffset = InRootOffset;
 }
 
 void ARRBaseRobot::CreateROS2Interface()
