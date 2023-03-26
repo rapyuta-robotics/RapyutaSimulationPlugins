@@ -50,7 +50,7 @@ public:
      *
      * @todo Calculate odom from wheel rotation.
      */
-    virtual void UpdateOdom(float DeltaTime) override;
+    virtual void UpdateOdom(float DeltaTime);
 
     /**
      * @brief Set left and right wheels.
