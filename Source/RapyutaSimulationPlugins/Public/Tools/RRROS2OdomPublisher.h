@@ -14,8 +14,8 @@
 #include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins
-#include "Tools/RRROS2TFPublisher.h"
 #include "Tools/RRROS2BaseSensorPublisher.h"
+#include "Tools/RRROS2TFPublisher.h"
 
 #include "RRROS2OdomPublisher.generated.h"
 
@@ -45,8 +45,15 @@ public:
 
     void InitializeTFWithROS2(UROS2NodeComponent* InROS2Node);
 
-    // void RevokeUpdateCallback() override;
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
+
+    /**
+     * @brief Convert UE->ROS, Append Namespace to ChildFrameId and update TF data.
+     *
+     * @param OutOdomData
+     * @return true
+     * @return false
+     */
     bool GetOdomData(FROSOdom& OutOdomData) const;
 
     //! Publish tf or not

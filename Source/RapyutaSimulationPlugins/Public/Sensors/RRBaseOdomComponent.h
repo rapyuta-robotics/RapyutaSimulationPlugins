@@ -1,5 +1,5 @@
 /**
- * @file RRPoseOdomComponent.h
+ * @file RRBaseOdomComponent.h
  * @brief Robot pose sensor manager. If #RefActorSelectMode=AUTO, RefActor is automatically updated with nearlest actor with Tag
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -14,7 +14,9 @@
 #include "Sensors/RRROS2EntityStateSensorComponent.h"
 #include "Tools/SimulationState.h"
 
-#include "RRPoseOdomComponent.generated.h"
+#include "RRBaseOdomComponent.generated.h"
+
+class ARRBaseRobot;
 
 /**
  * @brief Type of odometry frame origin.
@@ -28,21 +30,21 @@ enum class EOdomSource : uint8
 };
 
 /**
- * @brief 
+ * @brief Base Odom Component which provide actor pose changes.
+ * Default odom calculation is done by differentiate current pose and last pose.
+ * You can create child odom source class from this class or update odom data directly
+ * with ManualUpdate=true to avoid updating data by this class.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRPoseOdomComponent : public URRROS2BaseSensorComponent
+class RAPYUTASIMULATIONPLUGINS_API URRBaseOdomComponent : public URRROS2BaseSensorComponent
 {
     GENERATED_BODY()
 
 public:
-    URRPoseOdomComponent();
-
-    virtual void BeginPlay() override;
+    URRBaseOdomComponent();
 
     /**
      * @brief Calculate relative pose with #URRGeneralUtils and update #Data
-     * @todo Currently twist = ZeroVectors. Should be filled for physics actors.
      */
     virtual void SensorUpdate() override;
 
@@ -52,7 +54,7 @@ public:
     TWeakObjectPtr<ARRBaseRobot> RobotVehicle = nullptr;
 
     //! If this is true, SensorUpdate do nothing.
-    //! Since odometry calculation is depends on movement component, 
+    //! Since odometry calculation is depends on movement component,
     //! you can make this true to and manually update Odomdata by movement component
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     bool ManualUpdate = false;
@@ -103,16 +105,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform RootOffset = FTransform::Identity;
 
-protected:
-
-    float LastUpdatedTime = 0.f;
-
-    UPROPERTY()
-    FTransform PreviousTransform = FTransform::Identity;
-
-    UPROPERTY()
-    FTransform PreviousNoisyTransform = FTransform::Identity;
-
     //! C++11 RNG for odometry noise
     std::random_device Rng;
 
@@ -136,5 +128,14 @@ protected:
 
     //! Add noise or not
     UPROPERTY(EditAnywhere, Category = "Noise")
-    bool WithNoise = true;
+    bool bWithNoise = true;
+
+protected:
+    float LastUpdatedTime = 0.f;
+
+    UPROPERTY()
+    FTransform PreviousTransform = FTransform::Identity;
+
+    UPROPERTY()
+    FTransform PreviousNoisyTransform = FTransform::Identity;
 };

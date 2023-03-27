@@ -1,22 +1,16 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
-#include "Sensors/RRPoseOdomComponent.h"
+#include "Sensors/RRBaseOdomComponent.h"
 
-URRPoseOdomComponent::URRPoseOdomComponent()
+URRBaseOdomComponent::URRBaseOdomComponent()
 {
     SensorPublisherClass = URRROS2OdomPublisher::StaticClass();
     TopicName = TEXT("odom");
     PublicationFrequencyHz = 30;
-    FrameId = TEXT("odom"); //default frame id
+    FrameId = TEXT("odom");    //default frame id
 }
 
-void URRPoseOdomComponent::BeginPlay()
-{
-    Super::BeginPlay();
-    InitOdom();
-}
-
-void URRPoseOdomComponent::SensorUpdate()
+void URRBaseOdomComponent::SensorUpdate()
 {
     if (!ManualUpdate)
     {
@@ -26,7 +20,7 @@ void URRPoseOdomComponent::SensorUpdate()
     }
 }
 
-void URRPoseOdomComponent::PreInitializePublisher(UROS2NodeComponent* InROS2Node, const FString& InTopicName)
+void URRBaseOdomComponent::PreInitializePublisher(UROS2NodeComponent* InROS2Node, const FString& InTopicName)
 {
     Super::PreInitializePublisher(InROS2Node, InTopicName);
 
@@ -37,14 +31,14 @@ void URRPoseOdomComponent::PreInitializePublisher(UROS2NodeComponent* InROS2Node
     }
 }
 
-void URRPoseOdomComponent::SetFrameIds(const FString& InFrameId, const FString& InChildFrameId)
+void URRBaseOdomComponent::SetFrameIds(const FString& InFrameId, const FString& InChildFrameId)
 {
     OdomData.Header.FrameId = FrameId = InFrameId;
     OdomData.ChildFrameId = ChildFrameId = InChildFrameId;
 }
 
 // todo separate ROS
-void URRPoseOdomComponent::InitOdom()
+void URRBaseOdomComponent::InitOdom()
 {
     GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
     GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
@@ -91,7 +85,7 @@ void URRPoseOdomComponent::InitOdom()
     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("%s %s"), *FrameId, *OdomData.Header.FrameId);
 }
 
-void URRPoseOdomComponent::UpdateOdom(float InDeltaTime)
+void URRBaseOdomComponent::UpdateOdom(float InDeltaTime)
 {
     if (!bIsOdomInitialized)
     {
@@ -116,9 +110,9 @@ void URRPoseOdomComponent::UpdateOdom(float InDeltaTime)
     FVector pos = InitialTransform.GetRotation().UnrotateVector(owner->GetActorLocation() - InitialTransform.GetTranslation());
     FVector previousPos = PreviousTransform.GetTranslation();    // prev pos without noise
     PreviousTransform.SetTranslation(pos);
-    pos += previousEstimatedPos - previousPos + WithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
+    pos += previousEstimatedPos - previousPos + bWithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
 
-    FRotator noiseRot = FRotator(0, 0, WithNoise * GaussianRNGRotation(Gen));
+    FRotator noiseRot = FRotator(0, 0, bWithNoise * GaussianRNGRotation(Gen));
     FQuat rot = owner->GetActorQuat() * InitialTransform.GetRotation().Inverse();
     FQuat previousRot = PreviousTransform.GetRotation();
     PreviousTransform.SetRotation(rot);
@@ -138,7 +132,7 @@ void URRPoseOdomComponent::UpdateOdom(float InDeltaTime)
     OdomData.Pose.Pose.Orientation *= RootOffset.GetRotation();
 }
 
-FTransform URRPoseOdomComponent::GetOdomTF() const
+FTransform URRBaseOdomComponent::GetOdomTF() const
 {
     return FTransform(OdomData.Pose.Pose.Orientation, OdomData.Pose.Pose.Position);
 }

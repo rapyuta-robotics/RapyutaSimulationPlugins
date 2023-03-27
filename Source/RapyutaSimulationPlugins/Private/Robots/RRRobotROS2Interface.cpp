@@ -40,7 +40,8 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     {
         if (nullptr == OdomSource)
         {
-            OdomSource = URRUObjectUtils::CreateChildComponent<URRPoseOdomComponent>(Robot, *FString::Printf(TEXT("%sOdom"), *GetName()));
+            OdomSource =
+                URRUObjectUtils::CreateChildComponent<URRBaseOdomComponent>(Robot, *FString::Printf(TEXT("%sOdom"), *GetName()));
             OdomSource->bPublishOdomTf = bPublishOdomTf;
             OdomSource->PublicationFrequencyHz = OdomPublicationFrequencyHz;
             OdomSource->RootOffset = Robot->RootOffset;

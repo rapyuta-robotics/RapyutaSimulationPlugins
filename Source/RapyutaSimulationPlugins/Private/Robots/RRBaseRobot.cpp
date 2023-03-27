@@ -144,7 +144,7 @@ void ARRBaseRobot::PreInitializeComponents()
         // ROS2Interface is created at server and replicated to client.
         if (!IsNetMode(NM_Client) && ROS2Interface == nullptr)
         {
-            CreateROS2Interface();            
+            CreateROS2Interface();
         }
     }
     else
@@ -294,6 +294,15 @@ bool ARRBaseRobot::InitMoveComponent()
         if (RobotVehicleMoveComponent)
         {
             // Configure custom properties (frameids, etc.)
+            if (ROS2Interface && ROS2Interface->OdomSource)
+            {
+                RobotVehicleMoveComponent->OdomSource = ROS2Interface->OdomSource;
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Display,
+                                 TEXT("Assigned OdomSource to RobotVehicleMoveComponent %s from ROS2Interface %s."),
+                                 *RobotVehicleMoveComponent->GetName(),
+                                 *ROS2Interface->GetName());
+            }
             RobotVehicleMoveComponent->Initialize();
         }
 

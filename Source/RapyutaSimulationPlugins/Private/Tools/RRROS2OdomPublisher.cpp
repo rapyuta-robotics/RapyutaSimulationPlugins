@@ -30,7 +30,8 @@ void URRROS2OdomPublisher::InitializeTFWithROS2(UROS2NodeComponent* InROS2Node)
 {
     if (bPublishOdomTf && nullptr == TFPublisher)
     {
-        TFPublisher = CastChecked<URRROS2TFPublisher>(InROS2Node->CreateLoopPublisherWithClass(TEXT("/tf"), URRROS2TFPublisher::StaticClass(), PublicationFrequencyHz));
+        TFPublisher = CastChecked<URRROS2TFPublisher>(
+            InROS2Node->CreateLoopPublisherWithClass(TEXT("/tf"), URRROS2TFPublisher::StaticClass(), PublicationFrequencyHz));
     }
 }
 
@@ -47,9 +48,9 @@ void URRROS2OdomPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 
 bool URRROS2OdomPublisher::GetOdomData(FROSOdom& OutOdomData) const
 {
-    URRPoseOdomComponent* odomSource = Cast<URRPoseOdomComponent>(DataSourceComponent);
+    URRBaseOdomComponent* odomSource = Cast<URRBaseOdomComponent>(DataSourceComponent);
     if (odomSource)
-    {    
+    {
         OutOdomData = URRConversionUtils::OdomUEToROS(odomSource->OdomData);
         if (bAppendNodeNamespace)
         {

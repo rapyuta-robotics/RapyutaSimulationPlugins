@@ -13,11 +13,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PawnMovementComponent.h"
 
+// RapyutaSimulationPlugins
+#include "Sensors/RRBaseOdomComponent.h"
+
 #include "RobotVehicleMovementComponent.generated.h"
 
 class ARRBaseRobot;
 class URRFloatingMovementComponent;
-
 
 /**
  * @brief Base Robot vehicle movement class which is used as part of #ARobotVehicle.
@@ -144,6 +146,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float FallingSpeed = 100.f;
 
+    //! Odometry source
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URRBaseOdomComponent* OdomSource = nullptr;
+
 protected:
     virtual bool IsSupportedForNetworking() const override
     {
@@ -151,7 +157,7 @@ protected:
     }
 
     /**
-     * @brief Call #UpdateMovement, #UpdateOdom, and UpdateComponentVelocity
+     * @brief Call #UpdateMovement, and UpdateComponentVelocity
      *
      * @param DeltaTime
      * @param TickType

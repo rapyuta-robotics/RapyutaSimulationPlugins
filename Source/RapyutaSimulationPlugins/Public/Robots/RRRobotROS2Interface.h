@@ -17,7 +17,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
-#include "Sensors/RRPoseOdomComponent.h"
+#include "Sensors/RRBaseOdomComponent.h"
 
 #include "RRRobotROS2Interface.generated.h"
 
@@ -107,7 +107,7 @@ public:
 
     //! Odometry source
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    URRPoseOdomComponent* OdomSource = nullptr;
+    URRBaseOdomComponent* OdomSource = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdom = true;
