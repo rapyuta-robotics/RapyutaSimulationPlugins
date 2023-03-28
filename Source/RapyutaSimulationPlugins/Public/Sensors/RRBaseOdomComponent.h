@@ -1,7 +1,7 @@
 /**
  * @file RRBaseOdomComponent.h
- * @brief Robot pose sensor manager. If #RefActorSelectMode=AUTO, RefActor is automatically updated with nearlest actor with Tag
- * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+ * @brief Base Odom Component which provides actor pose changes.
+ * @copyright Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
  */
 
 #pragma once
