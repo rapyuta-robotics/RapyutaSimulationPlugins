@@ -38,13 +38,13 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     // OdomPublisher (with TF)
     if (bPublishOdom)
     {
-        if (nullptr == OdomSource)
+        if (nullptr == OdomComponent)
         {
-            OdomSource =
+            OdomComponent =
                 URRUObjectUtils::CreateChildComponent<URRBaseOdomComponent>(Robot, *FString::Printf(TEXT("%sOdom"), *GetName()));
-            OdomSource->bPublishOdomTf = bPublishOdomTf;
-            OdomSource->PublicationFrequencyHz = OdomPublicationFrequencyHz;
-            OdomSource->RootOffset = Robot->RootOffset;
+            OdomComponent->bPublishOdomTf = bPublishOdomTf;
+            OdomComponent->PublicationFrequencyHz = OdomPublicationFrequencyHz;
+            OdomComponent->RootOffset = Robot->RootOffset;
         }
     }
 
@@ -93,7 +93,7 @@ void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(URRRobotROS2Interface, Robot);
     DOREPLIFETIME(URRRobotROS2Interface, RobotROS2Node);
     DOREPLIFETIME(URRRobotROS2Interface, ROSSpawnParameters);
-    DOREPLIFETIME(URRRobotROS2Interface, OdomSource);
+    DOREPLIFETIME(URRRobotROS2Interface, OdomComponent);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdom);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdomTf);
     DOREPLIFETIME(URRRobotROS2Interface, OdomPublicationFrequencyHz);

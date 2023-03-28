@@ -443,5 +443,5 @@ protected:
      * Custom initialization of child class can be done by overwritting this method.
      *
      */
-    virtual void ConfigureMovementComponent(){};
+    virtual void ConfigureMovementComponent();
 };

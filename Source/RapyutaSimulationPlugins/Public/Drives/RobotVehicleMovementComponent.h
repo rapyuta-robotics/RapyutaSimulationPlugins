@@ -148,7 +148,7 @@ public:
 
     //! Odometry source
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    URRBaseOdomComponent* OdomSource = nullptr;
+    URRBaseOdomComponent* OdomComponent = nullptr;
 
 protected:
     virtual bool IsSupportedForNetworking() const override

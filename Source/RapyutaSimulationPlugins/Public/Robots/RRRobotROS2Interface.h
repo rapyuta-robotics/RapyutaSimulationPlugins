@@ -107,7 +107,7 @@ public:
 
     //! Odometry source
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    URRBaseOdomComponent* OdomSource = nullptr;
+    URRBaseOdomComponent* OdomComponent = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdom = true;

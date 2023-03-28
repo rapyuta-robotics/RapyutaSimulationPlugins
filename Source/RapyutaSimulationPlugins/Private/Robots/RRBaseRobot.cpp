@@ -274,6 +274,20 @@ void ARRBaseRobot::DeInitROS2Interface()
     }
 }
 
+void ARRBaseRobot::ConfigureMovementComponent()
+{
+    // Configure custom properties (frameids, etc.)
+    if (RobotVehicleMoveComponent && ROS2Interface && ROS2Interface->OdomComponent)
+    {
+        RobotVehicleMoveComponent->OdomComponent = ROS2Interface->OdomComponent;
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Display,
+                         TEXT("Assigned OdomSource to RobotVehicleMoveComponent %s from ROS2Interface %s."),
+                         *RobotVehicleMoveComponent->GetName(),
+                         *ROS2Interface->GetName());
+    }
+};
+
 bool ARRBaseRobot::InitMoveComponent()
 {
     if (VehicleMoveComponentClass)
@@ -293,16 +307,6 @@ bool ARRBaseRobot::InitMoveComponent()
         // Init
         if (RobotVehicleMoveComponent)
         {
-            // Configure custom properties (frameids, etc.)
-            if (ROS2Interface && ROS2Interface->OdomSource)
-            {
-                RobotVehicleMoveComponent->OdomSource = ROS2Interface->OdomSource;
-                UE_LOG_WITH_INFO(LogRapyutaCore,
-                                 Display,
-                                 TEXT("Assigned OdomSource to RobotVehicleMoveComponent %s from ROS2Interface %s."),
-                                 *RobotVehicleMoveComponent->GetName(),
-                                 *ROS2Interface->GetName());
-            }
             RobotVehicleMoveComponent->Initialize();
         }
 

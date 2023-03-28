@@ -72,20 +72,20 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 
 void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 {
-    if (OdomSource == nullptr)
+    if (OdomComponent == nullptr)
     {
         return;
     }
 
-    if (!OdomSource->bIsOdomInitialized)
+    if (!OdomComponent->bIsOdomInitialized)
     {
-        OdomSource->InitOdom();
+        OdomComponent->InitOdom();
         PoseEncoderX = 0;
         PoseEncoderY = 0;
         PoseEncoderTheta = 0;
     }
 
-    FROSOdom odomData = OdomSource->OdomData;
+    FROSOdom odomData = OdomComponent->OdomData;
 
     // time
     odomData.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
@@ -104,8 +104,8 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // noise added as a component of vl, vr
     // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
     //  seems to be Introduction to Autonomous Mobile Robots (Sigwart, Nourbakhsh, Scaramuzza)
-    float sl = (vl + OdomSource->bWithNoise * OdomSource->GaussianRNGPosition(OdomSource->Gen)) * DeltaTime;
-    float sr = (vr + OdomSource->bWithNoise * OdomSource->GaussianRNGPosition(OdomSource->Gen)) * DeltaTime;
+    float sl = (vl + OdomComponent->bWithNoise * OdomComponent->GaussianRNGPosition(OdomComponent->Gen)) * DeltaTime;
+    float sr = (vr + OdomComponent->bWithNoise * OdomComponent->GaussianRNGPosition(OdomComponent->Gen)) * DeltaTime;
     float ssum = sl + sr;
 
     float sdiff = sr - sl;
@@ -148,7 +148,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     odomData.Twist.Covariance[28] = 1e+12;
     odomData.Twist.Covariance[35] = 0.01;
 
-    OdomSource->OdomData = odomData;
+    OdomComponent->OdomData = odomData;
 
     // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Input:"));
     // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
@@ -164,9 +164,9 @@ void UDifferentialDriveComponent::Initialize()
 {
     Super::Initialize();
     SetPerimeter();
-    if (OdomSource)
+    if (OdomComponent)
     {
-        // Odom update is done by this class instead of OdomSource.
-        OdomSource->ManualUpdate = true;
+        // Odom update is done by this class instead of OdomComponent.
+        OdomComponent->ManualUpdate = true;
     }
 }
