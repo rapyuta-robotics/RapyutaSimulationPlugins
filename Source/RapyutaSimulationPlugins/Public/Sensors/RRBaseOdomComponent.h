@@ -33,7 +33,7 @@ enum class EOdomSource : uint8
  * @brief Base Odom Component which provide actor pose changes.
  * Default odom calculation is done by differentiate current pose and last pose.
  * You can create child odom source class from this class or update odom data directly
- * with ManualUpdate=true to avoid updating data by this class.
+ * with bManualUpdate=true to avoid updating data by this class.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRBaseOdomComponent : public URRROS2BaseSensorComponent
@@ -57,7 +57,7 @@ public:
     //! Since odometry calculation is depends on movement component,
     //! you can make this true to and manually update Odomdata by movement component
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    bool ManualUpdate = false;
+    bool bManualUpdate = false;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     FROSOdom OdomData;

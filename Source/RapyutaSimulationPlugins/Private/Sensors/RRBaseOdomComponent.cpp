@@ -12,7 +12,7 @@ URRBaseOdomComponent::URRBaseOdomComponent()
 
 void URRBaseOdomComponent::SensorUpdate()
 {
-    if (!ManualUpdate)
+    if (!bManualUpdate)
     {
         float currentTime = UGameplayStatics::GetTimeSeconds(GetWorld());
         UpdateOdom(currentTime - LastUpdatedTime);

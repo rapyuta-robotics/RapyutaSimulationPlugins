@@ -167,6 +167,6 @@ void UDifferentialDriveComponent::Initialize()
     if (OdomComponent)
     {
         // Odom update is done by this class instead of OdomComponent.
-        OdomComponent->ManualUpdate = true;
+        OdomComponent->bManualUpdate = true;
     }
 }
