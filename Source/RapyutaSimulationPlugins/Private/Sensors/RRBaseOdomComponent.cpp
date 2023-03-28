@@ -81,8 +81,6 @@ void URRBaseOdomComponent::InitOdom()
 
     bIsOdomInitialized = true;
     LastUpdatedTime = UGameplayStatics::GetTimeSeconds(GetWorld());
-
-    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("%s %s"), *FrameId, *OdomData.Header.FrameId);
 }
 
 void URRBaseOdomComponent::UpdateOdom(float InDeltaTime)

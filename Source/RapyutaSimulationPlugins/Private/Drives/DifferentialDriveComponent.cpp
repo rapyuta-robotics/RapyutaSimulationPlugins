@@ -85,7 +85,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
         PoseEncoderTheta = 0;
     }
 
-    FROSOdom odomData;
+    FROSOdom odomData = OdomSource->OdomData;
 
     // time
     odomData.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));

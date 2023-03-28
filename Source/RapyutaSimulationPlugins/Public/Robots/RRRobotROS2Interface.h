@@ -106,7 +106,7 @@ public:
     virtual void JointStateCallback(const UROS2GenericMsg* Msg);
 
     //! Odometry source
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     URRBaseOdomComponent* OdomSource = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)

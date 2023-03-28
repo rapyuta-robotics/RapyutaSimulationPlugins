@@ -63,11 +63,9 @@ void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
         else
         {
             Super::TickComponent(InDeltaTime, TickType, ThisTickFunction);
-            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("TickComponent non AI "));
             // Make sure that everything is still valid, and that we are allowed to move.
             if (IsValid(UpdatedComponent))
             {
-                UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("TickComponent non AI2 "));
                 //1- Update vels to OwnerVehicle's target vels
                 Velocity = OwnerVehicle->TargetLinearVel;
                 AngularVelocity = OwnerVehicle->TargetAngularVel;
@@ -232,7 +230,6 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
         }
     }
 }
-
 
 void URobotVehicleMovementComponent::InitData()
 {
