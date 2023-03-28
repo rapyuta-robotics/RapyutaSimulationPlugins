@@ -257,61 +257,57 @@ void ASimulationState::ServerAttach(const FROSAttachReq& InRequest)
 
     // TODO: Add proper server check
     //if (ServerCheckAttachRequest(InRequest))
-    if (true)
+
+    AActor* entity1 = Entities[InRequest.Name1];
+    AActor* entity2 = Entities[InRequest.Name2];
+
+    if (entity2->IsRootComponentMovable())
     {
-        AActor* entity1 = Entities[InRequest.Name1];
-        AActor* entity2 = Entities[InRequest.Name2];
-
-        if (entity2->IsRootComponentMovable())
+        if (!entity2->IsAttachedTo(entity1))
         {
-            if (!entity2->IsAttachedTo(entity1))
-            {
-                entity2->AttachToActor(entity1, FAttachmentTransformRules::KeepWorldTransform);
+            entity2->AttachToActor(entity1, FAttachmentTransformRules::KeepWorldTransform);
 
-                // disable collision check with attached actor (Entity2) when entity1 moves
-                for (auto component : entity1->GetComponents())
-                {
-                    auto primitiveComp = Cast<UPrimitiveComponent>(component);
-                    if (primitiveComp)
-                    {
-                        primitiveComp->IgnoreActorWhenMoving(entity2, true);
-                    }
-                }
-            }
-            else
+            // disable collision check with attached actor (Entity2) when entity1 moves
+            for (auto component : entity1->GetComponents())
             {
-                entity2->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-
-                // enable collisions between the 2 actors when entity1 moves
-                for (auto component : entity1->GetComponents())
+                auto primitiveComp = Cast<UPrimitiveComponent>(component);
+                if (primitiveComp)
                 {
-                    auto primitiveComp = Cast<UPrimitiveComponent>(component);
-                    if (primitiveComp)
-                    {
-                        primitiveComp->IgnoreActorWhenMoving(entity2, false);
-                    }
+                    primitiveComp->IgnoreActorWhenMoving(entity2, true);
                 }
             }
         }
         else
         {
-            UE_LOG_WITH_INFO(LogRapyutaCore,
-                             Warning,
-                             TEXT("entity2 to attach or detach %s has its Mobility not set as Movable. Please set Mobility of "
-                                  "entity2 as Movable for Attach service to work properly."),
-                             *InRequest.Name2);
+            entity2->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+            // enable collisions between the 2 actors when entity1 moves
+            for (auto component : entity1->GetComponents())
+            {
+                auto primitiveComp = Cast<UPrimitiveComponent>(component);
+                if (primitiveComp)
+                {
+                    primitiveComp->IgnoreActorWhenMoving(entity2, false);
+                }
+            }
         }
     }
     else
     {
-        UE_LOG_WITH_INFO(
-            LogRapyutaCore,
-            Warning,
-            TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors "
-                 "under SimulationState control."),
-            *InRequest.Name1,
-            *InRequest.Name2);
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("entity2 to attach or detach %s has its Mobility not set as Movable. Please set Mobility of "
+                              "entity2 as Movable for Attach service to work properly."),
+                         *InRequest.Name2);
     }
+
+    UE_LOG_WITH_INFO(
+        LogRapyutaCore,
+        Warning,
+        TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors "
+             "under SimulationState control."),
+        *InRequest.Name1,
+        *InRequest.Name2);
 
     PrevAttachEntityRequest = InRequest;
 }
