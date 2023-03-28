@@ -13,23 +13,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PawnMovementComponent.h"
 
-// rclUE
-#include "Msgs/ROS2Odom.h"
+// RapyutaSimulationPlugins
+#include "Sensors/RRBaseOdomComponent.h"
 
 #include "RobotVehicleMovementComponent.generated.h"
 
 class ARRBaseRobot;
 class URRFloatingMovementComponent;
-/**
- * @brief Type of odometry frame origin.
- * World provide odometry from world origin and Encoder provide odometry from initial pose.
- */
-UENUM(BlueprintType)
-enum class EOdomSource : uint8
-{
-    WORLD UMETA(DisplayName = "World"),
-    ENCODER UMETA(DisplayName = "Encoder")
-};
 
 /**
  * @brief Base Robot vehicle movement class which is used as part of #ARobotVehicle.
@@ -103,28 +93,6 @@ public:
     UPROPERTY(Transient)
     FQuat DesiredRotation = FQuat::Identity;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    FROSOdom OdomData;
-
-    //! Frame id of odometry
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString FrameId = TEXT("odom");
-
-    //! Child frame id of odometry
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString ChildFrameId = TEXT("base_footprint");
-
-    /**
-     * @brief Set the Frame Id and child frame id of odometry
-     *
-     * @param InFrameId
-     * @param InChildFrameId
-     */
-    void SetFrameIds(const FString& InFrameId, const FString& InChildFrameId);
-
-    UPROPERTY(EditAnywhere)
-    FTransform InitialTransform = FTransform::Identity;
-
     // For slopes, complex floors, free fall
 
     //! Ray start Z offset. Value must be > possible penetration of objects in contact point, in one tick
@@ -140,9 +108,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bAdaptToSurfaceBelow = true;
 
-    UFUNCTION(BlueprintCallable)
-    FTransform GetOdomTF() const;
-
     /**
      * @brief Initialize noise and odometry.
      *
@@ -150,15 +115,9 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void Initialize();
 
-    UFUNCTION(BlueprintCallable)
-    virtual void InitOdom();
-
     //! @todo is this necessary?
     UPROPERTY()
     int8 InversionFactor = 1;
-
-    UPROPERTY(EditAnywhere)
-    EOdomSource OdomSource = EOdomSource::WORLD;
 
     /**
      * @brief Call #InitOdom, Calculate #MinDistanceToFloor, and
@@ -187,9 +146,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float FallingSpeed = 100.f;
 
-    //! Offset transform between the skeletal mesh root component and the pose that will be published in /odom topic
+    //! Odometry source
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FTransform RootOffset = FTransform::Identity;
+    URRBaseOdomComponent* OdomComponent = nullptr;
 
 protected:
     virtual bool IsSupportedForNetworking() const override
@@ -198,7 +157,7 @@ protected:
     }
 
     /**
-     * @brief Call #UpdateMovement, #UpdateOdom, and UpdateComponentVelocity
+     * @brief Call #UpdateMovement, and UpdateComponentVelocity
      *
      * @param DeltaTime
      * @param TickType
@@ -226,45 +185,4 @@ protected:
      * [UpdatedComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
      */
     virtual void UpdateMovement(float InDeltaTime);
-
-    /**
-     * @brief Update odom.
-     * Noise is integral of gaussian noise.
-     * @param InDeltaTime
-     */
-    virtual void UpdateOdom(float InDeltaTime);
-
-    UPROPERTY(VisibleAnywhere)
-    bool bIsOdomInitialized = false;
-
-    UPROPERTY()
-    FTransform PreviousTransform = FTransform::Identity;
-
-    UPROPERTY()
-    FTransform PreviousNoisyTransform = FTransform::Identity;
-
-    //! C++11 RNG for odometry noise
-    std::random_device Rng;
-
-    //! C++11 RNG for odometry noise
-    std::mt19937 Gen = std::mt19937{Rng()};
-
-    std::normal_distribution<> GaussianRNGPosition;
-    std::normal_distribution<> GaussianRNGRotation;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseMeanPos = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVariancePos = 0.01f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseMeanRot = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVarianceRot = 0.05f;
-
-    //! Add noise or not
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    bool WithNoise = true;
 };

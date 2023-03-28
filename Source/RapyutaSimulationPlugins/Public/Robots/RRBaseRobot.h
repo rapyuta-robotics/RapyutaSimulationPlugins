@@ -412,6 +412,10 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetLocalAngularVel(const FVector& InAngularVel);
 
+    //! Offset transform between the Actor  root component and the pose that will be published in /odom topic
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FTransform RootOffset = FTransform::Identity;
+
 protected:
     /**
      * @brief Instantiate default child components
@@ -439,7 +443,5 @@ protected:
      * Custom initialization of child class can be done by overwritting this method.
      *
      */
-    virtual void ConfigureMovementComponent()
-    {
-    }
+    virtual void ConfigureMovementComponent();
 };

@@ -17,6 +17,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
+#include "Sensors/RRBaseOdomComponent.h"
 
 #include "RRRobotROS2Interface.generated.h"
 
@@ -103,6 +104,10 @@ public:
      */
     UFUNCTION()
     virtual void JointStateCallback(const UROS2GenericMsg* Msg);
+
+    //! Odometry source
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    URRBaseOdomComponent* OdomComponent = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdom = true;

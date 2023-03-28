@@ -198,10 +198,7 @@ void ARRBaseRobot::OnRep_bStartStopROS2Interface()
 
 void ARRBaseRobot::SetRootOffset(const FTransform& InRootOffset)
 {
-    if (RobotVehicleMoveComponent)
-    {
-        RobotVehicleMoveComponent->RootOffset = InRootOffset;
-    }
+    RootOffset = InRootOffset;
 }
 
 void ARRBaseRobot::CreateROS2Interface()
@@ -277,6 +274,20 @@ void ARRBaseRobot::DeInitROS2Interface()
     }
 }
 
+void ARRBaseRobot::ConfigureMovementComponent()
+{
+    // Configure custom properties (frameids, etc.)
+    if (RobotVehicleMoveComponent && ROS2Interface && ROS2Interface->OdomComponent)
+    {
+        RobotVehicleMoveComponent->OdomComponent = ROS2Interface->OdomComponent;
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Display,
+                         TEXT("Assigned OdomSource to RobotVehicleMoveComponent %s from ROS2Interface %s."),
+                         *RobotVehicleMoveComponent->GetName(),
+                         *ROS2Interface->GetName());
+    }
+};
+
 bool ARRBaseRobot::InitMoveComponent()
 {
     if (VehicleMoveComponentClass)
@@ -296,7 +307,6 @@ bool ARRBaseRobot::InitMoveComponent()
         // Init
         if (RobotVehicleMoveComponent)
         {
-            // Configure custom properties (frameids, etc.)
             RobotVehicleMoveComponent->Initialize();
         }
 

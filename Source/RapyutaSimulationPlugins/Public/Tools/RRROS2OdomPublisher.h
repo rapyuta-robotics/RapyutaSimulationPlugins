@@ -14,6 +14,7 @@
 #include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins
+#include "Tools/RRROS2BaseSensorPublisher.h"
 #include "Tools/RRROS2TFPublisher.h"
 
 #include "RRROS2OdomPublisher.generated.h"
@@ -26,7 +27,7 @@ class ARRBaseRobot;
  * @sa [UROS2Publisher](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dd4/class_u_r_o_s2_publisher.html)
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRROS2OdomPublisher : public UROS2Publisher
+class RAPYUTASIMULATIONPLUGINS_API URRROS2OdomPublisher : public URRROS2BaseSensorPublisher
 {
     GENERATED_BODY()
 
@@ -37,28 +38,22 @@ public:
      */
     URRROS2OdomPublisher();
 
-    UPROPERTY(BlueprintReadWrite)
-    TWeakObjectPtr<ARRBaseRobot> RobotVehicle = nullptr;
+    virtual bool InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
 
     UPROPERTY(BlueprintReadWrite)
     URRROS2TFPublisher* TFPublisher = nullptr;
 
     void InitializeTFWithROS2(UROS2NodeComponent* InROS2Node);
 
-    bool InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
+    void UpdateMessage(UROS2GenericMsg* InMessage) override;
 
     /**
-     * @brief Initialize odom publisher
-     * @todo is this method necessary?
+     * @brief Convert UE->ROS, Append Namespace to ChildFrameId and update TF data.
+     *
+     * @param OutOdomData
+     * @return true
+     * @return false
      */
-    UFUNCTION(BlueprintCallable)
-    void InitOdomPublisher(UROS2NodeComponent* InROS2Node)
-    {
-        InitializeWithROS2(InROS2Node);
-    }
-
-    // void RevokeUpdateCallback() override;
-    void UpdateMessage(UROS2GenericMsg* InMessage) override;
     bool GetOdomData(FROSOdom& OutOdomData) const;
 
     //! Publish tf or not

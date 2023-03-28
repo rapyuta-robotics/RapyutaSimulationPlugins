@@ -22,7 +22,7 @@
 
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
-    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("InitializeROS2Node"));
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("InitializeROS2Interface"));
     if (nullptr == InRobot)
     {
         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No pawn is given."));
@@ -34,6 +34,19 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 
     // Instantiate a ROS2 node for InRobot
     InitRobotROS2Node(InRobot);
+
+    // OdomPublisher (with TF)
+    if (bPublishOdom)
+    {
+        if (nullptr == OdomComponent)
+        {
+            OdomComponent =
+                URRUObjectUtils::CreateChildComponent<URRBaseOdomComponent>(Robot, *FString::Printf(TEXT("%sOdom"), *GetName()));
+            OdomComponent->bPublishOdomTf = bPublishOdomTf;
+            OdomComponent->PublicationFrequencyHz = OdomPublicationFrequencyHz;
+            OdomComponent->RootOffset = Robot->RootOffset;
+        }
+    }
 
     // Initialize Robot's sensors (lidar, etc.)
     // NOTE: This inits both static sensors added by BP robot & possiblly also dynamic ones added in the overriding child InitSensors()
@@ -80,7 +93,7 @@ void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(URRRobotROS2Interface, Robot);
     DOREPLIFETIME(URRRobotROS2Interface, RobotROS2Node);
     DOREPLIFETIME(URRRobotROS2Interface, ROSSpawnParameters);
-    DOREPLIFETIME(URRRobotROS2Interface, OdomPublisher);
+    DOREPLIFETIME(URRRobotROS2Interface, OdomComponent);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdom);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdomTf);
     DOREPLIFETIME(URRRobotROS2Interface, OdomPublicationFrequencyHz);
@@ -119,23 +132,6 @@ bool URRRobotROS2Interface::InitPublishers()
         return false;
     }
 
-    // OdomPublisher (with TF)
-    if (bPublishOdom && Robot)
-    {
-        if (nullptr == OdomPublisher)
-        {
-            OdomPublisher = NewObject<URRROS2OdomPublisher>(this);
-            OdomPublisher->SetDefaultDelegates();
-            OdomPublisher->bPublishOdomTf = bPublishOdomTf;
-            OdomPublisher->PublicationFrequencyHz = OdomPublicationFrequencyHz;
-        }
-        OdomPublisher->InitializeWithROS2(RobotROS2Node);
-
-        // If publishing odom, it must be an [ARRBaseRobot]
-        // todo separate ROS2Interface for mobile robot.
-        OdomPublisher->RobotVehicle = Robot;
-    }
-
     // Additional publishers by child class or robot
     for (auto& pub : Publishers)
     {
@@ -155,11 +151,6 @@ bool URRRobotROS2Interface::InitPublishers()
 
 void URRRobotROS2Interface::StopPublishers()
 {
-    if (bPublishOdom && OdomPublisher)
-    {
-        OdomPublisher->RobotVehicle = nullptr;
-    }
-
     // Additional publishers by child class or robot
     for (auto& pub : Publishers)
     {

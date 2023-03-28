@@ -34,6 +34,18 @@ class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponent : public URobotVe
 
 public:
     /**
+     * @brief Call #UpdateOdom in addition to update movement
+     *
+     * @param DeltaTime
+     * @param TickType
+     * @param ThisTickFunction
+     *
+     * @sa
+     * [UpdateComponentVelocity](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdateComponentVelocity/)
+     */
+    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+    /**
      * @brief Calculate wheel velocity from Velocity(member of UMovementComponent) and #AngularVelocity, and set by calling SetAngularVelocityTarget
      * SetAngularDriveParams as well.
      * @param DeltaTime
@@ -50,7 +62,7 @@ public:
      *
      * @todo Calculate odom from wheel rotation.
      */
-    virtual void UpdateOdom(float DeltaTime) override;
+    virtual void UpdateOdom(float DeltaTime);
 
     /**
      * @brief Set left and right wheels.

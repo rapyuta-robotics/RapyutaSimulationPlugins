@@ -41,6 +41,16 @@ void UDifferentialDriveComponent::SetPerimeter()
     }
     WheelPerimeter = WheelRadius * 2.f * M_PI;
 }
+void UDifferentialDriveComponent::TickComponent(float InDeltaTime,
+                                                enum ELevelTick TickType,
+                                                FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(InDeltaTime, TickType, ThisTickFunction);
+    if (!ShouldSkipUpdate(InDeltaTime))
+    {
+        UpdateOdom(InDeltaTime);
+    }
+}
 
 void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 {
@@ -62,18 +72,23 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 
 void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 {
-    // need to add noise!
-
-    if (!bIsOdomInitialized)
+    if (OdomComponent == nullptr)
     {
-        InitOdom();
+        return;
+    }
+
+    if (!OdomComponent->bIsOdomInitialized)
+    {
+        OdomComponent->InitOdom();
         PoseEncoderX = 0;
         PoseEncoderY = 0;
         PoseEncoderTheta = 0;
     }
 
+    FROSOdom odomData = OdomComponent->OdomData;
+
     // time
-    OdomData.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
+    odomData.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
 
     // vl and vr as computed here is ok for kinematics
     // for physics, vl and vr should be computed based on the change in wheel orientation (i.e. the velocity term to be used is
@@ -89,8 +104,8 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // noise added as a component of vl, vr
     // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
     //  seems to be Introduction to Autonomous Mobile Robots (Sigwart, Nourbakhsh, Scaramuzza)
-    float sl = (vl + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
-    float sr = (vr + WithNoise * GaussianRNGPosition(Gen)) * DeltaTime;
+    float sl = (vl + OdomComponent->bWithNoise * OdomComponent->GaussianRNGPosition(OdomComponent->Gen)) * DeltaTime;
+    float sr = (vr + OdomComponent->bWithNoise * OdomComponent->GaussianRNGPosition(OdomComponent->Gen)) * DeltaTime;
     float ssum = sl + sr;
 
     float sdiff = sr - sl;
@@ -109,29 +124,31 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // FRotator is in degrees, while PoseEncoderTheta is in Radians
     FQuat qt(FRotator(0, FMath::RadiansToDegrees(PoseEncoderTheta), 0));
 
-    OdomData.Pose.Pose.Position.X = PoseEncoderX;
-    OdomData.Pose.Pose.Position.Y = PoseEncoderY;
-    OdomData.Pose.Pose.Position.Z = 0;
+    odomData.Pose.Pose.Position.X = PoseEncoderX;
+    odomData.Pose.Pose.Position.Y = PoseEncoderY;
+    odomData.Pose.Pose.Position.Z = 0;
 
-    OdomData.Pose.Pose.Orientation = qt;
+    odomData.Pose.Pose.Orientation = qt;
 
-    OdomData.Twist.Twist.Angular.Z = w;
-    OdomData.Twist.Twist.Linear.X = v;
-    OdomData.Twist.Twist.Linear.Y = 0;
-    OdomData.Twist.Twist.Linear.Z = 0;
+    odomData.Twist.Twist.Angular.Z = w;
+    odomData.Twist.Twist.Linear.X = v;
+    odomData.Twist.Twist.Linear.Y = 0;
+    odomData.Twist.Twist.Linear.Z = 0;
 
-    OdomData.Pose.Covariance[0] = 0.01;
-    OdomData.Pose.Covariance[7] = 0.01;
-    OdomData.Pose.Covariance[14] = 1e+12;
-    OdomData.Pose.Covariance[21] = 1e+12;
-    OdomData.Pose.Covariance[28] = 1e+12;
-    OdomData.Pose.Covariance[35] = 0.01;
-    OdomData.Twist.Covariance[0] = 0.01;
-    OdomData.Twist.Covariance[7] = 0.01;
-    OdomData.Twist.Covariance[14] = 1e+12;
-    OdomData.Twist.Covariance[21] = 1e+12;
-    OdomData.Twist.Covariance[28] = 1e+12;
-    OdomData.Twist.Covariance[35] = 0.01;
+    odomData.Pose.Covariance[0] = 0.01;
+    odomData.Pose.Covariance[7] = 0.01;
+    odomData.Pose.Covariance[14] = 1e+12;
+    odomData.Pose.Covariance[21] = 1e+12;
+    odomData.Pose.Covariance[28] = 1e+12;
+    odomData.Pose.Covariance[35] = 0.01;
+    odomData.Twist.Covariance[0] = 0.01;
+    odomData.Twist.Covariance[7] = 0.01;
+    odomData.Twist.Covariance[14] = 1e+12;
+    odomData.Twist.Covariance[21] = 1e+12;
+    odomData.Twist.Covariance[28] = 1e+12;
+    odomData.Twist.Covariance[35] = 0.01;
+
+    OdomComponent->OdomData = odomData;
 
     // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Input:"));
     // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
@@ -147,4 +164,9 @@ void UDifferentialDriveComponent::Initialize()
 {
     Super::Initialize();
     SetPerimeter();
+    if (OdomComponent)
+    {
+        // Odom update is done by this class instead of OdomComponent.
+        OdomComponent->bManualUpdate = true;
+    }
 }

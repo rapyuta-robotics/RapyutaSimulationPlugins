@@ -9,8 +9,6 @@
 URRROS2OdomPublisher::URRROS2OdomPublisher()
 {
     MsgClass = UROS2OdomMsg::StaticClass();
-    TopicName = TEXT("odom");
-    PublicationFrequencyHz = 30;
     QoS = UROS2QoS::KeepLast;
     SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
@@ -32,7 +30,8 @@ void URRROS2OdomPublisher::InitializeTFWithROS2(UROS2NodeComponent* InROS2Node)
 {
     if (bPublishOdomTf && nullptr == TFPublisher)
     {
-        TFPublisher = CastChecked<URRROS2TFPublisher>(InROS2Node->CreateLoopPublisherWithClass(TEXT("/tf"), URRROS2TFPublisher::StaticClass(), PublicationFrequencyHz));
+        TFPublisher = CastChecked<URRROS2TFPublisher>(
+            InROS2Node->CreateLoopPublisherWithClass(TEXT("/tf"), URRROS2TFPublisher::StaticClass(), PublicationFrequencyHz));
     }
 }
 
@@ -40,6 +39,7 @@ void URRROS2OdomPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
     FROSOdom odomData;
     bool bIsOdomDataValid = GetOdomData(odomData);
+
     if (bIsOdomDataValid)
     {
         CastChecked<UROS2OdomMsg>(InMessage)->SetMsg(odomData);
@@ -48,20 +48,18 @@ void URRROS2OdomPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 
 bool URRROS2OdomPublisher::GetOdomData(FROSOdom& OutOdomData) const
 {
-    const URobotVehicleMovementComponent* moveComponent =
-        RobotVehicle.IsValid() ? RobotVehicle.Get()->RobotVehicleMoveComponent : nullptr;
-    if (moveComponent)
+    URRBaseOdomComponent* odomSource = Cast<URRBaseOdomComponent>(DataSourceComponent);
+    if (odomSource)
     {
-        OutOdomData = URRConversionUtils::OdomUEToROS(moveComponent->OdomData);
+        OutOdomData = URRConversionUtils::OdomUEToROS(odomSource->OdomData);
         if (bAppendNodeNamespace)
         {
-            OutOdomData.Header.FrameId = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.Header.FrameId);
             OutOdomData.ChildFrameId = URRGeneralUtils::ComposeROSFullFrameId(OwnerNode->Namespace, *OutOdomData.ChildFrameId);
         }
 
         if (bPublishOdomTf && TFPublisher)
         {
-            TFPublisher->TF = moveComponent->GetOdomTF();
+            TFPublisher->TF = odomSource->GetOdomTF();
             TFPublisher->FrameId = OutOdomData.Header.FrameId;
             TFPublisher->ChildFrameId = OutOdomData.ChildFrameId;
         }
