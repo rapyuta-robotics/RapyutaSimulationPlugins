@@ -255,11 +255,14 @@ void ASimulationState::ServerAttach(const FROSAttachReq& InRequest)
         return;
     }
 
-    if (ServerCheckAttachRequest(InRequest))
-    {
-        AActor* entity1 = Entities[InRequest.Name1];
-        AActor* entity2 = Entities[InRequest.Name2];
+    // TODO: Add proper server check
+    //if (ServerCheckAttachRequest(InRequest))
 
+    AActor* entity1 = Entities[InRequest.Name1];
+    AActor* entity2 = Entities[InRequest.Name2];
+
+    if (entity2->IsRootComponentMovable())
+    {
         if (!entity2->IsAttachedTo(entity1))
         {
             entity2->AttachToActor(entity1, FAttachmentTransformRules::KeepWorldTransform);
@@ -291,14 +294,20 @@ void ASimulationState::ServerAttach(const FROSAttachReq& InRequest)
     }
     else
     {
-        UE_LOG_WITH_INFO(
-            LogRapyutaCore,
-            Warning,
-            TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors "
-                 "under SimulationState control."),
-            *InRequest.Name1,
-            *InRequest.Name2);
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("entity2 to attach or detach %s has its Mobility not set as Movable. Please set Mobility of "
+                              "entity2 as Movable for Attach service to work properly."),
+                         *InRequest.Name2);
     }
+
+    UE_LOG_WITH_INFO(
+        LogRapyutaCore,
+        Warning,
+        TEXT("Entity %s and/or %s not exit or not under SimulationState Actor control. Please call AddEntity to make Actors "
+             "under SimulationState control."),
+        *InRequest.Name1,
+        *InRequest.Name2);
 
     PrevAttachEntityRequest = InRequest;
 }
