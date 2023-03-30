@@ -85,6 +85,7 @@ public:
      * @param InVector
      * @param InMaxMagnitude
      * @param b2D Whether only X,Y are accounted
+     * @return True if #InVector exceeds #InMaxMagnitude
      */
     FORCEINLINE static bool ClampVectorToMaxMagnitude(FVector& InVector, float InMaxMagnitude, bool b2D)
     {
@@ -94,6 +95,34 @@ public:
             return true;
         }
         return false;
+    }
+
+    /**
+     * @brief Clamp a given rotator to its max axis angles
+     *
+     * @param InRotator
+     * @param InMaxAngles
+     * @return Clamped rotator
+     */
+    FORCEINLINE static void ClampRotatorToMaxAngles(FRotator& InRotator, const FRotator& InMaxAngles)
+    {
+        InRotator = FRotator(ClampAngle(InRotator.Pitch, InMaxAngles.Pitch),
+                             ClampAngle(InRotator.Yaw, InMaxAngles.Yaw),
+                             ClampAngle(InRotator.Roll, InMaxAngles.Roll));
+    }
+
+    /**
+     * @brief Clamp an angle in a range [-InMaxAxisAngle, InMaxAxisAngle]
+     * @tparam T
+     * @param InAngle
+     * @param InMaxAngle
+     * @return Clamped angle
+     */
+    template<typename T>
+    FORCEINLINE static T ClampAngle(T InAngle, const T InMaxAngle)
+    {
+        T clampedAngle = FRotator::NormalizeAxis(InAngle);
+        return (clampedAngle > InMaxAngle) ? InMaxAngle : (clampedAngle < -InMaxAngle) ? -InMaxAngle : clampedAngle;
     }
 
     // RANDOM GENERATOR --
@@ -195,7 +224,7 @@ public:
     {
         return RandomStream.RandRange(InValueA, InValueB);
     }
-    
+
     /**
      * @brief Return an almost uniformly distributed Int random number between 2 int values [0, Max] by using 
      * @sa [FRandRange](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Math/FRandomStream/FRandRange/)
@@ -242,7 +271,6 @@ public:
      */
     FORCEINLINE static FQuat GetRandomOrientation()
     {
-
         static constexpr float C2PI = 2.f * PI;
 
         const float u1 = GetRandomBias();
@@ -298,10 +326,10 @@ public:
      * 
      * @return FLinearColor 
      */
-    FORCEINLINE static FLinearColor GetRandomColorFromHSV(const float InMin=0.6f)
+    FORCEINLINE static FLinearColor GetRandomColorFromHSV(const float InMin = 0.6f)
     {
-        FLinearColor color(GetRandomYawInDegrees(),              // Hue
-                           GetRandomBias(),                      // Saturation
+        FLinearColor color(GetRandomYawInDegrees(),               // Hue
+                           GetRandomBias(),                       // Saturation
                            GetRandomFloatInRange(InMin, 1.f));    // Value
 
         return color.HSVToLinearRGB();

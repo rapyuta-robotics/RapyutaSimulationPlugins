@@ -338,6 +338,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector TargetAngularVel = FVector::ZeroVector;
 
+    /**
+     * @brief Stop robot movement, resetting all vel inputs
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void StopMovement();
+
     //! Main robot movement component (kinematics/diff-drive or wheels-drive comp)
     //! #MovementComponent and #RobotVehicleMoveComponent should point to same pointer.
     UPROPERTY(VisibleAnywhere)

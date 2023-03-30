@@ -377,6 +377,12 @@ void ARRBaseRobot::SetJointState(const TMap<FString, TArray<float>>& InJointStat
     }
 }
 
+void ARRBaseRobot::StopMovement()
+{
+    TargetLinearVel = FVector::ZeroVector;
+    TargetAngularVel = FVector::ZeroVector;
+}
+
 void ARRBaseRobot::SetLinearVel(const FVector& InLinearVel)
 {
     SyncServerLinearMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetTransform(), InLinearVel);

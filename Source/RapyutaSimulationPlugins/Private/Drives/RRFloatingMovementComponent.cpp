@@ -49,13 +49,18 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
     // Apply input for local players but also for AI that's not following a navigation path at the moment
     if (controller->IsLocalPlayerController() || (false == controller->IsFollowingAPath()) || bUseAccelerationForPaths)
     {
+        // NOTE: This is only applied to linear [Velocity] from [APawn::ControlInputVector], which is for linear movement.
         ApplyControlInputToVelocity(InDeltaTime);
+
+        // For angular movement, the control inputs, added by [APawn::AddController~] ultimately to [APlayerController::RotationInput],
+        // are NOT applied to [AngularVelocity] yet here!
     }
     // Limit speed in case of non-path-following AI controller
     else
     {
         URRMathUtils::ClampVectorToMaxMagnitude(Velocity, MaxSpeed, b2DMovement);
     }
+    URRMathUtils::ClampRotatorToMaxAngles(AngularVelocity, FRotator(MaxAngularSpeed));
 
     if (false == b2DMovement)
     {
@@ -65,7 +70,8 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
 
     // Move [UpdatedComponent], updating [bPositionCorrected] here-in
     FVector deltaLoc = Velocity * InDeltaTime;
-    if (!deltaLoc.IsNearlyZero(1e-6f))
+    FRotator deltaRot = AngularVelocity * InDeltaTime;
+    if ((!deltaLoc.IsNearlyZero(1e-6f)) || (!deltaRot.IsNearlyZero(1e-3f)))
     {
         // Save prevLocation
         const FVector prevLocation = UpdatedComponent->GetComponentLocation();
@@ -73,9 +79,11 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
         {
             // NOTE: [UpdatedComponent] should have been attached to the target base, of which overlapping is ignored
             TGuardValue<EMoveComponentFlags> ScopedFlagRestore(MoveComponentFlags, MoveComponentFlags | MOVECOMP_IgnoreBases);
-
             FHitResult hit(1.f);
-            SafeMoveUpdatedComponent(deltaLoc, UpdatedComponent->GetComponentQuat(), bSweepEnabled, hit);
+            SafeMoveUpdatedComponent(deltaLoc,
+                                     FQuat(deltaRot).GetNormalized() * UpdatedComponent->GetComponentQuat().GetNormalized(),
+                                     bSweepEnabled,
+                                     hit);
 
 #if RAPYUTA_FLOAT_MOVEMENT_DEBUG
             if (hit.bBlockingHit)
