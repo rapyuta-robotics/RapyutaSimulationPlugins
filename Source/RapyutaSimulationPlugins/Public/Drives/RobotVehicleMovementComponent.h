@@ -185,4 +185,8 @@ protected:
      * [UpdatedComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
      */
     virtual void UpdateMovement(float InDeltaTime);
+
+    //! internal property used to log throttle.
+    UPROPERTY()
+    float LogLastHit = 0.f;
 };

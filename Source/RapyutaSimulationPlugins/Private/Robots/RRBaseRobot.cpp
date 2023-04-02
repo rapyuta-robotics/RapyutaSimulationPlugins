@@ -290,7 +290,7 @@ void ARRBaseRobot::ConfigureMovementComponent()
 
 bool ARRBaseRobot::InitMoveComponent()
 {
-    if (VehicleMoveComponentClass)
+    if (VehicleMoveComponentClass && MovementComponent == nullptr)
     {
         // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
         MovementComponent = CastChecked<UMovementComponent>(
@@ -301,6 +301,21 @@ bool ARRBaseRobot::InitMoveComponent()
         // NOTE: This could be NULL
         RobotVehicleMoveComponent = Cast<URobotVehicleMovementComponent>(MovementComponent);
 
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Display,
+                         TEXT("[%s] created from class %s!"),
+                         *MovementComponent->GetName(),
+                         *VehicleMoveComponentClass->GetName());
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore, Warning, TEXT("VehicleMoveComponentClass has not been configured, probably later in child BP class!"));
+        return false;
+    }
+
+    if (bInitRobotVehicleMoveComponent)
+    {
         // Customize
         ConfigureMovementComponent();
 
@@ -312,20 +327,8 @@ bool ARRBaseRobot::InitMoveComponent()
 
         // (NOTE) With [bAutoRegisterUpdatedComponent] as true by default, UpdatedComponent component will be automatically set
         // to the owner actor's root
-
-        UE_LOG_WITH_INFO(LogRapyutaCore,
-                         Display,
-                         TEXT("[%s] created from class %s!"),
-                         *MovementComponent->GetName(),
-                         *VehicleMoveComponentClass->GetName());
-        return true;
     }
-    else
-    {
-        UE_LOG_WITH_INFO_NAMED(
-            LogRapyutaCore, Warning, TEXT("VehicleMoveComponentClass has not been configured, probably later in child BP class!"));
-        return false;
-    }
+    return true;
 }
 
 bool ARRBaseRobot::InitSensors(UROS2NodeComponent* InROS2Node)
@@ -456,4 +459,20 @@ void ARRBaseRobot::SetLocalAngularVel(const FVector& InAngularVel)
                      *PlayerController->PlayerState->GetPlayerName(),
                      *InAngularVel.ToString());
 #endif
+}
+
+void ARRBaseRobot::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+
+    // why this is required?
+    // https://dev.epicgames.com/community/snippets/VP9/keep-chaos-physics-awake
+    TInlineComponentArray<UStaticMeshComponent*> staticMeshComponents(this);
+    for (auto& staticMeshComp : staticMeshComponents)
+    {
+        if (staticMeshComp->IsSimulatingPhysics())
+        {
+            staticMeshComp->WakeAllRigidBodies();
+        }
+    }
 }

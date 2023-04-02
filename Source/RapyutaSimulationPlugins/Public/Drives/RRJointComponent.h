@@ -35,6 +35,8 @@ public:
     // Sets default values for this component's properties
     URRJointComponent();
 
+    // void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
+
 protected:
     virtual void PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation);
 
