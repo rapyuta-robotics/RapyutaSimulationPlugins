@@ -204,24 +204,23 @@ void URRROS2SimulationStateClient::ServerAttach_Implementation(const FROSAttachR
     ServerSimState->ServerAttach(InRequest);
 }
 
-void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
+FROSSpawnEntityRes URRROS2SimulationStateClient::SpawnEntityImpl(FROSSpawnEntityReq& InRequest)
 {
-    UROS2SpawnEntitySrv* SpawnEntityService = Cast<UROS2SpawnEntitySrv>(InService);
-
-    FROSSpawnEntityReq request;
-    SpawnEntityService->GetRequest(request);
-
     FROSSpawnEntityRes response;
-    response.bSuccess = CheckSpawnableEntity(request.Xml, false) && CheckEntity(request.State.ReferenceFrame, true);
+    response.bSuccess = CheckSpawnableEntity(InRequest.Xml, false) && CheckEntity(InRequest.State.ReferenceFrame, true);
     if (response.bSuccess)
     {
-        const FString& entityModelName = request.Xml;
-        const FString& entityName = request.State.Name;
-        verify(false == entityName.IsEmpty());
-        if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
+        const FString& entityModelName = InRequest.Xml;
+        const FString& entityName = InRequest.State.Name;
+        if (entityName.IsEmpty())
+        {
+            response.bSuccess = false;
+            response.StatusMessage = FString::Printf(TEXT("[%s] Failed to spawn entity. Entity Name is empty"), *GetName());
+        }
+        else if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
             // RPC to Server's Spawn entity
-            ServerSpawnEntity(request);
+            ServerSpawnEntity(InRequest);
 
             // RPC is not blocking and can't get actor even if it is spawned.
             // todo: handle failed to spawn with collision and etc.
@@ -246,10 +245,19 @@ void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
             response.bSuccess = false;
             response.StatusMessage = FString::Printf(
                 TEXT("[%s] Failed to spawn entity named %s,  given name actor already exists!"), *GetName(), *entityName);
-            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("%s"), *response.StatusMessage);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("%s"), *response.StatusMessage);
         }
     }
-    SpawnEntityService->SetResponse(response);
+    return response;
+}
+
+void URRROS2SimulationStateClient::SpawnEntitySrv(UROS2GenericSrv* InService)
+{
+    UROS2SpawnEntitySrv* SpawnEntityService = Cast<UROS2SpawnEntitySrv>(InService);
+
+    FROSSpawnEntityReq request;
+    SpawnEntityService->GetRequest(request);
+    SpawnEntityService->SetResponse(SpawnEntityImpl(request));
 }
 
 void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
@@ -263,7 +271,7 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
     for (uint32 i = 0; i < entityListRequest.State.Num(); ++i)
     {
         UE_LOG_WITH_INFO(LogRapyutaCore,
-                         Warning,
+                         Log,
                          TEXT("Spawning Entity : %s (name: %s)"),
                          *entityListRequest.Type[i],
                          *entityListRequest.State[i].Name);
@@ -273,32 +281,17 @@ void URRROS2SimulationStateClient::SpawnEntitiesSrv(UROS2GenericSrv* InService)
         entityRequest.State = entityListRequest.State[i];
         entityRequest.Tags = entityListRequest.Tags;
 
-        if (CheckSpawnableEntity(entityRequest.Xml, false) && CheckEntity(entityRequest.State.ReferenceFrame, true))
+        FROSSpawnEntityRes res = SpawnEntityImpl(entityRequest);
+        if (res.bSuccess)
         {
-            if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityRequest.State.Name))
-            {
-                // RPC call to the server
-                ServerSpawnEntity(entityRequest);
-                numEntitySpawned++;
-            }
-            else
-            {
-                UE_LOG_WITH_INFO(LogRapyutaCore,
-                                 Error,
-                                 TEXT("Failed to spawn entity named %s,  given name actor already exists!"),
-                                 *entityRequest.State.Name);
-            }
+            numEntitySpawned++;
         }
-
-        statusMessage.Append(FString::Printf(TEXT("%s,"), *entityRequest.State.Name));
+        statusMessage.Append(FString::Printf(TEXT("%s:%s, "), *entityRequest.State.Name, *res.StatusMessage));
     }
 
     FROSSpawnEntitiesRes entityListResponse;
     entityListResponse.bSuccess = (numEntitySpawned == entityListRequest.State.Num());
-    entityListResponse.StatusMessage = entityListResponse.bSuccess
-                                           ? FString::Printf(TEXT("Newly spawned entities: [%s]"), *statusMessage)
-                                           : FString::Printf(TEXT("Failed to spawn entities: [%s]"), *statusMessage);
-
+    entityListResponse.StatusMessage = statusMessage;
     spawnEntitiesService->SetResponse(entityListResponse);
 }
 
