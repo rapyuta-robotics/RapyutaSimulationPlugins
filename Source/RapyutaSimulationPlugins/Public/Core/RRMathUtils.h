@@ -101,7 +101,7 @@ public:
      * @brief Clamp a given rotator to its max axis angles
      *
      * @param InRotator
-     * @param InMaxAngles
+     * @param InMaxAngles > 0
      * @return Clamped rotator
      */
     FORCEINLINE static void ClampRotatorToMaxAngles(FRotator& InRotator, const FRotator& InMaxAngles)
@@ -115,14 +115,14 @@ public:
      * @brief Clamp an angle in a range [-InMaxAxisAngle, InMaxAxisAngle]
      * @tparam T
      * @param InAngle
-     * @param InMaxAngle
+     * @param InMaxAngle > 0
      * @return Clamped angle
      */
     template<typename T>
     FORCEINLINE static T ClampAngle(T InAngle, const T InMaxAngle)
     {
-        T clampedAngle = FRotator::NormalizeAxis(InAngle);
-        return (clampedAngle > InMaxAngle) ? InMaxAngle : (clampedAngle < -InMaxAngle) ? -InMaxAngle : clampedAngle;
+        const T normAngle = FRotator::NormalizeAxis(InAngle);
+        return FMath::Clamp(normAngle, -InMaxAngle, InMaxAngle);
     }
 
     // RANDOM GENERATOR --
