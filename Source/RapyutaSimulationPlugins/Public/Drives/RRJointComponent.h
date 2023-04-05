@@ -76,6 +76,13 @@ public:
     virtual void SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation);
 
     /**
+     * @brief Check Pose reach the target pose.
+     *
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual bool IsReachPoseTarget(const float InTolerance);
+
+    /**
      * @brief Directly set pose.
      * Control to teleport joint to pose should be implemented in child class.
      * TArray size should be #LinearDOF +  #RotationalDOF

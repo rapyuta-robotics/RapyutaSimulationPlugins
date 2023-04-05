@@ -32,6 +32,7 @@ public:
      * @return true
      * @return false
      */
+    UFUNCTION(BlueprintCallable)
     static bool GetRefTransform(const FString& RefActorName, const AActor* RefActor, FTransform& OutTransf)
     {
         if (RefActorName.IsEmpty())    // refrence is world origin
@@ -56,6 +57,7 @@ public:
      * @param WorldTransf Transform in world frame
      * @return FTransform Transform in reference frame
      */
+    UFUNCTION(BlueprintCallable)
     static FTransform GetRelativeTransform(const FTransform& RefTransf, const FTransform& WorldTransf)
     {
         FTransform refTransfNormalized = RefTransf;
@@ -114,6 +116,7 @@ public:
      * @param RelativeTransf Transform in reference frame
      * @return FTransform Transform in world frame
      */
+    UFUNCTION(BlueprintCallable)
     static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)
     {
         FTransform worldTransf;

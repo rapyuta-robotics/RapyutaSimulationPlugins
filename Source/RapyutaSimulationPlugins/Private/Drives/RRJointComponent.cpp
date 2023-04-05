@@ -48,6 +48,11 @@ void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator&
     OrientationTarget = InOrientation;
 };
 
+bool URRJointComponent::IsReachPoseTarget(const float InTolerance)
+{
+    return PositionTarget.Equals(Position, InTolerance) && OrientationTarget.Equals(Orientation, InTolerance);
+};
+
 void URRJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
 {
     Position = InPosition.BoundToBox(PositionMin, PositionMax);
