@@ -86,6 +86,19 @@ public:
     }
 
     /**
+     * @brief Get the transform in reference frame. If RefActor==nullptr, return WorldTransf
+     *
+     * @param RefActor
+     * @param WorldTransf Transform in world frame
+     * @return FTransform Transform in reference frame
+     */
+    UFUNCTION(BlueprintCallable)
+    static FTransform GetRelativeTransformFromActor(const AActor* RefActor, const FTransform& WorldTransf)
+    {
+        return GetRelativeTransform(RefActor, WorldTransf);
+    }
+
+    /**
      * @brief Get the transform in reference frame.
      *
      * @param RefActorName If this is empty, use world origin as reference, i.e. OutTransf=InTransf
@@ -142,6 +155,19 @@ public:
             return RelativeTransf;
         }
         return GetWorldTransform(RefActor->GetTransform(), RelativeTransf);
+    }
+
+    /**
+     * @brief Get the transform in world frame. If RefActor==nullptr, return RelativeTransf
+     *
+     * @param RefActor
+     * @param RelativeTransf Transform in reference frame
+     * @return FTransform Transform in world frame
+     */
+    UFUNCTION(BlueprintCallable)
+    static FTransform GetWorldTransformFromActor(const AActor* RefActor, const FTransform& RelativeTransf)
+    {
+        return GetWorldTransform(RefActor, RelativeTransf);
     }
 
     /**

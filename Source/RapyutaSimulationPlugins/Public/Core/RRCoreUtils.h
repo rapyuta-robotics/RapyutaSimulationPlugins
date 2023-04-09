@@ -673,7 +673,7 @@ public:
     {
         if (GEngine)
         {
-            // GEngine->AddOnScreenDebugMessage(-1, InTimeToDisplay, InColor, *InMessage);
+            GEngine->AddOnScreenDebugMessage(-1, InTimeToDisplay, InColor, *InMessage);
             return true;
         }
         return false;
