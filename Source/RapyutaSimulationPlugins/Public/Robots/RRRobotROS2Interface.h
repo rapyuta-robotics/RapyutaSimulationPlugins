@@ -268,11 +268,10 @@ protected:
     template<typename TROS2Message, typename TROS2MessageData, typename TRobot>
     FORCEINLINE void OnMessageReceivedFunc(const TROS2Message* InMsg, const TFunction<void(const TROS2MessageData&)>& InFunc)
     {
-        const auto* msg = Cast<TROS2Message>(InMsg);
-        if (IsValid(msg))
+        if (IsValid(InMsg))
         {
             TROS2MessageData msgData;
-            msg->GetMsg(msgData);
+            InMsg->GetMsg(msgData);
 
             // (Note) In this callback, which could be invoked from a ROS working thread,
             // thus any direct referencing to its member in this GameThread lambda needs to be verified.
@@ -295,10 +294,9 @@ protected:
     void MakeServiceRequest(const FName& InServiceName, const TServiceRequest& InRequest)
     {
         // Create and update request
-        auto* clienPtr = ServiceClientList.Find(InServiceName);
-        if (clienPtr)
+        if (auto* clientPtr = ServiceClientList.Find(InServiceName))
         {
-            UROS2ServiceClient* client = *clienPtr;
+            UROS2ServiceClient* client = *clientPtr;
             TService* service = CastChecked<TService>(client->Service);
             client->SendRequest(service, InRequest);
 

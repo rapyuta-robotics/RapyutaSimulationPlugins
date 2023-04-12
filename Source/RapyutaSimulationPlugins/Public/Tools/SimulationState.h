@@ -253,6 +253,12 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle FetchEntityListTimerHandle;
 
+    /**
+     * @brief Matches UE strings to original char buffers, for ros messages
+     * This can be needed for unicode encoded strings in ros message when ROS->UE->ROS conversion does not work well
+     */
+    TMap<FString, std::string> EncodedStrings;
+
 private:
     /**
      * @brief Verify a function is called from server
