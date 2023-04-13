@@ -80,7 +80,7 @@ public:
      *
      */
     UFUNCTION(BlueprintCallable)
-    virtual bool IsReachPoseTarget(const float InTolerance);
+    virtual bool HasReachedPoseTarget(const float InTolerance);
 
     /**
      * @brief Directly set pose.

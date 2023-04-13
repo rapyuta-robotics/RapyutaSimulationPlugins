@@ -25,31 +25,6 @@ class RAPYUTASIMULATIONPLUGINS_API URRMathUtils : public UBlueprintFunctionLibra
 
 public:
     /**
-     * @brief return angular difference in [-180, 180]
-     * @note FQuat::AngularDistance causes error if two quat is too close.
-     * @param A input angle [degree]
-     * @param B input angle [degree]
-     * @return FORCEINLINE angular difference in [-180, 180]
-     */
-    UFUNCTION(BlueprintCallable)
-    static float AngleDiff(float A, float B)
-    {
-        float angleDiff = A - B;
-        while (angleDiff > 180 || angleDiff < -180)
-        {
-            if (angleDiff > 180)
-            {
-                angleDiff -= 360;
-            }
-            else if (angleDiff < -180)
-            {
-                angleDiff += 360;
-            }
-        }
-        return angleDiff;
-    }
-
-    /**
      * @brief Convert uint32 BitFlags to TArray
      *
      * @tparam T
