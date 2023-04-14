@@ -155,8 +155,8 @@ public:
 
     /**
      * @brief Return the file extension for the given file type from #SimFileExts.
-     * 
-     * @param InFileType 
+     *
+     * @param InFileType
      * @return FORCEINLINE const* TCHAR*
      */
     FORCEINLINE static const TCHAR* GetSimFileExt(const ERRFileType InFileType)
@@ -336,20 +336,20 @@ public:
 
     /**
      * @brief Check #ARRGameState is initialized or not.
-     * 
-     * @param InContextObject 
-     * @param bIsLogged 
-     * @return true 
-     * @return false 
+     *
+     * @param InContextObject
+     * @param bIsLogged
+     * @return true
+     * @return false
      */
     static bool HasSimInitialized(const UObject* InContextObject, bool bIsLogged = false);
 
     /**
      * @brief Get the Scene Instance. Works only with #ARRGameState
-     * 
-     * @param InContextObject 
-     * @param InSceneInstanceId 
-     * @return URRSceneInstance* 
+     *
+     * @param InContextObject
+     * @param InSceneInstanceId
+     * @return URRSceneInstance*
      */
     static URRSceneInstance* GetSceneInstance(const UObject* InContextObject, int8 InSceneInstanceId);
 
@@ -371,9 +371,9 @@ public:
      * Each level could be streamed into an unique [ULevelStreaming]
      * Refer to ULevelStreamingDynamic::LoadLevelInstance() for creating multiple streaming instances of the same level
      * @sa [ULevelStreamingDynamic](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/ULevelStreamingDynamic/)
-     * @param InContextObject 
-     * @param InLevelInfo 
-     * @return ULevelStreamingDynamic* 
+     * @param InContextObject
+     * @param InLevelInfo
+     * @return ULevelStreamingDynamic*
      */
     static ULevelStreamingDynamic* CreateStreamingLevel(const UObject* InContextObject, const FRRStreamingLevelInfo& InLevelInfo)
     {
@@ -391,11 +391,11 @@ public:
     /**
      * @brief LoadStreamLevel
      * @sa [Loading and Unloading Levels using C++](https://docs.unrealengine.com/5.1/en-US/loading-and-unloading-levels-using-cplusplus-in-unreal-engine/)
-     * 
-     * @param InContextObject 
-     * @param InLevelName 
-     * @param InTargetObject 
-     * @param InExecuteFunctionName 
+     *
+     * @param InContextObject
+     * @param InLevelName
+     * @param InTargetObject
+     * @param InExecuteFunctionName
      */
     static void StreamLevel(const UObject* InContextObject,
                             const FString& InLevelName,
@@ -414,8 +414,8 @@ public:
     /**
      * @brief UnloadStreamLevel
      * @sa [Loading and Unloading Levels using C++](https://docs.unrealengine.com/5.1/en-US/loading-and-unloading-levels-using-cplusplus-in-unreal-engine/)
-     * @param InContextObject 
-     * @param InLevelName 
+     * @param InContextObject
+     * @param InLevelName
      */
     static void UnstreamLevel(const UObject* InContextObject, const FName& InLevelName)
     {
@@ -499,15 +499,15 @@ public:
     }
 
     /**
-     * @brief 
+     * @brief
      * It was observed that with high polling frequency as [0.01] or sometimes [0.1] second, we got crash on AutomationTest
      * module. Thus, [IntervalTimeInSec] as [0.5] sec is used for now.
-     * @param InCond 
-     * @param InPassedCondAct 
-     * @param InTimeoutInSec 
-     * @param InIntervalTimeInSec 
-     * @return true 
-     * @return false 
+     * @param InCond
+     * @param InPassedCondAct
+     * @param InTimeoutInSec
+     * @param InIntervalTimeInSec
+     * @return true
+     * @return false
      */
     static bool WaitUntilThenAct(TFunctionRef<bool()> InCond,
                                  TFunctionRef<void()> InPassedCondAct,
@@ -515,14 +515,14 @@ public:
                                  float InIntervalTimeInSec = 0.5f);
 
     /**
-     * @brief 
-     * 
-     * @param InCondition 
-     * @param InAction 
-     * @param InBeginTime 
-     * @param InTimeoutInSec 
-     * @return true 
-     * @return false 
+     * @brief
+     *
+     * @param InCondition
+     * @param InAction
+     * @param InBeginTime
+     * @param InTimeoutInSec
+     * @return true
+     * @return false
      */
     static bool CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
                                  const TFunctionRef<void()>& InAction,
