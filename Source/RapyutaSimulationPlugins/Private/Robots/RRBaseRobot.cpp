@@ -274,6 +274,14 @@ void ARRBaseRobot::DeInitROS2Interface()
     }
 }
 
+void ARRBaseRobot::SetMoveComponent(UMovementComponent* InMoveComponent)
+{
+    MovementComponent = InMoveComponent;
+    MovementComponent->RegisterComponent();
+    MovementComponent->SetIsReplicated(true);
+    RobotVehicleMoveComponent = Cast<URobotVehicleMovementComponent>(MovementComponent);
+}
+
 void ARRBaseRobot::ConfigureMovementComponent()
 {
     // Configure custom properties (frameids, etc.)
@@ -290,16 +298,13 @@ void ARRBaseRobot::ConfigureMovementComponent()
 
 bool ARRBaseRobot::InitMoveComponent()
 {
+    // Create MovementComponent. If it is already created by BP, this part is skiped.
     if (VehicleMoveComponentClass && MovementComponent == nullptr)
     {
         // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
-        MovementComponent = CastChecked<UMovementComponent>(
-            URRUObjectUtils::CreateSelfSubobject(this, VehicleMoveComponentClass, FString::Printf(TEXT("%sMoveComp"), *GetName())));
-        MovementComponent->RegisterComponent();
-        MovementComponent->SetIsReplicated(true);
+        SetMoveComponent(CastChecked<UMovementComponent>(
+            URRUObjectUtils::CreateSelfSubobject(this, VehicleMoveComponentClass, FString::Printf(TEXT("%sMoveComp"), *GetName()))));
 
-        // NOTE: This could be NULL
-        RobotVehicleMoveComponent = Cast<URobotVehicleMovementComponent>(MovementComponent);
 
         UE_LOG_WITH_INFO(LogRapyutaCore,
                          Display,
@@ -311,13 +316,13 @@ bool ARRBaseRobot::InitMoveComponent()
     {
         UE_LOG_WITH_INFO_NAMED(
             LogRapyutaCore, Warning, TEXT("VehicleMoveComponentClass has not been configured, probably later in child BP class!"));
-        return false;
     }
 
     if (bInitRobotVehicleMoveComponent)
     {
         // Customize
         ConfigureMovementComponent();
+        BPConfigureMovementComponent();
 
         // Init
         if (RobotVehicleMoveComponent)

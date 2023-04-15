@@ -135,6 +135,9 @@ public:
     UFUNCTION()
     virtual void SetupROSParams(){};
 
+    /**
+     * @brief Setup ROS params called after #SetupROSParams. override by BP child class to config custom ROS2 Interface's params
+    */
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void BPSetupROSParams();
 

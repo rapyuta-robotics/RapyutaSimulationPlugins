@@ -353,16 +353,22 @@ public:
 
     //! Main robot movement component (kinematics/diff-drive or wheels-drive comp)
     //! #MovementComponent and #RobotVehicleMoveComponent should point to same pointer.
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     UMovementComponent* MovementComponent = nullptr;
 
     //! Movecomponent casted to #URobotVehicleMovementComponent for utility.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    //! This should be pointing same thing as #MovementComponent
+    //! This should be set from #SetMoveComponent
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
     //! Class of the main robot movement component, configurable in child class
+    //! If VehicleMoveComponentClass == nullptr, it is expected that MovementComponent is set from BP or user code.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TSubclassOf<UMovementComponent> VehicleMoveComponentClass;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void SetMoveComponent(UMovementComponent* InMoveComponent);
 
     /**
      * @brief Set velocity to #RobotVehicleMoveComponent.
@@ -432,6 +438,15 @@ public:
     //! Call ConfigureMovecomponent and RobotVehicleMoveComponent::Initialize() in InitMoveComponent in PostInitializeComponents or not.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bInitRobotVehicleMoveComponent = true;
+
+
+    /**
+     * @brief This method is called inside #PostInitializeComponents.
+     * Custom initialization of child BP class can be done by overwritting this method.
+     *
+     */
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPConfigureMovementComponent();
 
 protected:
     /**
