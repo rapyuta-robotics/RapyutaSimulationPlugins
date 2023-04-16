@@ -45,27 +45,6 @@ protected:
     virtual void PostInitializeComponents() override;
 
     /**
-     * @brief 
-     * @todo is this necessary?
-     * 
-     */
-    virtual void BeginPlay() override;
-    
-    /**
-     * @brief 
-     * @todo is this necessary?
-     * 
-     */
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-    /**
-     * @brief 
-     * @todo is this necessary?
-     * 
-     */
-    virtual void Tick(float DeltaTime) override;
-
-    /**
      * @brief Create UStaticMeshComponent, create UPhysicsConstraintComponent, and calls #SetupConstraintsAndPhysics to setup physics constraints.
      * 
      */
