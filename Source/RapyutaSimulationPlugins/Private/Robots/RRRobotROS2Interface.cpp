@@ -53,7 +53,7 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     verify(InRobot->InitSensors(RobotROS2Node));
 
     // Refresh TF, Odom publishers
-    verify(InitPublishers());
+    InitPublishers();
 
     // cmd_vel, joint state, and other ROS topic inputs.
     InitSubscriptions();
