@@ -37,6 +37,10 @@ public:
     UPROPERTY(VisibleAnywhere)
     USkeletalMeshComponent* SkeletalMeshComp = nullptr;
 
+    //! Reference Actor
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+    AActor* Map = nullptr;
+
     /**
      * @brief Set the Target Robot object. Set first USkeletalMeshComponent to #SkeletalMeshComp
      * 

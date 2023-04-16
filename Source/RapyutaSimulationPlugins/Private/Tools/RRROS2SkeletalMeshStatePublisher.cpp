@@ -68,10 +68,10 @@ void URRROS2SkeletalMeshStatePublisher::UpdateMessage(UROS2GenericMsg* InMessage
     const FQuat& robotRotation = robotTransform.GetRotation();
     data.Pose.Position = 0.01f * robotLocation;
     data.Pose.Orientation = robotRotation;
-    if (Robot->Map != nullptr)
+    if (Map != nullptr)
     {
-        const FQuat mapInverseQuat = Robot->Map->GetActorQuat().Inverse();
-        const FVector mapPos = 0.01f * mapInverseQuat.RotateVector(robotLocation - Robot->Map->GetActorLocation());
+        const FQuat mapInverseQuat = Map->GetActorQuat().Inverse();
+        const FVector mapPos = 0.01f * mapInverseQuat.RotateVector(robotLocation - Map->GetActorLocation());
         data.Pose.Position = mapPos;
         data.Pose.Orientation = robotRotation * mapInverseQuat;
     }
