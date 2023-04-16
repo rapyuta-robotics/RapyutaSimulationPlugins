@@ -35,8 +35,11 @@ void ATurtlebotBurger::SetupBody()
     WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
     CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
 
-    check(RootComponent);
-    Base->SetupAttachment(RootComponent);
+    if(RootComponent)
+    {
+        Base->SetupAttachment(RootComponent);
+    }
+
     LidarSensor->SetupAttachment(Base);
     LidarComponent->SetupAttachment(LidarSensor);
     WheelLeft->SetupAttachment(Base);
@@ -82,12 +85,6 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
 {
     if (bBodyComponentsCreated)
     {
-        Base->SetMaterial(0, VehicleMaterial);
-        LidarSensor->SetMaterial(0, VehicleMaterial);
-        WheelLeft->SetMaterial(0, VehicleMaterial);
-        WheelRight->SetMaterial(0, VehicleMaterial);
-        CasterBack->SetMaterial(0, BallMaterial);
-
         Base->SetSimulatePhysics(true);
         LidarSensor->SetSimulatePhysics(true);
         WheelLeft->SetSimulatePhysics(true);
@@ -149,21 +146,4 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
     {
         UE_LOG_WITH_INFO(LogTurtlebotBurger, Error, TEXT("Turtlebot not initialized - can't setup constraints!"));
     }
-}
-
-// Called when the game starts or when spawned
-void ATurtlebotBurger::BeginPlay()
-{
-    Super::BeginPlay();
-}
-
-void ATurtlebotBurger::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-    Super::EndPlay(EndPlayReason);
-}
-
-// Called every frame
-void ATurtlebotBurger::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
 }
