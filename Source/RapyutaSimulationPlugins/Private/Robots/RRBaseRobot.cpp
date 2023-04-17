@@ -65,7 +65,6 @@ void ARRBaseRobot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ARRBaseRobot, ROSSpawnParameters);
     DOREPLIFETIME(ARRBaseRobot, bStartStopROS2Interface);
     DOREPLIFETIME(ARRBaseRobot, NetworkAuthorityType);
-    DOREPLIFETIME(ARRBaseRobot, Map);
     DOREPLIFETIME(ARRBaseRobot, RobotVehicleMoveComponent);
     DOREPLIFETIME(ARRBaseRobot, VehicleMoveComponentClass);
 }

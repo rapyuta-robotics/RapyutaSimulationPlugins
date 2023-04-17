@@ -105,11 +105,6 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetRootOffset(const FTransform& InRootOffset);
 
-    //! reference actor for odometry.
-    //! @todo is this still necessary?
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    AActor* Map = nullptr;
-
     /**
      * @brief DynamicRuntime robot: Implemented purely in cpp, built & loaded up at runtime from raw CAD + metadata (URDF/SDF)
      */

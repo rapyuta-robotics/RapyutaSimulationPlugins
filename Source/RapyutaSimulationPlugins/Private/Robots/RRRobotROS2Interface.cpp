@@ -53,7 +53,7 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     verify(InRobot->InitSensors(RobotROS2Node));
 
     // Refresh TF, Odom publishers
-    verify(InitPublishers());
+    InitPublishers();
 
     // cmd_vel, joint state, and other ROS topic inputs.
     InitSubscriptions();
@@ -169,12 +169,12 @@ bool URRRobotROS2Interface::InitSubscriptions()
     }
 
     // Subscription with callback to enqueue vehicle spawn info.
-    ROS2_CREATE_SUBSCRIBER(
-        RobotROS2Node, this, CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);
+    RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(
+        CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);
 
     // Subscription with callback to enqueue vehicle spawn info.
-    ROS2_CREATE_SUBSCRIBER(
-        RobotROS2Node, this, JointsCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointStateCallback);
+    RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(
+        JointsCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointStateCallback);
 
     // Additional subscribers by child class or robot
     for (auto& sub : Subscribers)
