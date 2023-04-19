@@ -19,7 +19,6 @@
 
 class ARRGameMode;
 class URRGameInstance;
-class ARRPlayerController;
 class ARRMeshActor;
 
 /**
@@ -50,9 +49,6 @@ public:
 
     UPROPERTY()
     ARRGameMode* GameMode = nullptr;
-
-    UPROPERTY()
-    URRGameInstance* GameInstance = nullptr;
 
     UPROPERTY(config)
     float SCENE_INSTANCES_DISTANCE_INTERVAL = 5000.f;

@@ -171,13 +171,15 @@ URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* I
     if (!SActorCommonList.Contains(InSceneInstanceId))
     {
         // First time fetching should come with valid [InOuter] for the creation
-        if (InOuter)
+        if (InOuter->IsValidLowLevel() && InActorCommonClass)
         {
-            verify(InActorCommonClass);
-            verify(InOuter && InOuter->IsValidLowLevel());
             URRActorCommon* actorCommon = Cast<URRActorCommon>(URRUObjectUtils::CreateSelfSubobject(
                 InOuter, InActorCommonClass, FString::Printf(TEXT("%d_ActorCommon"), InSceneInstanceId)));
-            verify(actorCommon);
+            if (actorCommon == nullptr)
+            {
+                UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Failed to create ActorCommon"))
+                return nullptr;
+            }
             actorCommon->SceneInstanceId = InSceneInstanceId;
             SActorCommonList.Add(InSceneInstanceId, actorCommon);
 
@@ -190,6 +192,7 @@ URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* I
         }
         else
         {
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("InActorCommonClasss or InOuter is invalid."))
             return nullptr;
         }
     }
@@ -211,21 +214,16 @@ URRActorCommon::URRActorCommon()
 
 void URRActorCommon::PrintSimConfig() const
 {
-    UE_LOG(LogRapyutaCore, Display, TEXT("ACTOR COMMON CONFIG -----------------------------"));
+    UE_LOG(LogRapyutaCore, Verbose, TEXT("ACTOR COMMON CONFIG -----------------------------"));
 }
 
 void URRActorCommon::OnStartSim()
 {
+#if RAPYUTA_SIM_DEBUG
     std::call_once(OnceFlag, [this]() { PrintSimConfig(); });
-
+#endif
     UWorld* currentWorld = GetWorld();
     checkf(currentWorld, TEXT("[URRActorCommon::OnStartSim] Failed fetching Game World"));
-
-    GameMode = Cast<ARRGameMode>(currentWorld->GetAuthGameMode());
-    check(GameMode);
-
-    GameState = Cast<ARRGameState>(currentWorld->GetGameState());
-    check(GameState);
 
     SetupEnvironment();
 }
@@ -236,34 +234,49 @@ void URRActorCommon::SetupEnvironment()
     checkf(currentWorld, TEXT("[URRActorCommon::SetupEnvironment] Failed fetching Game World"));
 
     // By default, these just reference GameState's floor & wall but could be overridable in child class setup
-    SceneFloor = GameState->MainFloor;
-    SceneWall = GameState->MainWall;
 
-    // Spawn Scene main camera
-    SceneCamera =
-        Cast<ARRCamera>(URRUObjectUtils::SpawnSimActor(GetWorld(),
-                                                       SceneInstanceId,
-                                                       ARRCamera::StaticClass(),
-                                                       TEXT("RapyutaCamera"),
-                                                       FString::Printf(TEXT("%d_SceneCamera"), SceneInstanceId),
-                                                       FTransform(SceneInstanceLocation),
-                                                       ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn));
+#if RAPYUTA_USE_SCENE_DIRECTOR
+    auto* gameState = Cast<ARRGameState>(currentWorld->GetGameState());
+    if (gameState)
+    {
+        SceneFloor = gameState->MainFloor;
+        SceneWall = gameState->MainWall;
+        // Spawn Scene main camera
+        SceneCamera =
+            Cast<ARRCamera>(URRUObjectUtils::SpawnSimActor(GetWorld(),
+                                                        SceneInstanceId,
+                                                        ARRCamera::StaticClass(),
+                                                        TEXT("RapyutaCamera"),
+                                                        FString::Printf(TEXT("%d_SceneCamera"), SceneInstanceId),
+                                                        FTransform(SceneInstanceLocation),
+                                                        ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn));
+
+    }
+    else 
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("GameState is not child class of ARRGameState. Can't use MainFloor, MainWall and Camera."));
+    }
+#endif
 }
 
 bool URRActorCommon::HasInitialized(bool bIsLogged) const
 {
+
     if (false == GetWorld()->IsNetMode(ENetMode::NM_Standalone))
     {
         return true;
     }
 
+#if RAPYUTA_USE_SCENE_DIRECTOR
     if (!SceneCamera)
     {
         if (bIsLogged)
         {
-            UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SceneCamera is NULL!"))
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("SceneCamera is NULL!"))
         }
         return false;
     }
+#endif
+
     return true;
 }

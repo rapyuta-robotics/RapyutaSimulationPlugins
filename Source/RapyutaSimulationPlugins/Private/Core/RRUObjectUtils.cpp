@@ -236,7 +236,7 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
     if (newActor)
     {
         // This is set in ctor
-        verify(newActor->SceneInstanceId == InSceneInstanceId);
+        ensure(newActor->SceneInstanceId == InSceneInstanceId);
         newActor->SetEntityModelName(InEntityModelName);
 
 #if WITH_EDITOR
@@ -246,7 +246,7 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
 #endif
 
         // Initializing itself
-        verify(newActor->Initialize());
+        ensure(newActor->Initialize());
     }
     else
     {

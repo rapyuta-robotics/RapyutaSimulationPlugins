@@ -90,7 +90,6 @@ void ARRNetworkPlayerController::ClientInitSimStateClientROS2_Implementation()
     SimStateClientROS2Node->Init();
 
     // Init [ROS2SimStateClient] with [SimStateClientROS2Node]
-    check(ROS2SimStateClient);
     ROS2SimStateClient->Init(SimStateClientROS2Node);
 
     // Create Clock publisher

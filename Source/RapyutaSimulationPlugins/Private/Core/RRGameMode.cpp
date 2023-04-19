@@ -17,14 +17,16 @@
 
 ARRGameMode::ARRGameMode()
 {
+#if RAPYUTA_USE_SCENE_DIRECTOR
     GameStateClass = ARRGameState::StaticClass();
     PlayerControllerClass = ARRPlayerController::StaticClass();
+#endif
 }
 
 void ARRGameMode::PreInitializeComponents()
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PreInitializeComponents()"))
+    UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("PreInitializeComponents()"))
 #endif
     Super::PreInitializeComponents();
 }
@@ -32,46 +34,46 @@ void ARRGameMode::PreInitializeComponents()
 void ARRGameMode::InitGameState()
 {
 #if RAPYUTA_SIM_DEBUG
-    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("InitGameState()"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("InitGameState()"));
 #endif
     Super::InitGameState();
 }
 
 void ARRGameMode::PrintSimConfig() const
 {
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SIM GAME MODE CONFIG -----------------------------"));
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("- bBenchmark: %d"), bBenchmark);
+    UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("SIM GAME MODE CONFIG -----------------------------"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("- bBenchmark: %d"), bBenchmark);
 }
 
 void ARRGameMode::PrintUEPreprocessors() const
 {
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("UE PREPROCESSORS:"));
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("* [DO_CHECK] %s!"), URRCoreUtils::GetBoolPreprocessorText<DO_CHECK>());
+    UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("UE PREPROCESSORS:"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("* [DO_CHECK] %s!"), URRCoreUtils::GetBoolPreprocessorText<DO_CHECK>());
 
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("* [STATS] %s!"), URRCoreUtils::GetBoolPreprocessorText<STATS>());
+    UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("* [STATS] %s!"), URRCoreUtils::GetBoolPreprocessorText<STATS>());
 
     UE_LOG_WITH_INFO(LogRapyutaCore,
-                     Display,
+                     Verbose,
                      TEXT("* [CPUPROFILERTRACE_ENABLED] (for UE Insights) %s!"),
                      URRCoreUtils::GetBoolPreprocessorText<CPUPROFILERTRACE_ENABLED>());
 
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("* [WITH_EDITOR] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_EDITOR>());
+    UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("* [WITH_EDITOR] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_EDITOR>());
 
     UE_LOG_WITH_INFO(LogRapyutaCore,
-                     Display,
+                     Verbose,
                      TEXT("* [RHI_RAYTRACING] %s %d!"),
                      URRCoreUtils::GetBoolPreprocessorText<RHI_RAYTRACING>(),
                      IsRayTracingEnabled());
 
     UE_LOG_WITH_INFO(
-        LogRapyutaCore, Display, TEXT("* [WITH_UNREALPNG] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_UNREALPNG>());
+        LogRapyutaCore, Verbose, TEXT("* [WITH_UNREALPNG] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_UNREALPNG>());
 
     UE_LOG_WITH_INFO(
-        LogRapyutaCore, Display, TEXT("* [WITH_UNREALJPEG] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_UNREALJPEG>());
+        LogRapyutaCore, Verbose, TEXT("* [WITH_UNREALJPEG] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_UNREALJPEG>());
 
 #if (!WITH_EDITOR)
     UE_LOG_WITH_INFO(LogRapyutaCore,
-                     Display,
+                     Verbose,
                      TEXT("- bAsyncLoadingThreadEnabled: %d"),
                      FAsyncLoadingThreadSettings::Get().bAsyncLoadingThreadEnabled);
 #endif
@@ -82,16 +84,16 @@ void ARRGameMode::PrintUEPreprocessors() const
     if (PhysSingleThreadedMode())
     {
         // UnrealEngine/Engine/Source/Runtime/Engine/Private/PhysicsEngine/PhysScene_PhysX.cpp:1519
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("PHYSICS RUNS IN GAME THREAD!"));
+        UE_LOG_WITH_INFO(LogTemp, Verbose, TEXT("PHYSICS RUNS IN GAME THREAD!"));
     }
     else if (URRCoreUtils::GetCommandLineArgumentValue<int8>(URRCoreUtils::CCMDLINE_ARG_INT_PHYSX_DISPATCHER_NUM,
                                                              physXDispatcherNum))
     {
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("PHYSICS RUNS IN [%d] THREADS!"), physXDispatcherNum);
+        UE_LOG_WITH_INFO(LogTemp, Verbose, TEXT("PHYSICS RUNS IN [%d] THREADS!"), physXDispatcherNum);
     }
     else
     {
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("PHYSICS RUNS IN A SINGLE THREAD!"));
+        UE_LOG_WITH_INFO(LogTemp, Verbose, TEXT("PHYSICS RUNS IN A SINGLE THREAD!"));
     }
 }
 
@@ -115,8 +117,11 @@ void ARRGameMode::StartPlay()
     PrintSimConfig();
     PrintUEPreprocessors();
 
-    GameInstance = Cast<URRGameInstance>(GetGameInstance());
-    verify(GameInstance);
+    if(URRGameSingleton::Get()==nullptr)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("GameSingleton is not child class of0 URRGameSingleton."));
+    }
+
 
 #if !WITH_EDITOR
     FApp::SetBenchmarking(bBenchmark);
@@ -128,9 +133,9 @@ void ARRGameMode::StartPlay()
     // Call after the benchmark to apply settings to running game
     UGameUserSettings::GetGameUserSettings()->ApplyHardwareBenchmarkResults();
 #endif
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("Is bench marking: %d"), FApp::IsBenchmarking());
+    UE_LOG_WITH_INFO(LogRapyutaCore, Verbose, TEXT("Is bench marking: %d"), FApp::IsBenchmarking());
     UE_LOG_WITH_INFO(
-        LogRapyutaCore, Display, TEXT("Use Fixed time step: %d %f"), FApp::UseFixedTimeStep(), FApp::GetFixedDeltaTime());
+        LogRapyutaCore, Verbose, TEXT("Use Fixed time step: %d %f"), FApp::UseFixedTimeStep(), FApp::GetFixedDeltaTime());
 
     // 1- CONFIGURE GAME GLOBALLY
     ConfigureSimInPlay();
@@ -149,7 +154,11 @@ void ARRGameMode::StartSim()
     URRCoreUtils::LoadImageWrapperModule();
 
     // 2- LOAD SIM STATIC GLOBAL RESOURCES --
-    URRGameSingleton::Get()->InitializeResources();
+    auto* gameSingleton = URRGameSingleton::Get();
+    if(gameSingleton)
+    {
+        gameSingleton->InitializeResources();
+    }
 
     // 3- START SIM ONCE RESOURCES ARE LOADED --
     //
@@ -167,27 +176,33 @@ bool ARRGameMode::TryStartingSim()
     // !NOTE: This method was scheduled to be run by BeginPlay()
     // 1 - WAIT FOR RESOURCE LOADING, in prep for Sim initialization
     UWorld* world = GetWorld();
-    bool bResult = URRCoreUtils::CheckWithTimeOut(
-        []() { return URRGameSingleton::Get()->HaveAllResourcesBeenLoaded(); },
-        [this, world]()
-        {
-            // Clear the timer to avoid repeated call to the method
-            URRCoreUtils::StopRegisteredTimer(world, OwnTimerHandle);
-            UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("DYNAMIC RESOURCES LOADING TIMEOUT -> SHUTTING DOWN THE SIM..."))
-        },
-        sBeginTime,
-        ARRGameMode::SIM_START_TIMEOUT_SECS);
-
-    // Either resources have yet to be fully loaded or time out!
-    if (!bResult)
+    
+    auto* gameSingleton = URRGameSingleton::Get();
+    if(gameSingleton)
     {
-        return false;
+        bool bResult = URRCoreUtils::CheckWithTimeOut(
+            [gameSingleton]() { return gameSingleton->HaveAllResourcesBeenLoaded(); },
+            [this, world]()
+            {
+                // Clear the timer to avoid repeated call to the method
+                URRCoreUtils::StopRegisteredTimer(world, OwnTimerHandle);
+                UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("DYNAMIC RESOURCES LOADING TIMEOUT -> SHUTTING DOWN THE SIM..."))
+            },
+            sBeginTime,
+            ARRGameMode::SIM_START_TIMEOUT_SECS);
+
+        // Either resources have yet to be fully loaded or time out!
+        if (!bResult)
+        {
+            return false;
+        }
     }
+
     // Clear the timer to avoid repeated call to the method
     URRCoreUtils::StopRegisteredTimer(world, OwnTimerHandle);
 
     URRCoreUtils::ScreenMsg(FColor::Yellow, TEXT("ALL DYNAMIC RESOURCES LOADED!"), 10.f);
-    UE_LOG(LogRapyutaCore, Display, TEXT("ALL DYNAMIC RESOURCES LOADED! -> BRING UP THE SIM NOW... ========================"));
+    UE_LOG(LogRapyutaCore, Verbose, TEXT("ALL DYNAMIC RESOURCES LOADED! -> BRING UP THE SIM NOW... ========================"));
 
     // 1 - [GameState]::StartSim()
     auto gameState = GetGameState<ARRGameState>();
@@ -197,9 +212,17 @@ bool ARRGameMode::TryStartingSim()
         return false;
     }
     gameState->StartSim();
-    UE_LOG(LogRapyutaCore, Display, TEXT("SIM STARTED, SIM SCENE'S ACTORS ARE ACCESSIBLE NOW! ========================"))
+    UE_LOG(LogRapyutaCore, Verbose, TEXT("SIM STARTED, SIM SCENE'S ACTORS ARE ACCESSIBLE NOW! ========================"))
 
     // 2- START PARENT'S PLAY, WHICH TRIGGER OTHERS PLAY FROM GAME STATE, PLAYER CONTROLLER, ETC.
     ARRROS2GameMode::StartPlay();
     return true;
+}
+
+void ARRGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    // 1 - These resources were initialized in [ARRGameMode::StartPlay()], which does not have a corresponding EndPlay()
+    URRGameSingleton::Get()->FinalizeResources();
+
+    Super::EndPlay(EndPlayReason);
 }

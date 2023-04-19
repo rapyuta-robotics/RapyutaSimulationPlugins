@@ -62,7 +62,7 @@ void AOccupancyMapGenerator::BeginPlay()
     }
 
     // write to file
-    check(WriteToFile(NCellsX, NCellsY, Origin.X / 100.f, -(Center.Y + Extent.Y) / 100.f));
+    WriteToFile(NCellsX, NCellsY, Origin.X / 100.f, -(Center.Y + Extent.Y) / 100.f);
 }
 
 bool AOccupancyMapGenerator::WriteToFile(int width, int height, float originx, float originy)

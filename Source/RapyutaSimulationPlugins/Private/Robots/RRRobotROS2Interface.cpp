@@ -22,7 +22,9 @@
 
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
-    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("InitializeROS2Interface"));
+#if RAPYUTA_SIM_DEBUG
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Verbose, TEXT("InitializeROS2Interface"));
+#endif
     if (nullptr == InRobot)
     {
         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No pawn is given."));
@@ -401,7 +403,13 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
         AsyncTask(ENamedThreads::GameThread,
                   [this, joints, jointControlType]
                   {
-                      check(IsValid(Robot));
+                      if(!IsValid(Robot))
+                      {
+                        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
+                                    Warning,
+                                    TEXT("Robot is nullptr. RobotROS2Interface::Robot must not be nullptr."));
+                        return;
+                      }
                       Robot->SetJointState(joints, jointControlType);
                   });
     }

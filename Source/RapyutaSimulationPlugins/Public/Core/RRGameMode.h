@@ -30,8 +30,9 @@ enum class ERRSimType : uint8
 };
 
 /**
- * @brief GameMode with specific setting, asset loading. Parent class, #ARRROS2GameMode, 
- * handles ROS2 interface via #ClockPublisher and #ASimulationState.
+ * @brief GameMode with specific setting, asset loading and #SceneDirector. Parent class, #ARRROS2GameMode, 
+ * You needs to use #RRGameSingleton for asset loading.
+ * You needs to use #RRPlayerController and #RRGameState for SceneDirector.
  * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)
  */
 UCLASS(Config = RapyutaSimSettings)
@@ -90,8 +91,6 @@ public:
         return simTypeName;
     }
 
-    UPROPERTY() URRGameInstance* GameInstance = nullptr;
-
     virtual void PreInitializeComponents() override;
     virtual void InitGameState() override;
 
@@ -117,8 +116,11 @@ public:
      *  asynchronous resource loading, could only run after this [ARRGameState::BeginPlay()] ends!
      */
     virtual void StartSim();
+
     UPROPERTY(config)
     bool bBenchmark = true;
+
+    void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
     FTimerHandle OwnTimerHandle;

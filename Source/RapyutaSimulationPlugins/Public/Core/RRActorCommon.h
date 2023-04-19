@@ -30,10 +30,11 @@
 #define RAPYUTA_SIM_DEBUG (0)
 #define RAPYUTA_SIM_VISUAL_DEBUG (0)
 
+#define RAPYUTA_USE_SCENE_DIRECTOR (0)
+
 #define RAPYUTA_RUNTIME_MESH_ENTITY_USE_STATIC_MESH (1)
 #define RAPYUTA_RUNTIME_MESH_ENTITY_USE_PROCEDURAL_MESH (!RAPYUTA_RUNTIME_MESH_ENTITY_USE_STATIC_MESH)
 
-class ARRGameMode;
 class ARRGameState;
 class ARRMeshActor;
 class ARRMeshActor;
@@ -564,6 +565,7 @@ DECLARE_DELEGATE_TwoParams(FOnMeshActorFullyCreated, bool /* bCreationResult */,
 
 /**
  * @brief Scene instance's common object which houses Plugin-specific dynamic properties and implement objects-related API (Spawning, teleporting, etc.)
+ * If USE_SCENE_DIRECTOR is disabled, single ActorCommon is shared among all RRBaseActor.
  * @note Mostly responsible for holding handles to #URRSceneInstance  (Main environment, camera, etc.)
  */
 UCLASS(Config = RapyutaSimSettings)
@@ -616,14 +618,6 @@ public:
 
     static constexpr const TCHAR* MAP_ORIGIN_TAG = TEXT("map_origin");
     static constexpr const TCHAR* MAP_ROS_FRAME_ID = TEXT("map");
-
-    //! Game mode handle
-    UPROPERTY()
-    ARRGameMode* GameMode = nullptr;
-
-    //! Game state handle
-    UPROPERTY()
-    ARRGameState* GameState = nullptr;
 
     //! Each scene instance house a series of scene, in which operations are performed.
     UPROPERTY()

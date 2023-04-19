@@ -5,7 +5,6 @@
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameMode.h"
-#include "Core/RRGameSingleton.h"
 #include "Core/RRGameState.h"
 #include "Core/RRPlayerController.h"
 #include "Core/RRUObjectUtils.h"
@@ -46,16 +45,15 @@ void ARRBaseActor::PreInitializeComponents()
     // SETUP + CONFIGURE ESSENTIAL GAME & SIM COMMON OBJECTS
     // NOTE: These are used ONLY for dynamic runtime actors.
     // In child BP actors, except for GameSingleton, other Game framework entities maybe not available yet
-    GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
+#if RAPYUTA_USE_SCENE_DIRECTOR
     GameState = URRCoreUtils::GetGameState<ARRGameState>(this);
-
-    if (IsNetMode(NM_Standalone))
-    {
-        PlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
-    }
-
+    check(GameState)
+#endif
     GameSingleton = URRGameSingleton::Get();
-    check(GameSingleton);
+    if(GameSingleton==nullptr)
+    {
+         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Display, TEXT("GameSingleton is not child class of URRGameSingleton. Cannot use Asset loading."));
+    }
 }
 
 bool ARRBaseActor::Initialize()

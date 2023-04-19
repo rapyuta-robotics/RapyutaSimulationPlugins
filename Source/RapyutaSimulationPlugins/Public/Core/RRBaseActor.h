@@ -73,20 +73,17 @@ public:
     TSharedPtr<FRRActorSpawnInfo> ActorInfo = nullptr;
 
     static int8 SSceneInstanceId;
-    UPROPERTY()
-    int8 SceneInstanceId = URRActorCommon::DEFAULT_SCENE_INSTANCE_ID;
 
-    UPROPERTY()
-    ARRGameMode* GameMode = nullptr;
-
+    //! Used for SceneDirector
     UPROPERTY()
     ARRGameState* GameState = nullptr;
 
+    //! Used for Asset loading
     UPROPERTY()
     URRGameSingleton* GameSingleton = nullptr;
 
     UPROPERTY()
-    ARRPlayerController* PlayerController = nullptr;
+    int8 SceneInstanceId = URRActorCommon::DEFAULT_SCENE_INSTANCE_ID;
 
     UPROPERTY()
     URRActorCommon* ActorCommon = nullptr;

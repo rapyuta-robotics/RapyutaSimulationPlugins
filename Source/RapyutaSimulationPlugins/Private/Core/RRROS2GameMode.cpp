@@ -74,7 +74,11 @@ void ARRROS2GameMode::InitROS2()
     MainROS2Node = UROS2NodeComponent::CreateNewNode(this, MainROS2NodeName, TEXT("/"));
 
     // MainSimState
-    check(MainSimState);
+    if(MainSimState == nullptr)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed to create ROS2Node."));
+        return;
+    }
 
     // MainROS2SimStateClient
     MainROS2SimStateClient = NewObject<URRROS2SimulationStateClient>(this, ROS2SimStateClientClass, TEXT("MainROS2SimStateClient"));
