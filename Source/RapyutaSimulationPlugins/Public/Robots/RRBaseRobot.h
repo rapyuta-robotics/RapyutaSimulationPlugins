@@ -80,6 +80,13 @@ public:
     ARRBaseRobot(const FObjectInitializer& ObjectInitializer);
 
     /**
+     * @brief Wake rigid body in addition to Super::Tick()
+     *
+     * @param DeltaSeconds
+     */
+    void Tick(float DeltaSeconds);
+
+    /**
      * @brief Initialize default components being configurable in child BP classes.
      * Could only be called in constructor.
      */
@@ -97,11 +104,6 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetRootOffset(const FTransform& InRootOffset);
-
-    //! reference actor for odometry.
-    //! @todo is this still necessary?
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
-    AActor* Map = nullptr;
 
     /**
      * @brief DynamicRuntime robot: Implemented purely in cpp, built & loaded up at runtime from raw CAD + metadata (URDF/SDF)
@@ -346,16 +348,22 @@ public:
 
     //! Main robot movement component (kinematics/diff-drive or wheels-drive comp)
     //! #MovementComponent and #RobotVehicleMoveComponent should point to same pointer.
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     UMovementComponent* MovementComponent = nullptr;
 
     //! Movecomponent casted to #URobotVehicleMovementComponent for utility.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    //! This should be pointing same thing as #MovementComponent
+    //! This should be set from #SetMoveComponent
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
     URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
 
     //! Class of the main robot movement component, configurable in child class
+    //! If VehicleMoveComponentClass == nullptr, it is expected that MovementComponent is set from BP or user code.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TSubclassOf<UMovementComponent> VehicleMoveComponentClass;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void SetMoveComponent(UMovementComponent* InMoveComponent);
 
     /**
      * @brief Set velocity to #RobotVehicleMoveComponent.
@@ -421,6 +429,19 @@ public:
     //! Offset transform between the Actor  root component and the pose that will be published in /odom topic
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform RootOffset = FTransform::Identity;
+
+    //! Call ConfigureMovecomponent and RobotVehicleMoveComponent::Initialize() in InitMoveComponent in PostInitializeComponents or not.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bInitRobotVehicleMoveComponent = true;
+
+
+    /**
+     * @brief This method is called inside #PostInitializeComponents.
+     * Custom initialization of child BP class can be done by overwritting this method.
+     *
+     */
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPConfigureMovementComponent();
 
 protected:
     /**

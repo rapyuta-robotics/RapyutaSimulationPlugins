@@ -42,35 +42,6 @@ class URRCoreUtils;
 
 /**
  * @brief todo
- * @todo should avoid hardcoded versioning in C++ file.
- */
-USTRUCT()
-struct RAPYUTASIMULATIONPLUGINS_API FRapyutaSimVersionInfo
-{
-    GENERATED_BODY()
-
-    // Major version for output data format changes
-    UPROPERTY()
-    int32 Major = 0;
-
-    // Minor version for backwards-compatible improvements
-    UPROPERTY()
-    int32 Minor = 0;
-
-    // Bugfix versions
-    UPROPERTY()
-    int32 BugFix = 0;
-
-    FString ToString() const
-    {
-        return FString::Printf(TEXT("%d.%d.%d"), Major, Minor, BugFix);
-    }
-};
-
-static const FRapyutaSimVersionInfo RAPYUTA_SIM_VERSION_INFO({0, 0, 1});
-
-/**
- * @brief todo
  *
  */
 UENUM()

@@ -32,6 +32,7 @@ public:
      * @return true
      * @return false
      */
+    UFUNCTION(BlueprintCallable)
     static bool GetRefTransform(const FString& RefActorName, const AActor* RefActor, FTransform& OutTransf)
     {
         if (RefActorName.IsEmpty())    // refrence is world origin
@@ -56,6 +57,7 @@ public:
      * @param WorldTransf Transform in world frame
      * @return FTransform Transform in reference frame
      */
+    UFUNCTION(BlueprintCallable)
     static FTransform GetRelativeTransform(const FTransform& RefTransf, const FTransform& WorldTransf)
     {
         FTransform refTransfNormalized = RefTransf;
@@ -81,6 +83,19 @@ public:
             return WorldTransf;
         }
         return GetRelativeTransform(RefActor->GetTransform(), WorldTransf);
+    }
+
+    /**
+     * @brief Get the transform in reference frame. If RefActor==nullptr, return WorldTransf
+     *
+     * @param RefActor
+     * @param WorldTransf Transform in world frame
+     * @return FTransform Transform in reference frame
+     */
+    UFUNCTION(BlueprintCallable)
+    static FTransform GetRelativeTransformFromActor(const AActor* RefActor, const FTransform& WorldTransf)
+    {
+        return GetRelativeTransform(RefActor, WorldTransf);
     }
 
     /**
@@ -114,6 +129,7 @@ public:
      * @param RelativeTransf Transform in reference frame
      * @return FTransform Transform in world frame
      */
+    UFUNCTION(BlueprintCallable)
     static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)
     {
         FTransform worldTransf;
@@ -139,6 +155,19 @@ public:
             return RelativeTransf;
         }
         return GetWorldTransform(RefActor->GetTransform(), RelativeTransf);
+    }
+
+    /**
+     * @brief Get the transform in world frame. If RefActor==nullptr, return RelativeTransf
+     *
+     * @param RefActor
+     * @param RelativeTransf Transform in reference frame
+     * @return FTransform Transform in world frame
+     */
+    UFUNCTION(BlueprintCallable)
+    static FTransform GetWorldTransformFromActor(const AActor* RefActor, const FTransform& RelativeTransf)
+    {
+        return GetWorldTransform(RefActor, RelativeTransf);
     }
 
     /**

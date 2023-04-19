@@ -67,8 +67,15 @@ void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
             if (IsValid(UpdatedComponent))
             {
                 //1- Update vels to OwnerVehicle's target vels
-                Velocity = OwnerVehicle->TargetLinearVel;
-                AngularVelocity = OwnerVehicle->TargetAngularVel;
+                if (OwnerVehicle)
+                {
+                    Velocity = OwnerVehicle->TargetLinearVel;
+                    AngularVelocity = OwnerVehicle->TargetAngularVel;
+                }
+                else
+                {
+                    UE_LOG_WITH_INFO_NAMED_THROTTLE(5, LogLastHit, LogTemp, Warning, TEXT("OwnerVehicle is nullptr."));
+                }
 
                 //2- Movement control for OwnerVehicle
                 UpdateMovement(InDeltaTime);
