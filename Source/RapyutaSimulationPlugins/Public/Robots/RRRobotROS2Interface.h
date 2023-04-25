@@ -299,7 +299,6 @@ protected:
         // Create and update request
         if (auto* client = ServiceClientList.FindRef(InServiceName))
         {
-            //UROS2ServiceClient* client = *clientPtr;
             TService* service = CastChecked<TService>(client->Service);
             client->SendRequest(service, InRequest);
 
