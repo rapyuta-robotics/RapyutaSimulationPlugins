@@ -112,7 +112,7 @@ public:
     }
 
     /**
-     * @brief Clamp an angle in a range [-InMaxAxisAngle, InMaxAxisAngle]
+     * @brief Clamp an angle in a range [-InMaxAxisAngle, InMaxAxisAngle] with maximum values between (-360,360)
      * @tparam T
      * @param InAngle
      * @param InMaxAngle > 0

@@ -65,9 +65,6 @@ public:
     void GetData(TArray<FHitResult>& OutHits, float& OutTime) const;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString LidarID;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 NSamplesPerScan = 360;
 
     //! [degrees] scan goes from StartAngle to StartAngle+FOVHorizontal

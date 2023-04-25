@@ -96,9 +96,6 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
                                  MaxAngularSpeed,
                                  InDeltaTime);
             }
-#endif
-
-#if RAPYUTA_FLOAT_MOVEMENT_DEBUG
             if (hit.bBlockingHit)
             {
                 UE_LOG_WITH_INFO(
