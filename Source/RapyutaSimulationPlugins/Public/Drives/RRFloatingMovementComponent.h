@@ -64,6 +64,8 @@ public:
         PenetrationPullbackDistance = PullbackDistance;
     }
 
+    virtual void StopMovementImmediately() override;
+
 protected:
     virtual void TickComponent(float InDeltaTime, enum ELevelTick InTickType, FActorComponentTickFunction* InTickFunction) override;
     virtual bool IsExceedingMaxSpeed(float InMaxSpeed) const override;

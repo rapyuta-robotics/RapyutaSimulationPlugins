@@ -263,3 +263,9 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
     return false;
 }
 #endif
+
+void URRFloatingMovementComponent::StopMovementImmediately()
+{
+    AngularVelocity = FRotator::ZeroRotator;
+    Super::StopMovementImmediately();
+}

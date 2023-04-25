@@ -385,8 +385,13 @@ void ARRBaseRobot::SetJointState(const TMap<FString, TArray<float>>& InJointStat
 
 void ARRBaseRobot::StopMovement()
 {
-    TargetLinearVel = FVector::ZeroVector;
-    TargetAngularVel = FVector::ZeroVector;
+    auto* moveComp = GetMovementComponent();
+    if (moveComp)
+    {
+        moveComp->StopMovementImmediately();
+    }
+    SetLinearVel(FVector::ZeroVector);
+    SetAngularVel(FVector::ZeroVector);
 }
 
 void ARRBaseRobot::SetLinearVel(const FVector& InLinearVel)
