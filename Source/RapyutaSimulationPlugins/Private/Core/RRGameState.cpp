@@ -185,7 +185,6 @@ void ARRGameState::StartSubSim(int8 InSceneInstanceId)
 void ARRGameState::InitializeSim(int8 InSceneInstanceId)
 {
 #if RAPYUTA_USE_SCENE_DIRECTOR
-    // Sim Scene Instance List
     auto& sceneInstance = SceneInstanceList[InSceneInstanceId];
 
     // Spawn [SceneDirector], which runs the main operation of the mode
