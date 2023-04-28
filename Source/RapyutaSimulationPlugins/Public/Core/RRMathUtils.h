@@ -112,7 +112,7 @@ public:
     }
 
     /**
-     * @brief Clamp an angle in a range [-InMaxAxisAngle, InMaxAxisAngle]
+     * @brief Clamp an angle in a range [-InMaxAxisAngle, InMaxAxisAngle] with maximum values between (-360,360)
      * @tparam T
      * @param InAngle
      * @param InMaxAngle > 0
@@ -121,8 +121,10 @@ public:
     template<typename T>
     FORCEINLINE static T ClampAngle(T InAngle, const T InMaxAngle)
     {
-        const T normAngle = FRotator::NormalizeAxis(InAngle);
-        return FMath::Clamp(normAngle, -InMaxAngle, InMaxAngle);
+        // returns Angle in the range (-360,360)
+        InAngle = FMath::Fmod(InAngle, 360.f);
+        // Both FRotator::ClampAxis() and NormalizeAxis() could possible change the sign of InAngle so not used here
+        return FMath::Clamp(InAngle, -InMaxAngle, InMaxAngle);
     }
 
     // RANDOM GENERATOR --

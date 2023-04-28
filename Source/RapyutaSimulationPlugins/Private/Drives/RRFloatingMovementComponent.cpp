@@ -86,6 +86,16 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
                                      hit);
 
 #if RAPYUTA_FLOAT_MOVEMENT_DEBUG
+            if (deltaRot.Yaw > 0.f)
+            {
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Warning,
+                                 TEXT("deltaRot.Yaw: %f, AngularVelocity.Yaw: %f, MaxAngularSpeed: %f, inDeltaTime: %f"),
+                                 deltaRot.Yaw,
+                                 AngularVelocity.Yaw,
+                                 MaxAngularSpeed,
+                                 InDeltaTime);
+            }
             if (hit.bBlockingHit)
             {
                 UE_LOG_WITH_INFO(

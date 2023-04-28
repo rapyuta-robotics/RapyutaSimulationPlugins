@@ -4,7 +4,6 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #pragma once
@@ -41,7 +40,6 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-
     /**
      * @brief Return true if laser hits the target actor. This method should be overwritten by child class.
      * @param TargetActor 
@@ -55,7 +53,6 @@ public:
         return false;
     }
 
-    
     /**
      * @brief Get #RecordedHits and #TimeOfLastScan.
      * adding the rest of the necessary information might be tedious
