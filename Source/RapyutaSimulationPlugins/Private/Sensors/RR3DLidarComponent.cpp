@@ -333,9 +333,9 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
                                                               FVector::DotProduct(HitSurfaceNormal, -RayDirection),
                                  IntensityNonReflective,
                                  IntensityReflective);
-                if (UnnormalizedIntensity <= IntensityNonReflective || UnnormalizedIntensity <= IntensityReflective)
+                if ((UnnormalizedIntensity <= IntensityNonReflective) || (UnnormalizedIntensity <= IntensityReflective))
                 {
-                    UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Normalized intensity is outof range. Something is wrong."));
+                    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Normalized intensity is outof range. Something is wrong."));
                 }
                 Intensity = IntensityScale * UnnormalizedIntensity;
             }
