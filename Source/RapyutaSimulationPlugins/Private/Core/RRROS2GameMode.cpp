@@ -76,7 +76,7 @@ void ARRROS2GameMode::InitROS2()
     // MainSimState
     if(MainSimState == nullptr)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed to create ROS2Node."));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed to create MainSimState."));
         return;
     }
 
