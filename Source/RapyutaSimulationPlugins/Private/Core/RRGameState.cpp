@@ -54,17 +54,20 @@ void ARRGameState::StartSim()
     PrintSimConfig();
 
     GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
-    check(GameMode);
 
     // Each Sim scene instance has a Player Controller on its own, the max number of which is defined by
     // [UGameViewportClient::MaxSplitscreenPlayers]
     const int32 maxSplitscreenPlayers = URRCoreUtils::GetMaxSplitscreenPlayers(this);
-    if(SCENE_INSTANCES_NUM > maxSplitscreenPlayers)
+    if (SCENE_INSTANCES_NUM > maxSplitscreenPlayers)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("SCENE_INSTANCE_NUM > MAX SPLIT SCREEN PLAYERS, SCENE_INSTANCE_NUM set to MAX SPLIT SCREEN PLAYERS: %d"), maxSplitscreenPlayers);
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore,
+            Warning,
+            TEXT("SCENE_INSTANCE_NUM > MAX SPLIT SCREEN PLAYERS, SCENE_INSTANCE_NUM set to MAX SPLIT SCREEN PLAYERS: %d"),
+            maxSplitscreenPlayers);
         SCENE_INSTANCES_NUM = maxSplitscreenPlayers;
     }
-    
+
     // 0- Stream level & Fetch static-env actors
     SetupEnvironment();
 
@@ -116,13 +119,14 @@ void ARRGameState::CreateSceneInstance(int8 InSceneInstanceId)
 {
     if (InSceneInstanceId < 0)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Given SceneInstance is %d. SceneInstancId must > 0. Set to 0."), InSceneInstanceId);
-        
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Warning, TEXT("Given SceneInstance is %d. SceneInstancId must > 0. Set to 0."), InSceneInstanceId);
+
         InSceneInstanceId = 0;
     }
     URRSceneInstance* newSceneInstance = Cast<URRSceneInstance>(URRUObjectUtils::CreateSelfSubobject(
         this, SceneInstanceClass, FString::Printf(TEXT("%d_%s"), InSceneInstanceId, *GetWorld()->GetName())));
-    if(newSceneInstance == nullptr)
+    if (newSceneInstance == nullptr)
     {
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Failed to create SceneInstance"));
         return;

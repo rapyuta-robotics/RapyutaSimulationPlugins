@@ -35,14 +35,11 @@ void ARRPlayerController::BeginPlay()
 
 bool ARRPlayerController::Initialize()
 {
-    if (false == IsNetMode(NM_Standalone) ||
-        nullptr == GameMode ||
-        !GameMode->IsDataSynthSimType()
-        )
+    if (false == IsNetMode(NM_Standalone) || nullptr == GameMode || !GameMode->IsDataSynthSimType())
     {
         return true;
     }
-    
+
 #if RAPYUTA_USE_SCENE_DIRECTOR
     verify(GameState->HasInitialized(true));
     verify(GameState->HasSceneInstance(SceneInstanceId));
@@ -56,10 +53,13 @@ bool ARRPlayerController::Initialize()
 
     SceneCamera = ActorCommon->SceneCamera;
     check(SceneCamera);
-    Possess(SceneCamera);
+    if (GameMode->IsDataSynthSimType())
+    {
+        Possess(SceneCamera);
+    }
     // Not all maps has GlobalPostProcessVolume
     MainPostProcessVolume = Cast<APostProcessVolume>(URRUObjectUtils::FindPostProcessVolume(GetWorld()));
-#endif    
+#endif
 
     return true;
 }
