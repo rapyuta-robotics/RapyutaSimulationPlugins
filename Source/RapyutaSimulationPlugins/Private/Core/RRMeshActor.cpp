@@ -105,7 +105,7 @@ void ARRMeshActor::SetCustomDepthEnabled(bool bIsCustomDepthEnabled)
         // Since deactivated actors do not appear in scene so their custom depth stencil values should be reused
         if (bIsCustomDepthEnabled && IsDataSynthEntity())
         {
-            auto* sceneDirector = GameState->GetSceneInstance<URRSceneInstance>(SceneInstanceId)->SceneDirector;
+            auto* sceneDirector = RRGameState->GetSceneInstance<URRSceneInstance>(SceneInstanceId)->SceneDirector;
             meshComp->SetCustomDepthStencilValue((sceneDirector->SceneEntityMaskValueList.Num() > 0)
                                                      ? sceneDirector->SceneEntityMaskValueList.Pop()
                                                      : ActorCommon->GenerateUniqueDepthStencilValue());
@@ -128,7 +128,7 @@ void ARRMeshActor::SetCustomDepthStencilValue(int32 InCustomDepthStencilValue)
         // [CustomDepthStencilValue]
         if (bCustomDepthEnabled && IsDataSynthEntity())
         {
-            auto* sceneDirector = GameState->GetSceneInstance<URRSceneInstance>(SceneInstanceId)->SceneDirector;
+            auto* sceneDirector = RRGameState->GetSceneInstance<URRSceneInstance>(SceneInstanceId)->SceneDirector;
             meshComp->SetCustomDepthStencilValue(InCustomDepthStencilValue);
         }
         else

@@ -17,7 +17,7 @@
 
 #include "RRBaseActor.generated.h"
 
-class ARRGameMode;
+class ARRROS2GameMode;
 class ARRGameState;
 class URRGameSingleton;
 class ARRPlayerController;
@@ -76,11 +76,19 @@ public:
 
     //! Used for SceneDirector
     UPROPERTY()
-    ARRGameState* GameState = nullptr;
+    ARRGameState* RRGameState = nullptr;
 
     //! Used for Asset loading
     UPROPERTY()
-    URRGameSingleton* GameSingleton = nullptr;
+    URRGameSingleton* RRGameSingleton = nullptr;
+
+    //! Pointer to GameMode for convinience.
+    UPROPERTY()
+    ARRROS2GameMode* RRROS2GameMode = nullptr;
+
+    //! Used for DataSynth app.
+    UPROPERTY()
+    ARRPlayerController* RRPlayerController = nullptr;
 
     UPROPERTY()
     int8 SceneInstanceId = URRActorCommon::DEFAULT_SCENE_INSTANCE_ID;
@@ -134,7 +142,7 @@ public:
 protected:
     /**
      * @brief Set #GameMode #GameState #GameSingleton #PlayerController
-     * 
+     *
      */
     virtual void PreInitializeComponents() override;
     virtual void PrintSimConfig() const
