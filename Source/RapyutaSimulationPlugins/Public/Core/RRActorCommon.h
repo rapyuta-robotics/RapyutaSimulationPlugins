@@ -567,7 +567,7 @@ DECLARE_DELEGATE_TwoParams(FOnMeshActorFullyCreated, bool /* bCreationResult */,
 
 /**
  * @brief Scene instance's common object which houses Plugin-specific dynamic properties and implement objects-related API (Spawning, teleporting, etc.)
- * If USE_SCENE_DIRECTOR is disabled, single ActorCommon is shared among all RRBaseActor.
+ * If USE_SCENE_DIRECTOR is disabled, there is only one single ActorCommon being shared among all RRBaseActor.
  * @note Mostly responsible for holding handles to #URRSceneInstance  (Main environment, camera, etc.)
  */
 UCLASS(Config = RapyutaSimSettings)
