@@ -63,7 +63,7 @@ void ASimulationState::RegisterSpawnableBPEntities(const TArray<FString>& InBPSp
 
 void ASimulationState::InitEntities()
 {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
     TArray<AActor*> allActors;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), allActors);
     UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Found %d actors in the scene"), allActors.Num());

@@ -177,7 +177,7 @@ void ARRMeshActor::DeclareFullCreation(bool bInCreationResult)
     bFullyCreated = bInCreationResult;
     if (bInCreationResult)
     {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("[%s] MESH ACTOR CREATED!"));
 #endif
     }

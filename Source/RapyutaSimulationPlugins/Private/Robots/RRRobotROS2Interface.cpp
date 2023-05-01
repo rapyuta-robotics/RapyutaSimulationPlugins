@@ -22,7 +22,7 @@
 
 void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Verbose, TEXT("InitializeROS2Interface"));
 #endif
     if (nullptr == InRobot)
@@ -171,8 +171,7 @@ bool URRRobotROS2Interface::InitSubscriptions()
     }
 
     // Subscription with callback to enqueue vehicle spawn info.
-    RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(
-        CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);
+    RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);
 
     // Subscription with callback to enqueue vehicle spawn info.
     RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(
@@ -403,12 +402,11 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
         AsyncTask(ENamedThreads::GameThread,
                   [this, joints, jointControlType]
                   {
-                      if(!IsValid(Robot))
+                      if (!IsValid(Robot))
                       {
-                        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
-                                    Warning,
-                                    TEXT("Robot is nullptr. RobotROS2Interface::Robot must not be nullptr."));
-                        return;
+                          UE_LOG_WITH_INFO_NAMED(
+                              LogRapyutaCore, Warning, TEXT("Robot is nullptr. RobotROS2Interface::Robot must not be nullptr."));
+                          return;
                       }
                       Robot->SetJointState(joints, jointControlType);
                   });

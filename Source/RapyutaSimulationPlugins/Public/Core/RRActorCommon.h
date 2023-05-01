@@ -27,6 +27,8 @@
 
 #include "RRActorCommon.generated.h"
 
+#define RAPYUTA_SIM_VERBOSE (0)    // todo make this CVar
+
 #define RAPYUTA_SIM_DEBUG (0)
 #define RAPYUTA_SIM_VISUAL_DEBUG (0)
 
@@ -506,13 +508,13 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRActorSpawnInfo
     FString EntityModelName;
 
     /**
-     * @brief 
+     * @brief
      * Actually GetName() is also unique as noted by UE, but we just do not want to rely on it.
      * Instead, WE CREATE [UniqueName] TO MAKE OUR ID CONTROL MORE INDPENDENT of UE INTERNAL NAME HANDLING.
      * Reasons: Sometimes,
      * + UE provided Name Id is updated as Label is updated...
      * + In pending-kill state, GetName() goes to [None]
-     * 
+     *
      */
     UPROPERTY()
     FString UniqueName;

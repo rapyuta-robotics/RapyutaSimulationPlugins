@@ -38,7 +38,7 @@ void URRStaticMeshComponent::BeginPlay()
 
 void URRStaticMeshComponent::Initialize(bool bInIsStationary, bool bInIsPhysicsEnabled)
 {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
                            Warning,
                            TEXT("STATIC MESH COMP INITIALIZED - Stationary: %d Physics Enabled: %d!"),
@@ -271,7 +271,7 @@ void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& In
             continue;
         }
 
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
         UE_LOG_WITH_INFO_NAMED(
             LogRapyutaCore,
             Warning,

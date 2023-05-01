@@ -219,7 +219,7 @@ void URRActorCommon::PrintSimConfig() const
 
 void URRActorCommon::OnStartSim()
 {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
     std::call_once(OnceFlag, [this]() { PrintSimConfig(); });
 #endif
     UWorld* currentWorld = GetWorld();
@@ -244,24 +244,24 @@ void URRActorCommon::SetupEnvironment()
         // Spawn Scene main camera
         SceneCamera =
             Cast<ARRCamera>(URRUObjectUtils::SpawnSimActor(GetWorld(),
-                                                        SceneInstanceId,
-                                                        ARRCamera::StaticClass(),
-                                                        TEXT("RapyutaCamera"),
-                                                        FString::Printf(TEXT("%d_SceneCamera"), SceneInstanceId),
-                                                        FTransform(SceneInstanceLocation),
-                                                        ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn));
-
+                                                           SceneInstanceId,
+                                                           ARRCamera::StaticClass(),
+                                                           TEXT("RapyutaCamera"),
+                                                           FString::Printf(TEXT("%d_SceneCamera"), SceneInstanceId),
+                                                           FTransform(SceneInstanceLocation),
+                                                           ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn));
     }
-    else 
+    else
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("GameState is not child class of ARRGameState. Can't use MainFloor, MainWall and Camera."));
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("GameState is not child class of ARRGameState. Can't use MainFloor, MainWall and Camera."));
     }
 #endif
 }
 
 bool URRActorCommon::HasInitialized(bool bIsLogged) const
 {
-
     if (false == GetWorld()->IsNetMode(ENetMode::NM_Standalone))
     {
         return true;

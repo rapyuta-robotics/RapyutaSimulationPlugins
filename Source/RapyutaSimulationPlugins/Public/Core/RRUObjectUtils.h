@@ -530,7 +530,7 @@ public:
             newSimActor->SetActorLabel(InActorSpawnInfo.UniqueName);
 #endif
 
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
             UE_LOG_WITH_INFO(LogTemp,
                              Warning,
                              TEXT("[%s:%d] SIM ACTOR SPAWNED: [%s] => [%s]\nat %s -> %s"),
