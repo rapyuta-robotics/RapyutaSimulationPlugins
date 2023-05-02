@@ -17,7 +17,7 @@
 
 #include "RRBaseActor.generated.h"
 
-class ARRROS2GameMode;
+class ARRGameMode;
 class ARRGameState;
 class URRGameSingleton;
 class ARRPlayerController;
@@ -74,19 +74,19 @@ public:
 
     static int8 SSceneInstanceId;
 
-    //! Used for SceneDirector
+    //! Pointer for convinience. Since this pointer can be nullptr, you need null check before using.
     UPROPERTY()
     ARRGameState* RRGameState = nullptr;
 
-    //! Used for Asset loading
+    //! Pointer for convinience. Since this pointer can be nullptr, you need null check before using.
     UPROPERTY()
     URRGameSingleton* RRGameSingleton = nullptr;
 
-    //! Pointer to GameMode for convinience.
+    //! Pointer for convinience. Since this pointer can be nullptr, you need null check before using.
     UPROPERTY()
-    ARRROS2GameMode* RRROS2GameMode = nullptr;
+    ARRGameMode* RRGameMode = nullptr;
 
-    //! Used for DataSynth app.
+    //! Pointer for convinience. Since this pointer can be nullptr, you need null check before using.
     UPROPERTY()
     ARRPlayerController* RRPlayerController = nullptr;
 

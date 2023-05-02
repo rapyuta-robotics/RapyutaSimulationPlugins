@@ -15,8 +15,6 @@
 
 #include "RRGameMode.generated.h"
 
-class URRGameInstance;
-
 /**
  * @brief todo
  * @todo add documentation
@@ -30,7 +28,7 @@ enum class ERRSimType : uint8
 };
 
 /**
- * @brief GameMode with specific setting, asset loading and #SceneDirector. Parent class, #ARRROS2GameMode, 
+ * @brief GameMode with specific setting, asset loading and #SceneDirector. Parent class, #ARRROS2GameMode,
  * You needs to use #RRGameSingleton for asset loading.
  * You needs to use #RRPlayerController and #RRGameState for SceneDirector.
  * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)

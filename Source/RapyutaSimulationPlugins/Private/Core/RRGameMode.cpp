@@ -157,6 +157,9 @@ void ARRGameMode::StartSim()
     auto* gameSingleton = URRGameSingleton::Get();
     if (gameSingleton)
     {
+#if RAPYUTA_SIM_VERBOSE
+        gameSingleton->PrintSimConfig();
+#endif
         gameSingleton->InitializeResources();
     }
 

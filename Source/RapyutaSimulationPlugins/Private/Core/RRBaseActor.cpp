@@ -45,17 +45,11 @@ void ARRBaseActor::PreInitializeComponents()
     // SETUP + CONFIGURE GAME & SIM COMMON OBJECTS
     // NOTE: These are used ONLY for dynamic runtime actors.
     // In child BP actors, except for GameSingleton, other Game framework entities maybe not available yet
-#if RAPYUTA_USE_SCENE_DIRECTOR
+
+    // pointers for convinence
     RRGameState = URRCoreUtils::GetGameState<ARRGameState>(this);
-    check(RRGameState)
-#endif
-        RRROS2GameMode = URRCoreUtils::GetGameMode<ARRROS2GameMode>(this);
-
-    if (IsNetMode(NM_Standalone))
-    {
-        RRPlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
-    }
-
+    RRPlayerController = URRCoreUtils::GetPlayerController<ARRPlayerController>(SceneInstanceId, this);
+    RRGameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
     RRGameSingleton = URRGameSingleton::Get();
     if (RRGameSingleton == nullptr)
     {
