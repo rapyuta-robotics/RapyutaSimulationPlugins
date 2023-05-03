@@ -105,10 +105,12 @@ void ARRMeshActor::SetCustomDepthEnabled(bool bIsCustomDepthEnabled)
         // Since deactivated actors do not appear in scene so their custom depth stencil values should be reused
         if (bIsCustomDepthEnabled && IsDataSynthEntity())
         {
+#if RAPYUTA_USE_SCENE_DIRECTOR
             auto* sceneDirector = RRGameState->GetSceneInstance<URRSceneInstance>(SceneInstanceId)->SceneDirector;
             meshComp->SetCustomDepthStencilValue((sceneDirector->SceneEntityMaskValueList.Num() > 0)
                                                      ? sceneDirector->SceneEntityMaskValueList.Pop()
                                                      : ActorCommon->GenerateUniqueDepthStencilValue());
+#endif
         }
         else
         {

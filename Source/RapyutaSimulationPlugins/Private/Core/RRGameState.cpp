@@ -184,8 +184,8 @@ void ARRGameState::StartSubSim(int8 InSceneInstanceId)
 
 void ARRGameState::InitializeSim(int8 InSceneInstanceId)
 {
+#if RAPYUTA_USE_SCENE_DIRECTOR
     // Sim Scene Instance List
-    verify(SceneInstanceList.IsValidIndex(InSceneInstanceId));
     auto& sceneInstance = SceneInstanceList[InSceneInstanceId];
 
     // Spawn [SceneDirector], which runs the main operation of the mode
@@ -200,6 +200,7 @@ void ARRGameState::InitializeSim(int8 InSceneInstanceId)
                      TEXT("Scene Director actor named [%s] - SceneInstanceId(%d): SPAWNED!"),
                      *sceneInstance->SceneDirector->GetName(),
                      sceneInstance->SceneDirector->SceneInstanceId);
+#endif
 }
 
 bool ARRGameState::HasInitialized(bool bIsLogged) const
@@ -232,6 +233,7 @@ bool ARRGameState::HasInitialized(bool bIsLogged) const
 
 bool ARRGameState::HaveAllSceneInstancesCompleted() const
 {
+#if RAPYUTA_USE_SCENE_DIRECTOR
     for (int8 i = 0; i < SceneInstanceList.Num(); ++i)
     {
         if (false == SceneInstanceList[i]->SceneDirector->HasOperationCompleted(false))
@@ -239,7 +241,7 @@ bool ARRGameState::HaveAllSceneInstancesCompleted() const
             return false;
         }
     }
-
+#endif
     return true;
 }
 

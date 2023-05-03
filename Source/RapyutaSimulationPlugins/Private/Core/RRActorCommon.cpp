@@ -19,7 +19,9 @@
 void URRSceneInstance::ConfigureStaticClasses()
 {
     ActorCommonClass = URRActorCommon::StaticClass();
+#if RAPYUTA_USE_SCENE_DIRECTOR
     SceneDirectorClass = ARRSceneDirector::StaticClass();
+#endif
 }
 
 bool URRSceneInstance::IsValid(bool bIsLogged) const
@@ -51,6 +53,7 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
         return false;
     }
 
+#if RAPYUTA_USE_SCENE_DIRECTOR
     // [SceneDirector] waits for [GameState], which instantiate [SimSceneInstance] + [PlayerController] to initialize,
     // thus of course not include the check for its [HasSimSceneInitialized()] here!
     // In essence, [SceneDirector]'s initialization is considered as Sim's post-initialization.
@@ -62,6 +65,7 @@ bool URRSceneInstance::IsValid(bool bIsLogged) const
         }
         return false;
     }
+#endif
     return true;
 }
 
