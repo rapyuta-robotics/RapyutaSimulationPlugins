@@ -119,7 +119,8 @@ bool URRProceduralMeshComponent::CreateMeshBody(const FRRMeshData& InBodyMeshDat
     }
 
     ARRMeshActor* ownerActor = CastChecked<ARRMeshActor>(GetOwner());
-    if (false == ownerActor->GameMode->IsDataSynthSimType())
+    auto* gameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
+    if (gameMode && false == gameMode->IsDataSynthSimType())
     {
         for (auto i = 0; i < InBodyMeshData.MaterialInstances.Num(); ++i)
         {

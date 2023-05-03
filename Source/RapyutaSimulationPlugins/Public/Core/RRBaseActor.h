@@ -73,20 +73,25 @@ public:
     TSharedPtr<FRRActorSpawnInfo> ActorInfo = nullptr;
 
     static int8 SSceneInstanceId;
+
+    //! Pointer for convinience. Since this pointer can be nullptr, you need null check before using.
+    UPROPERTY()
+    ARRGameState* RRGameState = nullptr;
+
+    //! Pointer for convinience. Since this pointer can be nullptr, you need null check before using.
+    UPROPERTY()
+    URRGameSingleton* RRGameSingleton = nullptr;
+
+    //! Pointer for convinience. Since this pointer can be nullptr, you need null check before using.
+    UPROPERTY()
+    ARRGameMode* RRGameMode = nullptr;
+
+    //! Pointer for convinience. Since this pointer can be nullptr, you need null check before using.
+    UPROPERTY()
+    ARRPlayerController* RRPlayerController = nullptr;
+
     UPROPERTY()
     int8 SceneInstanceId = URRActorCommon::DEFAULT_SCENE_INSTANCE_ID;
-
-    UPROPERTY()
-    ARRGameMode* GameMode = nullptr;
-
-    UPROPERTY()
-    ARRGameState* GameState = nullptr;
-
-    UPROPERTY()
-    URRGameSingleton* GameSingleton = nullptr;
-
-    UPROPERTY()
-    ARRPlayerController* PlayerController = nullptr;
 
     UPROPERTY()
     URRActorCommon* ActorCommon = nullptr;
@@ -137,7 +142,7 @@ public:
 protected:
     /**
      * @brief Set #GameMode #GameState #GameSingleton #PlayerController
-     * 
+     *
      */
     virtual void PreInitializeComponents() override;
     virtual void PrintSimConfig() const

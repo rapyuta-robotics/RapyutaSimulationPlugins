@@ -12,7 +12,6 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
-#include "Core/RRGameInstance.h"
 #include "Core/RRMathUtils.h"
 #include "Core/RRMeshActor.h"
 #include "Core/RRPlayerController.h"
@@ -52,20 +51,22 @@ void ARRGameState::StartSim()
 {
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("[Start Sim with Num of SceneInstances: %d]"), SCENE_INSTANCES_NUM);
 
-    URRGameSingleton::Get()->PrintSimConfig();
     PrintSimConfig();
 
     GameMode = URRCoreUtils::GetGameMode<ARRGameMode>(this);
-    check(GameMode);
-
-    GameInstance = URRCoreUtils::GetGameInstance<URRGameInstance>(this);
-    check(GameInstance);
 
     // Each Sim scene instance has a Player Controller on its own, the max number of which is defined by
     // [UGameViewportClient::MaxSplitscreenPlayers]
     const int32 maxSplitscreenPlayers = URRCoreUtils::GetMaxSplitscreenPlayers(this);
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("MAX SPLIT SCREEN PLAYERS: %d"), maxSplitscreenPlayers);
-    verify(SCENE_INSTANCES_NUM <= maxSplitscreenPlayers);
+    if (SCENE_INSTANCES_NUM > maxSplitscreenPlayers)
+    {
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore,
+            Warning,
+            TEXT("SCENE_INSTANCE_NUM > MAX SPLIT SCREEN PLAYERS, SCENE_INSTANCE_NUM set to MAX SPLIT SCREEN PLAYERS: %d"),
+            maxSplitscreenPlayers);
+        SCENE_INSTANCES_NUM = maxSplitscreenPlayers;
+    }
 
     // 0- Stream level & Fetch static-env actors
     SetupEnvironment();
@@ -116,10 +117,21 @@ void ARRGameState::FetchEnvStaticActors()
 
 void ARRGameState::CreateSceneInstance(int8 InSceneInstanceId)
 {
-    verify(InSceneInstanceId >= 0);
+    if (InSceneInstanceId < 0)
+    {
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Warning, TEXT("Given SceneInstance is %d. SceneInstancId must > 0. Set to 0."), InSceneInstanceId);
+
+        InSceneInstanceId = 0;
+    }
     URRSceneInstance* newSceneInstance = Cast<URRSceneInstance>(URRUObjectUtils::CreateSelfSubobject(
-        this, SceneInstanceClass, FString::Printf(TEXT("%d_%s"), InSceneInstanceId, *URRGameInstance::SMapName)));
-    verify(newSceneInstance);
+        this, SceneInstanceClass, FString::Printf(TEXT("%d_%s"), InSceneInstanceId, *GetWorld()->GetName())));
+    if (newSceneInstance == nullptr)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Failed to create SceneInstance"));
+        return;
+    }
+
     newSceneInstance->ConfigureStaticClasses();
     SceneInstanceList.Add(newSceneInstance);
 
@@ -285,9 +297,6 @@ void ARRGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
     // 2 - Clear and reset Sim [static] contents (like ~FunctionLibrary's static ~Common object handles, due to not managed by UE
     // UObject system)
     FinalizeSim();
-
-    // 3 - These resources were initialized in [ARRGameMode::StartPlay()], which does not have a corresponding EndPlay()
-    URRGameSingleton::Get()->FinalizeResources();
 
     Super::EndPlay(EndPlayReason);
 }

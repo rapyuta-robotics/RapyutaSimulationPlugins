@@ -21,7 +21,9 @@ TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_
 
 URRGameSingleton::URRGameSingleton()
 {
+#if RAPYUTA_SIM_VERBOSE
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("INSTANTIATED! ======================"));
+#endif
 }
 
 URRGameSingleton::~URRGameSingleton()
@@ -39,7 +41,7 @@ URRGameSingleton* URRGameSingleton::Get()
     URRGameSingleton* singleton = Cast<URRGameSingleton>(GEngine->GameSingleton);
     if (!singleton)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("NOT YET SET AS GAME SINGLETON!!"));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("NOT YET SET AS GAME SINGLETON!!"));
         return nullptr;
     }
 

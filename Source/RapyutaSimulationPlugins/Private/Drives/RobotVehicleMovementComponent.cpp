@@ -247,7 +247,7 @@ void URobotVehicleMovementComponent::InitData()
     {
         ContactPoints.Add(Cast<USceneComponent>(acp));
     }
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
     UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Nb Contact Points : %d"), ContactPoints.Num());
 #endif
 
@@ -272,7 +272,7 @@ void URobotVehicleMovementComponent::InitData()
     {
         MinDistanceToFloor = hitResult.Distance;
     }
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
     UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Min Distance To Floor = %f"), MinDistanceToFloor);
 #endif
 }

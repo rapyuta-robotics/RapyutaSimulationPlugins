@@ -89,21 +89,21 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
     {
         if (nullptr == ROS2Interface)
         {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
             UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No ROS2Controller found"));
 #endif
             res = false;
         }
         else if (nullptr == ROS2Interface->ROSSpawnParameters)
         {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
             UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No ROS2Controller->ROSSpawnParameters found"));
 #endif
             res = false;
         }
         else if (nullptr == npc)
         {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
             UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No ARRNetworkPlayerController found"));
 #endif
             res = false;
@@ -116,7 +116,7 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
         }
         else
         {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
             UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
                                    Warning,
                                    TEXT("PlayerId is mismatched. This robot spawned by PlaeyrId=%d. This Client's PlayerId=%d. "),
@@ -301,9 +301,8 @@ bool ARRBaseRobot::InitMoveComponent()
     if (VehicleMoveComponentClass && MovementComponent == nullptr)
     {
         // (NOTE) Being created in [OnConstruction], PIE will cause this to be reset anyway, thus requires recreation
-        SetMoveComponent(CastChecked<UMovementComponent>(
-            URRUObjectUtils::CreateSelfSubobject(this, VehicleMoveComponentClass, FString::Printf(TEXT("%sMoveComp"), *GetName()))));
-
+        SetMoveComponent(CastChecked<UMovementComponent>(URRUObjectUtils::CreateSelfSubobject(
+            this, VehicleMoveComponentClass, FString::Printf(TEXT("%sMoveComp"), *GetName()))));
 
         UE_LOG_WITH_INFO(LogRapyutaCore,
                          Display,

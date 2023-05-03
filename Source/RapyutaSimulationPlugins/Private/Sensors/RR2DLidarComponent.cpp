@@ -330,8 +330,10 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
                                                               FVector::DotProduct(HitSurfaceNormal, -RayDirection),
                                  IntensityNonReflective,
                                  IntensityReflective);
-                check(Intensity >= IntensityNonReflective);
-                check(Intensity <= IntensityReflective);
+                if ((Intensity <= IntensityNonReflective) || (Intensity <= IntensityReflective))
+                {
+                    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Intensity is outof range. Something is wrong."));
+                }
                 retValue.Intensities.Add(IntensityScale * Intensity);
             }
         }

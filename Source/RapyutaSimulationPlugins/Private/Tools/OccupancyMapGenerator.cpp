@@ -62,7 +62,11 @@ void AOccupancyMapGenerator::BeginPlay()
     }
 
     // write to file
-    check(WriteToFile(NCellsX, NCellsY, Origin.X / 100.f, -(Center.Y + Extent.Y) / 100.f));
+    bool res = WriteToFile(NCellsX, NCellsY, Origin.X / 100.f, -(Center.Y + Extent.Y) / 100.f);
+    if (!res)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed to save files."));
+    }
 }
 
 bool AOccupancyMapGenerator::WriteToFile(int width, int height, float originx, float originy)
@@ -80,12 +84,13 @@ bool AOccupancyMapGenerator::WriteToFile(int width, int height, float originx, f
 
     TArrayView<uint8> data = OccupancyGrid;
 
-    FFileHelper::SaveStringToFile(yamlContent, *TargetInfoFile);
-    FFileHelper::SaveStringToFile(pgmHeader, *TargetFile);
+    bool res = true;
+    res &= FFileHelper::SaveStringToFile(yamlContent, *TargetInfoFile);
+    res &= FFileHelper::SaveStringToFile(pgmHeader, *TargetFile);
     for (int i = 0; i < height; i++)
     {
-        FFileHelper::SaveArrayToFile(data.Slice(i * width, width), *TargetFile, &IFileManager::Get(), FILEWRITE_Append);
+        res &= FFileHelper::SaveArrayToFile(data.Slice(i * width, width), *TargetFile, &IFileManager::Get(), FILEWRITE_Append);
     }
 
-    return true;
+    return res;
 }

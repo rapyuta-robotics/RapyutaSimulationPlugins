@@ -21,7 +21,7 @@ class ARRActorCommon;
 class ARRCamera;
 
 /**
- * @brief Player controller with #ARRGameMode, #ARRGameState, #URRGameInstance and #URRActorCommon
+ * @brief Player controller designed to be used with SceneDirector
  *
  */
 UCLASS()

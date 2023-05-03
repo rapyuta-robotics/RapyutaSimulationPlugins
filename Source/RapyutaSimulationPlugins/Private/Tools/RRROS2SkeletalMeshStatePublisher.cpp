@@ -35,7 +35,6 @@ void URRROS2SkeletalMeshStatePublisher::SetTargetRobot(ARobotVehicle* InRobot)
         SkeletalMeshComp = skeletalMeshComponents[0];
         const auto bonesNum = SkeletalMeshComp->GetBoneSpaceTransforms().Num();
         UE_LOG_WITH_INFO(LogRapyutaCore, Log, TEXT("[%s] has %d bones"), *SkeletalMeshComp->GetName(), bonesNum);
-        check(bonesNum > 0);
     }
     else
     {
