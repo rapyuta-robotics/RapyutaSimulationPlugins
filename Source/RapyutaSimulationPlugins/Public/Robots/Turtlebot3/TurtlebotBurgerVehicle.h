@@ -1,7 +1,6 @@
 /**
- * @file RobotVehicle.h
- * @brief Base RobotVehicle class.
- * Example is #ATurtlebotBurger.
+ * @file TurtlebotBurgerVehicle.h
+ * @brief Kinematic robot example of #ARRBaseRobot.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -13,35 +12,32 @@
 
 // RapyutaSimulationPlugins
 #include "Robots/RRBaseRobot.h"
+#include "Sensors/RR2DLidarComponent.h"
 
-// rclUE
-#include "ROS2NodeComponent.h"
-
-#include "RobotVehicle.generated.h"
+#include "TurtlebotBurgerVehicle.generated.h"
 
 /**
- * @brief RobotVehicle class.
- * This class represents robot vehicles built up from a Skeletal Mesh component that is also its Root.
- * @deprecated Please use #ARRBaseRobot directly
+ * @brief Kinematic robot example of #ARRBaseRobot.
+ * Robot with Skeletal Mesh component and 2D Lidar.
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ARobotVehicle : public ARRBaseRobot
+class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurgerVehicle : public ARRBaseRobot
 {
     GENERATED_BODY()
 
 public:
     /**
-     * @brief Construct a new ARobotVehicle object
+     * @brief Construct a new ATurtlebotBurgerVehicle object
      *
      */
-    ARobotVehicle();
+    ATurtlebotBurgerVehicle();
 
     /**
-     * @brief Construct a new ARobotVehicle object
+     * @brief Construct a new ATurtlebotBurgerVehicle object
      *
      * @param ObjectInitializer
      */
-    ARobotVehicle(const FObjectInitializer& ObjectInitializer);
+    ATurtlebotBurgerVehicle(const FObjectInitializer& ObjectInitializer);
 
     //! Robot Mesh
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
@@ -60,6 +56,9 @@ public:
      * @param OutLifetimeProps Output lifetime properties
      */
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URR2DLidarComponent* LidarComponent = nullptr;
 
 protected:
     /**

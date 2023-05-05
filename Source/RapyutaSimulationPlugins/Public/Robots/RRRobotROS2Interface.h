@@ -241,6 +241,10 @@ public:
     UFUNCTION()
     virtual void MovementCallback(const UROS2GenericMsg* Msg);
 
+    //! Mobile robot or not. If this is false, movecomponent=nullptr and ROS 2 odom and cmd_vel interface are disabled.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bMobile = true;
+
 protected:
     template<typename TROS2Message,
              typename TROS2MessageData,

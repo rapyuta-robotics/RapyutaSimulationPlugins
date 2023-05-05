@@ -8,10 +8,10 @@
 
 // UE
 #include "CoreMinimal.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 // RapyutaSimulationPlugins
-#include "PhysicsEngine/PhysicsConstraintComponent.h"
-#include "Robots/RobotVehicle.h"
+#include "Robots/RRBaseRobot.h"
 #include "Sensors/RR2DLidarComponent.h"
 
 #include "TurtlebotBurger.generated.h"
@@ -24,7 +24,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
  * This class is designed to be inheritted from Blueprint class to be assigned UStaticMeshComponent.
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARobotVehicle
+class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARRBaseRobot
 {
     GENERATED_BODY()
 

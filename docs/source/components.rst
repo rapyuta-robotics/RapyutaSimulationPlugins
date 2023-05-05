@@ -29,8 +29,16 @@ Drives
 
         This supports adapting the robot pose to floor complex surfaces, and following moving platforms such as elevators.
 
+        Example robots are `BP_TurtlebotBurgerVehicle <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/Turtlebot3/Kinematics/BP_TurtlebotBurgerVehicle.uasset>`_
+        and `BP_TurtlebotWaffleVehicle <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/Turtlebot3/Kinematics/BP_TurtlebotWaffleVehicle.uasset>`_.
+
     - `UDifferentialDriveComponent <doxygen_generated/html/db/df5/class_u_differential_drive_component.html>`_
         Simulate differential drive with 2 wheels considering physics.
+
+        Example robots are 
+        `BP_TurtlebotBurger <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/Turtlebot3/Physics/BP_TurtlebotBurger.uasset>`_
+        and `BP_TurtlebotWaffle <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/Turtlebot3/Physics/BP_TurtlebotWaffle.uasset>`_.
+
 
 - JointComponent
     - `URRJointComponent <doxygen_generated/html/de/dfa/class_u_r_r_joint_component.html>`_

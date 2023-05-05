@@ -162,7 +162,10 @@ void ARRBaseRobot::PreInitializeComponents()
 void ARRBaseRobot::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-    InitMoveComponent();
+    if (bMobile)
+    {
+        InitMoveComponent();
+    }
 }
 
 void ARRBaseRobot::OnRep_ROS2Interface()

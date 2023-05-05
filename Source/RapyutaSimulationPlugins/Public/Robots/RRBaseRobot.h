@@ -107,6 +107,7 @@ public:
 
     /**
      * @brief DynamicRuntime robot: Implemented purely in cpp, built & loaded up at runtime from raw CAD + metadata (URDF/SDF)
+     * @note Experimental
      */
     FORCEINLINE bool IsDynamicRuntimeRobot() const
     {
@@ -116,6 +117,7 @@ public:
     /**
      * @brief Static BP robot: implemented in BP, possibly inheriting from #ARBaseRobot or its children classes,
      * built from pre-designed static UE assets (StaticMesh, SkeletalMesh, Skeleton, Physics Asset, etc.)
+     * @note Experimental
      */
     FORCEINLINE bool IsStaticBPRobot() const
     {
@@ -434,7 +436,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bInitRobotVehicleMoveComponent = true;
 
-
     /**
      * @brief This method is called inside #PostInitializeComponents.
      * Custom initialization of child BP class can be done by overwritting this method.
@@ -442,6 +443,10 @@ public:
      */
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void BPConfigureMovementComponent();
+
+    //! Mobile robot or not. If this is false, movecomponent=nullptr and ROS 2 odom and cmd_vel interface are disabled.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bMobile = true;
 
 protected:
     /**
