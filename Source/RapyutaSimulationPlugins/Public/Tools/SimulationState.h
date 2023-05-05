@@ -208,12 +208,12 @@ public:
     UFUNCTION(BlueprintCallable)
     void AddSpawnableEntityTypes(TMap<FString, TSubclassOf<AActor>> InSpawnableEntityTypes);
 
-    //! All existing entities
+    //! All existing entities which can be manipulated by this class via ROS2 services.
     //! @todo Converting to TArrays to be able to be replicated
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
 
-    //! Entities with tags which can be manipulated by this class via ROS2 services.
+    //! All existing entities with tags which can be manipulated by this class via ROS2 services.
     //! @todo Converting to TArrays to be able to be replicated
     UPROPERTY(EditAnywhere)
     TMap<FName, FRREntities> EntitiesWithTag;
