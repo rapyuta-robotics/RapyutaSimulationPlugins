@@ -1,6 +1,6 @@
 /**
  * @file RR3DLidarComponent.h
- * @brief ROS2 3D lidar components.
+ * @brief ROS 2 3D lidar components.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -19,7 +19,7 @@
 #include "RR3DLidarComponent.generated.h"
 
 /**
- * @brief ROS2 3D lidar components.
+ * @brief ROS 2 3D lidar components.
  * This class has 2 types of implementation, async and sync which can be switched by define TRACE_ASYNC.
  * sync uses LineTraceSingleByChannel and async uses AsyncLineTraceByChannel.
  *
@@ -74,7 +74,7 @@ public:
     bool Visible(AActor* TargetActor) override;
 
     /**
-     * @brief Create ROS2 Msg structure from #RecordedHits
+     * @brief Create ROS 2 Msg structure from #RecordedHits
      * This should probably be removed so that the sensor can be decoupled from the message types
      * @return FROSPointCloud2
      */

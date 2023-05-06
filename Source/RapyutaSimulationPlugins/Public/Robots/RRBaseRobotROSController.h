@@ -17,7 +17,7 @@ class URRRobotROS2Interface;
 
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
- * This class has authority to start ROS2 Component in pausses robot.
+ * This class has authority to start ROS 2 Component in pausses robot.
  *
  * @sa [AAIController](https://docs.unrealengine.com/5.1/en-US/API/Runtime/AIModule/AAIController/)
  * @sa https://answers.unrealengine.com/questions/871116/view.html

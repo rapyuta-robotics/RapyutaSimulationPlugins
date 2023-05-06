@@ -166,7 +166,7 @@ void ARRBaseRobot::PreInitializeComponents()
 void ARRBaseRobot::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-    if (bMobile)
+    if (bMobileRobot)
     {
         InitMoveComponent();
     }
@@ -178,7 +178,7 @@ void ARRBaseRobot::OnRep_ROS2Interface()
     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT(""));
 #endif
     // Since Replication order of ROS2Interface, bStartStopROS2Interface, ROSSpawnParameters can be shuffled,
-    // Trigger init ROS2 interface in each OnRep function.
+    // Trigger init ROS 2 interface in each OnRep function.
     // need to initialize here as well.
     // https://forums.unrealengine.com/t/replication-ordering-guarantees/264974
     if (bStartStopROS2Interface)
@@ -226,7 +226,7 @@ void ARRBaseRobot::CreateROS2Interface()
     // + Controller, upon posses/unpossess, acts as the pivot to start/stop robot's ROS2Interface
     // + ROS2Interface, due to requirements for also instantiatable in ARRBaseRobot's child BPs, may not
     // have been instantiated yet
-    // + Child class' ros2-related accessories (ROS2 node, sensors, publishers/subscribers)
+    // + Child class' ros2-related accessories (ROS 2 node, sensors, publishers/subscribers)
     //  may have not been fully accessible until then.
 }
 void ARRBaseRobot::InitROS2Interface()

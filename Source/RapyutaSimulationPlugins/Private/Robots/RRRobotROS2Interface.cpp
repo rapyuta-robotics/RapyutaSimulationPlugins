@@ -34,11 +34,11 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
     Robot = InRobot;
     Robot->ROS2Interface = this;
 
-    // Instantiate a ROS2 node for InRobot
+    // Instantiate a ROS 2 node for InRobot
     InitRobotROS2Node(InRobot);
 
     // OdomPublisher (with TF)
-    if (bPublishOdom && Robot->bMobile) 
+    if (bPublishOdom && Robot->bMobileRobot) 
     {
         if (nullptr == OdomComponent)
         {
@@ -170,7 +170,7 @@ bool URRRobotROS2Interface::InitSubscriptions()
         return false;
     }
 
-    if (Robot && Robot->bMobile)
+    if (Robot && Robot->bMobileRobot)
     {
         // Subscription with callback to enqueue vehicle spawn info.
         RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);

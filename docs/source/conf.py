@@ -16,7 +16,7 @@ read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
     #sys.path.append( "/usr/local/lib/python3.9/site-packages/breathe/" )
 
 # -- Doxygen and breath
-# subprocess.call('mkdir -p ../../_readthedocs/html/; cd ..; doxygen', shell=True)
+subprocess.call('mkdir -p ../../_readthedocs/html/; cd ..; doxygen', shell=True)
 breathe_projects = { "RapyutaSimulationPlugins": "../../_readthedocs/html/doxygen_generated/xml" }
 # breathe_projects_source = {
 #      "auto" : ( "../Private/RapyutaSimulationPlugins", ["*.h"] )

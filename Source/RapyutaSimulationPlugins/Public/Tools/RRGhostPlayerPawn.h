@@ -1,6 +1,6 @@
 /**
  * @file GhostPlayerPawn.h
- * @brief BaseComponents which is used when spawning Actor from ROS2 service in #ASimulationState.
+ * @brief BaseComponents which is used when spawning Actor from ROS 2 service in #ASimulationState.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
