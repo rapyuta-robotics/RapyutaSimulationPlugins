@@ -448,6 +448,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bMobile = true;
 
+    /**
+     * @brief Parse Json parameters in #ROSSpawnParameters
+     * This function is called in #PreInitializeComponents
+     * Please overwrite this function to parse your custom parameters
+    */
+    UFUNCTION(BlueprintCallable)
+    virtual void InitPropertiesFromJSON();
+
 protected:
     /**
      * @brief Instantiate default child components

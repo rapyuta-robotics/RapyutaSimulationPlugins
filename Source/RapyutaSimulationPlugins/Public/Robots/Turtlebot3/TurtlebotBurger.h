@@ -1,6 +1,6 @@
 /**
  * @file TurtlebotBurger.h
- * @brief Example of child class of #ARobotVehicle
+ * @brief Example of child class of #ARRBaseRobot
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -19,7 +19,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
 
 /**
- * @brief Example of child class of #ARobotVehicle
+ * @brief Example of child class of #ARRBaseRobot
  * Uses #UDifferentialDriveComponent and has #URR2DLidarComponent.
  * This class is designed to be inheritted from Blueprint class to be assigned UStaticMeshComponent.
  */
