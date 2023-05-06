@@ -20,6 +20,7 @@
 #include "Robots/RRRobotROS2Interface.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
 #include "Tools/SimulationState.h"
+#include "UI/RRUserWidget.h"
 
 ARRBaseRobot::ARRBaseRobot()
 {
@@ -41,6 +42,7 @@ void ARRBaseRobot::SetupDefault()
     AIControllerClass = ARRBaseRobotROSController::StaticClass();
     AutoPossessPlayer = EAutoReceiveInput::Disabled;
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+    bTooltipEnabled = false;
 
     // NOTE: Any custom object class (eg ROS2InterfaceClass, VehicleMoveComponentClass) that is required to be configurable by this class' child BP ones
     // & IF its object needs to be created before BeginPlay(),
@@ -462,6 +464,54 @@ void ARRBaseRobot::SetLocalAngularVel(const FVector& InAngularVel)
                      *PlayerController->PlayerState->GetPlayerName(),
                      *InAngularVel.ToString());
 #endif
+}
+
+void ARRBaseRobot::InitTooltip()
+{
+    TooltipComp = URRUObjectUtils::CreateAndAttachChildComponent<UWidgetComponent>(
+        this, *FString::Printf(TEXT("%sTooltip"), *GetName()), TooltipOffset);
+
+    // 1- Set [WidgetClass] as [URRUserWidget]
+    TooltipComp->SetWidgetClass(URRUserWidget::StaticClass());
+    // 1.1 - Init [TooltipComp]
+    TooltipComp->InitWidget();
+    TooltipComp->SetDrawSize(FIntPoint(500.f, 50.f));
+    TooltipComp->SetPivot(FVector2D::ZeroVector);
+    TooltipComp->SetCanEverAffectNavigation(false);
+    TooltipComp->SetTwoSided(true);
+    // NOTE: Using Screen widget space, [TooltipComp] will be always facing user view, thus no need to manually orientate it per Tick
+    TooltipComp->SetWidgetSpace(EWidgetSpace::Screen);
+
+    // 2- Add to viewport with robot's name as initial text
+    auto* tooltipWidget = Cast<URRUserWidget>(TooltipComp->GetWidget());
+    tooltipWidget->AddToViewport();
+    tooltipWidget->OwnerWidgetComponent = TooltipComp;
+    tooltipWidget->SetLabelText(GetName());
+}
+
+void ARRBaseRobot::SetTooltipText(const FString& InTooltip)
+{
+    if (TooltipComp)
+    {
+        Cast<URRUserWidget>(TooltipComp->GetWidget())->SetLabelText(InTooltip);
+    }
+}
+
+void ARRBaseRobot::SetTooltipVisible(bool bInVisible)
+{
+    if (TooltipComp)
+    {
+        Cast<URRUserWidget>(TooltipComp->GetWidget())->SetActivated(bInVisible);
+    }
+}
+
+void ARRBaseRobot::BeginPlay()
+{
+    Super::BeginPlay();
+    if (bTooltipEnabled)
+    {
+        InitTooltip();
+    }
 }
 
 void ARRBaseRobot::Tick(float DeltaSeconds)

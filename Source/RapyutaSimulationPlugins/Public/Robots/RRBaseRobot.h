@@ -7,6 +7,8 @@
 #pragma once
 
 // UE
+#include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "CoreMinimal.h"
 
 // rclUE
@@ -38,6 +40,7 @@
 class ARRNetworkGameState;
 class URRRobotROS2Interface;
 class ARRNetworkPlayerController;
+class URRUserWidget;
 
 /**
  * @brief Which server or client has robot movement authority.
@@ -80,11 +83,16 @@ public:
     ARRBaseRobot(const FObjectInitializer& ObjectInitializer);
 
     /**
+     * @brief BeginPlay
+     */
+    virtual void BeginPlay() override;
+
+    /**
      * @brief Wake rigid body in addition to Super::Tick()
      *
      * @param DeltaSeconds
      */
-    void Tick(float DeltaSeconds);
+    virtual void Tick(float DeltaSeconds) override;
 
     /**
      * @brief Initialize default components being configurable in child BP classes.
@@ -434,7 +442,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bInitRobotVehicleMoveComponent = true;
 
-
     /**
      * @brief This method is called inside #PostInitializeComponents.
      * Custom initialization of child BP class can be done by overwritting this method.
@@ -442,6 +449,27 @@ public:
      */
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void BPConfigureMovementComponent();
+
+    // TOOLTIP --
+    UPROPERTY()
+    uint8 bTooltipEnabled : 1;
+    //! Tooltip widget component
+    UPROPERTY()
+    TObjectPtr<UWidgetComponent> TooltipComp = nullptr;
+    //! Relative pose of the tooltip from the owner robot
+    UPROPERTY()
+    FTransform TooltipOffset = FTransform(FVector(0.f, 0.f, 100.f));
+    /**
+     * @brief Set text for #Tooltip
+     * @param InTooltip
+     */
+    void SetTooltipText(const FString& InTooltip);
+
+    /**
+     * @brief Set visibility of #Tooltip
+     * @param bInVisible
+     */
+    void SetTooltipVisible(bool bInVisible);
 
 protected:
     /**
@@ -471,4 +499,9 @@ protected:
      *
      */
     virtual void ConfigureMovementComponent();
+
+    /**
+     * @brief Create & init #TooltipComp
+     */
+    virtual void InitTooltip();
 };
