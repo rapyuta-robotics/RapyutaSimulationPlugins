@@ -332,7 +332,10 @@ public:
                 return ACM_Locked;
 
             case ERRRobotJointType::REVOLUTE:
-                return (UpperLimit >= M_PI) ? ACM_Free : ACM_Limited;
+            {
+                static constexpr float RR_2_PI = 2 * M_PI;
+                return (UpperLimit > RR_2_PI) ? ACM_Free : ACM_Limited;
+            }
 
             case ERRRobotJointType::FLOATING:
             case ERRRobotJointType::BALL:

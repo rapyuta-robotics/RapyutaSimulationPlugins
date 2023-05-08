@@ -591,6 +591,11 @@ public:
         return GetRelativeQuatFrom(InActor, InBaseActor).Rotator();
     }
 
+    /**
+     * @brief Enable/Disable actor collision
+     * @param InActor
+     * @param bInCollisionOn
+     */
     FORCEINLINE static void SetActorCollisionEnabled(AActor* InActor, bool bInCollisionOn)
     {
         TInlineComponentArray<UPrimitiveComponent*> primComponents(InActor);
