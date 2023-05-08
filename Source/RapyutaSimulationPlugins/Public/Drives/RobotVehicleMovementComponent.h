@@ -79,7 +79,7 @@ public:
      */
     virtual void SetUpdatedComponent(USceneComponent* InNewUpdatedComponent) override;
 
-    //! AngularVelocity control input for [UpdatedComponent]
+    //! [deg/s] AngularVelocity control input for [UpdatedComponent]
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
     FVector AngularVelocity = FVector::ZeroVector;
 

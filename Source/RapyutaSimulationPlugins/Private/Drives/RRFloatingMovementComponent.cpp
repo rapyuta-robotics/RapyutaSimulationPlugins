@@ -90,7 +90,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
             {
                 UE_LOG_WITH_INFO(LogRapyutaCore,
                                  Warning,
-                                 TEXT("deltaRot.Yaw: %f, AngularVelocity.Yaw: %f, MaxAngularSpeed: %f, inDeltaTime: %f"),
+                                 TEXT("deltaRot.Yaw: %f, AngularVelocity.Yaw: %f[deg], MaxAngularSpeed: %f[deg], inDeltaTime: %f"),
                                  deltaRot.Yaw,
                                  AngularVelocity.Yaw,
                                  MaxAngularSpeed,

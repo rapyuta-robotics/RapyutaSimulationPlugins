@@ -35,14 +35,14 @@ public:
         return b2DMovement;
     }
 
-    //! Current AngularVelocity of #UpdatedComponent
+    //! [deg/s] Current AngularVelocity of #UpdatedComponent
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRotator AngularVelocity = FRotator::ZeroRotator;
 
     //! Maximum angular speed magnitude allowed for #UpdatedComponent
-    //! [rad/s]
+    //! [deg/s]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MaxAngularSpeed = 2.f * M_PI;
+    float MaxAngularSpeed = 360.f;
 
     void SetUseDecelerationForPaths(bool bEnabled)
     {
