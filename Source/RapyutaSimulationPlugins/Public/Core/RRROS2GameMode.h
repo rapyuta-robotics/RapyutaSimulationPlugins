@@ -1,6 +1,6 @@
 /**
  * @file RRROS2GameMode.h
- * @brief ROS 2 GameMode which have Clock publisher and ROS 2 services to interact with ROS2.
+ * @brief ROS 2 GameMode which have Clock publisher and ROS 2 services to interact with ROS 2.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
