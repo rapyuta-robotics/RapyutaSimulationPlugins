@@ -23,7 +23,7 @@ class URRROS2ClockPublisher;
 DECLARE_MULTICAST_DELEGATE(FRROnROS2Initialized);
 
 /**
- * @brief ROS 2 GameMode which have Clock publisher and ROS 2 services to interact with ROS2.
+ * @brief ROS 2 GameMode which have Clock publisher and ROS 2 services to interact with ROS 2.
  * @sa [AGameMode](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
  * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)
  */
