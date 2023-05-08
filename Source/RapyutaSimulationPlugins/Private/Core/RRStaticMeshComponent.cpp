@@ -2,7 +2,9 @@
 #include "Core/RRStaticMeshComponent.h"
 
 // UE
+#if WITH_EDITOR
 #include "ConvexDecompTool.h"
+#endif
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "MeshDescription.h"
@@ -285,7 +287,9 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
         auto* bodySetup = visualMesh->GetBodySetup();
         if (bUseComplexCollision)
         {
+#if WITH_EDITOR
             visualMesh->ComplexCollisionMesh = CreateMesh(InMeshData, false);
+#endif
             bodySetup->CollisionTraceFlag = ECollisionTraceFlag::CTF_UseComplexAsSimple;
         }
         else
@@ -398,7 +402,9 @@ void URRStaticMeshComponent::GenerateCustomSimpleCollision(const FRRMeshData& In
             }
         }
     }
+#if WITH_EDITOR
     DecomposeMeshToHulls(OutBodySetup, verts, indices, 64, 100000);
+#endif
 }
 
 FVector URRStaticMeshComponent::GetSize() const

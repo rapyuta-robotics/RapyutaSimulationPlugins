@@ -43,20 +43,23 @@ public class RapyutaSimulationPlugins : ModuleRules
         CppStandard = CppStandardVersion.Cpp17;
         bEnableExceptions = true;
 
+        // Runtime modules
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "Renderer", "RHI", "PhysicsCore", "XmlParser", "IESFile",
-                                                            "AIModule", "NavigationSystem", "TimeManagement", "Json", "PhysicsUtilities",
+                                                            "AIModule", "NavigationSystem", "TimeManagement", "Json",
                                                             "ChaosVehicles",
                                                             "ProceduralMeshComponent", "MeshDescription", "StaticMeshDescription", "MeshConversion",
                                                             "rclUE"});
 
         PrivateDependencyModuleNames.AddRange(new string[] { });
 
+        // Developer/Editor modules
         if (Target.bBuildEditor)
         {
             PrivateDependencyModuleNames.AddRange(
                 new string[]
                 {
-                    "AssetTools"
+                    "AssetTools",
+                    "PhysicsUtilities"
                 }
             );
         }
