@@ -26,7 +26,7 @@
  * @brief Network Player controller provides functionality for client-server. Major functionalites are
  * - [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html),  #URRROS2ClockPublisher,  #URRROS2SimulationStateClient are created for each client to provide ROS 2 services which are provided by #ARRROS2GameMode in standalone game.
  * - Clock sync between server and the clients with delay compensation
- * - RPC call to sync Robot movements between serer and clients.
+ * - RPC call to sync Robot movements between server and clients.
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRNetworkPlayerController : public APlayerController
