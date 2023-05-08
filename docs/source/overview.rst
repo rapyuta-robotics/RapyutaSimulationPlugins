@@ -139,7 +139,7 @@ The GameMode start all the simulation components, mainly the Simulation State an
      - et the actor state.
    * - /GetEntityState
      - `GetEntityState.srv <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/GetEntityState.srv>`_
-     - return the actor actor state
+     - return the actor state
    * - /SpawnEntity
      - `SpawnEntity.srv <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv>`_
      - spawn actor
