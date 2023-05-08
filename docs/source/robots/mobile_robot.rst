@@ -119,7 +119,7 @@ To create custom mobile robot
     2. Configure meshes and physics constraints in BP.
     3. If you want to dynamically spawn robots and pass random parameters, overwrite `InitPropertiesFromJSON() <../doxygen_generated/html/df/d13/class_a_r_r_base_robot.html#a214c5936450e3b17dffaad40e944bea6>`_ 
 2. Create child class of URobotVehicleMovementComponent if you want custom movement behaviour.
-    1. Configure movecomponent in your Robot Class simillar as BP_TurtlebotWaffle.s
+    1. Configure movecomponent in your Robot Class similar as BP_TurtlebotWaffle.
 3. Create child class of URRROS2Interfaces
     1. Overwrite default parameters such as topic name.
     2. Add necessary ROS Interfaces. Please also refer `rclUE tutorials <https://rclue.readthedocs.io/en/latest/examples.html#topic-service-action-examples>`_.
