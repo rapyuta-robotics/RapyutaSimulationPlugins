@@ -55,7 +55,7 @@ Components
         which publish Sensor topic and is initialized from URRROS2Interface.
 
     - `URobotVehicleMovementComponent <doxygen_generated/html/d7/d01/class_u_robot_vehicle_movement_component.html>`_ 
-        Base class of Robot movement, which is controled by 
+        Base class of Robot movement, which is controlled by 
         `ROS 2 Twist Msg <https://docs.ros2.org/galactic/api/geometry_msgs/msg/Twist.html>`_ 
         via `URRRobotROS2Interface <doxygen_generated/html/d6/d64/class_u_r_r_robot_r_o_s2_interface.html>`_ . 
         
