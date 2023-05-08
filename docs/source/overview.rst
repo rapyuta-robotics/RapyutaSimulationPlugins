@@ -29,7 +29,7 @@ Features
     ARRBaseRobot and URRRobotROS2Interface can be spawnd from `/SpawnEntity <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv>`_ 
     service. You can pass Robot Name, Namespace and etc.
 
-    SpawnEntity.srv also has filed named `json_parameters` to pass random parameters.
+    SpawnEntity.srv also has a field named `json_parameters` to pass random parameters.
     Please add your own custom parser in child class by overwriting 
     `InitPropertiesFromJSON() <doxygen_generated/html/df/d13/class_a_r_r_base_robot.html#a214c5936450e3b17dffaad40e944bea6>`_ 
     which is called in 
