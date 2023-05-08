@@ -93,7 +93,7 @@ The GameMode start all the simulation components, mainly the Simulation State an
 
 - `ASimulationState <doxygen_generated/html/d2/dde/class_a_simulation_state.html>`_ 
     
-    Simulation component, which has umplementation of ROS 2 services and communicate with URRROS2SimulationstateClient.
+    Simulation component, which has implementation of ROS 2 services and communicate with URRROS2SimulationstateClient.
     
     ASimulationState can not control all actors, but it only manages actors in 
     `Entities <doxygen_generated/html/d2/dde/class_a_simulation_state.html#a814e73a90bfbe5e01973e7b04552dfa1>`_  
