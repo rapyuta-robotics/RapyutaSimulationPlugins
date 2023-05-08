@@ -123,7 +123,7 @@ The GameMode start all the simulation components, mainly the Simulation State an
 
     The turtlebot3-UE project is set to update `DefaultEngine.ini`` with environment variable from 
     `DefaultEngineBase.ini <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Config/DefaultEngineBase.ini>`_
-    . The frame rate and max RTF are set from environment varibale `FIXED_FRAME_RATE` and `TARGET_RTF`.
+    . The frame rate and max RTF are set from environment variable `FIXED_FRAME_RATE` and `TARGET_RTF`.
 
 .. list-table:: SimulationState ROS 2 Service
    :header-rows: 1
