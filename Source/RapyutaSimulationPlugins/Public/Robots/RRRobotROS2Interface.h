@@ -23,9 +23,9 @@
 
 class ARRBaseRobot;
 /**
- * @brief  Base Robot ROS2 interface class.
- * This class owns ROS2Node and controls ROS2 interfaces of the #Robot, by
- * - Providing ROS2 subscribers to control robot joints and movement
+ * @brief  Base Robot ROS 2 interface class.
+ * This class owns ROS2Node and controls ROS 2 interfaces of the #Robot, by
+ * - Providing ROS 2 subscribers to control robot joints and movement
  * - Providing Odometry publisher.
  * - Controling #URRROS2BaseSensorComponent in #ARRBaseRobot.
  *
@@ -59,7 +59,7 @@ public:
      */
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-    //! ROS2 node of this interface created by #InitRobotROS2Node
+    //! ROS 2 node of this interface created by #InitRobotROS2Node
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     UROS2NodeComponent* RobotROS2Node = nullptr;
 
@@ -68,7 +68,7 @@ public:
     UROS2Spawnable* ROSSpawnParameters = nullptr;
 
     /**
-     * @brief Initialize robot's ROS2 interface by calling #InitRobotROS2Node, #InitPublishers, #InitSubscriptions and #ARRBaseRobot::InitSensors.
+     * @brief Initialize robot's ROS 2 interface by calling #InitRobotROS2Node, #InitPublishers, #InitSubscriptions and #ARRBaseRobot::InitSensors.
      * This method is mainly used by #ARRBaseoRbotROSController via #ARRBaseRobot::InitROS2Interface.
      * @param InRobot
      */
@@ -83,7 +83,7 @@ public:
     void BPInitialize();
 
     /**
-     * @brief DeInitialize robot's ROS2 interface by stopping publisher
+     * @brief DeInitialize robot's ROS 2 interface by stopping publisher
      *
      * @param InRobot
      */
@@ -97,7 +97,7 @@ public:
     void InitRobotROS2Node(ARRBaseRobot* InRobot);
 
     /**
-     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS2 msg.
+     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS 2 msg.
      * Supports only 1 DOF joints.
      * Effort control is not supported.
      * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
@@ -130,13 +130,13 @@ public:
     bool bWarnAboutMissingLink = true;
 
     /**
-     * @brief Setup ROS Params, overridable by child classes to config custom ROS2 Interface's params
+     * @brief Setup ROS Params, overridable by child classes to config custom ROS 2 Interface's params
      */
     UFUNCTION()
     virtual void SetupROSParams(){};
 
     /**
-     * @brief Setup ROS params called after #SetupROSParams. override by BP child class to config custom ROS2 Interface's params
+     * @brief Setup ROS params called after #SetupROSParams. override by BP child class to config custom ROS 2 Interface's params
     */
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void BPSetupROSParams();
@@ -187,7 +187,7 @@ public:
 
     /**
      * @brief Initialize non sensor basic publishers such as odometry.
-     * Overidden in child robot ROS2 interface classes for specialized publishers.
+     * Overidden in child robot ROS 2 interface classes for specialized publishers.
      */
     UFUNCTION()
     virtual bool InitPublishers();
@@ -201,41 +201,41 @@ public:
 
     /**
      * @brief Initialize subscriptions for cmd_vel & joint_states topics
-     * Overidden in child robot ROS2 interface classes for specialized topic subscriptions.
+     * Overidden in child robot ROS 2 interface classes for specialized topic subscriptions.
      */
     UFUNCTION()
     virtual bool InitSubscriptions();
 
     /**
      * @brief Initialize service clients
-     * Overidden in child robot ROS2 interface classes for specialized services clients.
+     * Overidden in child robot ROS 2 interface classes for specialized services clients.
      */
     UFUNCTION()
     virtual bool InitServiceClients();
 
     /**
      * @brief Initialize service servers
-     * Overidden in child robot ROS2 interface classes for specialized services servers.
+     * Overidden in child robot ROS 2 interface classes for specialized services servers.
      */
     UFUNCTION()
     virtual bool InitServiceServers();
 
     /**
      * @brief Initialize action clients
-     * Overidden in child robot ROS2 interface classes for specialized action clients.
+     * Overidden in child robot ROS 2 interface classes for specialized action clients.
      */
     UFUNCTION()
     virtual bool InitActionClients();
 
     /**
      * @brief Initialize action servers
-     * Overidden in child robot ROS2 interface classes for specialized action servers.
+     * Overidden in child robot ROS 2 interface classes for specialized action servers.
      */
     UFUNCTION()
     virtual bool InitActionServers();
 
     /**
-     * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS2 msg.
+     * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS 2 msg.
      * Typically this receive Twist msg to move robot.
      */
     UFUNCTION()

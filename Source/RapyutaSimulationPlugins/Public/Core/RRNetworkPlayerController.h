@@ -24,9 +24,9 @@
 
 /**
  * @brief Network Player controller provides functionality for client-server. Major functionalites are
- * - [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html),  #URRROS2ClockPublisher,  #URRROS2SimulationStateClient are created for each client to provide ROS2 services which are provided by #ARRROS2GameMode in standalone game.
+ * - [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html),  #URRROS2ClockPublisher,  #URRROS2SimulationStateClient are created for each client to provide ROS 2 services which are provided by #ARRROS2GameMode in standalone game.
  * - Clock sync between server and the clients with delay compensation
- * - RPC call to sync Robot movements between serer and clients.
+ * - RPC call to sync Robot movements between server and clients.
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ARRNetworkPlayerController : public APlayerController
@@ -45,7 +45,7 @@ public:
      */
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-    //! Sim ROS2 node in each client. Created only in the client.
+    //! Sim ROS 2 node in each client. Created only in the client.
     UPROPERTY(Transient)
     UROS2NodeComponent* SimStateClientROS2Node = nullptr;
 
@@ -53,12 +53,12 @@ public:
     UPROPERTY(BlueprintReadOnly)
     URRROS2ClockPublisher* SimStateClientClockPublisher = nullptr;
 
-    // SIM STATE & ROS2 STATE CLIENT
+    // SIM STATE & ROS 2 STATE CLIENT
     //! Pointer to ServerSimState. #ROS2SimStateClient in each client use this to execute sim-wide operation in the server.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     ASimulationState* ServerSimState = nullptr;
 
-    //! ROS2 Sim state client. Provide ROS2 interface of sim-wide operations implemented by #ServerSimState.
+    //! ROS 2 Sim state client. Provide ROS 2 interface of sim-wide operations implemented by #ServerSimState.
     UPROPERTY(Transient, Replicated, ReplicatedUsing = OnRep_SimStateClient)
     URRROS2SimulationStateClient* ROS2SimStateClient = nullptr;
 
@@ -82,7 +82,7 @@ public:
     void CreateROS2SimStateClient(const TSubclassOf<URRROS2SimulationStateClient>& InSimStateClientClass);
 
     /**
-     * @brief Init SimStateClient ROS2 Component, e.g. #SimStateClientROS2Node, #SimStateClientClockPublisher.
+     * @brief Init SimStateClient ROS 2 Component, e.g. #SimStateClientROS2Node, #SimStateClientClockPublisher.
      */
     UFUNCTION(Client, Reliable)
     void ClientInitSimStateClientROS2();

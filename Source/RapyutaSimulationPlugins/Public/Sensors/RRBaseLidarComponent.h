@@ -1,6 +1,6 @@
 /**
  * @file RRBaseLidarComponent.h
- * @brief Base ROS2 LIDAR Component class. Other lidar class should inherit from this class.
+ * @brief Base ROS 2 LIDAR Component class. Other lidar class should inherit from this class.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -25,7 +25,7 @@
 class URRROS2LidarPublisher;
 
 /**
- * @brief Base ROS2 LIDAR Component class. Other lidar class should inherit from this class.
+ * @brief Base ROS 2 LIDAR Component class. Other lidar class should inherit from this class.
  * 
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))

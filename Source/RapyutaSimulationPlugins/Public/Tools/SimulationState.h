@@ -1,6 +1,6 @@
 /**
  * @file SimulationState.h
- * @brief SimulationState class provides ROS2 interface implementation to interact with UE4.
+ * @brief SimulationState class provides ROS 2 interface implementation to interact with UE4.
  * Supported interactions: get/set actor state, spawn/delete actor, attach/detach actor.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -63,11 +63,11 @@ struct RAPYUTASIMULATIONPLUGINS_API FRREntities
     TArray<AActor*> Actors;
 };
 
-// (NOTE) To be renamed ARRROS2SimulationState, due to its inherent attachment to ROS2 Node
+// (NOTE) To be renamed ARRROS2SimulationState, due to its inherent attachment to ROS 2 Node
 // & thus house [Entities] spawned by ROS services, and  with ROS relevance.
 // However, check for its usage in BP and refactor if there is accordingly!
 /**
- * @brief Provide ROS2 interface implementations to interact with UE4.
+ * @brief Provide ROS 2 interface implementations to interact with UE4.
  * Supported interactions: Service [GetEntityState, SetEntityState, Attach, SpawnEntity, DeleteEntity]
  *
  * SimulationState can manipulate only actors in #Entities and #EntitiesWithTag. All actors in the world are added to #Entities and
@@ -188,7 +188,7 @@ public:
 
     /**
      * @brief Add Entity to #Entities and #EntitiesWithTag
-     * Entity become able to be manipulated by Simulationstate's ROS2 servs.
+     * Entity become able to be manipulated by Simulationstate's ROS 2 servs.
      * @param InEntity
      */
     UFUNCTION(BlueprintCallable)
@@ -201,19 +201,19 @@ public:
     void AddTaggedEntity(AActor* InEntity, const FName& InTag);
 
     /**
-     * @brief Add Entity Types to #SpawnableEntities which can be spawn by SpawnEntity ROS2 service.
+     * @brief Add Entity Types to #SpawnableEntities which can be spawn by SpawnEntity ROS 2 service.
      * BP callable thus the param could not be const&
      * @param InSpawnableEntityTypes
      */
     UFUNCTION(BlueprintCallable)
     void AddSpawnableEntityTypes(TMap<FString, TSubclassOf<AActor>> InSpawnableEntityTypes);
 
-    //! All existing entities
+    //! All existing entities which can be manipulated by this class via ROS 2 services.
     //! @todo Converting to TArrays to be able to be replicated
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
 
-    //! Entities with tags which can be manipulated by this class via ROS2 services.
+    //! All existing entities with tags which can be manipulated by this class via ROS 2 services.
     //! @todo Converting to TArrays to be able to be replicated
     UPROPERTY(EditAnywhere)
     TMap<FName, FRREntities> EntitiesWithTag;
@@ -228,7 +228,7 @@ public:
     UFUNCTION(BlueprintCallable)
     void OnRep_EntityList();
 
-    //! Spawnable entity types for SpawnEntity ROS2 service.
+    //! Spawnable entity types for SpawnEntity ROS 2 service.
     //! @todo Converting to TArrays to be able to be replicated
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, TSubclassOf<AActor>> SpawnableEntityTypes;

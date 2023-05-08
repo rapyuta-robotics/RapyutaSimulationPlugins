@@ -300,7 +300,7 @@ void URRROS2SimulationStateClient::ServerSpawnEntity_Implementation(const FROSSp
     ServerSimState->ServerSpawnEntity(InRequest, NetworkPlayerId);
 }
 
-// Currently this code doesnt seem to trigger the ROS2 Service Response... keeping this in since if
+// Currently this code doesnt seem to trigger the ROS 2 Service Response... keeping this in since if
 // that can be figured out, we can have better verification of spawned actors
 // Code to do checking of if Entity is spawned using 2 timers, one for timeout and one for triggering this every x s
 #if 0

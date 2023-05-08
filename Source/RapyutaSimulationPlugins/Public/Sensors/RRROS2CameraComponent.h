@@ -1,6 +1,6 @@
 /**
  * @file RRROS2CameraComponent.h
- * @brief ROS2 Camera component
+ * @brief ROS 2 Camera component
  * @todo Support non RGB data support.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -34,7 +34,7 @@ struct FRenderRequest
 };
 
 /**
- * @brief ROS2 Camera component. Uses USceneCaptureComponent2D.
+ * @brief ROS 2 Camera component. Uses USceneCaptureComponent2D.
  *
  * @sa [USceneCaptureComponent2D](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Components/USceneCaptureComponent2D/)
  * @sa [UE4 ShaderInPlugin](https://docs.unrealengine.com/5.1/en-US/ProgrammingAndScripting/Rendering/ShaderInPlugin/Overview/)
@@ -106,7 +106,7 @@ public:
 
     // ROS
     /**
-     * @brief Update ROS2 Msg structure from #RenderRequestQueue
+     * @brief Update ROS 2 Msg structure from #RenderRequestQueue
      *
      * @return FROSImg
      */
