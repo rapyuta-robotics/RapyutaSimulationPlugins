@@ -36,7 +36,7 @@ Features
     the `PreInitializeComponents() <https://docs.unrealengine.com/5.1/en-US/unreal-engine-actor-lifecycle/>`_
     
 - Distributed simulation
-    ARRBaseRobot has a seting to be used for client-server. Please check :doc:`distributed_simulation` for detailed information.
+    ARRBaseRobot has a setting to be used for client-server. Please check :doc:`distributed_simulation` for detailed information.
 
 
 
