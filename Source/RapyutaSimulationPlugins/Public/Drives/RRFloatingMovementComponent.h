@@ -40,9 +40,9 @@ public:
     FRotator AngularVelocity = FRotator::ZeroRotator;
 
     //! Maximum angular speed magnitude allowed for #UpdatedComponent
-    //! [degree/s]
+    //! [rad/s]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MaxAngularSpeed = 360.f;
+    float MaxAngularSpeed = 2.f * M_PI;
 
     void SetUseDecelerationForPaths(bool bEnabled)
     {
