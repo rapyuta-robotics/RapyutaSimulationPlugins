@@ -57,7 +57,7 @@ To create custom mobile robot
     1. Overwrite default parameters.
         1. Set `bMobileRobot <../doxygen_generated/html/df/d13/class_a_r_r_base_robot.html#a315bb15cfa368ec652622e27ae150c6a>`_ false.
     2. Configure meshes and joints in BP
-    3. Configure construction script to set joint and link relations simillar as BP_KinematicSimpleArm.
+    3. Configure construction script to set joint and link relations similar as BP_KinematicSimpleArm.
     4. If you want to dynamically spawn robots and pass random parameters, overwrite `InitPropertiesFromJSON() <../doxygen_generated/html/df/d13/class_a_r_r_base_robot.html#a214c5936450e3b17dffaad40e944bea6>`_ 
 3. Create child class of URRROS2Interfaces
     1. Overwrite default parameters such as topic name.
