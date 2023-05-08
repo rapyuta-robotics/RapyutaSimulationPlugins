@@ -102,7 +102,7 @@ The GameMode start all the simulation components, mainly the Simulation State an
     if you want to control actors that are not spawned from ASimulationState at runtime.
   
     ASimulationState can not spawn all UE actor classes, but only  
-    `SpawnableEntitiTypes <doxygen_generated/html/d2/dde/class_a_simulation_state.html#a236405852be150d955a4736a323cb514>`_ 
+    `SpawnableEntityTypes <doxygen_generated/html/d2/dde/class_a_simulation_state.html#a236405852be150d955a4736a323cb514>`_ 
     If you want to control actors that are not spawned from ASimulationState at runtime, 
     you need to manually call `AddSpawnableEntityTypes() <doxygen_generated/html/d2/dde/class_a_simulation_state.html#a97b63ff1f474c8323b489abc4cfd4504>`_ 
     You can also change spawnable entities in the level Blueprint, by overwriting the game mode, and so on.
