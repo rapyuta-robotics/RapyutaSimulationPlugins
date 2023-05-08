@@ -80,7 +80,7 @@ Both are child class of ARRBaseRobot and all additional components, joints, etc 
     This is child class of ARRBaseRobot and is added 
     `SkeletalMesh <https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USkeletalMeshComponent/>`_ 
     and `URR2DLidarComponent  <../doxygen_generated/html/d4/d87/class_u_r_r2_d_lidar_component.html>`_
-    simillar as ATurtlebotBurgerVehicle in C++.
+    similar as ATurtlebotBurgerVehicle in C++.
 
     .. image:: ../images/turtlebot3_waffle_vehicle.png
 
