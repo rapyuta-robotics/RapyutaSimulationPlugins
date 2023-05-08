@@ -6,7 +6,7 @@ Welcome to RapyutaSimulationPlugins's documentation!
 `Unreal Engine <https://www.unrealengine.com/en-US/?lang=en-US>`_.
 
 RapyutaSimulationPlugins provide UE components
-which provide feature to control Actor from ROS2, output simulated sensor to ROS 2 and etc.
+which provide feature to control Actor from ROS 2, output simulated sensor to ROS 2 and etc.
 
 This plugins support to configure distributed simulation by leveraging
 the `UE's multiplayer feature <https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/>`_.
