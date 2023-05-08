@@ -119,7 +119,7 @@ The GameMode start all the simulation components, mainly the Simulation State an
     In the example `turtlebot3-UE <https://github.com/rapyuta-robotics/turtlebot3-UE>`_ project,
     It is set to use
     `URRLimitRTFFixedSizeCustomTimeStep <doxygen_generated/html/d0/d4d/class_u_r_r_limit_r_t_f_fixed_size_custom_time_step.html>`_
-    which enabes running simulation with fixed timestep while limiting the RTF(Real Time Factor).
+    which enables running simulation with fixed timestep while limiting the RTF(Real Time Factor).
 
     The turtlebot3-UE project is set to update `DefaultEngine.ini`` with environment variable from 
     `DefaultEngineBase.ini <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Config/DefaultEngineBase.ini>`_
