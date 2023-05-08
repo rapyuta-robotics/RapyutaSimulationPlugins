@@ -98,7 +98,7 @@ Both are child class of ARRBaseRobot and all additional components, joints, etc 
 
     To configure MoveComponent in BP, 
     `VehicleMoveComponentClass <../doxygen_generated/html/df/d13/class_a_r_r_base_robot.html#aa69278b89215d02dd07da74b6feb83f3>`_
-    is set as None, then, VehiclMoveComponent is not configure in C++ function.
+    is set as None, then, VehicleMoveComponent is not configured in C++ function.
     Instead of configuration in C++, MoveComponent are set in 
     `Construction script in BP <https://docs.unrealengine.com/5.1/en-US/construction-script-in-unreal-engine/>`_
 
