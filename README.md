@@ -8,7 +8,7 @@ https://RapyutaSimulationPlugins.readthedocs.io/en/devel/
 
 ## Depedency repository
 
-- [rclUE](https://github.com/rapyuta-robotics/rclUE) : Core functionalities to integrate ROS2 and UE4.
+- [rclUE](https://github.com/rapyuta-robotics/rclUE) : Core functionalities to integrate ROS 2 and UE4.
 
 ## Example repository
 

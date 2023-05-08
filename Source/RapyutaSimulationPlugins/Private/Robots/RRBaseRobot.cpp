@@ -21,6 +21,9 @@
 #include "Sensors/RRROS2BaseSensorComponent.h"
 #include "Tools/SimulationState.h"
 
+// Others
+#include "Json.h"
+
 ARRBaseRobot::ARRBaseRobot()
 {
     SetupDefault();
@@ -134,6 +137,7 @@ void ARRBaseRobot::PreInitializeComponents()
 {
     if (ROSSpawnParameters)
     {
+        InitPropertiesFromJSON();
         RobotModelName = ROSSpawnParameters->ActorModelName;
         RobotUniqueName = ROSSpawnParameters->ActorName;
     }
@@ -162,7 +166,10 @@ void ARRBaseRobot::PreInitializeComponents()
 void ARRBaseRobot::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-    InitMoveComponent();
+    if (bMobileRobot)
+    {
+        InitMoveComponent();
+    }
 }
 
 void ARRBaseRobot::OnRep_ROS2Interface()
@@ -171,7 +178,7 @@ void ARRBaseRobot::OnRep_ROS2Interface()
     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT(""));
 #endif
     // Since Replication order of ROS2Interface, bStartStopROS2Interface, ROSSpawnParameters can be shuffled,
-    // Trigger init ROS2 interface in each OnRep function.
+    // Trigger init ROS 2 interface in each OnRep function.
     // need to initialize here as well.
     // https://forums.unrealengine.com/t/replication-ordering-guarantees/264974
     if (bStartStopROS2Interface)
@@ -219,7 +226,7 @@ void ARRBaseRobot::CreateROS2Interface()
     // + Controller, upon posses/unpossess, acts as the pivot to start/stop robot's ROS2Interface
     // + ROS2Interface, due to requirements for also instantiatable in ARRBaseRobot's child BPs, may not
     // have been instantiated yet
-    // + Child class' ros2-related accessories (ROS2 node, sensors, publishers/subscribers)
+    // + Child class' ros2-related accessories (ROS 2 node, sensors, publishers/subscribers)
     //  may have not been fully accessible until then.
 }
 void ARRBaseRobot::InitROS2Interface()
@@ -483,4 +490,63 @@ void ARRBaseRobot::Tick(float DeltaSeconds)
             staticMeshComp->WakeAllRigidBodies();
         }
     }
+}
+
+void ARRBaseRobot::InitPropertiesFromJSON()
+{
+    // Example Implementation of Json parser
+    // Please overwrite this function to parse your custom parameters
+
+    // if (nullptr == ROSSpawnParameters)
+    // {
+    //     return;
+    // }
+
+    // TSharedRef<TJsonReader<TCHAR>> jsonReader = TJsonReaderFactory<TCHAR>::Create(ROSSpawnParameters->ActorJsonConfigs);
+    // TSharedPtr<FJsonObject> jsonObj = MakeShareable(new FJsonObject());
+    // if (!FJsonSerializer::Deserialize(jsonReader, jsonObj) && jsonObj.IsValid())
+    // {
+    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("Failed to deserialize json to object"));
+    //     return;
+    // }
+
+    // // Parse single value
+    // bool bParam = false;
+    // if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("bool_value"), bParam))
+    // {
+    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("bool value: %d"), bParam);
+    // }
+    // else
+    // {
+    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s [bool_value] not found in json config"));
+    // }
+
+    // // Parse array
+    // const TArray<TSharedPtr<FJsonValue>>* paramArray;
+    // if (!jsonObj->TryGetArrayField(TEXT("array_value"), paramArray))
+    // {
+    //     return;
+    // }
+
+    // for (const auto& param : *paramArray)
+    // {
+    //     const TSharedPtr<FJsonObject>* jObj;
+    //     if (!param->TryGetObject(jObj))
+    //     {
+    //         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s Not an object !!"));
+    //         continue;
+    //     }
+
+    //     // Parse value in array
+    //     float valueInParam = 0.0;
+    //     if( URRGeneralUtils::GetJsonField(*jObj, TEXT("value_in_array"), valueInParam, 0.0f) )
+    //     {
+    //         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("value_in_array : %f"), valueInParam);
+    //     }
+    //     else
+    //     {
+    //         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s [value_in_array] not found in json config"));
+    //     }
+
+    // }
 }

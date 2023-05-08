@@ -1,6 +1,6 @@
 /**
  * @file RRProceduralMeshComponent.h
- * @brief Procedural mesh components. this class is used to spawn robot and object from ROS2 service.
+ * @brief Procedural mesh components. this class is used to spawn robot and object from ROS 2 service.
  * @todo add documentation
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -19,7 +19,7 @@
 #include "RRProceduralMeshComponent.generated.h"
 
 /**
- * @brief Procedural mesh components. this class is used to spawn robot and object from ROS2 service.
+ * @brief Procedural mesh components. this class is used to spawn robot and object from ROS 2 service.
  * @sa [UProceduralMeshComponent](https://docs.unrealengine.com/5.1/en-US/API/Plugins/ProceduralMeshComponent/UProceduralMeshComponent/)
  */
 UCLASS()

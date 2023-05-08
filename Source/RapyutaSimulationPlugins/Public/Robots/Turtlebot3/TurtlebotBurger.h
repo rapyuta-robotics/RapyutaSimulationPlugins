@@ -1,6 +1,6 @@
 /**
  * @file TurtlebotBurger.h
- * @brief Example of child class of #ARobotVehicle
+ * @brief Example of child class of #ARRBaseRobot
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -8,10 +8,10 @@
 
 // UE
 #include "CoreMinimal.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 // RapyutaSimulationPlugins
-#include "PhysicsEngine/PhysicsConstraintComponent.h"
-#include "Robots/RobotVehicle.h"
+#include "Robots/RRBaseRobot.h"
 #include "Sensors/RR2DLidarComponent.h"
 
 #include "TurtlebotBurger.generated.h"
@@ -19,12 +19,12 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogTurtlebotBurger, Log, All);
 
 /**
- * @brief Example of child class of #ARobotVehicle
+ * @brief Example of child class of #ARRBaseRobot
  * Uses #UDifferentialDriveComponent and has #URR2DLidarComponent.
  * This class is designed to be inheritted from Blueprint class to be assigned UStaticMeshComponent.
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARobotVehicle
+class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ARRBaseRobot
 {
     GENERATED_BODY()
 
