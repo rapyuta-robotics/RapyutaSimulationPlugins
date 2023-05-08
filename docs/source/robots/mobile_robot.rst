@@ -91,7 +91,7 @@ Both are child class of ARRBaseRobot and all additional components, joints, etc 
     `UStaticMeshComponent <https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/UStaticMeshComponent/>`_, 
     `UPhysicsConstraintComponent <https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/>`_, 
     `UDifferentialDriveComponent <../doxygen_generated/html/db/df5/class_u_differential_drive_component.html>`_, 
-    and `URR2DLidarComponent  <../doxygen_generated/html/d4/d87/class_u_r_r2_d_lidar_component.html>`_ simillar as ATurtlebotBurger in C++.
+    and `URR2DLidarComponent  <../doxygen_generated/html/d4/d87/class_u_r_r2_d_lidar_component.html>`_ similar as ATurtlebotBurger in C++.
 
     .. image:: ../images/turtlebot3_waffle.png
 
