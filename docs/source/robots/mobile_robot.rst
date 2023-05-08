@@ -35,7 +35,7 @@ Turtlebot3 Burger
 Turtlebot3 Burger Actors are examples of robots implemented in C++. 
 All components, joints, etc are defined in C++.
 
-Even if it is implemented in C++, we defined Blueprint child class to change parametrs and assign meshes.
+Even if it is implemented in C++, we defined Blueprint child class to change parameters and assign meshes.
 
 \* Since all components are defined in C++, it is marked `Edit in C++` in left components bar.
 \* Hardcode mesh path in C++ cause error when the project is packaged.
