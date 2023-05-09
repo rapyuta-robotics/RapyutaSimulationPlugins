@@ -42,7 +42,7 @@ void ARRBaseRobot::SetupDefault()
     AIControllerClass = ARRBaseRobotROSController::StaticClass();
     AutoPossessPlayer = EAutoReceiveInput::Disabled;
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-    bTooltipEnabled = false;
+    bUIWidgetEnabled = false;
 
     // NOTE: Any custom object class (eg ROS2InterfaceClass, VehicleMoveComponentClass) that is required to be configurable by this class' child BP ones
     // & IF its object needs to be created before BeginPlay(),
@@ -466,51 +466,51 @@ void ARRBaseRobot::SetLocalAngularVel(const FVector& InAngularVel)
 #endif
 }
 
-void ARRBaseRobot::InitTooltip()
+void ARRBaseRobot::InitUIWidget()
 {
-    TooltipComp = URRUObjectUtils::CreateAndAttachChildComponent<UWidgetComponent>(
-        this, *FString::Printf(TEXT("%sTooltip"), *GetName()), TooltipOffset);
+    UIWidgetComp = URRUObjectUtils::CreateAndAttachChildComponent<UWidgetComponent>(
+        this, *FString::Printf(TEXT("%sUIWidget"), *GetName()), UIWidgetOffset);
 
     // 1- Set [WidgetClass] as [URRUserWidget]
-    TooltipComp->SetWidgetClass(URRUserWidget::StaticClass());
-    // 1.1 - Init [TooltipComp]
-    TooltipComp->InitWidget();
-    TooltipComp->SetDrawSize(FIntPoint(500.f, 50.f));
-    TooltipComp->SetPivot(FVector2D::ZeroVector);
-    TooltipComp->SetCanEverAffectNavigation(false);
-    TooltipComp->SetTwoSided(true);
-    // NOTE: Using Screen widget space, [TooltipComp] will be always facing user view, thus no need to manually orientate it per Tick
-    TooltipComp->SetWidgetSpace(EWidgetSpace::Screen);
+    UIWidgetComp->SetWidgetClass(URRUserWidget::StaticClass());
+    // 1.1 - Init [UIWidgetComp]
+    UIWidgetComp->InitWidget();
+    UIWidgetComp->SetDrawSize(FIntPoint(500.f, 50.f));
+    UIWidgetComp->SetPivot(FVector2D::ZeroVector);
+    UIWidgetComp->SetCanEverAffectNavigation(false);
+    UIWidgetComp->SetTwoSided(true);
+    // NOTE: Using Screen widget space, [UIWidgetComp] will be always facing user view, thus no need to manually orientate it per Tick
+    UIWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
 
     // 2- Add to viewport with robot's name as initial text
-    auto* tooltipWidget = Cast<URRUserWidget>(TooltipComp->GetWidget());
-    tooltipWidget->AddToViewport();
-    tooltipWidget->OwnerWidgetComponent = TooltipComp;
-    tooltipWidget->SetLabelText(GetName());
+    auto* uiWidget = Cast<URRUserWidget>(UIWidgetComp->GetWidget());
+    uiWidget->AddToViewport();
+    uiWidget->OwnerWidgetComponent = UIWidgetComp;
+    uiWidget->SetLabelText(GetName());
 }
 
 void ARRBaseRobot::SetTooltipText(const FString& InTooltip)
 {
-    if (TooltipComp)
+    if (UIWidgetComp)
     {
-        Cast<URRUserWidget>(TooltipComp->GetWidget())->SetLabelText(InTooltip);
+        Cast<URRUserWidget>(UIWidgetComp->GetWidget())->SetLabelText(InTooltip);
     }
 }
 
-void ARRBaseRobot::SetTooltipVisible(bool bInVisible)
+void ARRBaseRobot::SetUIWidgetVisible(bool bInVisible)
 {
-    if (TooltipComp)
+    if (UIWidgetComp)
     {
-        Cast<URRUserWidget>(TooltipComp->GetWidget())->SetActivated(bInVisible);
+        Cast<URRUserWidget>(UIWidgetComp->GetWidget())->SetActivated(bInVisible);
     }
 }
 
 void ARRBaseRobot::BeginPlay()
 {
     Super::BeginPlay();
-    if (bTooltipEnabled)
+    if (bUIWidgetEnabled)
     {
-        InitTooltip();
+        InitUIWidget();
     }
 }
 

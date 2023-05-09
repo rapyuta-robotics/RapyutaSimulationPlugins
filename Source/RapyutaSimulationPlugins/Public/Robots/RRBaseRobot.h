@@ -450,17 +450,17 @@ public:
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void BPConfigureMovementComponent();
 
-    // TOOLTIP --
+    // UI WIDGET --
     UPROPERTY()
-    uint8 bTooltipEnabled : 1;
-    //! Tooltip widget component
+    uint8 bUIWidgetEnabled : 1;
+    //! UI widget component
     UPROPERTY()
-    TObjectPtr<UWidgetComponent> TooltipComp = nullptr;
-    //! Relative pose of the tooltip from the owner robot
+    TObjectPtr<UWidgetComponent> UIWidgetComp = nullptr;
+    //! Relative pose of the UI widget from the owner robot
     UPROPERTY()
-    FTransform TooltipOffset = FTransform(FVector(0.f, 0.f, 100.f));
+    FTransform UIWidgetOffset = FTransform(FVector(0.f, 0.f, 100.f));
     /**
-     * @brief Set text for #Tooltip
+     * @brief Set robot's tooltip text through #UIWidgetComp's label
      * @param InTooltip
      */
     void SetTooltipText(const FString& InTooltip);
@@ -469,7 +469,7 @@ public:
      * @brief Set visibility of #Tooltip
      * @param bInVisible
      */
-    void SetTooltipVisible(bool bInVisible);
+    void SetUIWidgetVisible(bool bInVisible);
 
 protected:
     /**
@@ -501,7 +501,7 @@ protected:
     virtual void ConfigureMovementComponent();
 
     /**
-     * @brief Create & init #TooltipComp
+     * @brief Create & init #UIWidgetComp
      */
-    virtual void InitTooltip();
+    virtual void InitUIWidget();
 };
