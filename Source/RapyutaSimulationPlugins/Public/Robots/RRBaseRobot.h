@@ -456,6 +456,10 @@ public:
     //! UI widget component
     UPROPERTY()
     TObjectPtr<UWidgetComponent> UIWidgetComp = nullptr;
+    //! #URRUserWidget's widget
+    UPROPERTY()
+    TObjectPtr<URRUserWidget> UIUserWidget = nullptr;
+
     //! Relative pose of the UI widget from the owner robot
     UPROPERTY()
     FTransform UIWidgetOffset = FTransform(FVector(0.f, 0.f, 100.f));
@@ -464,6 +468,10 @@ public:
      * @param InTooltip
      */
     void SetTooltipText(const FString& InTooltip);
+    /**
+     * @brief Toggle robot's tooltip visibility
+     */
+    void SetTooltipVisible(bool bInVisible);
 
     /**
      * @brief Set visibility of #Tooltip

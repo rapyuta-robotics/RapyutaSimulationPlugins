@@ -473,6 +473,7 @@ void ARRBaseRobot::InitUIWidget()
 
     // 1- Set [WidgetClass] as [URRUserWidget]
     UIWidgetComp->SetWidgetClass(URRUserWidget::StaticClass());
+
     // 1.1 - Init [UIWidgetComp]
     UIWidgetComp->InitWidget();
     UIWidgetComp->SetDrawSize(FIntPoint(500.f, 50.f));
@@ -482,26 +483,36 @@ void ARRBaseRobot::InitUIWidget()
     // NOTE: Using Screen widget space, [UIWidgetComp] will be always facing user view, thus no need to manually orientate it per Tick
     UIWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
 
-    // 2- Add to viewport with robot's name as initial text
-    auto* uiWidget = Cast<URRUserWidget>(UIWidgetComp->GetWidget());
-    uiWidget->AddToViewport();
-    uiWidget->OwnerWidgetComponent = UIWidgetComp;
-    uiWidget->SetLabelText(GetName());
+    // 1.2 - Save [UIWidgetComp]'s widget into [UIUserWidget]
+    UIUserWidget = Cast<URRUserWidget>(UIWidgetComp->GetWidget());
+    UIUserWidget->OwnerWidgetComponent = UIWidgetComp;
+
+    // 2- Add [UIUserWidget] to viewport with robot's name as initial text
+    UIUserWidget->AddToViewport();
+    UIUserWidget->SetLabelText(GetName());
 }
 
 void ARRBaseRobot::SetTooltipText(const FString& InTooltip)
 {
-    if (UIWidgetComp)
+    if (UIUserWidget)
     {
-        Cast<URRUserWidget>(UIWidgetComp->GetWidget())->SetLabelText(InTooltip);
+        UIUserWidget->SetLabelText(InTooltip);
+    }
+}
+
+void ARRBaseRobot::SetTooltipVisible(bool bInVisible)
+{
+    if (UIUserWidget && UIUserWidget->TextBlock)
+    {
+        UIUserWidget->TextBlock->SetVisibility(bInVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     }
 }
 
 void ARRBaseRobot::SetUIWidgetVisible(bool bInVisible)
 {
-    if (UIWidgetComp)
+    if (UIUserWidget)
     {
-        Cast<URRUserWidget>(UIWidgetComp->GetWidget())->SetActivated(bInVisible);
+        UIUserWidget->SetActivated(bInVisible);
     }
 }
 
