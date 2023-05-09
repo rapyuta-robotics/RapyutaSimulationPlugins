@@ -463,6 +463,12 @@ public:
     //! Relative pose of the UI widget from the owner robot
     UPROPERTY()
     FTransform UIWidgetOffset = FTransform(FVector(0.f, 0.f, 100.f));
+
+    /**
+     * @brief Check whether #UIUserWidget is valid
+     */
+    bool CheckUIUserWidget() const;
+
     /**
      * @brief Set robot's tooltip text through #UIWidgetComp's label
      * @param InTooltip
@@ -470,14 +476,15 @@ public:
     void SetTooltipText(const FString& InTooltip);
     /**
      * @brief Toggle robot's tooltip visibility
+     * @param bInTooltipVisible
      */
-    void SetTooltipVisible(bool bInVisible);
+    void SetTooltipVisible(bool bInTooltipVisible);
 
     /**
-     * @brief Set visibility of #Tooltip
-     * @param bInVisible
+     * @brief Set visibility of #UIUserWidget
+     * @param bInWidgetVisible
      */
-    void SetUIWidgetVisible(bool bInVisible);
+    void SetUIWidgetVisible(bool bInWidgetVisible);
 
 protected:
     /**

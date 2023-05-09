@@ -492,27 +492,47 @@ void ARRBaseRobot::InitUIWidget()
     UIUserWidget->SetLabelText(GetName());
 }
 
-void ARRBaseRobot::SetTooltipText(const FString& InTooltip)
+bool ARRBaseRobot::CheckUIUserWidget() const
 {
     if (UIUserWidget)
+    {
+        return true;
+    }
+    else
+    {
+        if (bUIWidgetEnabled)
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Has [bUIWidgetEnabled] ON but NULL UIUserWidget"));
+        }
+        else
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Requires [bUIWidgetEnabled] to use UIUserWidget"));
+        }
+        return false;
+    }
+}
+
+void ARRBaseRobot::SetTooltipText(const FString& InTooltip)
+{
+    if (CheckUIUserWidget())
     {
         UIUserWidget->SetLabelText(InTooltip);
     }
 }
 
-void ARRBaseRobot::SetTooltipVisible(bool bInVisible)
+void ARRBaseRobot::SetTooltipVisible(bool bInTooltipVisible)
 {
-    if (UIUserWidget && UIUserWidget->TextBlock)
+    if (CheckUIUserWidget() && UIUserWidget->TextBlock)
     {
-        UIUserWidget->TextBlock->SetVisibility(bInVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+        UIUserWidget->TextBlock->SetVisibility(bInTooltipVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     }
 }
 
-void ARRBaseRobot::SetUIWidgetVisible(bool bInVisible)
+void ARRBaseRobot::SetUIWidgetVisible(bool bInWidgetVisible)
 {
-    if (UIUserWidget)
+    if (CheckUIUserWidget())
     {
-        UIUserWidget->SetActivated(bInVisible);
+        UIUserWidget->SetVisibility(bInWidgetVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     }
 }
 
