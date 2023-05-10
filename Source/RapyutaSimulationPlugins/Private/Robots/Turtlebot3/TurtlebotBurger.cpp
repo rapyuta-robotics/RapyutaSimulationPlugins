@@ -2,14 +2,6 @@
 
 #include "Robots/Turtlebot3/TurtlebotBurger.h"
 
-// UE
-#include "Misc/Paths.h"
-
-// RapyutaSimulationPlugins
-#include "Drives/DifferentialDriveComponent.h"
-#include "Robots/Turtlebot3/RRTurtlebotROS2Interface.h"
-#include "Sensors/RR2DLidarComponent.h"
-
 DEFINE_LOG_CATEGORY(LogTurtlebotBurger);
 
 ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

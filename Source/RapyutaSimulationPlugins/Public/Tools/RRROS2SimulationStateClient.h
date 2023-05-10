@@ -1,6 +1,6 @@
 /**
  * @file RRROS2SimulationStateClient.h
- * @brief RRROS2SimulationStateClient class provides ROS2 service interfaces to interact with UE4.
+ * @brief RRROS2SimulationStateClient class provides ROS 2 service interfaces to interact with UE4.
  * Supported interactions: get/set actor state, spawn/delete actor, attach/detach actor.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -30,7 +30,7 @@ class UROS2GenericSrv;
 class ASimulationState;
 
 /**
- * @brief Provide ROS2 interfaces to interact with UE4. This provide only ROS2 interfaces and implementation is in #ASimulationState
+ * @brief Provide ROS 2 interfaces to interact with UE4. This provide only ROS 2 interfaces and implementation is in #ASimulationState
  * Supported interactions: GetEntityState, SetEntityState, Attach, SpawnEntity, DeleteEntity
  *
  */
@@ -40,11 +40,11 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2SimulationStateClient : public UActorC
     GENERATED_BODY()
 
 public:
-    //! ROS2 node of each client's own in the network
+    //! ROS 2 node of each client's own in the network
     UPROPERTY(BlueprintReadOnly, Replicated)
     UROS2NodeComponent* ROS2Node = nullptr;
 
-    //! Handle to server's main sim state which has ROS2 interface implementation
+    //! Handle to server's main sim state which has ROS 2 interface implementation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     ASimulationState* ServerSimState = nullptr;
 
@@ -71,7 +71,7 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     /**
-     * @brief Callback function of GetEntityState ROS2 service.
+     * @brief Callback function of GetEntityState ROS 2 service.
      * Return the pose from reference frame.
      * @param Service
      * @sa [ue_mgs/GetEntityState.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/GetEntityState.srv)
@@ -81,7 +81,7 @@ public:
     void GetEntityStateSrv(UROS2GenericSrv* InService);
 
     /**
-     * @brief Callback function of SetEntityState ROS2 service.
+     * @brief Callback function of SetEntityState ROS 2 service.
      * @param Service
      * @sa [ue_mgs/SetEntityState.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SetEntityState.srv)
      * @todo Twist is zero. Should able to set value for physics actors.
@@ -97,7 +97,7 @@ public:
     void ServerSetEntityState(const FROSSetEntityStateReq& InRequest);
 
     /**
-     * @brief Callback function of Attach ROS2 service.
+     * @brief Callback function of Attach ROS 2 service.
      * Attach actors if those are not attached and detach actors if those are attached.
      * @param Service
      * @sa [ue_mgs/Attach.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/Attach.srv)
@@ -113,7 +113,7 @@ public:
     void ServerAttach(const FROSAttachReq& InRequest);
 
     /**
-     * @brief Callback function of SpawnEntity ROS2 service.
+     * @brief Callback function of SpawnEntity ROS 2 service.
      * @param Service
      * @sa [ue_mgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
      */
@@ -121,7 +121,7 @@ public:
     virtual void SpawnEntitySrv(UROS2GenericSrv* InService);
 
     /**
-     * @brief Callback function of SpawnEntities ROS2 service.
+     * @brief Callback function of SpawnEntities ROS 2 service.
      * @param Service
      * @sa [ue_mgs/SpawnEntities.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntities.srv)
      */
@@ -136,7 +136,7 @@ public:
     void ServerSpawnEntity(const FROSSpawnEntityReq& InRequest);
 
     /**
-     * @brief Callback function of DeleteEntity ROS2 service.
+     * @brief Callback function of DeleteEntity ROS 2 service.
      * @param Service
      * @sa [ue_mgs/DeleteEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/DeleteEntity.srv)
      */

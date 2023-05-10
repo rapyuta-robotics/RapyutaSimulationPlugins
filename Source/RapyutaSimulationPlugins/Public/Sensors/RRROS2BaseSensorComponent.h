@@ -1,6 +1,6 @@
 /**
  * @file RRROS2BaseSensorComponent.h
- * @brief Base ROS2 Sensor Component class. Other sensors class should inherit from this class.
+ * @brief Base ROS 2 Sensor Component class. Other sensors class should inherit from this class.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -23,7 +23,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 #define TRACE_ASYNC 1
 
 /**
- * @brief Base ROS2 Sensor Component class. Other sensors class should inherit from this class.
+ * @brief Base ROS 2 Sensor Component class. Other sensors class should inherit from this class.
  * Provide features to initialize with [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html)
  * and initialize #URRROS2BaseSensorPublisher.
  */
@@ -49,7 +49,7 @@ public:
      * @param InQoS Topic QoS
      *
      * @sa [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html)
-     * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
+     * @sa [ROS 2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
     UFUNCTION(BlueprintCallable)
     virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
@@ -80,7 +80,7 @@ public:
      * @param InROS2Node ROS2Node which this publisher belongs to
      * @param InQoS
 
-     * @sa [ROS2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
+     * @sa [ROS 2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
      */
     UFUNCTION(BlueprintCallable)
     virtual void InitializePublisher(UROS2NodeComponent* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData);
@@ -111,7 +111,7 @@ public:
     }
 
     /**
-     * @brief Set sensor data to ROS2 msg. This method should be overwritten by child class.
+     * @brief Set sensor data to ROS 2 msg. This method should be overwritten by child class.
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetROS2Msg(UROS2GenericMsg* InMessage)

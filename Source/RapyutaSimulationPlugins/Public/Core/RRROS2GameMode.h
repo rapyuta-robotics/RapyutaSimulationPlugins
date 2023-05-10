@@ -1,6 +1,6 @@
 /**
  * @file RRROS2GameMode.h
- * @brief ROS2 GameMode which have Clock publisher and ROS2 services to interact with ROS2.
+ * @brief ROS 2 GameMode which have Clock publisher and ROS 2 services to interact with ROS 2.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -23,7 +23,7 @@ class URRROS2ClockPublisher;
 DECLARE_MULTICAST_DELEGATE(FRROnROS2Initialized);
 
 /**
- * @brief ROS2 GameMode which have Clock publisher and ROS2 services to interact with ROS2.
+ * @brief ROS 2 GameMode which have Clock publisher and ROS 2 services to interact with ROS 2.
  * @sa [AGameMode](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
  * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)
  */
@@ -35,11 +35,11 @@ class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 public:
     ARRROS2GameMode();
 
-    //! Sim's Main ROS2 node. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
+    //! Sim's Main ROS 2 node. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadOnly)
     UROS2NodeComponent* MainROS2Node = nullptr;
 
-    //! Sim's Main ROS2 node name. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
+    //! Sim's Main ROS 2 node name. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadWrite)
     FString MainROS2NodeName = TEXT("UEROS2Node");
 
@@ -47,11 +47,11 @@ public:
     UPROPERTY(BlueprintReadOnly)
     URRROS2ClockPublisher* ClockPublisher = nullptr;
 
-    //! Provide ROS2 implementation of sim-wide operations like get/set actor state, spawn/delete actor, attach/detach actor.
+    //! Provide ROS 2 implementation of sim-wide operations like get/set actor state, spawn/delete actor, attach/detach actor.
     UPROPERTY(BlueprintReadOnly)
     ASimulationState* MainSimState = nullptr;
 
-    //! Provide ROS2 interface of sim-wide operations implemented by #MainSimState.
+    //! Provide ROS 2 interface of sim-wide operations implemented by #MainSimState.
     //! @note #ASimulationState and #URRROS2SimulationStateClient are separated to be used in client-server.
     UPROPERTY(BlueprintReadOnly)
     URRROS2SimulationStateClient* MainROS2SimStateClient = nullptr;
@@ -60,7 +60,7 @@ public:
     UPROPERTY(BlueprintReadOnly)
     TSubclassOf<URRROS2SimulationStateClient> ROS2SimStateClientClass = URRROS2SimulationStateClient::StaticClass();
 
-    //! Delegate signalling ROS2 having been initialized with #MainROS2Node, #MainROS2SimStateClient, #ClockPublisher ready
+    //! Delegate signalling ROS 2 having been initialized with #MainROS2Node, #MainROS2SimStateClient, #ClockPublisher ready
     FRROnROS2Initialized OnROS2Initialized;
     /**
      * @brief Set timestep by FApp::SetFixedDeltaTime.

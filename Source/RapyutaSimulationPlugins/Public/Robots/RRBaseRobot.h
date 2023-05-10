@@ -57,7 +57,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnRobotCreationDone, bool /* bCreationResul
 
 /**
  * @brief Base Robot class. Other robot class should inherit from this class.
- * This actor use #URRRobotROS2Interface as the main ROS2 communication tool.
+ * This actor use #URRRobotROS2Interface as the main ROS 2 communication tool.
  * This actor has basic functionality to use with client-server, e.g. replication setting
  * - Moves kinematically with #URobotVehicleMovementComponent.
  * - Is possessed by #ARRRobotVehicleROSController to be control from ROS2.
@@ -115,6 +115,7 @@ public:
 
     /**
      * @brief DynamicRuntime robot: Implemented purely in cpp, built & loaded up at runtime from raw CAD + metadata (URDF/SDF)
+     * @note Experimental
      */
     FORCEINLINE bool IsDynamicRuntimeRobot() const
     {
@@ -124,6 +125,7 @@ public:
     /**
      * @brief Static BP robot: implemented in BP, possibly inheriting from #ARBaseRobot or its children classes,
      * built from pre-designed static UE assets (StaticMesh, SkeletalMesh, Skeleton, Physics Asset, etc.)
+     * @note Experimental
      */
     FORCEINLINE bool IsStaticBPRobot() const
     {
@@ -135,12 +137,12 @@ public:
     //! Robot creation done delegate
     FOnRobotCreationDone OnRobotCreationDone;
 
-    //! Default class to use when ROS2 Interface is setup for robot
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS2 Interface Class"), Replicated)
+    //! Default class to use when ROS 2 Interface is setup for robot
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS 2 Interface Class"), Replicated)
     TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass;
 
     /**
-     * Robot's ROS2 Interface.
+     * Robot's ROS 2 Interface.
      * With the client-server setup, this is created in the server and replicated to the client and initialized only in the client.
      */
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
@@ -185,7 +187,7 @@ public:
     ARRBaseRobot* ServerRobot = nullptr;
 
     /**
-     * @brief Instantiate ROS2 Interface without initializing yet
+     * @brief Instantiate ROS 2 Interface without initializing yet
      * @note Not uses RPC but replication since the robot is not always owned by the same connection with the client's PlayerController.
      * @sa #ARRBaseRobotROSController::OnPossess
      * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
@@ -195,7 +197,7 @@ public:
     void CreateROS2Interface();
 
     /**
-     * @brief Initialize ROS2 Interface. Directly call #URRRobotROS2Interface::Initialize or execute in client via #OnRep_bStartStopROS2Interface.
+     * @brief Initialize ROS 2 Interface. Directly call #URRRobotROS2Interface::Initialize or execute in client via #OnRep_bStartStopROS2Interface.
      * @note Not uses RPC but replication since the robot is not always owned by the same connection with the client's PlayerController.
      * @sa #ARRBaseRobotROSController::OnPossess
      * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
@@ -210,7 +212,7 @@ public:
     FTimerHandle ROS2InitTimer;
 
     /**
-     * @brief Stop ROS2 Interface. Directly call #URRRobotROS2Interface::DeInitialize or execute in client via #OnRep_bStartStopROS2Interface.
+     * @brief Stop ROS 2 Interface. Directly call #URRRobotROS2Interface::DeInitialize or execute in client via #OnRep_bStartStopROS2Interface.
      * @note Not uses RPC but replication since the robot is not always owned by the same connection with the client's PlayerController.
      * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
@@ -449,6 +451,18 @@ public:
      */
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void BPConfigureMovementComponent();
+
+    //! Mobile robot or not. If this is false, movecomponent=nullptr and ROS 2 odom and cmd_vel interface are disabled.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bMobileRobot = true;
+
+    /**
+     * @brief Parse Json parameters in #ROSSpawnParameters
+     * This function is called in #PreInitializeComponents
+     * Please overwrite this function to parse your custom parameters
+    */
+    UFUNCTION(BlueprintCallable)
+    virtual void InitPropertiesFromJSON();
 
     // UI WIDGET --
     UPROPERTY()

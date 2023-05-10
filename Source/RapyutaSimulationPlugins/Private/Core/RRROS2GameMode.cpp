@@ -48,8 +48,8 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
 
 void ARRROS2GameMode::InitSim()
 {
-    // 1 - Init Sim-wide Main ROS2 node, but only in case of a Network standalone app
-    // For Server-client app, each client will have its own ROS2 Node inited upon Network player controller possessing
+    // 1 - Init Sim-wide Main ROS 2 node, but only in case of a Network standalone app
+    // For Server-client app, each client will have its own ROS 2 Node inited upon Network player controller possessing
     if (IsNetMode(NM_Standalone) && (nullptr == Cast<ARRNetworkGameMode>(this)))
     {
         InitROS2();
@@ -57,7 +57,7 @@ void ARRROS2GameMode::InitSim()
 #if WITH_EDITOR    // Since ROSNode in each client is namespaced with editor in network mode, need clock publsiher without namespace
     else if (nullptr != Cast<ARRNetworkGameMode>(this))
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("Init ROS2 Node with editor in gamemode"));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("Init ROS 2 Node with editor in gamemode"));
         InitROS2();
     }
 #endif
