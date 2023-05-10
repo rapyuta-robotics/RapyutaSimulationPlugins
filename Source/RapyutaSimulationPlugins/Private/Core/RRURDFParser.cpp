@@ -135,7 +135,7 @@ bool FRRURDFParser::ProcessAttribute(const TCHAR* InAttributeName, const TCHAR* 
         {
             AttMap.Add(ComposeAttributeKey(elementStackTop, attName, TEXT("ue_sensor")), attValueString);
         }
-        else if (elementStackTop.Equals(TEXT("horizontal")))
+        else if (elementStackTop.Equals(TEXT("horizontal")) || elementStackTop.Equals(TEXT("vertical")))
         {
             AttMap.Add(ComposeAttributeKey(elementStackTop, attName, TEXT("ue_sensor_scan")), attValueString);
         }
@@ -292,18 +292,14 @@ void FRRURDFParser::ParseModelUESpecifics()
             ArticulatedLinksNames.Emplace(MoveTemp(arLinkName));
         }
     }
-    // else all links would be automatically added to [ArticulatedLinksNames] later in the end when all <ue> have been processed
+    // else all links would be automatically added to OutRobotModelInfo's [ArticulatedLinksNames] later in the end when all <ue> have been processed
 
-    // 4- Wheels: only require parsing for WHEEL_DRIVE compound type
-    if (false == IsPlainWheeledVehicleModel())
+    // 4- Wheels
+    FString wheelName = AttMap.FindRef(TEXT("ue_wheel_name"));
+    if (!wheelName.IsEmpty())
     {
-        FString wheelName = AttMap.FindRef(TEXT("ue_wheel_name"));
-        if (!wheelName.IsEmpty())
-        {
-            WheelPropList.Emplace(FRRRobotWheelProperty(MoveTemp(wheelName)));
-        }
+        WheelPropList.Emplace(FRRRobotWheelProperty(MoveTemp(wheelName)));
     }
-    // else all links would be automatically added to [WheelsNames] later in the end when all <ue> have been processed
 
     // 5- EndEffectors
     FString eeName = AttMap.FindRef(TEXT("ue_end_effector_name"));

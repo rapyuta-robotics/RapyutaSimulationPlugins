@@ -342,11 +342,11 @@ public:
 
     // MOVEMENT --
     //
-    //! Local target linear vel
+    //! [cm/s] Local target linear vel
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector TargetLinearVel = FVector::ZeroVector;
 
-    //! Local target angular vel
+    //! [deg/s] Local target angular vel
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector TargetAngularVel = FVector::ZeroVector;
 

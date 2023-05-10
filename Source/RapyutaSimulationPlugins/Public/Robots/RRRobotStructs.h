@@ -312,7 +312,7 @@ public:
                 return LCM_Locked;
 
             case ERRRobotJointType::PRISMATIC:
-                return FMath::IsNearlyZero(UpperLimit) ? LCM_Locked : LCM_Limited;
+                return LCM_Limited;
 
             case ERRRobotJointType::PLANAR:
             case ERRRobotJointType::FLOATING:
@@ -332,7 +332,10 @@ public:
                 return ACM_Locked;
 
             case ERRRobotJointType::REVOLUTE:
-                return FMath::IsNearlyZero(UpperLimit) ? ACM_Locked : (UpperLimit >= M_PI) ? ACM_Free : ACM_Limited;
+            {
+                static constexpr float RR_2_PI = 2 * M_PI;
+                return (UpperLimit > RR_2_PI) ? ACM_Free : ACM_Limited;
+            }
 
             case ERRRobotJointType::FLOATING:
             case ERRRobotJointType::BALL:
@@ -816,6 +819,10 @@ public:
     //! Straight Line Traction Control Enabled
     UPROPERTY()
     bool bTractionControlEnabled = false;
+
+    //! Determines how the SetDriveTorque/SetBrakeTorque inputs are combined with the internal torques
+    UPROPERTY()
+    ETorqueCombineMethod ExternalTorqueCombineMethod = ETorqueCombineMethod::None;
 
     UPROPERTY()
     FRuntimeFloatCurve LateralSlipGraph;

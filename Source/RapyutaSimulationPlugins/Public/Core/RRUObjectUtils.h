@@ -591,6 +591,20 @@ public:
         return GetRelativeQuatFrom(InActor, InBaseActor).Rotator();
     }
 
+    /**
+     * @brief Enable/Disable actor collision
+     * @param InActor
+     * @param bInCollisionOn
+     */
+    FORCEINLINE static void SetActorCollisionEnabled(AActor* InActor, bool bInCollisionOn)
+    {
+        TInlineComponentArray<UPrimitiveComponent*> primComponents(InActor);
+        for (auto& primComp : primComponents)
+        {
+            primComp->SetCollisionEnabled(bInCollisionOn ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+        }
+    }
+
     FORCEINLINE static FVector GetDirectedExtent(const FVector& InNormal, const FVector& InExtent)
     {
         // Normal coord -> Extent coord

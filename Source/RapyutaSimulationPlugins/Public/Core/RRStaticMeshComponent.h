@@ -97,6 +97,28 @@ public:
     UPROPERTY()
     bool bIsStationary = false;
 
+    //! Whether static mesh is built with simple collision, should be configured in ARRMeshActor::Initialize()
+    UPROPERTY()
+    bool bUseDefaultSimpleCollision = true;
+
+    //! Whether a complex collision mesh is built alongside the visual static mesh
+    //! Meant for ECollisionTraceFlag::CTF_UseComplexAsSimple, which only works with ECollisionChannel::ECC_WorldStatic
+    UPROPERTY()
+    bool bUseComplexCollision = false;
+
+    /**
+     * @brief Create a static mesh
+     * @param InMeshData
+     * @param bInAsVisualMesh Whether it is created as a visual or collision mesh
+     * @return UStaticMesh
+     */
+    UStaticMesh* CreateMesh(const FRRMeshData& InMeshData, bool bInAsVisualMesh);
+
+    /**
+     * @brief Generate custom simple collision, only if not #bUseDefaultSimpleCollision
+     */
+    void GenerateCustomSimpleCollision(const FRRMeshData& InMeshData, UBodySetup* OutBodySetup);
+
     /**
      * @brief Get the Size of bounding box of the mesh.
      * 
