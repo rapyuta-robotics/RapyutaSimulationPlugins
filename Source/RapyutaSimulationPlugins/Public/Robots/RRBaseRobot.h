@@ -7,6 +7,8 @@
 #pragma once
 
 // UE
+#include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "CoreMinimal.h"
 
 // rclUE
@@ -38,6 +40,7 @@
 class ARRNetworkGameState;
 class URRRobotROS2Interface;
 class ARRNetworkPlayerController;
+class URRUserWidget;
 
 /**
  * @brief Which server or client has robot movement authority.
@@ -80,11 +83,16 @@ public:
     ARRBaseRobot(const FObjectInitializer& ObjectInitializer);
 
     /**
+     * @brief BeginPlay
+     */
+    virtual void BeginPlay() override;
+
+    /**
      * @brief Wake rigid body in addition to Super::Tick()
      *
      * @param DeltaSeconds
      */
-    void Tick(float DeltaSeconds);
+    virtual void Tick(float DeltaSeconds) override;
 
     /**
      * @brief Initialize default components being configurable in child BP classes.
@@ -456,6 +464,42 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void InitPropertiesFromJSON();
 
+    // UI WIDGET --
+    UPROPERTY()
+    uint8 bUIWidgetEnabled : 1;
+    //! UI widget component
+    UPROPERTY()
+    TObjectPtr<UWidgetComponent> UIWidgetComp = nullptr;
+    //! #URRUserWidget's widget
+    UPROPERTY()
+    TObjectPtr<URRUserWidget> UIUserWidget = nullptr;
+
+    //! Relative pose of the UI widget from the owner robot
+    UPROPERTY()
+    FTransform UIWidgetOffset = FTransform(FVector(0.f, 0.f, 100.f));
+
+    /**
+     * @brief Check whether #UIUserWidget is valid
+     */
+    bool CheckUIUserWidget() const;
+
+    /**
+     * @brief Set robot's tooltip text through #UIWidgetComp's label
+     * @param InTooltip
+     */
+    void SetTooltipText(const FString& InTooltip);
+    /**
+     * @brief Toggle robot's tooltip visibility
+     * @param bInTooltipVisible
+     */
+    void SetTooltipVisible(bool bInTooltipVisible);
+
+    /**
+     * @brief Set visibility of #UIUserWidget
+     * @param bInWidgetVisible
+     */
+    void SetUIWidgetVisible(bool bInWidgetVisible);
+
 protected:
     /**
      * @brief Instantiate default child components
@@ -484,4 +528,9 @@ protected:
      *
      */
     virtual void ConfigureMovementComponent();
+
+    /**
+     * @brief Create & init #UIWidgetComp
+     */
+    virtual void InitUIWidget();
 };

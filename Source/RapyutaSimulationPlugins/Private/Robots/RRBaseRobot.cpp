@@ -20,6 +20,7 @@
 #include "Robots/RRRobotROS2Interface.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
 #include "Tools/SimulationState.h"
+#include "UI/RRUserWidget.h"
 
 // Others
 #include "Json.h"
@@ -44,6 +45,7 @@ void ARRBaseRobot::SetupDefault()
     AIControllerClass = ARRBaseRobotROSController::StaticClass();
     AutoPossessPlayer = EAutoReceiveInput::Disabled;
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+    bUIWidgetEnabled = false;
 
     // NOTE: Any custom object class (eg ROS2InterfaceClass, VehicleMoveComponentClass) that is required to be configurable by this class' child BP ones
     // & IF its object needs to be created before BeginPlay(),
@@ -469,6 +471,85 @@ void ARRBaseRobot::SetLocalAngularVel(const FVector& InAngularVel)
                      *PlayerController->PlayerState->GetPlayerName(),
                      *InAngularVel.ToString());
 #endif
+}
+
+void ARRBaseRobot::InitUIWidget()
+{
+    UIWidgetComp = URRUObjectUtils::CreateAndAttachChildComponent<UWidgetComponent>(
+        this, *FString::Printf(TEXT("%sUIWidget"), *GetName()), UIWidgetOffset);
+
+    // 1- Set [WidgetClass] as [URRUserWidget]
+    UIWidgetComp->SetWidgetClass(URRUserWidget::StaticClass());
+
+    // 1.1 - Init [UIWidgetComp]
+    UIWidgetComp->InitWidget();
+    UIWidgetComp->SetDrawSize(FIntPoint(500.f, 50.f));
+    UIWidgetComp->SetPivot(FVector2D::ZeroVector);
+    UIWidgetComp->SetCanEverAffectNavigation(false);
+    UIWidgetComp->SetTwoSided(true);
+    // NOTE: Using Screen widget space, [UIWidgetComp] will be always facing user view, thus no need to manually orientate it per Tick
+    UIWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
+
+    // 1.2 - Save [UIWidgetComp]'s widget into [UIUserWidget]
+    UIUserWidget = Cast<URRUserWidget>(UIWidgetComp->GetWidget());
+    UIUserWidget->OwnerWidgetComponent = UIWidgetComp;
+
+    // 2- Add [UIUserWidget] to viewport with robot's name as initial text
+    UIUserWidget->AddToViewport();
+    UIUserWidget->SetLabelText(GetName());
+}
+
+bool ARRBaseRobot::CheckUIUserWidget() const
+{
+    if (UIUserWidget)
+    {
+        return true;
+    }
+    else
+    {
+        if (bUIWidgetEnabled)
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Has [bUIWidgetEnabled] ON but NULL UIUserWidget"));
+        }
+        else
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Requires [bUIWidgetEnabled] to use UIUserWidget"));
+        }
+        return false;
+    }
+}
+
+void ARRBaseRobot::SetTooltipText(const FString& InTooltip)
+{
+    if (CheckUIUserWidget())
+    {
+        UIUserWidget->SetLabelText(InTooltip);
+    }
+}
+
+void ARRBaseRobot::SetTooltipVisible(bool bInTooltipVisible)
+{
+    if (CheckUIUserWidget() && UIUserWidget->TextBlock)
+    {
+        UIUserWidget->TextBlock->SetVisibility(bInTooltipVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+    }
+}
+
+void ARRBaseRobot::SetUIWidgetVisible(bool bInWidgetVisible)
+{
+    if (CheckUIUserWidget())
+    {
+        UIUserWidget->SetVisibility(bInWidgetVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+    }
+}
+
+void ARRBaseRobot::BeginPlay()
+{
+    Super::BeginPlay();
+    if (bUIWidgetEnabled)
+    {
+        InitUIWidget();
+    }
 }
 
 void ARRBaseRobot::Tick(float DeltaSeconds)
