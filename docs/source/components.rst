@@ -45,7 +45,7 @@ Drives
         Base Joint class which is used as part of 
         `ARRBaseRobot <doxygen_generated/html/df/d13/class_a_r_r_base_robot.html>`_ and is controlled by 
         `ROS 2 JointState Msg <https://docs.ros2.org/galactic/api/sensor_msgs/msg/JointState.html>`_
-         via `URRRobotROS2Interface <doxygen_generated/html/d6/d64/class_u_r_r_robot_r_o_s2_interface.html>`_ 
+        via `URRRobotROS2Interface <doxygen_generated/html/d6/d64/class_u_r_r_robot_r_o_s2_interface.html>`_ 
 
     - `URRKinematicJointComponent <doxygen_generated/html/d2/d69/class_u_r_r_kinematic_joint_component.html>`_
         Kinematics Joint Component which has pose and velocity control interface. 
@@ -102,6 +102,7 @@ Core
 
 | Core has base classes which are directly or indirectly used by other components in RapyutaSimulationPlugins Plugins.
 | Core also has util classes as well. 
+
 **example of class relations**
 
 .. image:: doxygen_generated/html/de/d5e/class_a_r_r_r_o_s2_game_mode__coll__graph.png
@@ -138,16 +139,17 @@ Tools
 | *URRROS2<msg name or others>Publisher* class is publisher of a specific msg type or purpose. Child class of `UROS2Publisher <https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dd4/class_u_r_o_s2_publisher.html>`_.
 
 **main C++ classes**
+
 - `URRROS2SimulationstateClient <doxygen_generated/html/d7/d6a/class_u_r_r_r_o_s2_simulation_state_client.html>`_
-    Provide spawn/delete/attach/set/get ROS 2 interfaces. Typically this class is initialized from GameMode.
+   Provide spawn/delete/attach/set/get ROS 2 interfaces. Typically this class is initialized from GameMode.
 - `ASimulationState <doxygen_generated/html/d2/dde/class_a_simulation_state.html>`_
-    Has implementation of spawn/delete/attach/set/get ROS 2 interfaces. Communicate with URRROS2SimulationstateClient to execute manipulation.
+   Has implementation of spawn/delete/attach/set/get ROS 2 interfaces. Communicate with URRROS2SimulationstateClient to execute manipulation.
 - `URRROS2ClockPublisher <doxygen_generated/html/d5/dc2/class_u_r_r_r_o_s2_clock_publisher.html>`_
-    Publish /clock topic. Typically this class is initialized from GameMode.
+   Publish /clock topic. Typically this class is initialized from GameMode.
 - `OccupancyMapGenerator <doxygen_generated/html/d2/dde/class_a_occupancy_map_generator.html>`_
-    Generate 2D occupancy map for navigation/localization.
+   Generate 2D occupancy map for navigation/localization.
 - `URRROS2BaseSensorPublisher <doxygen_generated/html/d5/d69/class_u_r_r_r_o_s2_base_sensor_publisher.html>`_
-    Base Sensor Publisher class. Other sensor publisher class should inherit from this class.
+   Base Sensor Publisher class. Other sensor publisher class should inherit from this class.
 
 Other Experimentals
 -------------------

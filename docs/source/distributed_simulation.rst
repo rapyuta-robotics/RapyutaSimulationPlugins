@@ -104,7 +104,7 @@ Basic flows between client and server
 
 *When NetworkPlayer pass the request to the server, it sends current pose, 
 velocity command and client timestamp at that time. 
-Server will compensate network delay by comparing current server timestamp and client timestamp.
+Server will compensate network delay by comparing current server timestamp and client timestamp.*
 
 
 | **Time synchronization**
@@ -160,7 +160,7 @@ or one where the software interacts with the robot remotely
 (such as the software being on the cloud or another remote device). 
 
 Viewer Client (PixelStreaming)
-=============================
+==============================
 
 Due to the nature of this setup intended for being utilized in a cloud environment,
 we need a method to allow the user to view the simulation. 

@@ -42,12 +42,15 @@ Control from ROS2 2
 
 turtlebot3_benchmark.umap has default turtlebot waffle robot in the level. You can replace that with other turtlebot3.
 
-- You can control robot from teleop
+- Control robot from teleop
     .. code-block:: shell
 
          ros2 run teleop_twist_keyboard teleop_twist_keyboard 
 
-- You can control robot with nav2
+- Control robot with nav2
     .. code-block:: shell
 
         ros2 launch nav2_bringup tb3_simulation_launch.py use_simulator:=False map:=<path to turtlebot3-UE>/Content/Turtlebot3_benchmark.yaml
+
+
+\* If you start with ROS 2 Discovery Server, you needs to  `source turtlebot3_UE/fastdds_setup.sh` in terminal beofre executing following command.
