@@ -35,9 +35,9 @@ public:
         return b2DMovement;
     }
 
-    //! [deg/s] Current AngularVelocity of #UpdatedComponent
+    //! [deg/s] Current AngularVelocity of #UpdatedComponent [X:Roll - Y:Pitch - Z: Yaw]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FRotator AngularVelocity = FRotator::ZeroRotator;
+    FVector AngularVelocity = FVector::ZeroVector;
 
     //! Maximum angular speed magnitude allowed for #UpdatedComponent
     //! [deg/s]

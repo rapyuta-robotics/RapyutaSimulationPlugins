@@ -73,14 +73,13 @@ public:
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FVector RotationUEToROS(const FVector& Input)
+    static FVector RotationUEToROS(const FVector& Input, const bool bDegToRad)
     {
-        FVector Output = Input;
+        FVector output = Input;
+        output.Y = -output.Y;
+        output.Z = -output.Z;
 
-        Output.Y = -Output.Y;
-        Output.Z = -Output.Z;
-
-        return Output;
+        return bDegToRad ? FMath::DegreesToRadians(output) : output;
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
@@ -114,7 +113,7 @@ public:
         Output.Pose.Pose.Orientation = QuatUEToROS(Output.Pose.Pose.Orientation);
 
         Output.Twist.Twist.Linear = VectorUEToROS(Output.Twist.Twist.Linear);
-        Output.Twist.Twist.Angular = RotationUEToROS(Output.Twist.Twist.Angular);
+        Output.Twist.Twist.Angular = RotationUEToROS(Output.Twist.Twist.Angular, false);
 
         return Output;
     }
@@ -158,23 +157,13 @@ public:
      * @return FVector
      */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FVector RotationROSToUEVector(const FVector& Input)
+    static FVector RotationROSToUEVector(const FVector& Input, const bool bRadToDeg)
     {
         FVector output = Input;
         output.Y = -output.Y;
         output.Z = -output.Z;
-        return output;
-    }
 
-    /**
-     * @brief Convert ROS Rotation (rad) to UE Rotator (deg)
-     * @param InROSPose
-     * @return FRotator
-     */
-    UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FRotator RotationROSToUE(const FVector& Input)
-    {
-        return FRotator::MakeFromEuler(FMath::RadiansToDegrees(RotationROSToUEVector(Input)));
+        return bRadToDeg ? FMath::RadiansToDegrees(output) : output;
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
@@ -215,7 +204,7 @@ public:
         Output.Pose.Pose.Orientation = QuatROSToUE(Output.Pose.Pose.Orientation);
 
         Output.Twist.Twist.Linear = VectorROSToUE(Output.Twist.Twist.Linear);
-        Output.Twist.Twist.Angular = RotationROSToUEVector(Output.Twist.Twist.Angular);
+        Output.Twist.Twist.Angular = RotationROSToUEVector(Output.Twist.Twist.Angular, false);
 
         return Output;
     }

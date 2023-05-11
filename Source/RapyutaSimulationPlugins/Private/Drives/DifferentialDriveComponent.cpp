@@ -56,7 +56,7 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 {
     if (IsValid(WheelLeft) && IsValid(WheelRight))
     {
-        const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Yaw);
+        const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
         float velL = Velocity.X + angularVelRad * WheelSeparationHalf;
         float velR = Velocity.X - angularVelRad * WheelSeparationHalf;
 
@@ -99,7 +99,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // in the kinematics case, (dx,dy,dtheta) can be simplified considerably
     // but as this is not a performance bottleneck, for the moment we leave the full general formulation,
     // at least until the odom for the physics version of the agent is implemented, so that we have a reference
-    const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Yaw);
+    const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
     float vl = Velocity.X + angularVelRad * WheelSeparationHalf;
     float vr = Velocity.X - angularVelRad * WheelSeparationHalf;
 

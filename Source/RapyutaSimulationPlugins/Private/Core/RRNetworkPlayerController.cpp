@@ -215,7 +215,7 @@ void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot*
 void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot* InServerRobot,
                                                                     float InClientTimeStamp,
                                                                     const FRotator& InClientRobotRotation,
-                                                                    const FRotator& InAngularVel)
+                                                                    const FVector& InAngularVel)
 {
 #if RAPYUTA_SIM_DEBUG
     UE_LOG_WITH_INFO_NAMED(
@@ -225,7 +225,8 @@ void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot
     if (robot)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-        robot->SetActorRotation(InClientRobotRotation + InAngularVel * (serverCurrentTime - InClientTimeStamp));
+        robot->SetActorRotation(InClientRobotRotation +
+                                FRotator::MakeFromEuler(InAngularVel) * (serverCurrentTime - InClientTimeStamp));
         //NOTE: Don't use ARRBaseRobot::SetAngularVel() here, which is only for client
         robot->TargetAngularVel = InAngularVel;
     }

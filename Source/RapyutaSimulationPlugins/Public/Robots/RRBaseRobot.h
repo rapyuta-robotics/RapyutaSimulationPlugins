@@ -346,9 +346,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector TargetLinearVel = FVector::ZeroVector;
 
-    //! [deg/s] Local target angular vel
+    //! [deg/s] Local target angular vel [X:Roll - Y:Pitch - Z: Yaw]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FRotator TargetAngularVel = FRotator::ZeroRotator;
+    FVector TargetAngularVel = FVector::ZeroVector;
 
     /**
      * @brief Stop robot movement, resetting all vel inputs
@@ -392,7 +392,7 @@ public:
      * @param InAngularVel
      */
     UFUNCTION(BlueprintCallable)
-    virtual void SetAngularVel(const FRotator& InAngularVel);
+    virtual void SetAngularVel(const FVector& InAngularVel);
 
     /**
      * @brief Set position and linear velocity to the robot in the server.
@@ -418,7 +418,7 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SyncServerAngularMovement(float InClientTimeStamp,
                                            const FRotator& InClientRobotRotation,
-                                           const FRotator& InAngularVel);
+                                           const FVector& InAngularVel);
 
     /**
      * @brief Set linear velocity to #RobotVehicleMoveComponent in the client.
@@ -434,7 +434,7 @@ public:
      * @sa [Connection](https://docs.unrealengine.com/5.1/en-US/InteractiveExperiences/Networking/Actors/OwningConnections)
      */
     UFUNCTION(BlueprintCallable)
-    virtual void SetLocalAngularVel(const FRotator& InAngularVel);
+    virtual void SetLocalAngularVel(const FVector& InAngularVel);
 
     //! Offset transform between the Actor  root component and the pose that will be published in /odom topic
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

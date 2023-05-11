@@ -81,7 +81,7 @@ public:
 
     //! [deg/s] AngularVelocity control input for [UpdatedComponent]
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Velocity)
-    FRotator AngularVelocity = FRotator::ZeroRotator;
+    FVector AngularVelocity = FVector::ZeroVector;
 
     //! Desired position calculated from deltatime and UpdatedComponent::ComponentVelocity
     //! @sa

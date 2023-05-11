@@ -163,11 +163,11 @@ public:
     virtual void ServerSetAngularVel(ARRBaseRobot* InServerRobot,
                                      float InClientTimeStamp,
                                      const FRotator& InClientRobotRotation,
-                                     const FRotator& InAngularVel);
+                                     const FVector& InAngularVel);
 
 protected:
     /**
-     * @brief 
+     * @brief
      * Standalone game mode will call this method to call #ClientInitSimStateClientROS2lient.
      * Client server game mode will start timer to sync time with server.
      */

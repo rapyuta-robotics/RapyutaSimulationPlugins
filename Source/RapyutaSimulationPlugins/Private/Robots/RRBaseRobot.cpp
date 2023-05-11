@@ -400,7 +400,7 @@ void ARRBaseRobot::StopMovement()
         moveComp->StopMovementImmediately();
     }
     SetLinearVel(FVector::ZeroVector);
-    SetAngularVel(FRotator::ZeroRotator);
+    SetAngularVel(FVector::ZeroVector);
 }
 
 void ARRBaseRobot::SetLinearVel(const FVector& InLinearVel)
@@ -409,7 +409,7 @@ void ARRBaseRobot::SetLinearVel(const FVector& InLinearVel)
     SetLocalLinearVel(InLinearVel);
 }
 
-void ARRBaseRobot::SetAngularVel(const FRotator& InAngularVel)
+void ARRBaseRobot::SetAngularVel(const FVector& InAngularVel)
 {
     SyncServerAngularMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
     SetLocalAngularVel(InAngularVel);
@@ -435,14 +435,14 @@ void ARRBaseRobot::SyncServerLinearMovement(float InClientTimeStamp,
 
 void ARRBaseRobot::SyncServerAngularMovement(float InClientTimeStamp,
                                              const FRotator& InClientRobotRotation,
-                                             const FRotator& InAngularVel)
+                                             const FVector& InAngularVel)
 {
     // todo: following block is used for RPC in server, which will be used if RPC from non player can be supported.
     // if (RobotVehicleMoveComponent)
     // {
     //     // GetPlayerController<APlayerController>(0, InContextObject)
     //     float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-    //     SetActorRotation(InClientRobotRotation + InAngularVel * (serverCurrentTime - InClientTimeStamp));
+    //     SetActorRotation(InClientRobotRotation + FRotator::MakeFromEuler(InAngularVel) * (serverCurrentTime - InClientTimeStamp));
     //     RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
     // }
 
@@ -466,7 +466,7 @@ void ARRBaseRobot::SetLocalLinearVel(const FVector& InLinearVel)
 #endif
 }
 
-void ARRBaseRobot::SetLocalAngularVel(const FRotator& InAngularVel)
+void ARRBaseRobot::SetLocalAngularVel(const FVector& InAngularVel)
 {
     TargetAngularVel = InAngularVel;
 #if RAPYUTA_SIM_DEBUG
