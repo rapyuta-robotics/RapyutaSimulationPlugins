@@ -123,13 +123,11 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     float w = dtheta / DeltaTime;
     float v = sqrt(dx * dx + dy * dy) / DeltaTime;
 
-    FQuat qt(FVector::ZAxisVector, PoseEncoderTheta);
-
     odomData.Pose.Pose.Position.X = PoseEncoderX;
     odomData.Pose.Pose.Position.Y = PoseEncoderY;
     odomData.Pose.Pose.Position.Z = 0;
 
-    odomData.Pose.Pose.Orientation = qt;
+    odomData.Pose.Pose.Orientation = FQuat(FVector::ZAxisVector, PoseEncoderTheta);
 
     odomData.Twist.Twist.Angular.Z = w;
     odomData.Twist.Twist.Linear.X = v;
