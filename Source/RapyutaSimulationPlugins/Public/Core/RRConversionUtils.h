@@ -152,15 +152,29 @@ public:
         OutputZ = InputZ * 100.f;
     }
 
+    /**
+     * @brief Convert ROS Rotation Euler (rad) to UE Vector retaining unit as [rad]
+     * @param Input
+     * @return FVector
+     */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FVector RotationROSToUE(const FVector& Input)
+    static FVector RotationROSToUEVector(const FVector& Input)
     {
-        FVector Output = Input;
+        FVector output = Input;
+        output.Y = -output.Y;
+        output.Z = -output.Z;
+        return output;
+    }
 
-        Output.Y = -Output.Y;
-        Output.Z = -Output.Z;
-
-        return Output;
+    /**
+     * @brief Convert ROS Rotation (rad) to UE Rotator (deg)
+     * @param InROSPose
+     * @return FRotator
+     */
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FRotator RotationROSToUE(const FVector& Input)
+    {
+        return FRotator::MakeFromEuler(FMath::RadiansToDegrees(RotationROSToUEVector(Input)));
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
@@ -201,7 +215,7 @@ public:
         Output.Pose.Pose.Orientation = QuatROSToUE(Output.Pose.Pose.Orientation);
 
         Output.Twist.Twist.Linear = VectorROSToUE(Output.Twist.Twist.Linear);
-        Output.Twist.Twist.Angular = RotationROSToUE(Output.Twist.Twist.Angular);
+        Output.Twist.Twist.Angular = RotationROSToUEVector(Output.Twist.Twist.Angular);
 
         return Output;
     }

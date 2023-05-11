@@ -97,8 +97,9 @@ void URobotVehicleMovementComponent::UpdateMovement(float InDeltaTime)
 
     const FQuat oldRotation = UpdatedComponent->GetComponentQuat();
 
-    FVector position = UpdatedComponent->ComponentVelocity * InDeltaTime;
-    FQuat deltaRotation(FVector::ZAxisVector, InversionFactor * AngularVelocity.Z * InDeltaTime);
+    const FVector position = UpdatedComponent->ComponentVelocity * InDeltaTime;
+    const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Yaw);
+    const FQuat deltaRotation(FVector::ZAxisVector, InversionFactor * angularVelRad * InDeltaTime);
 
     DesiredRotation = oldRotation * deltaRotation;
     DesiredMovement = (oldRotation * position);

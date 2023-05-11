@@ -298,7 +298,7 @@ void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)
         FROSTwist twist;
         twistMsg->GetMsg(twist);
         const FVector linear(URRConversionUtils::VectorROSToUE(twist.Linear));
-        const FVector angular(FMath::RadiansToDegrees(URRConversionUtils::RotationROSToUE(twist.Angular)));
+        const FRotator angular(URRConversionUtils::RotationROSToUE(twist.Angular));
 
         // (Note) In this callback, which could be invoked from a ROS working thread,
         // thus any direct referencing to its member in this GameThread lambda needs to be verified.

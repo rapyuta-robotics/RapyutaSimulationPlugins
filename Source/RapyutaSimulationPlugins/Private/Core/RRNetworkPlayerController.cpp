@@ -17,7 +17,6 @@
 #include "Core/RRCoreUtils.h"
 #include "Core/RRUObjectUtils.h"
 #include "Robots/RRBaseRobot.h"
-#include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotROS2Interface.h"
 #include "Tools/RRROS2SimulationStateClient.h"
 #include "Tools/SimulationState.h"
@@ -216,7 +215,7 @@ void ARRNetworkPlayerController::ServerSetLinearVel_Implementation(ARRBaseRobot*
 void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot* InServerRobot,
                                                                     float InClientTimeStamp,
                                                                     const FRotator& InClientRobotRotation,
-                                                                    const FVector& InAngularVel)
+                                                                    const FRotator& InAngularVel)
 {
 #if RAPYUTA_SIM_DEBUG
     UE_LOG_WITH_INFO_NAMED(
@@ -226,7 +225,7 @@ void ARRNetworkPlayerController::ServerSetAngularVel_Implementation(ARRBaseRobot
     if (robot)
     {
         float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-        robot->SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
+        robot->SetActorRotation(InClientRobotRotation + InAngularVel * (serverCurrentTime - InClientTimeStamp));
         //NOTE: Don't use ARRBaseRobot::SetAngularVel() here, which is only for client
         robot->TargetAngularVel = InAngularVel;
     }

@@ -56,8 +56,9 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 {
     if (IsValid(WheelLeft) && IsValid(WheelRight))
     {
-        float velL = Velocity.X + AngularVelocity.Z * WheelSeparationHalf;
-        float velR = Velocity.X - AngularVelocity.Z * WheelSeparationHalf;
+        const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Yaw);
+        float velL = Velocity.X + angularVelRad * WheelSeparationHalf;
+        float velR = Velocity.X - angularVelRad * WheelSeparationHalf;
 
         WheelLeft->SetAngularVelocityTarget(FVector(-velL / WheelPerimeter, 0, 0));
         WheelRight->SetAngularVelocityTarget(FVector(-velR / WheelPerimeter, 0, 0));
@@ -98,8 +99,9 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     // in the kinematics case, (dx,dy,dtheta) can be simplified considerably
     // but as this is not a performance bottleneck, for the moment we leave the full general formulation,
     // at least until the odom for the physics version of the agent is implemented, so that we have a reference
-    float vl = Velocity.X + AngularVelocity.Z * WheelSeparationHalf;
-    float vr = Velocity.X - AngularVelocity.Z * WheelSeparationHalf;
+    const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Yaw);
+    float vl = Velocity.X + angularVelRad * WheelSeparationHalf;
+    float vr = Velocity.X - angularVelRad * WheelSeparationHalf;
 
     // noise added as a component of vl, vr
     // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
@@ -121,8 +123,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     float w = dtheta / DeltaTime;
     float v = sqrt(dx * dx + dy * dy) / DeltaTime;
 
-    // FRotator is in degrees, while PoseEncoderTheta is in Radians
-    FQuat qt(FRotator(0, FMath::RadiansToDegrees(PoseEncoderTheta), 0));
+    FQuat qt(FVector::ZAxisVector, PoseEncoderTheta);
 
     odomData.Pose.Pose.Position.X = PoseEncoderX;
     odomData.Pose.Pose.Position.Y = PoseEncoderY;

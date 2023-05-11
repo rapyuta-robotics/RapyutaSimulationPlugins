@@ -163,7 +163,7 @@ public:
     virtual void ServerSetAngularVel(ARRBaseRobot* InServerRobot,
                                      float InClientTimeStamp,
                                      const FRotator& InClientRobotRotation,
-                                     const FVector& InAngularVel);
+                                     const FRotator& InAngularVel);
 
 protected:
     /**
