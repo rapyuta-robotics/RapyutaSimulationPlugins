@@ -72,6 +72,12 @@ public:
         OutputZ = InputZ * 0.01f;
     }
 
+    /**
+     * @brief Convert UE Rotation to ROS Vector with optional Deg->Rad conversion
+     * @param Input
+     * @param bDegToRad
+     * @return FVector
+     */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FVector RotationUEToROS(const FVector& Input, const bool bDegToRad)
     {
@@ -152,8 +158,9 @@ public:
     }
 
     /**
-     * @brief Convert ROS Rotation Euler (rad) to UE Vector retaining unit as [rad]
+     * @brief Convert ROS Rotation Euler (rad) to UE Vector with optional Rad->Deg conversion
      * @param Input
+     * @param bRadToDeg
      * @return FVector
      */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
