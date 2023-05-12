@@ -109,10 +109,10 @@ protected:
     UPROPERTY()
     float WheelPerimeter = 6.28f;
 
-    //! [rad]
+    //! [cm]
     UPROPERTY()
     float PoseEncoderX = 0.f;
-    //! [rad]
+    //! [cm]
     UPROPERTY()
     float PoseEncoderY = 0.f;
     //! [rad]
