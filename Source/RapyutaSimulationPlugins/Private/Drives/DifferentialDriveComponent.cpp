@@ -81,9 +81,9 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     if (!OdomComponent->bIsOdomInitialized)
     {
         OdomComponent->InitOdom();
-        PoseEncoderX = 0;
-        PoseEncoderY = 0;
-        PoseEncoderTheta = 0;
+        PoseEncoderX = 0.f;
+        PoseEncoderY = 0.f;
+        PoseEncoderThetaRad = 0.f;
     }
 
     FROSOdom odomData = OdomComponent->OdomData;
@@ -112,13 +112,13 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 
     float sdiff = sr - sl;
 
-    float dx = ssum * .5f * cos(PoseEncoderTheta + sdiff / (4.f * WheelSeparationHalf));
-    float dy = ssum * .5f * sin(PoseEncoderTheta + sdiff / (4.f * WheelSeparationHalf));
+    float dx = ssum * .5f * cos(PoseEncoderThetaRad + sdiff / (4.f * WheelSeparationHalf));
+    float dy = ssum * .5f * sin(PoseEncoderThetaRad + sdiff / (4.f * WheelSeparationHalf));
     float dtheta = -sdiff / (2.f * WheelSeparationHalf);
 
     PoseEncoderX += dx;
     PoseEncoderY += dy;
-    PoseEncoderTheta += dtheta;
+    PoseEncoderThetaRad += dtheta;
 
     float w = dtheta / DeltaTime;
     float v = sqrt(dx * dx + dy * dy) / DeltaTime;
@@ -127,7 +127,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
     odomData.Pose.Pose.Position.Y = PoseEncoderY;
     odomData.Pose.Pose.Position.Z = 0;
 
-    odomData.Pose.Pose.Orientation = FQuat(FVector::ZAxisVector, PoseEncoderTheta);
+    odomData.Pose.Pose.Orientation = FQuat(FVector::ZAxisVector, PoseEncoderThetaRad);
 
     odomData.Twist.Twist.Angular.Z = w;
     odomData.Twist.Twist.Linear.X = v;
@@ -149,14 +149,30 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 
     OdomComponent->OdomData = odomData;
 
-    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Input:"));
-    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
-    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Odometry:"));
-    // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tOdom Positon:\t\t\t\t%f %f from %f %f (%f)"), PoseEncoderX, PoseEncoderY, dx, dy,
-    // Velocity.X); UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tOdom Orientation:\t\t\t%s (%f)"), *OdomData.Pose.Pose.Orientation.ToString(),
-    // PoseEncoderTheta); UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"), *OdomData.Twist.Twist.Linear.ToString(),
-    // OdomData.Twist.Twist.Linear.Size()); UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"),
-    // *OdomData.Twist.Twist.Angular.ToString());
+#if RAPYUTA_SIM_VERBOSE
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Input:"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("\tVel: %s, %s"), *Velocity.ToString(), *AngularVelocity.ToString());
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Odometry:"));
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Warning,
+                     TEXT("\tOdom Positon:\t\t\t\t%f %f from %f %f (%f)"),
+                     PoseEncoderX,
+                     PoseEncoderY,
+                     dx,
+                     dy,
+                     Velocity.X);
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Warning,
+                     TEXT("\tOdom Orientation:\t\t\t%s (%f)"),
+                     *odomData.Pose.Pose.Orientation.ToString(),
+                     PoseEncoderThetaRad);
+    UE_LOG_WITH_INFO(LogTemp,
+                     Warning,
+                     TEXT("\tOdom TwistLin:\t\t\t\t%s - %f"),
+                     *odomData.Twist.Twist.Linear.ToString(),
+                     odomData.Twist.Twist.Linear.Size());
+    UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("\tOdom TwistAng:\t\t\t\t%s"), *odomData.Twist.Twist.Angular.ToString());
+#endif
 }
 
 void UDifferentialDriveComponent::Initialize()

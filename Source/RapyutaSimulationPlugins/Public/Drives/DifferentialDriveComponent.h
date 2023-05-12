@@ -117,5 +117,5 @@ protected:
     float PoseEncoderY = 0.f;
     //! [rad]
     UPROPERTY()
-    float PoseEncoderTheta = 0.f;
+    float PoseEncoderThetaRad = 0.f;
 };
