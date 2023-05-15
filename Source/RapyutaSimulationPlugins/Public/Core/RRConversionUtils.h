@@ -79,7 +79,7 @@ public:
      * @return FVector
      */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FVector RotationUEToROS(const FVector& Input, const bool bDegToRad)
+    static FVector RotationUEVectorToROS(const FVector& Input, const bool bDegToRad = true)
     {
         FVector output = Input;
         output.Y = -output.Y;
@@ -119,13 +119,14 @@ public:
         Output.Pose.Pose.Orientation = QuatUEToROS(Output.Pose.Pose.Orientation);
 
         Output.Twist.Twist.Linear = VectorUEToROS(Output.Twist.Twist.Linear);
-        Output.Twist.Twist.Angular = RotationUEToROS(Output.Twist.Twist.Angular, false);
+        Output.Twist.Twist.Angular = RotationUEVectorToROS(Output.Twist.Twist.Angular);
 
         return Output;
     }
 
     // ROS to UE conversion
     // m -> cm
+    // rad -> degree
     // Right handed -> Left handed
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
@@ -160,11 +161,11 @@ public:
     /**
      * @brief Convert ROS Rotation Euler (rad) to UE Vector with optional Rad->Deg conversion
      * @param Input
-     * @param bRadToDeg
+     * @param bRadToDeg convert radian to degree or not
      * @return FVector
      */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FVector RotationROSToUEVector(const FVector& Input, const bool bRadToDeg)
+    static FVector RotationROSToUEVector(const FVector& Input, const bool bRadToDeg = true)
     {
         FVector output = Input;
         output.Y = -output.Y;
@@ -211,7 +212,7 @@ public:
         Output.Pose.Pose.Orientation = QuatROSToUE(Output.Pose.Pose.Orientation);
 
         Output.Twist.Twist.Linear = VectorROSToUE(Output.Twist.Twist.Linear);
-        Output.Twist.Twist.Angular = RotationROSToUEVector(Output.Twist.Twist.Angular, false);
+        Output.Twist.Twist.Angular = RotationROSToUEVector(Output.Twist.Twist.Angular);
 
         return Output;
     }
