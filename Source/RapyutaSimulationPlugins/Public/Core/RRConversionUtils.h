@@ -72,15 +72,20 @@ public:
         OutputZ = InputZ * 0.01f;
     }
 
+    /**
+     * @brief Convert UE Rotation to ROS Vector with optional Deg->Rad conversion
+     * @param Input
+     * @param bDegToRad
+     * @return FVector
+     */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FVector RotationUEToROS(const FVector& Input)
+    static FVector RotationUEVectorToROS(const FVector& Input, const bool bDegToRad = true)
     {
-        FVector Output = Input;
+        FVector output = Input;
+        output.Y = -output.Y;
+        output.Z = -output.Z;
 
-        Output.Y = -Output.Y;
-        Output.Z = -Output.Z;
-
-        return Output;
+        return bDegToRad ? FMath::DegreesToRadians(output) : output;
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
@@ -114,13 +119,14 @@ public:
         Output.Pose.Pose.Orientation = QuatUEToROS(Output.Pose.Pose.Orientation);
 
         Output.Twist.Twist.Linear = VectorUEToROS(Output.Twist.Twist.Linear);
-        Output.Twist.Twist.Angular = RotationUEToROS(Output.Twist.Twist.Angular);
+        Output.Twist.Twist.Angular = RotationUEVectorToROS(Output.Twist.Twist.Angular);
 
         return Output;
     }
 
     // ROS to UE conversion
     // m -> cm
+    // rad -> degree
     // Right handed -> Left handed
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
@@ -152,15 +158,20 @@ public:
         OutputZ = InputZ * 100.f;
     }
 
+    /**
+     * @brief Convert ROS Rotation Euler (rad) to UE Vector with optional Rad->Deg conversion
+     * @param Input
+     * @param bRadToDeg convert radian to degree or not
+     * @return FVector
+     */
     UFUNCTION(BlueprintCallable, Category = "Conversion")
-    static FVector RotationROSToUE(const FVector& Input)
+    static FVector RotationROSToUEVector(const FVector& Input, const bool bRadToDeg = true)
     {
-        FVector Output = Input;
+        FVector output = Input;
+        output.Y = -output.Y;
+        output.Z = -output.Z;
 
-        Output.Y = -Output.Y;
-        Output.Z = -Output.Z;
-
-        return Output;
+        return bRadToDeg ? FMath::RadiansToDegrees(output) : output;
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
@@ -201,7 +212,7 @@ public:
         Output.Pose.Pose.Orientation = QuatROSToUE(Output.Pose.Pose.Orientation);
 
         Output.Twist.Twist.Linear = VectorROSToUE(Output.Twist.Twist.Linear);
-        Output.Twist.Twist.Angular = RotationROSToUE(Output.Twist.Twist.Angular);
+        Output.Twist.Twist.Angular = RotationROSToUEVector(Output.Twist.Twist.Angular);
 
         return Output;
     }

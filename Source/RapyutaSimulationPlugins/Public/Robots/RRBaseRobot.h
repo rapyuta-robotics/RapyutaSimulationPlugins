@@ -346,7 +346,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector TargetLinearVel = FVector::ZeroVector;
 
-    //! [deg/s] Local target angular vel
+    //! [deg/s] Local target angular vel [X:Roll - Y:Pitch - Z: Yaw]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector TargetAngularVel = FVector::ZeroVector;
 

@@ -60,7 +60,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
     {
         URRMathUtils::ClampVectorToMaxMagnitude(Velocity, MaxSpeed, b2DMovement);
     }
-    URRMathUtils::ClampRotatorToMaxAngles(AngularVelocity, FRotator(MaxAngularSpeed));
+    URRMathUtils::ClampVectorToMaxMagnitude(AngularVelocity, MaxAngularSpeed, false);
 
     if (false == b2DMovement)
     {
@@ -70,7 +70,7 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
 
     // Move [UpdatedComponent], updating [bPositionCorrected] here-in
     FVector deltaLoc = Velocity * InDeltaTime;
-    FRotator deltaRot = AngularVelocity * InDeltaTime;
+    FRotator deltaRot = FRotator::MakeFromEuler(AngularVelocity) * InDeltaTime;
     if ((!deltaLoc.IsNearlyZero(1e-6f)) || (!deltaRot.IsNearlyZero(1e-3f)))
     {
         // Save prevLocation
@@ -90,9 +90,9 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
             {
                 UE_LOG_WITH_INFO(LogRapyutaCore,
                                  Warning,
-                                 TEXT("deltaRot.Yaw: %f, AngularVelocity.Yaw: %f[deg], MaxAngularSpeed: %f[deg], inDeltaTime: %f"),
+                                 TEXT("deltaRot.Yaw: %f, AngularVelocity.Z: %f[deg], MaxAngularSpeed: %f[deg], inDeltaTime: %f"),
                                  deltaRot.Yaw,
-                                 AngularVelocity.Yaw,
+                                 AngularVelocity.Z,
                                  MaxAngularSpeed,
                                  InDeltaTime);
             }
@@ -266,6 +266,6 @@ bool URRFloatingMovementComponent::ResolvePenetrationImpl(const FVector& InPropo
 
 void URRFloatingMovementComponent::StopMovementImmediately()
 {
-    AngularVelocity = FRotator::ZeroRotator;
+    AngularVelocity = FVector::ZeroVector;
     Super::StopMovementImmediately();
 }

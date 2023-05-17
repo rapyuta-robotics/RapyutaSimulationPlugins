@@ -442,7 +442,7 @@ void ARRBaseRobot::SyncServerAngularMovement(float InClientTimeStamp,
     // {
     //     // GetPlayerController<APlayerController>(0, InContextObject)
     //     float serverCurrentTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-    //     SetActorRotation(InClientRobotRotation + InAngularVel.Rotation() * (serverCurrentTime - InClientTimeStamp));
+    //     SetActorRotation(InClientRobotRotation + FRotator::MakeFromEuler(InAngularVel) * (serverCurrentTime - InClientTimeStamp));
     //     RobotVehicleMoveComponent->AngularVelocity = InAngularVel;
     // }
 

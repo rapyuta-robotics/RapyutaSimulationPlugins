@@ -124,8 +124,7 @@ void URRBaseOdomComponent::UpdateOdom(float InDeltaTime)
     OdomData.Pose.Pose.Orientation = rot;
 
     OdomData.Twist.Twist.Linear = OdomData.Pose.Pose.Orientation.UnrotateVector(pos - previousEstimatedPos) / InDeltaTime;
-    OdomData.Twist.Twist.Angular =
-        FMath::DegreesToRadians((rot * previousEstimatedRot.Inverse()).GetNormalized().Euler()) / InDeltaTime;
+    OdomData.Twist.Twist.Angular = (rot * previousEstimatedRot.Inverse()).GetNormalized().Euler() / InDeltaTime;
 
     OdomData.Pose.Pose.Orientation *= RootOffset.GetRotation();
 }

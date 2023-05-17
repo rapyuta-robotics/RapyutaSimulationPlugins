@@ -92,10 +92,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UPhysicsConstraintComponent* WheelRight = nullptr;
 
+    //! [cm]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float WheelRadius = 1.f;
 
-    //! @todo get data from links
+    //! [cm] @todo get data from links
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float WheelSeparationHalf = 1.f;
 
@@ -104,13 +105,17 @@ public:
     float MaxForce = 1000.f;
 
 protected:
+    //! [cm]
     UPROPERTY()
     float WheelPerimeter = 6.28f;
 
+    //! [cm]
     UPROPERTY()
     float PoseEncoderX = 0.f;
+    //! [cm]
     UPROPERTY()
     float PoseEncoderY = 0.f;
+    //! [rad]
     UPROPERTY()
-    float PoseEncoderTheta = 0.f;
+    float PoseEncoderThetaRad = 0.f;
 };
