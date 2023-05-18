@@ -314,6 +314,10 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
     // Add to the global resource store
     URRGameSingleton::Get()->AddDynamicResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, visualMesh, MeshUniqueName);
 
+    // Save to static mesh [UASSET] file on disk
+    URRAssetUtils::SaveObjectToAssetInModule(
+        visualMesh, ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME);
+
     // This also signals [OnMeshCreationDone] async
     SetMesh(visualMesh);
     return visualMesh;

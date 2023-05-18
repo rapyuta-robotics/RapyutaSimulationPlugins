@@ -13,6 +13,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Materials/Material.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include "UObject/Package.h"
+#include "UObject/SavePackage.h"
 
 #if WITH_EDITOR
 #include "AssetToolsModule.h"
@@ -22,6 +24,7 @@
 #endif
 
 // RapyutaSim
+#include "Core/RRObjectCommon.h"
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRAssetUtils.generated.h"
@@ -38,8 +41,14 @@ class RAPYUTASIMULATIONPLUGINS_API URRAssetUtils : public UBlueprintFunctionLibr
 public:
     static IAssetRegistry& GetAssetRegistry()
     {
-        FAssetRegistryModule& assetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+        static FAssetRegistryModule& assetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
         return assetRegistryModule.Get();
+    }
+
+    static IAssetTools& GetAssetToolsModule()
+    {
+        static FAssetToolsModule& assetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools");
+        return assetToolsModule.Get();
     }
 
     static bool IsAssetPackageValid(const FAssetData& InAssetData, bool bIsLogged = false)
@@ -228,15 +237,15 @@ public:
     }
 
     /**
-     * @brief 
+     * @brief
      * This must not be invoked at Sim initialization since it would flush Async loaders away!
      * Besides, [ConstructorHelpers::FObjectFinder<T> asset(AssetPathName); will call [StaticFindObject()] instead
      * and requires to be run inside a ctor.
      * This loads synchronously, thus should be avoided if possible.
-     * @tparam T 
-     * @param Outer 
-     * @param InAssetPath 
-     * @return FORCEINLINE* 
+     * @tparam T
+     * @param Outer
+     * @param InAssetPath
+     * @return FORCEINLINE*
      */
     template<typename T>
     FORCEINLINE static T* LoadObjFromAssetPath(UObject* Outer, const FString& InAssetPath)
@@ -275,6 +284,32 @@ public:
         ConstructorHelpers::FClassFinder<T> classFinder(InClassAssetPath);
         return classFinder.Class;
     }
+
+    /**
+     * @brief Save object in memory to asset file on disk stored by a module
+     * @param InObject
+     * @param InAssetDataType
+     * @param InAssetUniqueName Unique name for the output asset
+     * @param InModuleName
+     * @param bInStripEditorOnlyContent
+     * @return true if succeeded
+     */
+    static bool SaveObjectToAssetInModule(UObject* InObject,
+                                          const ERRResourceDataType InAssetDataType,
+                                          const FString& InAssetUniqueName,
+                                          const TCHAR* InModuleName,
+                                          bool bInStripEditorOnlyContent = false);
+    /**
+     * @brief Save object in memory to asset file on disk
+     * @param InObject
+     * @param InAssetPath Base package path of the output asset
+     * @param bInStripEditorOnlyContent
+     * @return true if succeeded
+     * @sa https://forums.unrealengine.com/t/calling-upackage-savepackage-causes-fatal-assert-in-staticfindobjectfast/447917
+     * @sa https://forums.unrealengine.com/t/dynamically-created-primary-assets-not-registering-with-asset-manager/210255
+     * @sa https://forums.unrealengine.com/t/how-to-work-with-cooked-content-in-editor/265094
+     */
+    static bool SaveObjectToAsset(UObject* InObject, const FString& InAssetPath, bool bInStripEditorOnlyContent = false);
 
     /**
      * @brief Find generated UClass from blueprint class name
