@@ -21,7 +21,7 @@ void URRKinematicJointComponent::BeginPlay()
 void URRKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-    if (LinearVelocity != FVector::ZeroVector || AngularVelocity != FVector::ZeroVector)
+    if (!LinearVelocity.IsZero() || !AngularVelocity.IsZero())
     {
         FVector dPos = LinearVelocity * DeltaTime;
         FVector dRot = AngularVelocity * DeltaTime;
@@ -69,6 +69,13 @@ void URRKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickT
     }
 }
 
+void URRKinematicJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
+{
+    Super::SetVelocityTarget(InLinearVelocity, InAngularVelocity);
+    ControlType = ERRJointControlType::VELOCITY;
+    SetVelocity(InLinearVelocity, InAngularVelocity);
+};
+
 void URRKinematicJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
 {
     Super::SetPose(InPosition, InOrientation);
@@ -78,7 +85,9 @@ void URRKinematicJointComponent::SetPose(const FVector& InPosition, const FRotat
 void URRKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     Super::SetPoseTarget(InPosition, InOrientation);
-
+    
+    ControlType = ERRJointControlType::POSITION;
+    
     FVector poseDiff = PositionTarget - Position;
     FVector orientDiff = OrientationTarget.Euler() - Orientation.Euler();
     uint8 i;

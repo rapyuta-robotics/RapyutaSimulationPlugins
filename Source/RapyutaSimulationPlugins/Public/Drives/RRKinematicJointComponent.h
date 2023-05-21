@@ -48,6 +48,17 @@ public:
      */
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+    /**
+     * @brief Set velocity target
+     * Velocity become same value as VelocityTarget with Kinematic Mode.
+     * @param InLinearVelocity
+     * @param InAngularVelocity
+     */
+    virtual void SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity) override;
+
+    /**
+     * @brief Super::SetPose + #UpdatePose
+    */
     virtual void SetPose(const FVector& InPosition, const FRotator& InOrientation) override;
 
     /**
