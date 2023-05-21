@@ -377,7 +377,7 @@ void ARRBaseRobot::SetJointState(const TMap<FString, TArray<float>>& InJointStat
                     Joints[joint.Key]->SetPoseTargetWithArray(joint.Value);
                     break;
                 case ERRJointControlType::VELOCITY:
-                    Joints[joint.Key]->SetVelocityWithArray(joint.Value);
+                    Joints[joint.Key]->SetVelocityTargetWithArray(joint.Value);
                     break;
                 case ERRJointControlType::EFFORT:
                     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Effort control is not supported."));

@@ -8,13 +8,25 @@ URRJointComponent::URRJointComponent()
     PrimaryComponentTick.bCanEverTick = true;
 }
 
+// velocity
+void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
+{
+    LinearVelocityTarget = InLinearVelocity.BoundToBox(LinearVelMin, LinearVelMax);
+    AngularVelocityTarget = InAngularVelocity.BoundToBox(AngularVelMin, AngularVelMax);
+};
+
+bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, const float InAngularTolerance)
+{
+    return LinearVelocityTarget.Equals(LinearVelocity, InLinearTolerance) && AngularVelocityTarget.Equals(AngularVelocity, InAngularTolerance);
+};
+
 void URRJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
     LinearVelocity = InLinearVelocity.BoundToBox(LinearVelMin, LinearVelMax);
     AngularVelocity = InAngularVelocity.BoundToBox(AngularVelMin, AngularVelMax);
 };
 
-void URRJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
+void URRJointComponent::VelocityFromArray(const TArray<float>& InVelocity, FVector& OutLinearVelocity, FVector& OutAngularVelocity)
 {
     if (InVelocity.Num() != LinearDOF + RotationalDOF)
     {
@@ -39,18 +51,37 @@ void URRJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
         AngularInput[i] = InVelocity[LinearDOF + i];
     }
 
-    SetVelocity(LinearInput, AngularInput);
+    OutLinearVelocity = LinearInput;
+    OutAngularVelocity = AngularInput;
 };
 
+void URRJointComponent::SetVelocityTargetWithArray(const TArray<float>& InVelocity)
+{
+    FVector OutLinearVelocity;
+    FVector OutAngularVelocity;
+    VelocityFromArray(InVelocity, OutLinearVelocity, OutAngularVelocity);
+    SetVelocityTarget(OutLinearVelocity, OutAngularVelocity);
+}
+
+
+void URRJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
+{
+    FVector OutLinearVelocity;
+    FVector OutAngularVelocity;
+    VelocityFromArray(InVelocity, OutLinearVelocity, OutAngularVelocity);
+    SetVelocity(OutLinearVelocity, OutAngularVelocity);
+}
+
+//Pose
 void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     PositionTarget = InPosition;
     OrientationTarget = InOrientation;
 };
 
-bool URRJointComponent::HasReachedPoseTarget(const float InTolerance)
+bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, const float InOrientationTolerance)
 {
-    return PositionTarget.Equals(Position, InTolerance) && OrientationTarget.Equals(Orientation, InTolerance);
+    return PositionTarget.Equals(Position, InPositionTolerance) && OrientationTarget.Equals(Orientation, InOrientationTolerance);
 };
 
 void URRJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
