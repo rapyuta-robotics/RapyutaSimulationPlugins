@@ -312,6 +312,13 @@ public:
     static bool SaveObjectToAsset(UObject* InObject, const FString& InAssetPath, bool bInStripEditorOnlyContent = false);
 
     /**
+     * @brief Save package to asset file on disk
+     * @param InObject
+     * @return true if succeeded
+     */
+    static bool SavePackageToAsset(UPackage* InPackage, UObject* InObject);
+
+    /**
      * @brief Find generated UClass from blueprint class name
      * @param InBlueprintClassName
      * @return UClass*
@@ -362,10 +369,12 @@ public:
      * Ref: [FKismetEditorUtilities::CreateBlueprintFromClass()]
      * @param InParentClass
      * @param InCDOFunc
+     * @param bInSaveOuputBP Whether or not saving the output BP to disk
      * @return UClass*
      */
     FORCEINLINE static UClass* CreateUClass(UClass* InParentClass,
                                             const FName& InClassName,
+                                            const bool bInSaveOuputBP = false,
                                             const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr)
     {
 #if WITH_EDITOR
@@ -378,20 +387,18 @@ public:
         UClass* blueprintGeneratedClass = nullptr;
         kismetCompilerModule.GetBlueprintTypesForClass(InParentClass, blueprintClass, blueprintGeneratedClass);
 
-        // 2- Create package for the class asset
-        FString packageName = FString::Printf(TEXT("/Game/Blueprints/%s"), *InClassName.ToString());
-        FString assetName;
-        assetToolsModule.Get().CreateUniqueAssetName(packageName, TEXT(""), packageName, assetName);
-        UPackage* package = CreatePackage(*packageName);
-        check(package);
+        // 2- Create blueprint package for the class asset
+        const FString bpClassName = FString::Printf(TEXT("BP_%s"), *InClassName.ToString());
+        FString bpPackageName = FString::Printf(TEXT("/Game/Blueprints/%s"), *bpClassName);
+        FString bpAssetName;
+        assetToolsModule.Get().CreateUniqueAssetName(bpPackageName, TEXT(""), bpPackageName, bpAssetName);
+        UPackage* bpPackage = CreatePackage(*bpPackageName);
+        ensure(bpPackage);
+        bpPackage->SetPackageFlags(PKG_NewlyCreated | PKG_RuntimeGenerated);
 
         // 3- Create and init a new Blueprint
-        UBlueprint* blueprint = FKismetEditorUtilities::CreateBlueprint(InParentClass,
-                                                                        package,
-                                                                        *FString::Printf(TEXT("BP_%s"), *InClassName.ToString()),
-                                                                        EBlueprintType::BPTYPE_Normal,
-                                                                        blueprintClass,
-                                                                        blueprintGeneratedClass);
+        UBlueprint* blueprint = FKismetEditorUtilities::CreateBlueprint(
+            InParentClass, bpPackage, *bpClassName, EBlueprintType::BPTYPE_Normal, blueprintClass, blueprintGeneratedClass);
         if (blueprint)
         {
             // 4- Make sure blueprint is not early GCed
@@ -401,7 +408,7 @@ public:
             FAssetRegistryModule::AssetCreated(blueprint);
 
             // Mark the package dirty
-            package->MarkPackageDirty();
+            bpPackage->MarkPackageDirty();
 
             // 4.1- Compile the blueprint, required before creating its CDO
             // Skip validation of the class default object here for reasons:
@@ -437,6 +444,12 @@ public:
                 InCDOFunc(cdo);
                 // 5.1- Compile BP again after modifying CDO
                 FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
+            }
+
+            // 6- Save [bpPackage] to disk
+            if (bInSaveOuputBP)
+            {
+                URRAssetUtils::SavePackageToAsset(bpPackage, blueprint);
             }
 
             return bpGeneratedClass;

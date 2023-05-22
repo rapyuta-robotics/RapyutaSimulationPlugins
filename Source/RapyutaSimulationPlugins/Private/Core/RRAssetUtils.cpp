@@ -26,6 +26,7 @@ bool URRAssetUtils::SaveObjectToAsset(UObject* InObject, const FString& InAssetP
     FString uniquePackageName, uniqueAssetName;
     URRAssetUtils::GetAssetToolsModule().CreateUniqueAssetName(InAssetPath, TEXT(""), uniquePackageName, uniqueAssetName);
 
+    // Create package wrapping [savedObject]
     UPackage* package = CreatePackage(*uniquePackageName);
     // NOTE: [GetMetaData()] is required to avoid error "Illegal call to StaticFindObjectFast()"
     package->GetMetaData();
@@ -36,8 +37,13 @@ bool URRAssetUtils::SaveObjectToAsset(UObject* InObject, const FString& InAssetP
     savedObject->MarkPackageDirty();
     FAssetRegistryModule::AssetCreated(savedObject);
     package->MarkPackageDirty();
-    //UE::IsSavingPackage(nullptr) || IsGarbageCollectingAndLockingUObjectHashTables()
 
+    // Save [package] to uasset file on disk
+    return SavePackageToAsset(package, savedObject);
+}
+
+bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject)
+{
     // Save package args
     FSavePackageArgs saveArgs;
     saveArgs.TopLevelFlags = RF_Public | RF_Standalone;
@@ -47,27 +53,34 @@ bool URRAssetUtils::SaveObjectToAsset(UObject* InObject, const FString& InAssetP
 
     // Final output asset (package) full file name
     const FString packageFileName =
-        FPackageName::LongPackageNameToFilename(package->GetName(), FPackageName::GetAssetPackageExtension());
+        FPackageName::LongPackageNameToFilename(InPackage->GetName(), FPackageName::GetAssetPackageExtension());
 #if RAPYUTA_SIM_VERBOSE
-    UE_LOG(LogTemp,
+    UE_LOG(LogRapyutaCore,
            Warning,
            TEXT("Saving Asset [%s] Package [%s] -> PackageFile [%s]"),
            *savedObject->GetName(),
-           *uniquePackageName,
+           *InPackage->GetName(),
            *packageFileName);
 #endif
-    // NOTE: [UPackage::Save()] is Runtime, while [SavePackageHelper(package, packageFileName))] is Editor
-    const FSavePackageResultStruct result = UPackage::Save(package, savedObject, *packageFileName, saveArgs);
+    // NOTE: [UPackage::Save()] is Runtime, while [SavePackageHelper(InPackage, packageFileName))] is Editor
+    const FSavePackageResultStruct result = UPackage::Save(InPackage, InObject, *packageFileName, saveArgs);
     if (ESavePackageResult::Success == result.Result)
     {
         UPackage::WaitForAsyncFileWrites();
-        UE_LOG(LogTemp, Log, TEXT("[%s] SAVED TO UASSET %s"), *savedObject->GetName(), *packageFileName);
+        UE_LOG(LogRapyutaCore,
+               Log,
+               TEXT("[%s] SAVED TO UASSET %s"),
+               InObject ? *InObject->GetName() : *InPackage->GetName(),
+               *packageFileName);
         return true;
     }
     else
     {
-        UE_LOG(
-            LogTemp, Error, TEXT("[%s] FAILED SAVING OBJECT TO UASSET - Error[%d]"), *savedObject->GetName(), (uint8)result.Result);
+        UE_LOG(LogRapyutaCore,
+               Error,
+               TEXT("[%s] FAILED SAVING OBJECT TO UASSET - Error[%d]"),
+               InObject ? *InObject->GetName() : *InPackage->GetName(),
+               (uint8)result.Result);
         return false;
     }
 }
