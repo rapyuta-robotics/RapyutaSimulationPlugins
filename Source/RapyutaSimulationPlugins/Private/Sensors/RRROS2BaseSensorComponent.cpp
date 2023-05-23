@@ -12,7 +12,7 @@ URRROS2BaseSensorComponent::URRROS2BaseSensorComponent()
 void URRROS2BaseSensorComponent::InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                                    const FString& InPublisherName,
                                                    const FString& InTopicName,
-                                                   const TEnumAsByte<UROS2QoS> InQoS)
+                                                   const UROS2QoS InQoS)
 {
     CreatePublisher(InPublisherName);
     PreInitializePublisher(InROS2Node, InTopicName);
@@ -53,7 +53,7 @@ void URRROS2BaseSensorComponent::PreInitializePublisher(UROS2NodeComponent* InRO
     }
 }
 
-void URRROS2BaseSensorComponent::InitializePublisher(UROS2NodeComponent* InROS2Node, const TEnumAsByte<UROS2QoS> InQoS)
+void URRROS2BaseSensorComponent::InitializePublisher(UROS2NodeComponent* InROS2Node, const UROS2QoS InQoS)
 {
     if (IsValid(SensorPublisher))
     {
