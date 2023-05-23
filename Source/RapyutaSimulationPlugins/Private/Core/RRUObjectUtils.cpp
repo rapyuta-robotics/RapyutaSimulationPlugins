@@ -406,9 +406,11 @@ int32 URRUObjectUtils::GetActorMaterialsNum(AActor* InActor)
 UMaterialInstanceDynamic* URRUObjectUtils::GetActorBaseMaterial(AActor* InActor, int32 InMaterialIndex)
 {
     UMaterialInstanceDynamic* baseMaterial = nullptr;
-    if (auto* meshActor = Cast<ARRMeshActor>(InActor))
+    // NOTE: First mesh comp has more priority than primitive root comp
+    if (auto* meshComp = Cast<UMeshComponent>(InActor->GetComponentByClass(UMeshComponent::StaticClass())))
     {
-        baseMaterial = Cast<UMaterialInstanceDynamic>(meshActor->GetBaseMeshMaterial(InMaterialIndex));
+        baseMaterial = Cast<UMaterialInstanceDynamic>(meshComp->GetMaterial(InMaterialIndex));
+        ensure(baseMaterial);
     }
     else if (auto* rootPrimitiveComp = Cast<UPrimitiveComponent>(InActor->GetRootComponent()))
     {
@@ -421,12 +423,15 @@ bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor,
                                                   const FRRMaterialProperty& InMaterialInfo,
                                                   bool bApplyManufacturingAlbedo)
 {
-    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
+    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("ApplyMeshActorMaterialProps"));
+    InMaterialInfo.PrintSelf();
     for (auto i = 0; i < GetActorMaterialsNum(InActor); ++i)
     {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("ApplyMeshActorMaterialProps %d"), i);
         UMaterialInstanceDynamic* baseMaterial = GetActorBaseMaterial(InActor, i);
         if (baseMaterial)
         {
+            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("baseMaterial %d"), i);
             ApplyMaterialProps(baseMaterial, InMaterialInfo, bApplyManufacturingAlbedo);
             return true;
         }
@@ -444,6 +449,7 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
     // Albedo texture
     if (bApplyManufacturingAlbedo)
     {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Albedo texture"));
         if (InMaterialInfo.AlbedoTextureNameList.Num() > 0)
         {
             InMaterial->SetTextureParameterValue(
@@ -454,7 +460,10 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
         InMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO,
                                             (InMaterialInfo.AlbedoColorList.Num() > 0)
                                                 ? URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoColorList)
-                                                : URRMathUtils::GetRandomColor());
+                                                : FLinearColor::Transparent);
+        // Emissive strength
+        //InMaterial->SetScalarParameterValue(FRRMaterialProperty::PROP_NAME_EMISSIVE_STRENGTH, 1.f);
+
         // Mask Texture: default White
         InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
                                              InMaterialInfo.MaskTextureName.IsEmpty()
@@ -481,6 +490,41 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
                                              gameSingleton->GetTexture(InMaterialInfo.NormalTextureName));
     }
 }
+/*
+bool ARRNavRobot::SetMeshRobotColor(const FLinearColor& InColor)
+{
+    static UTexture* blackMaskTexture = URRGameSingleton::Get()->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
+    for (auto i = 0; i < BaseMeshComp->GetMaterials().Num(); ++i)
+    {
+        UMaterialInstanceDynamic* material = Cast<UMaterialInstanceDynamic>(BaseMeshComp->GetMaterial(i));
+        if (material)
+        {
+            material->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK, blackMaskTexture);
+            material->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO, InColor);
+            material->SetScalarParameterValue(FRRMaterialProperty::PROP_NAME_ALBEDO, 50);
+            // material->SetOverrideDiffuseBoost(true);
+            // material->SetDiffuseBoost(50);
+        }
+    }
+    return true;
+}
+*/
+bool URRUObjectUtils::ResetMeshRobotColor(UMeshComponent* BaseMeshComp)
+{
+    static UTexture* whiteMaskTexture = URRGameSingleton::Get()->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK);
+    for (auto i = 0; i < BaseMeshComp->GetMaterials().Num(); ++i)
+    {
+        UMaterialInstanceDynamic* material = Cast<UMaterialInstanceDynamic>(BaseMeshComp->GetMaterial(i));
+        if (material)
+        {
+            material->SetOverrideEmissiveBoost(true);
+            material->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK, whiteMaskTexture);
+            material->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO, FLinearColor::Black);
+            //material->SetScalarParameterValue(FRRMaterialProperty::PROP_NAME_EMISSIVE_STRENGTH, 0.f);
+        }
+    }
+    return true;
+}
 
 bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor)
 {
@@ -495,10 +539,12 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
     }
     else
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore,
-                         Error,
-                         TEXT("SetMeshActorColor() [%s] is not ARRMeshActor or AStaticMeshActor"),
-                         *InMeshActor->GetName());
+        meshComp = Cast<UMeshComponent>(InMeshActor->GetComponentByClass(UMeshComponent::StaticClass()));
+    }
+
+    if (nullptr == meshComp)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("SetMeshActorColor() [%s] has NO Mesh component"), *InMeshActor->GetName());
         return false;
     }
 
@@ -510,6 +556,7 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
         {
             material->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK, blackMaskTexture);
             material->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO, InColor);
+            //material->SetScalarParameterValue(FRRMaterialProperty::PROP_NAME_EMISSIVE_STRENGTH, 100.f);
         }
     }
     return true;

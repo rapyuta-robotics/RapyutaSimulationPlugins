@@ -793,5 +793,6 @@ public:
                                    const FRRMaterialProperty& InMaterialInfo,
                                    bool bApplyManufacturingAlbedo = true);
     static bool SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor);
+    static bool ResetMeshRobotColor(UMeshComponent* BaseMeshComp);
     static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);
 };
