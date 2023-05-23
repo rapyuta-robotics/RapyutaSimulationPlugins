@@ -548,7 +548,7 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
         return false;
     }
 
-    static UTexture* blackMaskTexture = URRGameSingleton::Get()->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
+    UTexture* blackMaskTexture = URRGameSingleton::Get()->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
     for (auto i = 0; i < meshComp->GetMaterials().Num(); ++i)
     {
         UMaterialInstanceDynamic* material = Cast<UMaterialInstanceDynamic>(meshComp->GetMaterial(i));
