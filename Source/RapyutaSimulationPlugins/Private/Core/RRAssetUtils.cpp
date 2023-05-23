@@ -142,10 +142,12 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
         return nullptr;
     }
 
-    // 4- Init its CDO
+    // 4- Create its CDO
+    UObject* cdo = bpGeneratedClass->GetDefaultObject();
+
+    // 4.1- Init its CDO
     if (InCDOFunc)
     {
-        UObject* cdo = blueprint->GetClass()->GetDefaultObject();
         InCDOFunc(cdo);
         // 4.1- Compile BP again after modifying CDO
         FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
