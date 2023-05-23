@@ -116,9 +116,6 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
         FString::Printf(TEXT("%s/%s"), *URRGameSingleton::Get()->ASSETS_RUNTIME_BP_SAVE_BASE_PATH, *InBlueprintClassName);
     FString bpAssetName;
     URRAssetUtils::GetAssetToolsModule().CreateUniqueAssetName(bpPackageName, TEXT(""), bpPackageName, bpAssetName);
-    UPackage* bpPackage = CreatePackage(*bpPackageName);
-    ensure(bpPackage);
-    bpPackage->SetPackageFlags(PKG_NewlyCreated | PKG_RuntimeGenerated);
 
     // 2- Create the blueprint from this robot
     FKismetEditorUtilities::FCreateBlueprintFromActorParams params;
@@ -126,6 +123,7 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
     params.bKeepMobility = true;
     params.bDeferCompilation = false;
     params.bOpenBlueprint = false;
+    // NOTE: [UPackage] for the blueprint is already created here-in
     UBlueprint* blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(bpPackageName, InActor, params);
 
     // 3- Compile the blueprint, required before creating its CDO
@@ -152,10 +150,10 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
         FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
     }
 
-    // 5- Save [bpPackage] to disk
+    // 5- Save [blueprint]'s package to uasset on disk
     if (bInSaveBP)
     {
-        URRAssetUtils::SavePackageToAsset(bpPackage, blueprint);
+        URRAssetUtils::SavePackageToAsset(blueprint->GetPackage(), blueprint);
     }
 #else
     UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("UBlueprint runtime creation requires WITH_EDITOR"));
