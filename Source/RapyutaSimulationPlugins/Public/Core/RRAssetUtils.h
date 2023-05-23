@@ -18,9 +18,6 @@
 
 #if WITH_EDITOR
 #include "AssetToolsModule.h"
-#include "BlueprintCompilationManager.h"
-#include "Kismet2/KismetEditorUtilities.h"
-#include "KismetCompilerModule.h"
 #endif
 
 // RapyutaSim
@@ -365,98 +362,17 @@ public:
     }
 
     /**
-     * @brief Create a child UClass from parent UClass.
+     * @brief Create a child blueprint class from parent UClass.
      * Ref: [FKismetEditorUtilities::CreateBlueprintFromClass()]
      * @param InParentClass
      * @param InCDOFunc
-     * @param bInSaveOuputBP Whether or not saving the output BP to disk
+     * @param bInSaveBP Whether or not saving the output BP to disk
+     * @param InBPBasePath Base UE path for saving BP
      * @return UClass*
      */
-    FORCEINLINE static UClass* CreateUClass(UClass* InParentClass,
-                                            const FName& InClassName,
-                                            const bool bInSaveOuputBP = false,
-                                            const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr)
-    {
-#if WITH_EDITOR
-        static IKismetCompilerInterface& kismetCompilerModule =
-            FModuleManager::LoadModuleChecked<IKismetCompilerInterface>(KISMET_COMPILER_MODULENAME);
-        static FAssetToolsModule& assetToolsModule = FAssetToolsModule::GetModule();
-
-        // 1 - Create blueprint class & generated class
-        UClass* blueprintClass = nullptr;
-        UClass* blueprintGeneratedClass = nullptr;
-        kismetCompilerModule.GetBlueprintTypesForClass(InParentClass, blueprintClass, blueprintGeneratedClass);
-
-        // 2- Create blueprint package for the class asset
-        const FString bpClassName = FString::Printf(TEXT("BP_%s"), *InClassName.ToString());
-        FString bpPackageName = FString::Printf(TEXT("/Game/Blueprints/%s"), *bpClassName);
-        FString bpAssetName;
-        assetToolsModule.Get().CreateUniqueAssetName(bpPackageName, TEXT(""), bpPackageName, bpAssetName);
-        UPackage* bpPackage = CreatePackage(*bpPackageName);
-        ensure(bpPackage);
-        bpPackage->SetPackageFlags(PKG_NewlyCreated | PKG_RuntimeGenerated);
-
-        // 3- Create and init a new Blueprint
-        UBlueprint* blueprint = FKismetEditorUtilities::CreateBlueprint(
-            InParentClass, bpPackage, *bpClassName, EBlueprintType::BPTYPE_Normal, blueprintClass, blueprintGeneratedClass);
-        if (blueprint)
-        {
-            // 4- Make sure blueprint is not early GCed
-            blueprint->SetFlags(EObjectFlags::RF_Standalone);
-
-            // Notify the asset registry
-            FAssetRegistryModule::AssetCreated(blueprint);
-
-            // Mark the package dirty
-            bpPackage->MarkPackageDirty();
-
-            // 4.1- Compile the blueprint, required before creating its CDO
-            // Skip validation of the class default object here for reasons:
-            // (1) The new CDO may fail validation because this is a new Blueprint having no modified defaults.
-            // (2) Fefault value propagation to the new Blueprint's CDO may be deferred until after compilation (e.g. reparenting).
-            // Skip the Blueprint search data update, which will be handled by an OnAssetAdded() delegate in the FiB manager.
-            const EBlueprintCompileOptions bpCompileOptions =
-                EBlueprintCompileOptions::SkipGarbageCollection | EBlueprintCompileOptions::SkipDefaultObjectValidation |
-                EBlueprintCompileOptions::SkipFiBSearchMetaUpdate | EBlueprintCompileOptions::SkipNewVariableDefaultsDetection;
-            FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
-
-            // NOTE: This is different from [blueprintGeneratedClass] above, which is [UBlueprintGeneratedClass::StaticClass()]
-            auto& bpGeneratedClass = blueprint->GeneratedClass;
-            if (nullptr == bpGeneratedClass)
-            {
-                UE_LOG_WITH_INFO(LogTemp, Error, TEXT("After compiling [blueprint->GeneratedClass] is null"));
-                return nullptr;
-            }
-#if RAPYUTA_SIM_DEBUG
-            UE_LOG(LogTemp,
-                   Warning,
-                   TEXT("bpGeneratedClass[%s] # blueprintGeneratedClass[%s]"),
-                   *bpGeneratedClass->GetName(),
-                   *blueprintGeneratedClass->GetName());
-#endif
-
-            // 4.2- Create its CDO
-            UObject* cdo = bpGeneratedClass->GetDefaultObject();
-
-            // 5- Call [InCDOFunc] on CDO
-            if (InCDOFunc)
-            {
-                InCDOFunc(cdo);
-                // 5.1- Compile BP again after modifying CDO
-                FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
-            }
-
-            // 6- Save [bpPackage] to disk
-            if (bInSaveOuputBP)
-            {
-                URRAssetUtils::SavePackageToAsset(bpPackage, blueprint);
-            }
-
-            return bpGeneratedClass;
-        }
-#else
-        UE_LOG_WITH_INFO(LogTemp, Error, TEXT("UClass runtime creation requires WITH_EDITOR"));
-#endif
-        return nullptr;
-    }
+    static UClass* CreateBlueprintClass(UClass* InParentClass,
+                                        const FName& InClassName,
+                                        const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr,
+                                        const bool bInSaveBP = false,
+                                        const FString& InBPBasePath = TEXT(""));
 };

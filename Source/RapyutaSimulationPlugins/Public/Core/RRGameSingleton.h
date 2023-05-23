@@ -98,6 +98,9 @@ public:
     static constexpr const TCHAR* ASSETS_ROOT_PATH = TEXT("/");
     static constexpr const TCHAR* ASSETS_PROJECT_MODULE_NAME = TEXT("Game/RapyutaContents");
 
+    UPROPERTY(Config)
+    FString ASSETS_RUNTIME_BP_SAVE_BASE_PATH = TEXT("/Game/RapyutaContents/Blueprints");
+
     /**
      * @brief Get name prefix of asset
      * @param InDataType
