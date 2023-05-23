@@ -365,13 +365,14 @@ public:
      * @brief Create a child blueprint class from parent UClass.
      * Ref: [FKismetEditorUtilities::CreateBlueprintFromClass()]
      * @param InParentClass
+     * @param InBlueprintClassName
      * @param InCDOFunc
      * @param bInSaveBP Whether or not saving the output BP to disk
      * @param InBPBasePath Base UE path for saving BP
      * @return UClass*
      */
     static UClass* CreateBlueprintClass(UClass* InParentClass,
-                                        const FName& InClassName,
+                                        const FString& InBlueprintClassName,
                                         const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr,
                                         const bool bInSaveBP = false,
                                         const FString& InBPBasePath = TEXT(""));

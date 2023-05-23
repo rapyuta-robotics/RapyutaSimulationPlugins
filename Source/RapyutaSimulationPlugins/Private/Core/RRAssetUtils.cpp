@@ -15,7 +15,7 @@
 #include "Core/RRGameSingleton.h"
 
 UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
-                                            const FName& InClassName,
+                                            const FString& InBlueprintClassName,
                                             const TFunction<void(UObject* InCDO)>& InCDOFunc,
                                             const bool bInSaveBP,
                                             const FString& InBPBasePath)
@@ -31,11 +31,10 @@ UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
     kismetCompilerModule.GetBlueprintTypesForClass(InParentClass, blueprintClass, blueprintGeneratedClass);
 
     // 2- Create blueprint package for the class asset
-    const FString bpClassName = FString::Printf(TEXT("BP_%s"), *InClassName.ToString());
     FString bpPackageName =
         FString::Printf(TEXT("%s/%s"),
                         (InBPBasePath.IsEmpty() ? *URRGameSingleton::Get()->ASSETS_RUNTIME_BP_SAVE_BASE_PATH : *InBPBasePath),
-                        *bpClassName);
+                        *InBlueprintClassName);
     FString bpAssetName;
     assetToolsModule.Get().CreateUniqueAssetName(bpPackageName, TEXT(""), bpPackageName, bpAssetName);
     UPackage* bpPackage = CreatePackage(*bpPackageName);
@@ -44,7 +43,7 @@ UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
 
     // 3- Create and init a new Blueprint
     UBlueprint* blueprint = FKismetEditorUtilities::CreateBlueprint(
-        InParentClass, bpPackage, *bpClassName, EBlueprintType::BPTYPE_Normal, blueprintClass, blueprintGeneratedClass);
+        InParentClass, bpPackage, *InBlueprintClassName, EBlueprintType::BPTYPE_Normal, blueprintClass, blueprintGeneratedClass);
     if (blueprint)
     {
         // 4- Make sure blueprint is not early GCed
