@@ -58,6 +58,8 @@ public class RapyutaSimulationPlugins : ModuleRules
             PrivateDependencyModuleNames.AddRange(
                 new string[]
                 {
+                    "UnrealEd",
+                    "EditorScriptingUtilities",
                     "AssetTools",
                     "PhysicsUtilities"
                 }

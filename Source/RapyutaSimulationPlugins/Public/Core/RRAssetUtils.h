@@ -375,4 +375,17 @@ public:
                                         const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr,
                                         const bool bInSaveBP = false,
                                         const FString& InBPBasePath = TEXT(""));
+    /**
+     * @brief Create a blueprint from an AActor
+     * Ref: [FKismetEditorUtilities::CreateBlueprintFromActor()]
+     * @param InActor
+     * @param InBlueprintClassName
+     * @param bInSaveBP Whether or not saving the output BP to disk
+     * @param InCDOFunc Callback to init CDO
+     * @return UBlueprint*
+     */
+    static UBlueprint* CreateBlueprintFromActor(AActor* InActor,
+                                                const FString& InBlueprintClassName,
+                                                const bool bInSaveBP,
+                                                const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr);
 };

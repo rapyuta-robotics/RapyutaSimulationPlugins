@@ -6,6 +6,7 @@
 
 #if WITH_EDITOR
 #include "BlueprintCompilationManager.h"
+#include "EditorAssetLibrary.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "KismetCompilerModule.h"
 #endif
@@ -100,7 +101,63 @@ UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
         return bpGeneratedClass;
     }
 #else
-    UE_LOG_WITH_INFO(LogTemp, Error, TEXT("UClass runtime creation requires WITH_EDITOR"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("UClass runtime creation requires WITH_EDITOR"));
+#endif
+    return nullptr;
+}
+
+UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
+                                                    const FString& InBlueprintClassName,
+                                                    const bool bInSaveBP,
+                                                    const TFunction<void(UObject* InCDO)>& InCDOFunc)
+{
+#if WITH_EDITOR
+    // 1- Create blueprint package as child class of [InActor]'s GetClass()
+    FString bpPackageName =
+        FString::Printf(TEXT("%s/%s"), *URRGameSingleton::Get()->ASSETS_RUNTIME_BP_SAVE_BASE_PATH, *InBlueprintClassName);
+    FString bpAssetName;
+    URRAssetUtils::GetAssetToolsModule().CreateUniqueAssetName(bpPackageName, TEXT(""), bpPackageName, bpAssetName);
+    UPackage* bpPackage = CreatePackage(*bpPackageName);
+    ensure(bpPackage);
+    bpPackage->SetPackageFlags(PKG_NewlyCreated | PKG_RuntimeGenerated);
+
+    // 2- Create the blueprint from this robot
+    FKismetEditorUtilities::FCreateBlueprintFromActorParams params;
+    params.bReplaceActor = false;
+    params.bKeepMobility = true;
+    params.bDeferCompilation = false;
+    params.bOpenBlueprint = false;
+    UBlueprint* blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(bpPackageName, InActor, params);
+
+    // 3- Compile the blueprint, required before creating its CDO
+    const EBlueprintCompileOptions bpCompileOptions =
+        EBlueprintCompileOptions::SkipGarbageCollection | EBlueprintCompileOptions::SkipDefaultObjectValidation |
+        EBlueprintCompileOptions::SkipFiBSearchMetaUpdate | EBlueprintCompileOptions::SkipNewVariableDefaultsDetection;
+    FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
+
+    auto& bpGeneratedClass = blueprint->GeneratedClass;
+    if (nullptr == bpGeneratedClass)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("After compiling [blueprint->GeneratedClass] is null"));
+        return nullptr;
+    }
+
+    // 4- Init its CDO
+    if (InCDOFunc)
+    {
+        UObject* cdo = blueprint->GetClass()->GetDefaultObject();
+        InCDOFunc(cdo);
+        // 4.1- Compile BP again after modifying CDO
+        FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
+    }
+
+    // 5- Save [bpPackage] to disk
+    if (bInSaveBP)
+    {
+        URRAssetUtils::SavePackageToAsset(bpPackage, blueprint);
+    }
+#else
+    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("UBlueprint runtime creation requires WITH_EDITOR"));
 #endif
     return nullptr;
 }
@@ -161,25 +218,36 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject)
            *InPackage->GetName(),
            *packageFileName);
 #endif
-    // NOTE: [UPackage::Save()] is Runtime, while [SavePackageHelper(InPackage, packageFileName))] is Editor
-    const FSavePackageResultStruct result = UPackage::Save(InPackage, InObject, *packageFileName, saveArgs);
-    if (ESavePackageResult::Success == result.Result)
-    {
-        UPackage::WaitForAsyncFileWrites();
-        UE_LOG(LogRapyutaCore,
-               Log,
-               TEXT("[%s] SAVED TO UASSET %s"),
-               InObject ? *InObject->GetName() : *InPackage->GetName(),
-               *packageFileName);
-        return true;
-    }
-    else
+    if (UEditorAssetLibrary::DoesAssetExist(InPackage->GetName()))
     {
         UE_LOG(LogRapyutaCore,
                Error,
-               TEXT("[%s] FAILED SAVING OBJECT TO UASSET - Error[%d]"),
-               InObject ? *InObject->GetName() : *InPackage->GetName(),
-               (uint8)result.Result);
+               TEXT("[%s] FAILED SAVING OBJECT TO UASSET, ALREADY EXISTING"),
+               InObject ? *InObject->GetName() : *InPackage->GetName());
         return false;
+    }
+    else
+    {
+        // NOTE: [UPackage::Save()] is Runtime, while [SavePackageHelper(InPackage, packageFileName))] is Editor
+        const FSavePackageResultStruct result = UPackage::Save(InPackage, InObject, *packageFileName, saveArgs);
+        if (ESavePackageResult::Success == result.Result)
+        {
+            UPackage::WaitForAsyncFileWrites();
+            UE_LOG(LogRapyutaCore,
+                   Log,
+                   TEXT("[%s] SAVED TO UASSET %s"),
+                   InObject ? *InObject->GetName() : *InPackage->GetName(),
+                   *packageFileName);
+            return true;
+        }
+        else
+        {
+            UE_LOG(LogRapyutaCore,
+                   Error,
+                   TEXT("[%s] FAILED SAVING OBJECT TO UASSET - Error[%d]"),
+                   InObject ? *InObject->GetName() : *InPackage->GetName(),
+                   (uint8)result.Result);
+            return false;
+        }
     }
 }
