@@ -16,6 +16,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRBaseActor.h"
+#include "Core/RRObjectCommon.h"
 #include "Drives/RRJointComponent.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
@@ -133,6 +134,12 @@ public:
         return className.StartsWith(TEXT("BP"))             // In-Editor
                || className.StartsWith(TEXT("SKEL_BP"));    // In-Package auto prefixed [SKEL_]
     }
+
+    /**
+     * @brief Get name of a dynamic robot resource (mesh, skeleton, physics asset, etc.)
+     * @param InDataType
+     */
+    FString GetDynamicResourceName(const ERRResourceDataType InDataType) const;
 
     //! Robot creation done delegate
     FOnRobotCreationDone OnRobotCreationDone;

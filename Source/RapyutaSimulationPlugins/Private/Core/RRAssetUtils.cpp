@@ -117,7 +117,7 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
     FString bpAssetName;
     URRAssetUtils::GetAssetToolsModule().CreateUniqueAssetName(bpPackageName, TEXT(""), bpPackageName, bpAssetName);
 
-    // 2- Create the blueprint from this robot
+    // 1.1 - Create the blueprint from this robot
     FKismetEditorUtilities::FCreateBlueprintFromActorParams params;
     params.bReplaceActor = false;
     params.bKeepMobility = true;
@@ -126,7 +126,7 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
     // NOTE: [UPackage] for the blueprint is already created here-in
     UBlueprint* blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(bpPackageName, InActor, params);
 
-    // 3- Compile the blueprint, required before creating its CDO
+    // 2- Compile the blueprint, required before creating its CDO
     const EBlueprintCompileOptions bpCompileOptions =
         EBlueprintCompileOptions::SkipGarbageCollection | EBlueprintCompileOptions::SkipDefaultObjectValidation |
         EBlueprintCompileOptions::SkipFiBSearchMetaUpdate | EBlueprintCompileOptions::SkipNewVariableDefaultsDetection;
@@ -139,10 +139,10 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
         return nullptr;
     }
 
-    // 4- Create its CDO
+    // 3- Create its CDO
     UObject* cdo = bpGeneratedClass->GetDefaultObject();
 
-    // 4.1- Init its CDO
+    // 3.1- Init its CDO
     if (InCDOFunc)
     {
         InCDOFunc(cdo);
@@ -150,7 +150,7 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
         FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
     }
 
-    // 5- Save [blueprint]'s package to uasset on disk
+    // 4- Save [blueprint]'s package to uasset on disk
     if (bInSaveBP)
     {
         URRAssetUtils::SavePackageToAsset(blueprint->GetPackage(), blueprint);
