@@ -218,6 +218,8 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject)
            *InPackage->GetName(),
            *packageFileName);
 #endif
+#if RAPYUTA_SIM_DEBUG
+    // NOTE: This check unclear yet causes a crash on Subsystem, to be investigated
     if (UEditorAssetLibrary::DoesAssetExist(InPackage->GetName()))
     {
         UE_LOG(LogRapyutaCore,
@@ -227,6 +229,7 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject)
         return false;
     }
     else
+#endif
     {
         // NOTE: [UPackage::Save()] is Runtime, while [SavePackageHelper(InPackage, packageFileName))] is Editor
         const FSavePackageResultStruct result = UPackage::Save(InPackage, InObject, *packageFileName, saveArgs);
@@ -242,11 +245,11 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject)
         }
         else
         {
-            UE_LOG(LogRapyutaCore,
-                   Error,
-                   TEXT("[%s] FAILED SAVING OBJECT TO UASSET - Error[%d]"),
-                   InObject ? *InObject->GetName() : *InPackage->GetName(),
-                   (uint8)result.Result);
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Error,
+                             TEXT("[%s] FAILED SAVING OBJECT TO UASSET - Error[%d]"),
+                             InObject ? *InObject->GetName() : *InPackage->GetName(),
+                             (uint8)result.Result);
             return false;
         }
     }
