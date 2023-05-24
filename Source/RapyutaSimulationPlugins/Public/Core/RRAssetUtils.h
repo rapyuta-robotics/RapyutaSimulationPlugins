@@ -18,6 +18,7 @@
 
 #if WITH_EDITOR
 #include "AssetToolsModule.h"
+#include "IAssetTools.h"
 #endif
 
 // RapyutaSim

@@ -6,7 +6,9 @@
 
 #if WITH_EDITOR
 #include "BlueprintCompilationManager.h"
+#if RAPYUTA_SIM_DEBUG
 #include "EditorAssetLibrary.h"
+#endif
 #include "Kismet2/KismetEditorUtilities.h"
 #include "KismetCompilerModule.h"
 #endif
