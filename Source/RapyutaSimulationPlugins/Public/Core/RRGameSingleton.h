@@ -103,7 +103,7 @@ public:
     //! And please note that the Sim does not store assets in Project, just to make them accessible among plugins.
     static constexpr const TCHAR* ASSETS_ROOT_PATH = TEXT("/");
     static constexpr const TCHAR* ASSETS_PROJECT_MODULE_NAME = TEXT("Game/RapyutaContents");
-    
+
     /**
      * @brief Get the Assets Base Path object. 
      * Return #ASSETS_ROOT_PATH / InModuleName
