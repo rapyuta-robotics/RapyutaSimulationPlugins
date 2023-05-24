@@ -130,7 +130,7 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
     const EBlueprintCompileOptions bpCompileOptions =
         EBlueprintCompileOptions::SkipGarbageCollection | EBlueprintCompileOptions::SkipDefaultObjectValidation |
         EBlueprintCompileOptions::SkipFiBSearchMetaUpdate | EBlueprintCompileOptions::SkipNewVariableDefaultsDetection;
-    FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
+    FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions);
 
     auto& bpGeneratedClass = blueprint->GeneratedClass;
     if (nullptr == bpGeneratedClass)
@@ -147,7 +147,7 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
     {
         InCDOFunc(cdo);
         // 4.1- Compile BP again after modifying CDO
-        FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions, nullptr);
+        FKismetEditorUtilities::CompileBlueprint(blueprint, bpCompileOptions);
     }
 
     // 4- Save [blueprint]'s package to uasset on disk
