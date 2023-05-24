@@ -43,11 +43,13 @@ public:
         return assetRegistryModule.Get();
     }
 
+#if WITH_EDITOR
     static IAssetTools& GetAssetToolsModule()
     {
         static FAssetToolsModule& assetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools");
         return assetToolsModule.Get();
     }
+#endif
 
     static bool IsAssetPackageValid(const FAssetData& InAssetData, bool bIsLogged = false)
     {

@@ -180,8 +180,13 @@ bool URRAssetUtils::SaveObjectToAssetInModule(UObject* InObject,
 bool URRAssetUtils::SaveObjectToAsset(UObject* InObject, const FString& InAssetPath, bool bInStripEditorOnlyContent)
 {
     // Compose package name
+#if WITH_EDITOR
     FString uniquePackageName, uniqueAssetName;
     URRAssetUtils::GetAssetToolsModule().CreateUniqueAssetName(InAssetPath, TEXT(""), uniquePackageName, uniqueAssetName);
+#else
+    const FString uniquePackageName = InAssetPath;
+    const FString uniqueAssetName = FPaths::GetBaseFilename(InAssetPath);
+#endif
 
     // Create package wrapping [savedObject]
     UPackage* package = CreatePackage(*uniquePackageName);
