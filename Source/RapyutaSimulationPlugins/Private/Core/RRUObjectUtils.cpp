@@ -466,8 +466,8 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
     //static UTexture* blackMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
     //static UTexture* whiteMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK);
-    UTexture* blackMaskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_BlackMask"));
-    UTexture* whiteMaskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_WhiteMask"));
+    UTexture* blackMaskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_BlackColorMask"));
+    UTexture* whiteMaskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_WhiteColorMask"));
 
     // Albedo texture
     if (bApplyManufacturingAlbedo)
@@ -592,12 +592,12 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
     float emissiveStrength = 0.f;
     if (InMaskReset)
     {
-        maskTexture = URRGameSingleton::Get()->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK);
+        maskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_WhiteColorMask"));
         emissiveStrength = 0.f;
     }
     else
     {
-        maskTexture = URRGameSingleton::Get()->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
+        maskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_BlackColorMask"));
         emissiveStrength = 500.f;
     }
 
