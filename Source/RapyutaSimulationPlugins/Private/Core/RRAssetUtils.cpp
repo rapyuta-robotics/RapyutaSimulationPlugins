@@ -220,7 +220,7 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject)
     UE_LOG(LogRapyutaCore,
            Warning,
            TEXT("Saving Asset [%s] Package [%s] -> PackageFile [%s]"),
-           *savedObject->GetName(),
+           InObject ? *InObject->GetName() : EMPTY_STR,
            *InPackage->GetName(),
            *packageFileName);
 #endif

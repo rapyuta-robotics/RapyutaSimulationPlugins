@@ -332,7 +332,7 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
 void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& InMeshSectionData,
                                                FMeshDescriptionBuilder& OutMeshDescBuilder)
 {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
     uint32 meshSectionIndex = 0;
 #endif
     for (auto& mesh : InMeshSectionData)
