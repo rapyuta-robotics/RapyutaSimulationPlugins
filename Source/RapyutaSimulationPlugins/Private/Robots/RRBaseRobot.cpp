@@ -10,6 +10,7 @@
 #include "ROS2NodeComponent.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRGameSingleton.h"
 #include "Core/RRNetworkGameMode.h"
 #include "Core/RRNetworkGameState.h"
 #include "Core/RRNetworkPlayerController.h"
@@ -133,6 +134,11 @@ bool ARRBaseRobot::IsAuthorizedInThisClient()
         GetWorld()->GetTimerManager().ClearTimer(ROS2InitTimer);
     }
     return res;
+}
+
+FString ARRBaseRobot::GetDynamicResourceName(const ERRResourceDataType InDataType) const
+{
+    return URRUObjectUtils::ComposeDynamicResourceName(URRGameSingleton::GetAssetNamePrefix(InDataType), *RobotModelName);
 }
 
 void ARRBaseRobot::PreInitializeComponents()

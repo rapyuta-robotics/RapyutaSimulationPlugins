@@ -142,10 +142,18 @@ public:
 protected:
     /**
      * @brief Set #GameMode #GameState #GameSingleton #PlayerController
-     *
      */
     virtual void PreInitializeComponents() override;
+    /**
+     * @brief Print class members' values configured in RapyutaSimSettings.ini
+     */
     virtual void PrintSimConfig() const
+    {
+    }
+    /**
+     * @brief Globally config custom setups (eg. Exec() cmds) applied for all instances of this class
+     */
+    virtual void DoGlobalConfig()
     {
     }
 };

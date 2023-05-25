@@ -34,3 +34,4 @@ Contents
    robots
    distributed_simulation
    ue_api
+   ue_asset

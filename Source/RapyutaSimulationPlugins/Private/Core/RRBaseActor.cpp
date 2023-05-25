@@ -65,7 +65,12 @@ bool ARRBaseActor::Initialize()
     {
         ARRBaseActor::OnceFlagList.Add(thisClass, MakeUnique<std::once_flag>());
     }
-    std::call_once(*OnceFlagList[thisClass], [this]() { PrintSimConfig(); });
+    std::call_once(*OnceFlagList[thisClass],
+                   [this]()
+                   {
+                       PrintSimConfig();
+                       DoGlobalConfig();
+                   });
 
     // Entity Model Name
     if (ActorInfo.IsValid())

@@ -123,7 +123,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
     int32 ToBeAsyncLoadedResourceNum = 0;
 
     UPROPERTY()
-    bool HasBeenAllLoaded = false;
+    bool bHasBeenAllLoaded = false;
 
     UPROPERTY()
     TMap<FString, FRRResource> Data;
@@ -144,7 +144,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
     {
         DataType = ERRResourceDataType::NONE;
         ToBeAsyncLoadedResourceNum = 0;
-        HasBeenAllLoaded = false;
+        bHasBeenAllLoaded = false;
 
         // BodySetup's collision mesh data are manually created from the underlying Physics engine,
         // thus needs manual flush
