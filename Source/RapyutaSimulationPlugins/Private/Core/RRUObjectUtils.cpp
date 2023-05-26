@@ -423,7 +423,6 @@ bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor,
                                                   const FRRMaterialProperty& InMaterialInfo,
                                                   bool bApplyManufacturingAlbedo)
 {
-    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("ApplyMeshActorMaterialProps"));
     UMeshComponent* meshComp = nullptr;
     if (auto* meshActor = Cast<ARRMeshActor>(InActor))
     {
@@ -446,12 +445,9 @@ bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor,
     InMaterialInfo.PrintSelf();
     for (auto i = 0; i < GetActorMaterialsNum(InActor); ++i)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("ApplyMeshActorMaterialProps %d"), i);
-        //UMaterialInstanceDynamic* baseMaterial = GetActorBaseMaterial(InActor, i);
         UMaterialInstanceDynamic* material = Cast<UMaterialInstanceDynamic>(meshComp->GetMaterial(i));
         if (material)
         {
-            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("baseMaterial %d"), i);
             ApplyMaterialProps(material, InMaterialInfo, bApplyManufacturingAlbedo);
             return true;
         }
@@ -464,10 +460,8 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
                                          bool bApplyManufacturingAlbedo)
 {
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
-    //static UTexture* blackMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
-    //static UTexture* whiteMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK);
-    UTexture* blackMaskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_BlackColorMask"));
-    UTexture* whiteMaskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_WhiteColorMask"));
+    static UTexture* blackMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_COLOR_MASK);
+    static UTexture* whiteMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_COLOR_MASK);
 
     // Albedo texture
     if (bApplyManufacturingAlbedo)
@@ -484,8 +478,6 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
                                             (InMaterialInfo.AlbedoColorList.Num() > 0)
                                                 ? URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoColorList)
                                                 : FLinearColor::Transparent);
-        // Emissive strength
-        //InMaterial->SetScalarParameterValue(FRRMaterialProperty::PROP_NAME_EMISSIVE_STRENGTH, 1.f);
 
         // Mask Texture: default White
         InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK,
@@ -496,7 +488,6 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
     else
     {
         // Mask Texture: default Black
-        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Set default Texture (Black)"));
         InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK, blackMaskTexture);
     }
 
@@ -515,59 +506,8 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
     }
 }
 
-/*
-bool URRUObjectUtils::SetMeshRobotColor(UMeshComponent* BaseMeshComp, const FLinearColor& InColor)
+bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor, bool InEmitColor, bool InWhiteMask)
 {
-    if (BaseMeshComp)
-    {
-        meshComp = meshActor->BaseMeshComp;
-    }
-    else if (auto* staticMeshActor = Cast<AStaticMeshActor>(InMeshActor))
-    {
-        meshComp = staticMeshActor->GetStaticMeshComponent();
-    }
-    else
-    {
-        meshComp = Cast<UMeshComponent>(InMeshActor->GetComponentByClass(UMeshComponent::StaticClass()));
-    }
-    UTexture* blackMaskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_BlackMask"));
-    for (auto i = 0; i < BaseMeshComp->GetMaterials().Num(); ++i)
-    {
-        UMaterialInstanceDynamic* material = Cast<UMaterialInstanceDynamic>(BaseMeshComp->GetMaterial(i));
-        if (material)
-        {
-            material->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK, blackMaskTexture);
-            material->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO, InColor);
-            material->SetScalarParameterValue(FRRMaterialProperty::PROP_NAME_ALBEDO, 50);
-            // material->SetOverrideDiffuseBoost(true);
-            // material->SetDiffuseBoost(50);
-        }
-    }
-    return true;
-}
-
-bool URRUObjectUtils::ResetMeshRobotColor(UAActor* InMeshActor)
-{
-    //UTexture* whiteMaskTexture = URRGameSingleton::Get()->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK);
-    UTexture* whiteMaskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_WhiteMask"));
-    for (auto i = 0; i < BaseMeshComp->GetMaterials().Num(); ++i)
-    {
-        UMaterialInstanceDynamic* material = Cast<UMaterialInstanceDynamic>(BaseMeshComp->GetMaterial(i));
-        if (material)
-        {
-            material->SetOverrideEmissiveBoost(true);
-            material->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK, whiteMaskTexture);
-            material->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO, FLinearColor::Black);
-            //material->SetScalarParameterValue(FRRMaterialProperty::PROP_NAME_EMISSIVE_STRENGTH, 0.f);
-        }
-    }
-    return true;
-}
-*/
-
-bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor, bool InMaskReset)
-{
-    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("SetMeshActorColor"));
     UMeshComponent* meshComp = nullptr;
     if (auto* meshActor = Cast<ARRMeshActor>(InMeshActor))
     {
@@ -588,26 +528,24 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
         return false;
     }
 
+    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
     static UTexture* maskTexture = nullptr;
-    float emissiveStrength = 0.f;
-    if (InMaskReset)
+    if (InWhiteMask)
     {
-        maskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_WhiteColorMask"));
-        emissiveStrength = 0.f;
+        maskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_COLOR_MASK);
     }
     else
     {
-        maskTexture = URRGameSingleton::Get()->GetTexture(TEXT("T_BlackColorMask"));
-        emissiveStrength = 500.f;
+        maskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_COLOR_MASK);
     }
+
+    float emissiveStrength = InEmitColor ? 500.f : 0.f;
 
     for (auto i = 0; i < meshComp->GetMaterials().Num(); ++i)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("GetMaterials()"));
         UMaterialInstanceDynamic* material = Cast<UMaterialInstanceDynamic>(meshComp->GetMaterial(i));
         if (material)
         {
-            UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("GetMaterials() [%d]"), i);
             material->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_MASK, maskTexture);
             material->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO, InColor);
             material->SetScalarParameterValue(FRRMaterialProperty::PROP_NAME_EMISSIVE_STRENGTH, emissiveStrength);
