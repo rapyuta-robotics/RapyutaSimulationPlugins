@@ -24,16 +24,25 @@
 
 #include "RRBaseRobot.generated.h"
 
-#define RR_VERIFY_DYNAMIC_ROBOT(InRobot)          \
-    if (InRobot)                                  \
-    {                                             \
-        verify(InRobot->IsDynamicRuntimeRobot()); \
+#define RR_VERIFY_DYNAMIC_ROBOT(InRobot)                                                                                  \
+    if (InRobot && (false == InRobot->IsDynamicRuntimeRobot()))                                                           \
+    {                                                                                                                     \
+        UE_LOG_WITH_INFO(LogTemp,                                                                                         \
+                         Error,                                                                                           \
+                         TEXT("[ClassName:%s] is required to be NOT prefixed with [BP_] or [SKEL_BP] if this is purely a" \
+                              "cpp-based robot class!"),                                                                  \
+                         *InRobot->GetClass()->GetName());                                                                \
     }
-#define RR_VERIFY_STATIC_BP_ROBOT(InRobot)  \
-    if (InRobot)                            \
-    {                                       \
-        verify(InRobot->IsStaticBPRobot()); \
+
+#define RR_VERIFY_STATIC_BP_ROBOT(InRobot)                                                                                 \
+    if (InRobot && (false == InRobot->IsStaticBPRobot()))                                                                  \
+    {                                                                                                                      \
+        UE_LOG_WITH_INFO(LogTemp,                                                                                          \
+                         Error,                                                                                            \
+                         TEXT("[ClassName:%s] is required to be prefixed with [BP_] if this is a blueprint robot class!"), \
+                         *InRobot->GetClass()->GetName());                                                                 \
     }
+
 #define RR_VERIFY_DYNAMIC_OR_STATIC_BP_ROBOT(InRobot) \
     {                                                 \
     }

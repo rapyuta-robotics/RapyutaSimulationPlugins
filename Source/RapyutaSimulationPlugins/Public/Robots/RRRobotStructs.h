@@ -333,8 +333,7 @@ public:
 
             case ERRRobotJointType::REVOLUTE:
             {
-                static constexpr float RR_2_PI = 2 * M_PI;
-                return (UpperLimit > RR_2_PI) ? ACM_Free : ACM_Limited;
+                return (UpperLimit > UE_TWO_PI) ? ACM_Free : ACM_Limited;
             }
 
             case ERRRobotJointType::FLOATING:
