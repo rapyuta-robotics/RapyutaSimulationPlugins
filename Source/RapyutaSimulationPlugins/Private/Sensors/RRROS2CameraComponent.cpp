@@ -97,6 +97,9 @@ FROSImg URRROS2CameraComponent::GetROS2Data()
 {
     if (!RenderRequestQueue.IsEmpty())
     {
+        // Timestamp
+        Data.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
+
         // Peek the next RenderRequest from queue
         FRenderRequest* nextRenderRequest = nullptr;
         RenderRequestQueue.Peek(nextRenderRequest);
