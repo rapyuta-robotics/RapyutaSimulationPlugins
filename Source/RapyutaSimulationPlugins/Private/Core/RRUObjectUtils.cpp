@@ -442,7 +442,6 @@ bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor,
         UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("[%s] has NO Mesh component"), *InActor->GetName());
         return false;
     }
-    InMaterialInfo.PrintSelf();
     for (auto i = 0; i < GetActorMaterialsNum(InActor); ++i)
     {
         UMaterialInstanceDynamic* material = Cast<UMaterialInstanceDynamic>(meshComp->GetMaterial(i));
