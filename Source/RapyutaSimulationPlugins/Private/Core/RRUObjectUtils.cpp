@@ -466,7 +466,6 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
     // Albedo texture
     if (bApplyManufacturingAlbedo)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Albedo texture"));
         if (InMaterialInfo.AlbedoTextureNameList.Num() > 0)
         {
             InMaterial->SetTextureParameterValue(
