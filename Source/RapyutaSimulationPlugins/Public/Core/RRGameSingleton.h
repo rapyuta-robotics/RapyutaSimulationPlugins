@@ -678,6 +678,8 @@ public:
 
     static constexpr const TCHAR* TEXTURE_NAME_WHITE_MASK = TEXT("T_WhiteMask");
     static constexpr const TCHAR* TEXTURE_NAME_BLACK_MASK = TEXT("T_BlackMask");
+    static constexpr const TCHAR* TEXTURE_NAME_WHITE_COLOR_MASK = TEXT("T_WhiteColorMask");
+    static constexpr const TCHAR* TEXTURE_NAME_BLACK_COLOR_MASK = TEXT("T_BlackColorMask");
 
     /**
      * @brief Call #GetSimResource with #ERRResourceDataType::UE_TEXTURE
