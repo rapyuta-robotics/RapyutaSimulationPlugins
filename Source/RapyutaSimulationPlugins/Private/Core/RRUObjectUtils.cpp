@@ -460,8 +460,8 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
                                          bool bApplyManufacturingAlbedo)
 {
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
-    static UTexture* blackMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_COLOR_MASK);
-    static UTexture* whiteMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_COLOR_MASK);
+    UTexture* blackMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_COLOR_MASK);
+    UTexture* whiteMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_COLOR_MASK);
 
     // Albedo texture
     if (bApplyManufacturingAlbedo)
@@ -529,7 +529,7 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
     }
 
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
-    static UTexture* maskTexture = nullptr;
+    UTexture* maskTexture = nullptr;
     if (InWhiteMask)
     {
         maskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_COLOR_MASK);
