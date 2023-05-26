@@ -189,7 +189,7 @@ bool ARRGameMode::TryStartingSim()
             {
                 // Clear the timer to avoid repeated call to the method
                 URRCoreUtils::StopRegisteredTimer(world, OwnTimerHandle);
-                UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("DYNAMIC RESOURCES LOADING TIMEOUT -> SHUTTING DOWN THE SIM..."))
+                UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("DYNAMIC RESOURCES LOADING TIMEOUT -> SHUTTING DOWN THE SIM..."))
             },
             sBeginTime,
             ARRGameMode::SIM_START_TIMEOUT_SECS);
@@ -205,17 +205,22 @@ bool ARRGameMode::TryStartingSim()
     URRCoreUtils::StopRegisteredTimer(world, OwnTimerHandle);
 
     URRCoreUtils::ScreenMsg(FColor::Yellow, TEXT("ALL DYNAMIC RESOURCES LOADED!"), 10.f);
-    UE_LOG(LogRapyutaCore, Verbose, TEXT("ALL DYNAMIC RESOURCES LOADED! -> BRING UP THE SIM NOW... ========================"));
+#if RAPYUTA_SIM_VERBOSE
+    UE_LOG(LogRapyutaCore, Warning, TEXT("ALL DYNAMIC RESOURCES LOADED! -> BRING UP THE SIM NOW... ========================"));
+#endif
 
     // 1 - [GameState]::StartSim()
     auto gameState = GetGameState<ARRGameState>();
-    if (!gameState)
+    if (gameState)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Fatal, TEXT("GAME STATE IS NULL!"))
-        return false;
+        gameState->StartSim();
+        UE_LOG(LogRapyutaCore, Log, TEXT("SIM STARTED, GLOBAL ACTORS ARE ACCESSIBLE NOW! ========================"));
     }
-    gameState->StartSim();
-    UE_LOG(LogRapyutaCore, Verbose, TEXT("SIM STARTED, SIM SCENE'S ACTORS ARE ACCESSIBLE NOW! ========================"))
+    else
+    {
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore, Error, TEXT("GameState is NOT of [ARRGameState], as required to initialize global actors"));
+    }
 
     // 2- START PARENT'S PLAY, WHICH TRIGGER OTHERS PLAY FROM GAME STATE, PLAYER CONTROLLER, ETC.
     ARRROS2GameMode::StartPlay();
@@ -224,7 +229,7 @@ bool ARRGameMode::TryStartingSim()
 
 void ARRGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    // 1 - These resources were initialized in [ARRGameMode::StartPlay()], which does not have a corresponding EndPlay()
+    // These resources were initialized in [ARRGameMode::StartSim()]
     URRGameSingleton::Get()->FinalizeResources();
 
     Super::EndPlay(EndPlayReason);

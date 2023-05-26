@@ -32,7 +32,7 @@ void URRPoseSensorManager::OnComponentCreated()
 void URRPoseSensorManager::InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                              const FString& InPublisherName,
                                              const FString& InTopicName,
-                                             const TEnumAsByte<UROS2QoS> InQoS)
+                                             const UROS2QoS InQoS)
 {
     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s"), *ReferenceTag);
     Super::InitalizeWithROS2(InROS2Node, InPublisherName, InTopicName, InQoS);

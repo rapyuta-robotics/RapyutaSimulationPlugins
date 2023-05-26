@@ -11,12 +11,10 @@
 #include "StaticMeshAttributes.h"
 
 // RapyutaSimulationPlugins
-#include "Core/RRGameSingleton.h"
-#include "Core/RRMeshUtils.h"
-
-// RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Core/RRGameSingleton.h"
 #include "Core/RRMeshActor.h"
+#include "Core/RRMeshUtils.h"
 #include "Core/RRThreadUtils.h"
 #include "Core/RRTypeUtils.h"
 
@@ -91,9 +89,10 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
     UStaticMesh* staticMesh = gameSingleton->GetStaticMesh(InMeshFileName, false);
     const bool bStaticMeshAlreadyExists = (nullptr != staticMesh);
-    MeshUniqueName = bStaticMeshAlreadyExists
-                         ? InMeshFileName
-                         : URRUObjectUtils::ComposeDynamicResourceName(TEXT("SM"), *FPaths::GetBaseFilename(InMeshFileName));
+    MeshUniqueName = bStaticMeshAlreadyExists ? InMeshFileName
+                                              : URRUObjectUtils::ComposeDynamicResourceName(
+                                                    URRGameSingleton::GetAssetNamePrefix(ERRResourceDataType::UE_STATIC_MESH),
+                                                    *FPaths::GetBaseFilename(InMeshFileName));
     ShapeType = URRGameSingleton::GetShapeTypeFromMeshName(InMeshFileName);
 
 #if RAPYUTA_SIM_DEBUG
@@ -239,6 +238,10 @@ UStaticMesh* URRStaticMeshComponent::CreateMesh(const FRRMeshData& InMeshData, b
         check(currentPlatform);
         const FStaticMeshLODGroup& lodGroup = currentPlatform->GetStaticMeshLODSettings().GetLODGroup(NAME_None);
         int32 lodsNum = lodGroup.GetDefaultNumLODs();
+        if (lodsNum == 0)
+        {
+            lodsNum = 1;
+        }
         while (staticMesh->GetNumSourceModels() < lodsNum)
         {
             staticMesh->AddSourceModel();
@@ -314,6 +317,13 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
     // Add to the global resource store
     URRGameSingleton::Get()->AddDynamicResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, visualMesh, MeshUniqueName);
 
+#if RAPYUTA_SIM_DEBUG
+    // NOTE: Not ready yet, still FALSE [visualMesh]'s IsMeshDescriptionValid()
+    // Save to static mesh [UASSET] file on disk
+    URRAssetUtils::SaveObjectToAssetInModule(
+        visualMesh, ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME);
+#endif
+
     // This also signals [OnMeshCreationDone] async
     SetMesh(visualMesh);
     return visualMesh;
@@ -322,7 +332,7 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
 void URRStaticMeshComponent::CreateMeshSection(const TArray<FRRMeshNodeData>& InMeshSectionData,
                                                FMeshDescriptionBuilder& OutMeshDescBuilder)
 {
-#if RAPYUTA_SIM_DEBUG
+#if RAPYUTA_SIM_VERBOSE
     uint32 meshSectionIndex = 0;
 #endif
     for (auto& mesh : InMeshSectionData)

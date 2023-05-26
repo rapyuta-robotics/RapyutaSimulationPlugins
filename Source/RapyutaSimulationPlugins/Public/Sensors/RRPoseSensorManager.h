@@ -30,7 +30,7 @@ enum class ERRRefActorSelectMode : uint8
  * @brief Robot pose sensor manager which has two #URRROS2EntityStateSensorComponent which publishes
  * - Reference Actor pose from world origin
  * - Pose from reference actor.
- * Typical usecase is to set map origin as reference actor and publish robot pose from map_origin. 
+ * Typical usecase is to set map origin as reference actor and publish robot pose from map_origin.
  * This is useful to navigate robot in the large area such as multiple floor building which has multiple map origins.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
@@ -71,7 +71,7 @@ public:
     virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                    const FString& InPublisherName = EMPTY_STR,
                                    const FString& InTopicName = EMPTY_STR,
-                                   const TEnumAsByte<UROS2QoS> InQoS = UROS2QoS::SensorData) override;
+                                   const UROS2QoS InQoS = UROS2QoS::SensorData) override;
 
     /**
      * @brief Calculate relative pose with #URRGeneralUtils and update #Data

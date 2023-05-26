@@ -2,10 +2,6 @@
 
 #include "Core/RRGameSingleton.h"
 
-// UE
-#include "Engine/AssetManager.h"
-#include "Engine/Engine.h"
-
 // RapyutaSim
 #include "Core/RRTypeUtils.h"
 
@@ -77,96 +73,31 @@ bool URRGameSingleton::InitializeResources()
     // READ ALL SIM DYNAMIC RESOURCES (UASSETS) INFO FROM DESGINATED [~CONTENT] FOLDERS
     // & REGISTER THEM TO BE ASYNC LOADED INTO [ResourceMap]
     // [STATIC MESH] --
-    ERRResourceDataType dataType = ERRResourceDataType::UE_STATIC_MESH;
-    CollateAssetsInfo<UStaticMesh>(dataType, FOLDER_PATH_ASSET_STATIC_MESHES);
-
-    // Request StaticMesh resource async loading
-    GetSimResourceInfo(dataType).HasBeenAllLoaded = false;
-    verify(RequestResourcesLoading(dataType));
-
-    // (NOTE) RuntimeMesh & SkeletalMesh-related resources are only created in runtime for now
-    // (though they could be also loaded from Content)
+    RequestResourcesLoading<ERRResourceDataType::UE_STATIC_MESH>();
 
     // [SKELETAL MESH] --
-    GetSimResourceInfo(ERRResourceDataType::UE_SKELETAL_MESH).HasBeenAllLoaded = true;
+    RequestResourcesLoading<ERRResourceDataType::UE_SKELETAL_MESH>();
 
     // [SKELETON] --
-    GetSimResourceInfo(ERRResourceDataType::UE_SKELETON).HasBeenAllLoaded = true;
+    RequestResourcesLoading<ERRResourceDataType::UE_SKELETON>();
 
     // [PHYSICS ASSET] --
-    GetSimResourceInfo(ERRResourceDataType::UE_PHYSICS_ASSET).HasBeenAllLoaded = true;
+    RequestResourcesLoading<ERRResourceDataType::UE_PHYSICS_ASSET>();
 
     // [MATERIAL] --
-    dataType = ERRResourceDataType::UE_MATERIAL;
-    CollateAssetsInfo<UMaterialInterface>(dataType, FOLDER_PATH_ASSET_MATERIALS);
-    CollateAssetsInfo<UPhysicalMaterial>(dataType, FOLDER_PATH_ASSET_MATERIALS);
-
-    // Request Material resource async loading
-    GetSimResourceInfo(dataType).HasBeenAllLoaded = false;
-    verify(RequestResourcesLoading(dataType));
+    RequestResourcesLoading<ERRResourceDataType::UE_MATERIAL>();
 
     // [TEXTURE] --
-    dataType = ERRResourceDataType::UE_TEXTURE;
-    CollateAssetsInfo<UTexture>(dataType, FOLDER_PATH_ASSET_TEXTURES);
-    // Request Texture resource async loading
-    GetSimResourceInfo(dataType).HasBeenAllLoaded = false;
-    verify(RequestResourcesLoading(dataType));
+    RequestResourcesLoading<ERRResourceDataType::UE_TEXTURE>();
 
     // [BODY SETUP] --
-    // Body setups are dynamically created in runtime
-    GetSimResourceInfo(ERRResourceDataType::UE_BODY_SETUP).HasBeenAllLoaded = true;
+    // Body setups are dynamically created in runtime only
+    GetSimResourceInfo(ERRResourceDataType::UE_BODY_SETUP).bHasBeenAllLoaded = true;
 
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("RESOURCES REGISTERED TO BE LOADED!"));
+#if RAPYUTA_SIM_VERBOSE
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("RESOURCES REGISTERED TO BE LOADED!"));
+#endif
     return true;
-}
-
-bool URRGameSingleton::RequestResourcesLoading(const ERRResourceDataType InDataType)
-{
-    const FRRResourceInfo& resourceInfo = GetSimResourceInfo(InDataType);
-    const int32 resourceNum = resourceInfo.Data.Num();
-    if (resourceInfo.HasBeenAllLoaded)
-    {
-        UE_LOG_WITH_INFO(
-            LogRapyutaCore, Warning, TEXT("All resources have been loaded. No need to request the resources loading again."));
-        return true;
-    }
-    else if (0 == resourceNum)
-    {
-        UE_LOG_WITH_INFO(LogRapyutaCore,
-                         Warning,
-                         TEXT("THERE ARE NO [%s] TO BE LOADED."),
-                         *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
-        return true;
-    }
-
-    // REQUEST FOR LOADING THE RESOURCES ASYNCHRONOUSLY
-    GetSimResourceInfo(InDataType).ToBeAsyncLoadedResourceNum = resourceNum;
-    UE_LOG_WITH_INFO(LogRapyutaCore,
-                     Display,
-                     TEXT("[%s] TO BE LOADED NUM: %d"),
-                     *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-                     resourceNum);
-
-    UAssetManager* assetManager = UAssetManager::GetIfValid();
-    if (assetManager)
-    {
-        for (const auto& resourceMetaData : resourceInfo.Data)
-        {
-            // https://docs.unrealengine.com/en-US/Resources/SampleGames/ARPG/BalancingBlueprintAndCPP/index.html
-            // "Avoid Referencing Assets by String"
-            FSoftObjectPath resourceSoftObjPath(resourceMetaData.Value.GetAssetPath());
-            assetManager->GetStreamableManager().RequestAsyncLoad(
-                resourceSoftObjPath,
-                FStreamableDelegate::CreateUObject(
-                    this, &URRGameSingleton::OnResourceLoaded, InDataType, resourceSoftObjPath, resourceMetaData.Value.UniqueName));
-        }
-        return true;
-    }
-    else
-    {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("UNABLE TO GET ASSET MANAGER!"))
-        return false;
-    }
 }
 
 void URRGameSingleton::FinalizeResources()
@@ -184,7 +115,7 @@ bool URRGameSingleton::HaveAllResourcesBeenLoaded(bool bIsLogged) const
     bool bResult = true;
     for (const auto& resourceInfo : ResourceMap)
     {
-        bResult &= resourceInfo.Value.HasBeenAllLoaded;
+        bResult &= resourceInfo.Value.bHasBeenAllLoaded;
         if (!bResult && bIsLogged)
         {
             UE_LOG_WITH_INFO(LogRapyutaCore,
