@@ -439,7 +439,7 @@ bool URRUObjectUtils::ApplyMeshActorMaterialProps(AActor* InActor,
 
     if (nullptr == meshComp)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("SetMeshActorColor() [%s] has NO Mesh component"), *InActor->GetName());
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("[%s] has NO Mesh component"), *InActor->GetName());
         return false;
     }
     InMaterialInfo.PrintSelf();
