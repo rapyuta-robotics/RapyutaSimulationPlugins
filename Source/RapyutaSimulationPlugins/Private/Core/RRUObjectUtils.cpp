@@ -522,13 +522,13 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
 
     if (nullptr == meshComp)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("SetMeshActorColor() [%s] has NO Mesh component"), *InMeshActor->GetName());
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("[%s] has NO Mesh component"), *InMeshActor->GetName());
         return false;
     }
 
-    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
     const TCHAR* maskTextureName = (FLinearColor::Transparent == InColor) ? URRGameSingleton::TEXTURE_NAME_WHITE_MASK
                                                                           : URRGameSingleton::TEXTURE_NAME_BLACK_MASK;
+    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
     UTexture* maskTexture = gameSingleton->GetTexture(maskTextureName);
     float emissiveStrength = InEmitColor ? 500.f : 0.f;
 
