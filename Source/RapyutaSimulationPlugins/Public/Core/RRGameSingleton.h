@@ -135,7 +135,6 @@ public:
 
     /**
      * @brief Get the Assets Base Path object.
-     * Return #ASSETS_ROOT_PATH / InModuleName
      * For particular handling, please set the asset path ending with '/'
      * This concatenation operator ensure only a single '/' is put in between
      * @param InModuleName
@@ -148,6 +147,12 @@ public:
         return FString(ASSETS_ROOT_PATH) / InModuleName;
     }
 
+    /**
+     * @brief Get the leaf relative UE path of a folder housing assets of a particular resource data type.
+     * NOTE: This function returns a user-configurable folder path value, thus cannot be made static or constexpr
+     * @param InDataType
+     * @return FString
+     */
     FORCEINLINE FString GetAssetsFolderName(const ERRResourceDataType InDataType)
     {
         switch (InDataType)
@@ -188,6 +193,20 @@ public:
     }
 
     /**
+     * @brief Get the full UE path of a dynamic asset that is either early loaded at Sim initilization or generated dynamically at runtime
+     * @param InDataType
+     * @param InAssetName
+     * @param InModuleName
+     * @return FString
+     */
+    FORCEINLINE FString GetDynamicAssetPath(const ERRResourceDataType InDataType,
+                                            const FString& InAssetName,
+                                            const TCHAR* InModuleName)
+    {
+        return GetDynamicAssetsBasePath(InModuleName) / GetAssetsFolderName(InDataType) / InAssetName;
+    }
+
+    /**
      * @brief Get the Dynamic Assets Path List object
      * Return the TArray of #SASSET_OWNING_MODULE_NAMES[i] / #DYNAMIC_CONTENTS_FOLDER_NAME
      * @param InDataType
@@ -198,7 +217,7 @@ public:
         static TArray<FString> runtimeAssetsPathList;
         for (const auto& moduleName : SASSET_OWNING_MODULE_NAMES[InDataType])
         {
-            runtimeAssetsPathList.Emplace(GetAssetsBasePath(moduleName) / DYNAMIC_CONTENTS_FOLDER_NAME);
+            runtimeAssetsPathList.Emplace(GetDynamicAssetsBasePath(moduleName));
         }
         return runtimeAssetsPathList;
     }
@@ -418,13 +437,16 @@ public:
     template<typename TResource>
     FORCEINLINE void AddDynamicResource(const ERRResourceDataType InDataType,
                                         TResource* InResourceObject,
-                                        const FString& InResourceUniqueName)
+                                        const FString& InResourceUniqueName,
+                                        const FString& InResourceAssetPath = EMPTY_STR)
     {
         // Update [ResourceMap] with dynamically runtime-generated [InResourceObject]
         // of which soft object path is also created on the fly.
         FRRResourceInfo& resourceInfo = GetSimResourceInfo(InDataType);
         // (Note) FSoftObjectPath only accepts legit package names, not [InResourceUniqueName] like an arbitrary one
-        resourceInfo.AddResource(InResourceUniqueName, FSoftObjectPath(InResourceObject), InResourceObject);
+        resourceInfo.AddResource(InResourceUniqueName,
+                                 InResourceAssetPath.IsEmpty() ? FSoftObjectPath(InResourceObject) : InResourceAssetPath,
+                                 InResourceObject);
         resourceInfo.bHasBeenAllLoaded = true;
 
 #if RAPYUTA_SIM_DEBUG

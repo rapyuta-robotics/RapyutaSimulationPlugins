@@ -6,6 +6,7 @@
 
 #if WITH_EDITOR
 #include "BlueprintCompilationManager.h"
+#include "PackageHelperFunctions.h"
 #if RAPYUTA_SIM_DEBUG
 #include "EditorAssetLibrary.h"
 #endif
@@ -167,17 +168,22 @@ bool URRAssetUtils::SaveObjectToAssetInModule(UObject* InObject,
                                               const ERRResourceDataType InAssetDataType,
                                               const FString& InAssetUniqueName,
                                               const TCHAR* InModuleName,
+                                              bool bSaveDuplicatedObject,
                                               bool bInStripEditorOnlyContent)
 {
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
     const FString baseAssetsPath = gameSingleton->GetDynamicAssetsBasePath(InModuleName);
     return URRAssetUtils::SaveObjectToAsset(
         InObject,
-        baseAssetsPath / gameSingleton->GetAssetsFolderName(InAssetDataType) / InAssetUniqueName,
+        URRGameSingleton::Get()->GetDynamicAssetPath(InAssetDataType, InAssetUniqueName, InModuleName),
+        bSaveDuplicatedObject,
         bInStripEditorOnlyContent);
 }
 
-bool URRAssetUtils::SaveObjectToAsset(UObject* InObject, const FString& InAssetPath, bool bInStripEditorOnlyContent)
+bool URRAssetUtils::SaveObjectToAsset(UObject* InObject,
+                                      const FString& InAssetPath,
+                                      bool bSaveDuplicatedObject,
+                                      bool bInStripEditorOnlyContent)
 {
     // Compose package name
 #if WITH_EDITOR
@@ -194,7 +200,19 @@ bool URRAssetUtils::SaveObjectToAsset(UObject* InObject, const FString& InAssetP
     package->GetMetaData();
     package->SetPackageFlags(PKG_NewlyCreated | PKG_RuntimeGenerated |
                              (bInStripEditorOnlyContent ? PKG_FilterEditorOnly : PKG_None));
-    UObject* savedObject = StaticDuplicateObject(InObject, package, *uniqueAssetName);
+
+    // Configure [savedObject]
+    UObject* savedObject = nullptr;
+    if (bSaveDuplicatedObject)
+    {
+        savedObject = StaticDuplicateObject(InObject, package, *uniqueAssetName);
+    }
+    else
+    {
+        // NOTE: Re-referencing might be required if [InObject] has no other assets referencing it. Ref: [RetrieveReferencers()]
+        InObject->Rename(*uniqueAssetName, package);
+        savedObject = InObject;
+    }
     savedObject->SetFlags(EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
     savedObject->MarkPackageDirty();
     FAssetRegistryModule::AssetCreated(savedObject);
@@ -224,20 +242,20 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject)
            *InPackage->GetName(),
            *packageFileName);
 #endif
-#if RAPYUTA_SIM_DEBUG
-    // NOTE: This check unclear yet causes a crash on Subsystem, to be investigated
-    if (UEditorAssetLibrary::DoesAssetExist(InPackage->GetName()))
+    if (FPaths::FileExists(packageFileName))
     {
-        UE_LOG(LogRapyutaCore,
-               Error,
-               TEXT("[%s] FAILED SAVING OBJECT TO UASSET, ALREADY EXISTING"),
-               InObject ? *InObject->GetName() : *InPackage->GetName());
+        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] FAILED SAVING OBJECT TO UASSET, ALREADY EXISTS"), *packageFileName);
         return false;
     }
     else
-#endif
     {
-        // NOTE: [UPackage::Save()] is Runtime, while [SavePackageHelper(InPackage, packageFileName))] is Editor
+        // Make sure [InPackage] is [InObject]'s outer
+        if (InObject->GetOuter() != InPackage)
+        {
+            InObject->Rename(nullptr, InPackage);
+        }
+
+        // NOTE: [UPackage::Save()] is in-Engine api, while [SavePackageHelper(InPackage, packageFileName))] is in-Editor
         const FSavePackageResultStruct result = UPackage::Save(InPackage, InObject, *packageFileName, saveArgs);
         if (ESavePackageResult::Success == result.Result)
         {
