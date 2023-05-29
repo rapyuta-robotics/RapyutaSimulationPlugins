@@ -181,6 +181,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
     static constexpr const TCHAR* PROP_NAME_NORMAL = TEXT("MainNormalInput");
     static constexpr const TCHAR* PROP_NAME_MASK = TEXT("MaskSelection");
     static constexpr const TCHAR* PROP_NAME_COLOR_ALBEDO = TEXT("ColorAlbedo");
+    static constexpr const TCHAR* PROP_NAME_EMISSIVE_STRENGTH = TEXT("EmissiveStrength");
 
     GENERATED_BODY()
     UPROPERTY(VisibleAnywhere)
