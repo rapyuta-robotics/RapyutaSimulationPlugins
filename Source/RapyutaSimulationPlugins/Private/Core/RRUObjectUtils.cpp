@@ -459,8 +459,8 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
                                          bool bApplyManufacturingAlbedo)
 {
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
-    UTexture* blackMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_COLOR_MASK);
-    UTexture* whiteMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_COLOR_MASK);
+    UTexture* blackMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
+    UTexture* whiteMaskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK);
 
     // Albedo texture
     if (bApplyManufacturingAlbedo)
@@ -504,7 +504,7 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
     }
 }
 
-bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor, bool InEmitColor, bool InWhiteMask)
+bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor, bool InEmitColor)
 {
     UMeshComponent* meshComp = nullptr;
     if (auto* meshActor = Cast<ARRMeshActor>(InMeshActor))
@@ -528,13 +528,14 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
 
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
     UTexture* maskTexture = nullptr;
-    if (InWhiteMask)
+    bool bWhiteMask = (FLinearColor::Transparent == InColor);
+    if (bWhiteMask)
     {
-        maskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_COLOR_MASK);
+        maskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK);
     }
     else
     {
-        maskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_COLOR_MASK);
+        maskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
     }
 
     float emissiveStrength = InEmitColor ? 500.f : 0.f;

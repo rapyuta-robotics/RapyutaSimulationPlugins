@@ -792,9 +792,6 @@ public:
     static void ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
                                    const FRRMaterialProperty& InMaterialInfo,
                                    bool bApplyManufacturingAlbedo = true);
-    static bool SetMeshActorColor(AActor* InMeshActor,
-                                  const FLinearColor& InColor,
-                                  bool InEmitColor = false,
-                                  bool InWhiteMask = false);
+    static bool SetMeshActorColor(AActor* InMeshActor, const FLinearColor& InColor, bool InEmitColor = false);
     static void RandomizeActorAppearance(AActor* InActor, const FRRTextureData& InTextureData);
 };
