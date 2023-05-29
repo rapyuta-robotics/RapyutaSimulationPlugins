@@ -527,17 +527,9 @@ bool URRUObjectUtils::SetMeshActorColor(AActor* InMeshActor, const FLinearColor&
     }
 
     URRGameSingleton* gameSingleton = URRGameSingleton::Get();
-    UTexture* maskTexture = nullptr;
-    bool bWhiteMask = (FLinearColor::Transparent == InColor);
-    if (bWhiteMask)
-    {
-        maskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_WHITE_MASK);
-    }
-    else
-    {
-        maskTexture = gameSingleton->GetTexture(URRGameSingleton::TEXTURE_NAME_BLACK_MASK);
-    }
-
+    const TCHAR* maskTextureName = (FLinearColor::Transparent == InColor) ? URRGameSingleton::TEXTURE_NAME_WHITE_MASK
+                                                                          : URRGameSingleton::TEXTURE_NAME_BLACK_MASK;
+    UTexture* maskTexture = gameSingleton->GetTexture(maskTextureName);
     float emissiveStrength = InEmitColor ? 500.f : 0.f;
 
     for (auto i = 0; i < meshComp->GetMaterials().Num(); ++i)
