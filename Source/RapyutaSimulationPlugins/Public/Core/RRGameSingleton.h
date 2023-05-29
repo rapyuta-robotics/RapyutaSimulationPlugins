@@ -676,10 +676,8 @@ public:
     UPROPERTY(config)
     FString FOLDER_PATH_ASSET_TEXTURES = TEXT("Textures");
 
-    static constexpr const TCHAR* TEXTURE_NAME_WHITE_MASK_OLD = TEXT("T_WhiteMask");
-    static constexpr const TCHAR* TEXTURE_NAME_BLACK_MASK_OLD = TEXT("T_BlackMask");
-    static constexpr const TCHAR* TEXTURE_NAME_WHITE_MASK = TEXT("T_WhiteColorMask");
-    static constexpr const TCHAR* TEXTURE_NAME_BLACK_MASK = TEXT("T_BlackColorMask");
+    static constexpr const TCHAR* TEXTURE_NAME_WHITE_MASK = TEXT("T_WhiteMask");
+    static constexpr const TCHAR* TEXTURE_NAME_BLACK_MASK = TEXT("T_BlackMask");
 
     /**
      * @brief Call #GetSimResource with #ERRResourceDataType::UE_TEXTURE
