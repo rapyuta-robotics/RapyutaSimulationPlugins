@@ -301,6 +301,12 @@ bool URRCoreUtils::CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
 //
 UTexture2D* URRCoreUtils::LoadImageToTexture(const FString& InFullFilePath, const FString& InTextureName, const bool bInSaveToAsset)
 {
+    if (InTextureName.IsEmpty())
+    {
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("Image path [%s] - InTextureName is empty"));
+        return nullptr;
+    }
+
     if (bInSaveToAsset)
     {
 #if WITH_EDITOR
@@ -314,7 +320,7 @@ UTexture2D* URRCoreUtils::LoadImageToTexture(const FString& InFullFilePath, cons
         // Save [texture] to uasset file on disk, logged here-in
         return URRAssetUtils::SavePackageToAsset(texturePkg, texture) ? texture : nullptr;
 #else
-        UE_LOG_WITH_INFO(LogTemp, Error, TEXT("Texture saving to uasset is Editor-only feature"));
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("Texture saving to uasset is Editor-only feature"));
         return nullptr;
 #endif
     }

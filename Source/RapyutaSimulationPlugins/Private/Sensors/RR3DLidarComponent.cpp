@@ -2,6 +2,9 @@
 
 #include "Sensors/RR3DLidarComponent.h"
 
+// UE
+#include "Async/ParallelFor.h"
+// rclUE
 #include "Msgs/ROS2PointField.h"
 #include "rclcUtilities.h"
 
