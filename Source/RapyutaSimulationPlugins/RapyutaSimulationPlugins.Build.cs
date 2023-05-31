@@ -40,7 +40,7 @@ public class RapyutaSimulationPlugins : ModuleRules
     public RapyutaSimulationPlugins(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        CppStandard = CppStandardVersion.Cpp17;
+        CppStandard = CppStandardVersion.Latest;
         bEnableExceptions = true;
 
         // Runtime modules

@@ -16,6 +16,7 @@
 #include "Materials/Material.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "PhysicsEngine/BodySetup.h"
+#include "PhysicsEngine/PhysicsAsset.h"
 #include "Templates/UniquePtr.h"
 
 // RapyutaSimulationPlugins

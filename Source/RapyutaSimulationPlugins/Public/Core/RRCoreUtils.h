@@ -227,7 +227,7 @@ public:
     static FORCEINLINE constexpr bool GetCommandLineArgumentValue(const TCHAR* InArgName, T& OutArgValue, bool bIsLogged = false)
     {
         bool bResult = false;
-        if constexpr (TIsSame<T, bool>::Value)
+        if constexpr (std::is_same<T, bool>::value)
         {
             bResult = FParse::Bool(FCommandLine::Get(), *FString::Printf(CCMDLINE_ARG_FORMAT, InArgName), OutArgValue);
         }
@@ -250,7 +250,7 @@ public:
                                                              bool bIsLogged = false)
     {
         bool bResult = false;
-        if constexpr (TIsSame<T, bool>::Value)
+        if constexpr (std::is_same<T, bool>::value)
         {
             bResult = FParse::Bool(*InParams, *FString::Printf(CCMDLINE_ARG_FORMAT, InArgName), OutArgValue);
         }

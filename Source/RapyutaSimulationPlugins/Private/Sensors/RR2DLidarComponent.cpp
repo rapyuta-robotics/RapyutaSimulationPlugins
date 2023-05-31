@@ -2,6 +2,10 @@
 
 #include "Sensors/RR2DLidarComponent.h"
 
+// UE
+#include "Async/ParallelFor.h"
+
+// rclUE
 #include "rclcUtilities.h"
 
 URR2DLidarComponent::URR2DLidarComponent()

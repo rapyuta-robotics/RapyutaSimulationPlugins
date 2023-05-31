@@ -12,7 +12,7 @@ ARRNetworkGameState::ARRNetworkGameState()
     PrimaryActorTick.bCanEverTick = true;
 }
 
-float ARRNetworkGameState::GetServerWorldTimeSeconds() const
+double ARRNetworkGameState::GetServerWorldTimeSeconds() const
 {
     // The simulated TimeSeconds on the server is the first network player controller's local time
     APlayerController* pc = GetGameInstance()->GetFirstLocalPlayerController(GetWorld());
