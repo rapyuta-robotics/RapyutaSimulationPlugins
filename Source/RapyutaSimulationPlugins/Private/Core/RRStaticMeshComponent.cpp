@@ -326,12 +326,15 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
 #if RAPYUTA_SIM_VERBOSE
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] Source models num %d"), *visualMesh->GetName(), visualMesh->GetNumSourceModels());
 #endif
+#if WITH_EDITOR
     if (visualMesh->IsSourceModelValid(0))
     {
         if (visualMesh->GetSourceModel(0).IsMeshDescriptionValid())
         {
+#endif
             URRAssetUtils::SaveObjectToAssetInModule(
                 visualMesh, ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME, false);
+#if WITH_EDITOR
         }
         else
         {
@@ -345,6 +348,7 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
     {
         UE_LOG(LogRapyutaCore, Error, TEXT("[%s] static mesh has invalid Source model"), *visualMesh->GetName());
     }
+#endif
 
     // This also signals [OnMeshCreationDone] async
     SetMesh(visualMesh);
