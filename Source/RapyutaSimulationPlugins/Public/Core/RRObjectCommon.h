@@ -14,6 +14,9 @@
 // RapyutaSim
 #include "RapyutaSimulationPlugins.h"
 
+// rclUE
+#include "logUtilities.h"
+
 #include "RRObjectCommon.generated.h"
 
 // Note: For avoiding cyclic inclusion, only UE built-in source header files could be included herein.

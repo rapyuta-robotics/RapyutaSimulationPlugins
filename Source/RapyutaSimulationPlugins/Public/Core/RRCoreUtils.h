@@ -594,10 +594,12 @@ public:
     FORCEINLINE static UTexture2D* LoadImageToTexture(const FString& InFullFilePath, const FString& InTextureName)
     {
         UTexture2D* loadedTexture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
+#if 0
         if (loadedTexture)
         {
             loadedTexture->Rename(*InTextureName);
         }
+#endif
 
         return loadedTexture;
     }

@@ -287,6 +287,7 @@ public:
         FARFilter filter;
         filter.bRecursivePaths = true;
         filter.bRecursiveClasses = true;
+#if 0
         filter.ClassPaths.Add(UBlueprintCore::StaticClass()->GetClassPathName());
 
         // Find the blueprint asset of [InBlueprintClassName]
@@ -306,7 +307,9 @@ public:
 
                 return true;
             });
-
         return foundClass;
+#else
+        return nullptr;
+#endif
     }
 };

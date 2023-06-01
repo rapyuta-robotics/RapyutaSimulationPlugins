@@ -512,7 +512,7 @@ public:
      */
     FORCEINLINE UTexture* GetTexture(const FString& InTextureName) const
     {
-        return GetSimResource<UTexture>(ERRResourceDataType::UE_TEXTURE, InTextureName);
+        return GetSimResource<UTexture>(ERRResourceDataType::UE_TEXTURE, InTextureName, false);
     }
 
     // BODY SETUPS --

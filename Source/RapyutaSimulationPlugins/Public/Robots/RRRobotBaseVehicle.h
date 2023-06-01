@@ -5,6 +5,8 @@
  */
 
 #pragma once
+
+#include "Robots/RRBaseRobot.h"
 #include "RRRobotBaseVehicle.generated.h"
 
 /**
