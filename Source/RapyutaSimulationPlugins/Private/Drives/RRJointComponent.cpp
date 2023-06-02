@@ -8,9 +8,19 @@ URRJointComponent::URRJointComponent()
     PrimaryComponentTick.bCanEverTick = true;
 }
 
+void URRJointComponent::BeginPlay()
+{
+    Initialize();
+    Super::BeginPlay();
+}
+
+void URRJointComponent::Initialize()
+{}
+
 // velocity
 void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
+    ControlType = ERRJointControlType::VELOCITY;
     LinearVelocityTarget = InLinearVelocity.BoundToBox(LinearVelMin, LinearVelMax);
     AngularVelocityTarget = InAngularVelocity.BoundToBox(AngularVelMin, AngularVelMax);
 };
@@ -75,6 +85,7 @@ void URRJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
 //Pose
 void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
+    ControlType = ERRJointControlType::POSITION;
     PositionTarget = InPosition;
     OrientationTarget = InOrientation;
 };

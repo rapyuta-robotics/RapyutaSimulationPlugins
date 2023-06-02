@@ -32,11 +32,12 @@ class RAPYUTASIMULATIONPLUGINS_API URRKinematicJointComponent : public URRJointC
 public:
     // Sets default values for this component's properties
     URRKinematicJointComponent();
-
-protected:
-    virtual void BeginPlay() override;
-
-    FTransform ParentLinkToJoint;
+    
+    /**
+     * @brief Initialize #JointToChildLink and #ParentLinkToJoint
+     * 
+     */
+    virtual void Initialize() override;
 
 public:
     /**

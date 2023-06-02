@@ -6,8 +6,13 @@
 
 #pragma once
 
+//UE
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
+#include "Kismet/KismetMathLibrary.h"
+
+//RapyutaSimulationPlugins
+#include "Core/RRGeneralUtils.h"
 #include "Drives/RRJointComponent.h"
 
 #include "RRPhysicsJointComponent.generated.h"
@@ -26,11 +31,14 @@ public:
     // Sets default values for this component's properties
     URRPhysicsJointComponent();
 
-protected:
-    // Called when the game starts
-    virtual void BeginPlay() override;
-
 public:
+
+    /**
+     * @brief Initialize #JointToChildLink and #ParentLinkToJoint
+     * 
+     */
+    virtual void Initialize() override;
+
     /**
      * @brief 
      *
@@ -135,7 +143,7 @@ protected:
      * @param step 
      * @param tolerance 
      */
-    virtual void StepUpdateFloat(double& current, const double target, const double step, const double tolerance);
+    virtual bool StepUpdateFloat(double& current, const double target, const double step, const double tolerance);
 
     /**
      * @brief update current value with step to reach target within tolerance
@@ -145,16 +153,5 @@ protected:
      * @param step 
      * @param tolerance 
      */
-    virtual void StepUpdateVector(FVector& current, const FVector target, const FVector step, const double tolerance);
-
-    /**
-     * @brief update current value with step to reach target within tolerance
-     * 
-     * @param current 
-     * @param target 
-     * @param step 
-     * @param tolerance 
-     */
-    virtual void StepUpdateRotator(FRotator& current, const FRotator target, const FVector step, const double tolerance);
-
+    virtual bool StepUpdateAngle(double& current, const double target, const double step, const double tolerance);
 };

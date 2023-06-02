@@ -12,6 +12,8 @@
 
 #include "RRJointComponent.generated.h"
 
+#define RAPYUTA_JOINT_DEBUG (0)
+
 UENUM(BlueprintType)
 enum class ERRJointControlType : uint8
 {
@@ -36,10 +38,17 @@ public:
     URRJointComponent();
 
 protected:
+    virtual void BeginPlay() override;
     virtual void PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation);
     virtual void VelocityFromArray(const TArray<float>& InVelocity, FVector& OutLinearVelocity, FVector& OutAngularVelocity);
 
 public:
+    /**
+     * @brief Initialize #JointToChildLink and #ParentLinkToJoint
+     * 
+     */
+    virtual void Initialize();
+
     /**
      * @brief Directly set velocity.
      * Control to move joint with this velocity should be implemented in child class.
@@ -209,4 +218,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool IsLimitYaw = true;
+
+protected:
+
+    FTransform JointToChildLink;
+    FTransform ParentLinkToJoint;
 };
