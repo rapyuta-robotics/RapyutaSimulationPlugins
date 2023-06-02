@@ -286,6 +286,28 @@ public:
     }
 
     /**
+     * @brief Check whether an asset has been created at a path
+     * @param InAssetPath Full UE asset path (eg: /Game/Contents/DynamicContents/SK_Obj)
+     * @param bOnDiskAssetOnly
+     * @return bool
+     */
+    static bool DoesAssetExist(const FString& InAssetPath, bool bOnDiskAssetOnly = false)
+    {
+        const auto& assetPackageName = FName(*InAssetPath);
+        return bOnDiskAssetOnly ? GetAssetRegistry().GetAssetPackageDataCopy(assetPackageName).IsSet()
+                                : GetAssetRegistry().HasAssets(assetPackageName);
+    }
+
+    /**
+     * @brief Create a package meant to be saved to asset file on disk
+     * @param InPackageName
+     * @param InPackageFlags
+     * @return UPackage*
+     */
+    static UPackage* CreatePackageForSavingToAsset(const TCHAR* InPackageName,
+                                                   const EPackageFlags InPackageFlags = (PKG_NewlyCreated | PKG_RuntimeGenerated));
+
+    /**
      * @brief Save object in memory to asset file on disk stored by a module
      * @param InObject
      * @param InAssetDataType
@@ -295,16 +317,16 @@ public:
      * @param bInStripEditorOnlyContent
      * @return true if succeeded
      */
-    static bool SaveObjectToAssetInModule(UObject* InObject,
-                                          const ERRResourceDataType InAssetDataType,
-                                          const FString& InAssetUniqueName,
-                                          const TCHAR* InModuleName,
-                                          bool bSaveDuplicatedObject = false,
-                                          bool bInStripEditorOnlyContent = false);
+    static UObject* SaveObjectToAssetInModule(UObject* InObject,
+                                              const ERRResourceDataType InAssetDataType,
+                                              const FString& InAssetUniqueName,
+                                              const TCHAR* InModuleName,
+                                              bool bSaveDuplicatedObject = false,
+                                              bool bInStripEditorOnlyContent = false);
     /**
      * @brief Save object in memory to asset file on disk
      * @param InObject
-     * @param InAssetPath Base package path of the output asset
+     * @param InAssetPath Full UE asset path of the output asset (eg: /Game/Contents/DynamicContents/SK_Obj)
      * @param bSaveDuplicatedObject
      * @param bInStripEditorOnlyContent
      * @return true if succeeded
@@ -312,17 +334,18 @@ public:
      * @sa https://forums.unrealengine.com/t/dynamically-created-primary-assets-not-registering-with-asset-manager/210255
      * @sa https://forums.unrealengine.com/t/how-to-work-with-cooked-content-in-editor/265094
      */
-    static bool SaveObjectToAsset(UObject* InObject,
-                                  const FString& InAssetPath,
-                                  bool bSaveDuplicatedObject = false,
-                                  bool bInStripEditorOnlyContent = false);
+    static UObject* SaveObjectToAsset(UObject* InObject,
+                                      const FString& InAssetPath,
+                                      bool bSaveDuplicatedObject = false,
+                                      bool bInStripEditorOnlyContent = false);
 
     /**
      * @brief Save package to asset file on disk
      * @param InObject
+     * @param bAsyncSave default true to avoid block-waiting on data writing to disk
      * @return true if succeeded
      */
-    static bool SavePackageToAsset(UPackage* InPackage, UObject* InObject);
+    static bool SavePackageToAsset(UPackage* InPackage, UObject* InObject, bool bAsyncSave = true);
 
     /**
      * @brief Find generated UClass from blueprint class name

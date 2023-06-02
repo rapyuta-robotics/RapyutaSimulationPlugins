@@ -15,6 +15,10 @@
 #include "Msgs/ROS2Pose.h"
 #include "Msgs/ROS2Time.h"
 
+// RapyutaSimulationPlugins
+#include "Core/RRCoreUtils.h"
+#include "Core/RRTypeUtils.h"
+
 #include "RRConversionUtils.generated.h"
 
 UCLASS()
@@ -248,5 +252,48 @@ public:
     static float ROSStampToFloat(const FROSTime& InTimeStamp)
     {
         return InTimeStamp.Sec + InTimeStamp.Nanosec * 1e-09f;
+    }
+
+    template<typename T>
+    static FString ToString(const T& InValue)
+    {
+        if constexpr (TIsArithmetic<T>::Value || TIsIntegral<T>::Value)
+        {
+            return FString::FromInt(InValue);
+        }
+        else if constexpr (TIsFloatingPoint<T>::Value)
+        {
+            return FString::SanitizeFloat(InValue);
+        }
+        else if constexpr (TIsCharType<T>::Value || TIsCharPointer<T>::Value)
+        {
+            return FString(InValue);
+        }
+        else if constexpr (TIsSame<T, FName>::Value || TIsSame<T, FText>::Value)
+        {
+            return InValue.ToString();
+        }
+        else
+        {
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[%s] is not yet supported"), TNameOf<T>::GetName());
+        }
+        return FString();
+    }
+
+    template<typename T>
+    static FString ArrayToString(const TArray<T>& InArray, const TCHAR* InDelimiter = TEXT(","))
+    {
+        return FString::JoinBy(InArray, InDelimiter, [](const T& InElement) { return URRConversionUtils::ToString(InElement); });
+    }
+
+    template<typename T, std::size_t N>
+    static FString ArrayToString(const T (&InArray)[N], const TCHAR* InDelimiter = TEXT(","))
+    {
+        TArray<FString> strArray;
+        for (auto i = 0; i < URRCoreUtils::GetArraySize<T, N>(InArray); ++i)
+        {
+            strArray.Add(URRConversionUtils::ToString(InArray[i]));
+        }
+        return FString::Join(strArray, InDelimiter);
     }
 };
