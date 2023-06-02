@@ -291,6 +291,7 @@ public:
      * @param InAssetDataType
      * @param InAssetUniqueName Unique name for the output asset
      * @param InModuleName
+     * @param bSaveDuplicatedObject
      * @param bInStripEditorOnlyContent
      * @return true if succeeded
      */
@@ -298,18 +299,23 @@ public:
                                           const ERRResourceDataType InAssetDataType,
                                           const FString& InAssetUniqueName,
                                           const TCHAR* InModuleName,
+                                          bool bSaveDuplicatedObject = false,
                                           bool bInStripEditorOnlyContent = false);
     /**
      * @brief Save object in memory to asset file on disk
      * @param InObject
      * @param InAssetPath Base package path of the output asset
+     * @param bSaveDuplicatedObject
      * @param bInStripEditorOnlyContent
      * @return true if succeeded
      * @sa https://forums.unrealengine.com/t/calling-upackage-savepackage-causes-fatal-assert-in-staticfindobjectfast/447917
      * @sa https://forums.unrealengine.com/t/dynamically-created-primary-assets-not-registering-with-asset-manager/210255
      * @sa https://forums.unrealengine.com/t/how-to-work-with-cooked-content-in-editor/265094
      */
-    static bool SaveObjectToAsset(UObject* InObject, const FString& InAssetPath, bool bInStripEditorOnlyContent = false);
+    static bool SaveObjectToAsset(UObject* InObject,
+                                  const FString& InAssetPath,
+                                  bool bSaveDuplicatedObject = false,
+                                  bool bInStripEditorOnlyContent = false);
 
     /**
      * @brief Save package to asset file on disk

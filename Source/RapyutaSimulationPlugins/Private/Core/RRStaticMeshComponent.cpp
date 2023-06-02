@@ -218,8 +218,8 @@ UStaticMesh* URRStaticMeshComponent::CreateMesh(const FRRMeshData& InMeshData, b
     // This also requires MarkPackageDirty() to be called later in game thread
     meshDescParams.bMarkPackageDirty = false;
 #endif
-    // Do not commit since we only need the render data and commit is slow
-    meshDescParams.bCommitMeshDescription = false;
+    // NOTE: Commit might be slow but needed since we want the mesh to be saved out to disk for reuse
+    meshDescParams.bCommitMeshDescription = true;
 
 #if !WITH_EDITOR
     // Force build process to keep index buffer for complex collision when in game
@@ -284,6 +284,11 @@ UStaticMesh* URRStaticMeshComponent::CreateMesh(const FRRMeshData& InMeshData, b
 UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshData)
 {
     UStaticMesh* visualMesh = CreateMesh(InMeshData, true);
+    if (nullptr == visualMesh)
+    {
+        return nullptr;
+    }
+
     // Generate complex in case of no simple collision
     if (false == bUseDefaultSimpleCollision)
     {
@@ -312,16 +317,37 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
 #endif
         }
     }
-    check(visualMesh->GetRenderData() && visualMesh->GetRenderData()->IsInitialized());
+    ensure(visualMesh->GetRenderData() && visualMesh->GetRenderData()->IsInitialized());
 
     // Add to the global resource store
     URRGameSingleton::Get()->AddDynamicResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, visualMesh, MeshUniqueName);
 
-#if RAPYUTA_SIM_DEBUG
-    // NOTE: Not ready yet, still FALSE [visualMesh]'s IsMeshDescriptionValid()
-    // Save to static mesh [UASSET] file on disk
-    URRAssetUtils::SaveObjectToAssetInModule(
-        visualMesh, ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME);
+    // Auto-save [visualMesh] to uasset on disk, to be used directly in future Sim runs
+#if RAPYUTA_SIM_VERBOSE
+    UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] Source models num %d"), *visualMesh->GetName(), visualMesh->GetNumSourceModels());
+#endif
+#if WITH_EDITOR
+    if (visualMesh->IsSourceModelValid(0))
+    {
+        if (visualMesh->GetSourceModel(0).IsMeshDescriptionValid())
+        {
+#endif
+            URRAssetUtils::SaveObjectToAssetInModule(
+                visualMesh, ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME, false);
+#if WITH_EDITOR
+        }
+        else
+        {
+            UE_LOG(LogRapyutaCore,
+                   Error,
+                   TEXT("[%s] static mesh: Source model[0] has invalid mesh description"),
+                   *visualMesh->GetName());
+        }
+    }
+    else
+    {
+        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] static mesh has invalid Source model"), *visualMesh->GetName());
+    }
 #endif
 
     // This also signals [OnMeshCreationDone] async
