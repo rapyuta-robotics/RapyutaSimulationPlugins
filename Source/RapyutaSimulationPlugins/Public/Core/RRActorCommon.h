@@ -90,7 +90,7 @@ enum class ERRFileType : uint8
 UENUM()
 enum class ERRShapeType : uint8
 {
-    INVALID,
+    NONE,
     PLANE,
     BOX,
     CYLINDER,

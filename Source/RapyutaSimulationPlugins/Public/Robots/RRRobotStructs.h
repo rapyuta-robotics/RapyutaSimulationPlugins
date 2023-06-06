@@ -31,7 +31,8 @@ enum class ERRRobotDescriptionType : uint8
 {
     NONE,
     URDF,
-    SDF
+    SDF,
+    UASSET,
 };
 
 /**
@@ -41,7 +42,7 @@ enum class ERRRobotDescriptionType : uint8
 UENUM()
 enum class ERRRobotStatus : uint8
 {
-    INVALID,             //! Invalid type, or not loaded successfully
+    INVALID,             //! Invalid status, eg not loaded successfully
     CREATING,            //! Being built up (loading the meshses, building the structure, etc.)
     IDLE,                //! Idling, ready for command order
     ORDER_PROCESSING,    //! Received command and in middle of processing
@@ -83,7 +84,7 @@ enum class ERRLidarSensorType : uint8
 UENUM()
 enum class ERRRobotJointType : uint8
 {
-    INVALID,
+    NONE,
     FIXED,
     FLOATING,
     PRISMATIC,
@@ -107,7 +108,7 @@ enum class ERRRobotJointStatus : uint8
 UENUM()
 enum class ERRRobotMeshComponentType : uint8
 {
-    INVALID,
+    NONE,
     STATIC_MESH,
     SKELETAL_MESH,
     PROCEDURAL_MESH,
@@ -126,7 +127,7 @@ enum class ERRJointAxisRotation : uint8
 
 // -----------------------------------------------------------------------------------------------
 // [FRRRobotJointDynamicProperties] --
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
 {
     GENERATED_BODY()
@@ -148,7 +149,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
         : JointName(InJointName), SpringStiff(InStiffness), Damping(InDamping)
     {
     }
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString JointName;
     // For Spring-Damper Control Mode --
     // Stiffness
@@ -219,16 +220,16 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
  * @sa http://sdformat.org/spec?ver=1.6&elem=joint
  * @sa http://wiki.ros.org/urdf/XML/joint
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointProperty
 {
     GENERATED_BODY()
 public:
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString Name;
 
-    UPROPERTY(VisibleAnywhere)
-    ERRRobotJointType Type = ERRRobotJointType::INVALID;
+    UPROPERTY(EditAnywhere)
+    ERRRobotJointType Type = ERRRobotJointType::NONE;
 
     FORCEINLINE static ERRRobotJointType GetERRRobotJointTypeValueFromString(const FString& InEnumStringValue)
     {
@@ -244,34 +245,34 @@ public:
     ERRRobotJointStatus Status = ERRRobotJointStatus::INVALID;
 
     //! In URDF/SDF: Child Link's relative Location to its Parent
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FVector Location = FVector::ZeroVector;
 
     //! In URDF/SDF: Child Link's relative Rotation to its Parent
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FQuat Rotation = FQuat::Identity;
 
     //! Whether Rotation & Location are absolute or relative
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     bool bIsTransformRelative = true;
 
     FTransform GetTransform() const
     {
         return FTransform(Rotation, Location);
     }
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString ParentLinkName;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString ChildLinkName;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString MimicJointName;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float MimicMultiplier = 1.0f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float MimicOffset = 0.0f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FVector Axis = FVector::ZeroVector;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FVector AxisInParentFrame = FVector::ZeroVector;
     const FVector& GetAxis(bool bIsLocal = false) const
     {
@@ -279,11 +280,11 @@ public:
     }
 
     //! [rad] for REVOLUTE joint, [m] for Prismatic Joint. (Both URDF and SDF)
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float LowerLimit = 0.f;
 
     //! [rad] for REVOLUTE joint, [m] for Prismatic Joint. (Both URDF and SDF)
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float UpperLimit = 0.f;
 
     UPROPERTY(EditAnywhere)
@@ -298,13 +299,13 @@ public:
     }
     bool IsValid() const
     {
-        return (false == Name.IsEmpty()) && (ERRRobotJointType::INVALID != Type);
+        return (false == Name.IsEmpty()) && (ERRRobotJointType::NONE != Type);
     }
     ELinearConstraintMotion GetLinearConstraintMotion() const
     {
         switch (Type)
         {
-            case ERRRobotJointType::INVALID:
+            case ERRRobotJointType::NONE:
             case ERRRobotJointType::FIXED:
             case ERRRobotJointType::REVOLUTE:
             case ERRRobotJointType::CONTINUOUS:
@@ -326,7 +327,7 @@ public:
     {
         switch (Type)
         {
-            case ERRRobotJointType::INVALID:
+            case ERRRobotJointType::NONE:
             case ERRRobotJointType::FIXED:
             case ERRRobotJointType::PRISMATIC:
                 return ACM_Locked;
@@ -485,161 +486,161 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointValue
 // http://sdformat.org/spec?ver=1.6&elem=link
 // http://wiki.ros.org/urdf/XML/link
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotLinkInertia
 {
     GENERATED_BODY()
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float Mass = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FVector Location = FVector::ZeroVector;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FQuat Rotation = FQuat::Identity;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float Ixx = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float Ixy = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float Ixz = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float Iyy = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float Iyz = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float Izz = 0.f;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotGeometryInfo
 {
     GENERATED_BODY()
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString Name;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString MeshName;
 
     //! This size is mostly used for Collision info in case of links being Runtime mesh components.
     //! For static mesh based linkes, the collision is already auto-generated by UE.
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FVector Size = FVector::ZeroVector;
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FVector WorldScale = FVector::OneVector;
 
     //! Owner Link info
-    UPROPERTY(VisibleAnywhere)
-    ERRShapeType LinkType = ERRShapeType::INVALID;
+    UPROPERTY(EditAnywhere)
+    ERRShapeType LinkType = ERRShapeType::NONE;
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString LinkName;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FVector Location = FVector::ZeroVector;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FQuat Rotation = FQuat::Identity;
     FTransform GetTransformOffset() const
     {
         return FTransform(Rotation, Location);
     }
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FRRMaterialProperty MaterialInfo;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo
 {
     GENERATED_BODY()
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     ERRLidarSensorType LidarType = ERRLidarSensorType::NONE;
 
     //! Scan (angle in deg)
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     int32 NHorSamplesPerScan = 360;
 
     //! Scan (angle in deg)
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     int32 NVerSamplesPerScan = 360;
 
     //! Scan (angle in deg)
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float HMinAngle = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float HMaxAngle = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float HResolution = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float VMinAngle = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float VMaxAngle = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float VResolution = 0.f;
 
     // Range
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float MinRange = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float MaxRange = 0.f;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     float RangeResolution = 0.f;
 
     // Noise
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString NoiseTypeName;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     double NoiseMean = 0;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     double NoiseStdDev = 0;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRSensorProperty
 {
     GENERATED_BODY()
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString LinkName;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString SensorName;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     ERRSensorType SensorType = ERRSensorType::NONE;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FRRSensorLidarInfo LidarInfo;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotLinkProperty
 {
     GENERATED_BODY()
 public:
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString Name;
 
     //! Only available in SDF
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FString ParentFrameName;
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     int8 LinkIndex = INDEX_NONE;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     int8 ParentLinkIndex = INDEX_NONE;
 
     //! Relative to the parent link
     //! In URDF: <joint>�s <origin xyz= "" rpy="">
     //! In SDF : <joint> -> <pose> 6 values (xyz + rpy)
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FVector Location = FVector::ZeroVector;
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FQuat Rotation = FQuat::Identity;
     FTransform GetRelativeTransformToParent() const
     {
         return FTransform(Rotation, Location);
     }
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     FRRRobotLinkInertia Inertia;
 
     //! Relative visual offset to the link itself(URDF) or parent frame(SDF)
     //! In URDF: <visual>�s <origin xyz= "" rpy="">
     //! In SDF : <link> -> <pose> 6 values (xyz + rpy)
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     TArray<FRRRobotGeometryInfo> VisualList;
     FTransform GetVisualOffset(int32 InVisualIndex = 0) const
     {
@@ -649,7 +650,7 @@ public:
     {
         return GetRelativeTransformToParent() * GetVisualOffset(InVisualIndex);
     }
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     TArray<FRRRobotGeometryInfo> CollisionList;
     bool operator==(const FRRRobotLinkProperty& LinkProp)
     {
@@ -660,7 +661,7 @@ public:
         return Name.Equals(String);
     }
     // Sensor
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     TArray<FRRSensorProperty> SensorList;
     void PrintSelf() const
     {
@@ -744,7 +745,7 @@ public:
  * @brief Wheel property for the robot, used to store configurations for runtime #UChaosVehicleWheel setup
  * @sa [UChaosVehicleWheel](https://docs.unrealengine.com/5.1/en-US/API/Plugins/ChaosVehicles/UChaosVehicleWheel/)
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotWheelProperty
 {
     GENERATED_BODY()
@@ -759,35 +760,35 @@ public:
     {
     }
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     FString WheelName;
 
     /** If left undefined then the #bAffectedByEngine value is used, if defined then #bAffectedByEngine is ignored and the
      * differential setup on the vehicle defines which wheels get power from the engine */
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     EAxleType AxleType = EAxleType::Undefined;
 
     /**
      * If BoneName is specified, offset the wheel from the bone's location.
      * Otherwise this offsets the wheel from the vehicle's origin.
      */
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     FVector Offset = FVector::ZeroVector;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float WheelRadius = 0.f;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float WheelWidth = 0.f;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float CorneringStiffness = 1000.f;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float FrictionForceMultiplier = 2.f;
 
     //! Wheel Lateral Skid Grip Loss, lower number less grip on skid
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float SideSlipModifier = 1.f;
 
     //! Wheel Longitudinal Slip Threshold
@@ -795,60 +796,60 @@ public:
     float SlipThreshold = 20.f;
 
     //! Wheel Lateral Skid Threshold
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float SkidThreshold = 20.f;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     bool bAffectedBySteering = false;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     bool bAffectedByBrake = true;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     bool bAffectedByHandbrake = false;
 
     //! Whether engine should power this wheel
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     bool bAffectedByEngine = false;
 
     //! Advanced Braking System enabled
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     bool bABSEnabled = false;
 
     //! Straight Line Traction Control Enabled
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     bool bTractionControlEnabled = false;
 
     //! Determines how the SetDriveTorque/SetBrakeTorque inputs are combined with the internal torques
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     ETorqueCombineMethod ExternalTorqueCombineMethod = ETorqueCombineMethod::None;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     FRuntimeFloatCurve LateralSlipGraph;
 
     //! Local body direction in which where suspension forces are applied (typically along -Z-axis)
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     FVector SuspensionAxis = FVector(0.f, 0.f, -1.f);
 
     //! Vertical offset from where suspension forces are applied (along Z-axis)
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     FVector SuspensionForceOffset = FVector::ZeroVector;
 
     //! How far the wheel can go above the resting position
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float SuspensionMaxRaise = 10.f;
 
     //! How far the wheel can drop below the resting position
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float SuspensionMaxDrop = 10.f;
 
     /** Suspension damping, larger value causes the suspension to come to rest faster [range 0 to 1] */
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float SuspensionDampingRatio = 0.5f;
 
     /** Smooth suspension [0-off, 10-max] - Warning might cause momentary visual inter-penetration of the wheel against
      * objects/terrain */
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     int8 SuspensionSmoothing = 0;
 
     /**
@@ -857,41 +858,41 @@ public:
      * balance between all wheels) At 1 wheel friction is based on the force pressing wheel into the ground. This is more
      * realistic. Lower value cures lift off over-steer, generally makes vehicle easier to handle under extreme motions.
      */
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float WheelLoadRatio = 0.5f;
 
     //! Spring Force (N/m)
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float SpringRate = 250.0f;
 
     //! Spring Preload (N/m)
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float SpringPreload = 50.f;
 
     //! Anti-roll effect
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float RollbarScaling = 0.15f;
 
     //! Whether wheel suspension considers simple, complex, or both
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     ESweepShape SweepShape = ESweepShape::Raycast;
 
     //! Whether wheel suspension considers simple, complex, or both
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     ESweepType SweepType = ESweepType::SimpleSweep;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float MaxSteerAngleDeg = 50.f;
 
     //! max brake torque for this wheel (Nm)
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float MaxBrakeTorque = 1500.f;
 
     /**
      * Max handbrake brake torque for this wheel (Nm). A handbrake should have a stronger brake torque
      * than the brake. This will be ignored for wheels that are not affected by the handbrake.
      */
-    UPROPERTY()
+    UPROPERTY(EditAnywhere)
     float MaxHandBrakeTorque = 3000.f;
 
     void PrintSelf() const
@@ -915,18 +916,23 @@ public:
     UPROPERTY()
     FRRRobotJointProperty JointProp;
 };
+
 // [ROBOT MODEL] --
 //
-struct RAPYUTASIMULATIONPLUGINS_API FRRRobotModelInfo : public TSharedFromThis<FRRRobotModelInfo, ESPMode::ThreadSafe>
+USTRUCT(BlueprintType)
+struct FRRRobotModelData : public FTableRowBase
 {
+    GENERATED_BODY()
 public:
-    FRRRobotModelInfo(const TArray<FString>& InModelNameList) : ModelNameList(InModelNameList)
+    FRRRobotModelData(const TArray<FString>& InModelNameList) : ModelNameList(InModelNameList)
     {
     }
-    FRRRobotModelInfo()
+    FRRRobotModelData()
     {
     }
-    // Robot Model Description Type (URDF/SDF)
+
+    //! Robot Model Description Type (URDF/SDF)
+    UPROPERTY(EditAnywhere)
     ERRRobotDescriptionType ModelDescType = ERRRobotDescriptionType::NONE;
     bool IsURDF() const
     {
@@ -936,16 +942,27 @@ public:
     {
         return (ERRRobotDescriptionType::SDF == ModelDescType);
     }
+    bool IsUAsset() const
+    {
+        return (ERRRobotDescriptionType::UASSET == ModelDescType);
+    }
+
+    UPROPERTY(EditAnywhere)
     FString WorldName;
+    UPROPERTY()
     bool bHasWorldJoint = false;
-    // World model: [ModelNameList] >= 1
-    // Pure model:  [ModelNameList] == 1 if Single else > 1
+
+    //! World model: [ModelNameList] >= 1
+    //! Pure model:  [ModelNameList] == 1 if Single else > 1
+    UPROPERTY(EditAnywhere)
     TArray<FString> ModelNameList;
     FString GetModelName() const
     {
         return (ModelNameList.Num() > 0) ? ModelNameList[0] : EMPTY_STR;
     }
-    // Meshes are async loaded, & so their sizes
+
+    //! Meshes are async loaded, & so their sizes
+    UPROPERTY(VisibleAnywhere)
     FVector TotalSize = FVector::ZeroVector;
 
     int32 GetVisualsNum() const
@@ -958,7 +975,7 @@ public:
         }
 
         // Child visuals
-        for (const auto& modelInfo : ChildModelsInfo)
+        for (const auto& modelInfo : ChildModelsData)
         {
             meshesNum += modelInfo.GetVisualsNum();
         }
@@ -966,28 +983,33 @@ public:
     }
 
     //! Robot Model Description File (URDF/SDF)
+    UPROPERTY(VisibleAnywhere)
     FString DescriptionFilePath;
-    uint32 CreatedNum = 0;
+    UPROPERTY(VisibleAnywhere)
+    int32 CreatedInstancesNum = 0;
+    UPROPERTY(EditAnywhere)
     FString ParentFrameName;
+    UPROPERTY(EditAnywhere)
     FTransform RelativeTransform = FTransform::Identity;
 
     //! UE Component types
-    uint32 UEComponentTypeFlags = 0;
-    bool IsUEComponentEnabled(const uint32 InTypeMask) const
+    UPROPERTY(EditAnywhere)
+    int32 UEComponentTypeFlags = 0;
+    bool IsUEComponentEnabled(const int32 InTypeMask) const
     {
         return (UEComponentTypeFlags & InTypeMask);
     }
     bool IsUEComponentEnabled(const ERRUEComponentType InTypeMask) const
     {
-        return IsUEComponentEnabled(static_cast<uint32>(InTypeMask));
+        return IsUEComponentEnabled(static_cast<int32>(InTypeMask));
     }
-    void SetUEComponentEnabled(const uint32 InTypeMask)
+    void SetUEComponentEnabled(const int32 InTypeMask)
     {
         UEComponentTypeFlags |= InTypeMask;
     }
     void SetUEComponentEnabled(const ERRUEComponentType InTypeMask)
     {
-        SetUEComponentEnabled(static_cast<uint32>(InTypeMask));
+        SetUEComponentEnabled(static_cast<int32>(InTypeMask));
     }
     bool IsPlainManipulatorModel() const
     {
@@ -999,11 +1021,16 @@ public:
     }
 
     // Link/Joint list
+    UPROPERTY(EditAnywhere)
     FString BaseLinkName;
+    UPROPERTY(EditAnywhere)
     TArray<FRRRobotLinkProperty> LinkPropList;
+    UPROPERTY(EditAnywhere)
     TArray<FRRRobotJointProperty> JointPropList;
 
-    TArray<FRRRobotModelInfo> ChildModelsInfo;
+    //! Struct recursion is NOT yet supported for UPROPERTY
+    // UPROPERTY(EditAnywhere)
+    TArray<FRRRobotModelData> ChildModelsData;
 
     /**
      * @brief
@@ -1200,9 +1227,11 @@ public:
     }
 
     // UE-StaticMesh
+    UPROPERTY(EditAnywhere)
     FString WholeBodyStaticMeshName;
 
     // Material
+    UPROPERTY(EditAnywhere)
     FRRMaterialProperty WholeBodyMaterialInfo;
     FRRMaterialProperty GetBodyMaterialInfo() const
     {
@@ -1215,12 +1244,15 @@ public:
     }
 
     // Articulated link names
+    UPROPERTY(EditAnywhere)
     TArray<FString> ArticulatedLinksNames;
 
     // Endtip
+    UPROPERTY(EditAnywhere)
     TArray<FString> EndEffectorNames;
 
     // Wheels properties
+    UPROPERTY(EditAnywhere)
     TArray<FRRRobotWheelProperty> WheelPropList;
     bool HasWheel(const FString& InWheelName) const
     {
@@ -1234,10 +1266,10 @@ public:
         return false;
     }
 
-    bool operator==(const FRRRobotModelInfo& OtherModelInfo)
+    bool operator==(const FRRRobotModelData& OtherModelData)
     {
-        return (ModelDescType == OtherModelInfo.ModelDescType) && (ModelNameList == OtherModelInfo.ModelNameList) &&
-               DescriptionFilePath.Equals(OtherModelInfo.DescriptionFilePath, ESearchCase::CaseSensitive);
+        return (ModelDescType == OtherModelData.ModelDescType) && (ModelNameList == OtherModelData.ModelNameList) &&
+               DescriptionFilePath.Equals(OtherModelData.DescriptionFilePath, ESearchCase::CaseSensitive);
     }
     bool IsValid(bool bIsLogged = false) const
     {
@@ -1261,6 +1293,14 @@ public:
             }
             return false;
         }
+        else if (ModelNameList[0].IsEmpty())
+        {
+            if (bIsLogged)
+            {
+                UE_LOG_WITH_INFO(LogTemp, Log, TEXT("%s ModelName EMPTY!"), *DescriptionFilePath);
+            }
+            return false;
+        }
         else if (DescriptionFilePath.IsEmpty())
         {
             if (bIsLogged)
@@ -1277,7 +1317,7 @@ public:
             }
             return false;
         }
-        else if ((0 == ChildModelsInfo.Num()) && (ModelNameList.Num() > 1))
+        else if ((0 == ChildModelsData.Num()) && (ModelNameList.Num() > 1))
         {
             if (bIsLogged)
             {
@@ -1423,11 +1463,208 @@ public:
         UE_LOG_WITH_INFO(LogTemp, Display, TEXT("WholeBodyStaticMeshName: %s"), *WholeBodyStaticMeshName);
         WholeBodyMaterialInfo.PrintSelf();
 
-        for (const auto& modelInfo : ChildModelsInfo)
+        for (const auto& modelInfo : ChildModelsData)
         {
             UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("SUBMODEL"));
             modelInfo.PrintSelf();
         }
+    }
+};    // END FRRRobotModelData
+
+USTRUCT(BlueprintType)
+struct RAPYUTASIMULATIONPLUGINS_API FRRRobotModelTableRow : public FTableRowBase
+{
+    GENERATED_BODY()
+public:
+    FRRRobotModelTableRow(const FRRRobotModelData& InRobotModelData) : Data(InRobotModelData)
+    {
+    }
+    FRRRobotModelTableRow()
+    {
+    }
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FRRRobotModelData Data;
+};
+
+struct RAPYUTASIMULATIONPLUGINS_API FRRRobotModelInfo : public TSharedFromThis<FRRRobotModelInfo, ESPMode::ThreadSafe>
+{
+public:
+    FRRRobotModelInfo(const FRRRobotModelData& InRobotModelData) : Data(InRobotModelData)
+    {
+    }
+    FRRRobotModelInfo()
+    {
+    }
+
+    //! Robot model data
+    FRRRobotModelData Data;
+
+    FORCEINLINE const FString& GetDescriptionFilePath() const
+    {
+        return Data.DescriptionFilePath;
+    }
+
+    FORCEINLINE const FString& GetWorldName() const
+    {
+        return Data.WorldName;
+    }
+
+    FORCEINLINE int32 GetCreatedInstancesNum() const
+    {
+        return Data.CreatedInstancesNum;
+    }
+
+    FORCEINLINE int32& GetCreatedInstancesNum()
+    {
+        return Data.CreatedInstancesNum;
+    }
+
+    FORCEINLINE bool HasWorldJoint() const
+    {
+        return Data.bHasWorldJoint;
+    }
+    FORCEINLINE int32 GetVisualsNum() const
+    {
+        return Data.GetVisualsNum();
+    }
+
+    //! UE Component types
+    FORCEINLINE int32 GetUEComponentTypeFlags() const
+    {
+        return Data.UEComponentTypeFlags;
+    }
+    FORCEINLINE bool IsUEComponentEnabled(const uint8 InTypeMask) const
+    {
+        return Data.IsUEComponentEnabled(InTypeMask);
+    }
+    FORCEINLINE bool IsUEComponentEnabled(const ERRUEComponentType InTypeMask) const
+    {
+        return Data.IsUEComponentEnabled(InTypeMask);
+    }
+    FORCEINLINE bool IsPlainManipulatorModel() const
+    {
+        return Data.IsPlainManipulatorModel();
+    }
+    FORCEINLINE bool IsPlainWheeledVehicleModel() const
+    {
+        return Data.IsPlainWheeledVehicleModel();
+    }
+
+    // Link/Joint list
+    FORCEINLINE const FString& GetBaseLinkName() const
+    {
+        return Data.BaseLinkName;
+    }
+    FORCEINLINE const TArray<FRRRobotLinkProperty>& GetLinkPropList() const
+    {
+        return Data.LinkPropList;
+    }
+    FORCEINLINE TArray<FRRRobotLinkProperty>& GetLinkPropList()
+    {
+        return Data.LinkPropList;
+    }
+    FORCEINLINE const TArray<FRRRobotJointProperty>& GetJointPropList() const
+    {
+        return Data.JointPropList;
+    }
+    FORCEINLINE TArray<FRRRobotJointProperty>& GetJointPropList()
+    {
+        return Data.JointPropList;
+    }
+    FORCEINLINE const TArray<FRRRobotModelData>& GetChildModelsData() const
+    {
+        return Data.ChildModelsData;
+    }
+
+    FORCEINLINE void RemoveLinkJointProp(const FString& InLinkName)
+    {
+        Data.RemoveLinkJointProp(InLinkName);
+    }
+
+    FORCEINLINE const FRRRobotLinkProperty FindLinkProp(int8 InLinkIndex) const
+    {
+        return Data.FindLinkProp(InLinkIndex);
+    }
+
+    FORCEINLINE const FRRRobotJointProperty FindJointPropByLinkIndex(int8 InLinkIndex) const
+    {
+        return Data.FindJointPropByLinkIndex(InLinkIndex);
+    }
+
+    FORCEINLINE FTransform GetLinkVisualOffset(int8 InLinkIndex) const
+    {
+        return Data.GetLinkVisualOffset(InLinkIndex);
+    }
+
+    FORCEINLINE FTransform GetLinkAbsoluteTransform(int8 InLinkIndex) const
+    {
+        return Data.GetLinkAbsoluteTransform(InLinkIndex);
+    }
+
+    FORCEINLINE FTransform GetLinkRelativeTransform(int8 InLinkIndex) const
+    {
+        return Data.GetLinkRelativeTransform(InLinkIndex);
+    }
+
+    FORCEINLINE FTransform GetLinkRelTransformToBase(int8 InLinkIndex) const
+    {
+        return Data.GetLinkRelTransformToBase(InLinkIndex);
+    }
+
+    FORCEINLINE FTransform GetLinkVisualOffsetToBase(int8 InLinkIndex) const
+    {
+        return Data.GetLinkVisualOffsetToBase(InLinkIndex);
+    }
+
+    FORCEINLINE FRRRobotGeometryInfo GetVisualInfo() const
+    {
+        return Data.GetVisualInfo();
+    }
+
+    // Material
+    FORCEINLINE FRRMaterialProperty GetBodyMaterialInfo() const
+    {
+        return Data.GetBodyMaterialInfo();
+    }
+
+    FORCEINLINE FRRMaterialProperty GetVisualMaterialInfo() const
+    {
+        return Data.GetVisualMaterialInfo();
+    }
+
+    // Articulated link names
+    FORCEINLINE const TArray<FString>& GetArticulatedLinksNames() const
+    {
+        return Data.ArticulatedLinksNames;
+    }
+
+    // Endtip
+    FORCEINLINE const TArray<FString>& GetEndEffectorNames() const
+    {
+        return Data.EndEffectorNames;
+    }
+
+    // Wheels properties
+    FORCEINLINE const TArray<FRRRobotWheelProperty>& GetWheelPropList() const
+    {
+        return Data.WheelPropList;
+    }
+    FORCEINLINE bool HasWheel(const FString& InWheelName) const
+    {
+        return Data.HasWheel(InWheelName);
+    }
+
+    FORCEINLINE bool operator==(const FRRRobotModelInfo& OtherModelInfo)
+    {
+        return (Data == OtherModelInfo.Data);
+    }
+    FORCEINLINE bool IsValid(bool bIsLogged = false) const
+    {
+        return Data.IsValid(bIsLogged);
+    }
+    FORCEINLINE void PrintSelf() const
+    {
+        Data.PrintSelf();
     }
 };
 

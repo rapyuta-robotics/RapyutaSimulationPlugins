@@ -12,7 +12,7 @@
 
 /**
  * @brief [experimental] Parse SDF file and generate FRRRobotModelInfo. Uses ignition library to parse SDF file.
- * 
+ *
  */
 class RAPYUTASIMULATIONPLUGINS_API FRRSDFParser : public FRRRobotDescriptionParser
 {
@@ -21,18 +21,18 @@ public:
     bool LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRRRobotModelInfo& OutRobotModelInfo);
 
 private:
-    bool ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, FRRRobotModelInfo& OutRobotModelInfo);
+    bool ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData);
     bool ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
                            const ERRRobotGeometryType InGeometryType,
-                           FVector LocationBase,
-                           FQuat RotationBase,
+                           const FVector& InLocationBase,
+                           const FQuat& InRotationBase,
                            TArray<FRRRobotGeometryInfo>& OutGeometryInfoList);
-    bool LoadChildModelsInfo(const sdf::ElementPtr& InParentElement, FRRRobotModelInfo& OutRobotModelInfo);
-    bool LoadPoseInfo(const sdf::ElementPtr& InElement, FRRRobotModelInfo& OutRobotModelInfo);
-    bool LoadLinksJointsInfo(const sdf::ElementPtr& InParentElement, FRRRobotModelInfo& OutRobotModelInfo);
-    bool ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelInfo& OutRobotModelInfo);
+    bool LoadChildModelsData(const sdf::ElementPtr& InParentElement, FRRRobotModelData& OutRobotModelData);
+    bool LoadPoseInfo(const sdf::ElementPtr& InElement, FRRRobotModelData& OutRobotModelData);
+    bool LoadLinksJointsInfo(const sdf::ElementPtr& InParentElement, FRRRobotModelData& OutRobotModelData);
+    bool ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData);
     bool ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TArray<FRRSensorProperty>& OutSensorPropList);
-    bool ParseJointsProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelInfo& OutRobotModelInfo);
+    bool ParseJointsProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData);
 
     static constexpr const char* SDF_ELEMENT_ATTR_NAME = "name";
     static constexpr const char* SDF_ELEMENT_ATTR_TYPE = "type";

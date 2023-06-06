@@ -47,13 +47,13 @@ public:
     }
 
     UPROPERTY()
-    ERRShapeType ShapeType = ERRShapeType::INVALID;
+    ERRShapeType ShapeType = ERRShapeType::NONE;
 
     /**
      * @brief CustomDepthStencil will be actively set by stakeholders or ARRMeshActor if needs be
-     * 
-     * @param bIsStaticBody 
-     * @param bInIsPhysicsEnabled 
+     *
+     * @param bIsStaticBody
+     * @param bInIsPhysicsEnabled
      */
     void Initialize(bool bIsStaticBody, bool bInIsPhysicsEnabled);
 
@@ -77,8 +77,8 @@ public:
 
     /**
      * @brief Create primitive-shape mesh based on #ShapeType.
-     * 
-     * @param InSize 
+     *
+     * @param InSize
      */
     void SetMeshSize(const FVector& InSize);
 
