@@ -46,8 +46,11 @@ using URRAssetObject = typename TChooseClass<
                     typename TChooseClass<
                         (ERRResourceDataType::UE_TEXTURE == InDataType),
                         UTexture,
-                        typename TChooseClass<(ERRResourceDataType::UE_BODY_SETUP == InDataType), UBodySetup, UObject>::Result>::
-                        Result>::Result>::Result>::Result>::Result>::Result;
+                        typename TChooseClass<
+                            (ERRResourceDataType::UE_DATA_TABLE == InDataType),
+                            UDataTable,
+                            typename TChooseClass<(ERRResourceDataType::UE_BODY_SETUP == InDataType), UBodySetup, UObject>::
+                                Result>::Result>::Result>::Result>::Result>::Result>::Result>::Result;
 
 /**
  * @brief GameSingleton class which handles asset loading.
@@ -128,6 +131,12 @@ public:
             case ERRResourceDataType::UE_TEXTURE:
                 return TEXT("T_");
 
+            case ERRResourceDataType::UE_DATA_TABLE:
+                return TEXT("DT_");
+
+            case ERRResourceDataType::UE_BODY_SETUP:
+                return TEXT("BS_");
+
             default:
                 return EMPTY_STR;
         }
@@ -174,6 +183,9 @@ public:
 
             case ERRResourceDataType::UE_TEXTURE:
                 return FOLDER_PATH_ASSET_TEXTURES;
+
+            case ERRResourceDataType::UE_DATA_TABLE:
+                return FOLDER_PATH_ASSET_DATA_TABLES;
 
             default:
                 return EMPTY_STR;
@@ -290,10 +302,8 @@ public:
         if (0 == CollateAssetsInfo<URRAssetObject<InDataType>>(InDataType, GetAssetsFolderName(InDataType)))
         {
             resourceInfo.bHasBeenAllLoaded = true;
-            UE_LOG_WITH_INFO(LogTemp,
-                             Warning,
-                             TEXT("THERE ARE NO [%s] TO BE LOADED."),
-                             *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
+            UE_LOG_WITH_INFO(
+                LogTemp, Warning, TEXT("THERE IS NO [%s] TO BE LOADED"), *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
             return true;
         }
 
@@ -367,6 +377,10 @@ public:
 
             case ERRResourceDataType::UE_TEXTURE:
                 ProcessAsyncLoadedResource<UTexture>(InDataType, InResourcePath, InResourceUniqueName);
+                break;
+
+            case ERRResourceDataType::UE_DATA_TABLE:
+                ProcessAsyncLoadedResource<UDataTable>(InDataType, InResourcePath, InResourceUniqueName);
                 break;
 
             default:
@@ -710,6 +724,22 @@ public:
     FORCEINLINE UTexture* GetTexture(const FString& InTextureName, bool bIsStaticResource = true) const
     {
         return GetSimResource<UTexture>(ERRResourceDataType::UE_TEXTURE, InTextureName, bIsStaticResource);
+    }
+
+    // DATA TABLES --
+    //! Dynamic Data Table assets folder path
+    UPROPERTY(config)
+    FString FOLDER_PATH_ASSET_DATA_TABLES = TEXT("DataTables");
+
+    /**
+     * @brief Call #GetSimResource with #ERRResourceDataType::UE_DATA_TABLE
+     * @param InDataTableName
+     * @param bIsStaticResource
+     * @return FORCEINLINE*
+     */
+    FORCEINLINE UDataTable* GetDataTable(const FString& InDataTableName, bool bIsStaticResource = true) const
+    {
+        return GetSimResource<UDataTable>(ERRResourceDataType::UE_DATA_TABLE, InDataTableName, bIsStaticResource);
     }
 
     // BODY SETUPS --

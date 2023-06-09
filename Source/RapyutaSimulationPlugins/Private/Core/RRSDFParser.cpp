@@ -55,16 +55,19 @@ FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
         return FRRRobotModelInfo();
     }
 
+#if RAPYUTA_SDF_PARSER_DEBUG
     UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PARSE SDF CONTENT FROM FILE %s"), *InSDFPath);
+#endif
     FRRRobotModelInfo robotModelInfo;
-    robotModelInfo.ModelDescType = ERRRobotDescriptionType::SDF;
-    robotModelInfo.DescriptionFilePath = InSDFPath;
+    auto& robotModelData = robotModelInfo.Data;
+    robotModelData.ModelDescType = ERRRobotDescriptionType::SDF;
+    robotModelData.DescriptionFilePath = InSDFPath;
     if (LoadModelInfoFromSDF(outSDFContent, robotModelInfo))
     {
-        robotModelInfo.UpdateLinksLocationFromJoints();
+        robotModelData.UpdateLinksLocationFromJoints();
 #if RAPYUTA_SDF_PARSER_DEBUG
         UE_LOG_WITH_INFO(
-            LogRapyutaCore, Warning, TEXT("PARSING SDF SUCCEEDED[%s]!"), *FString::Join(robotModelInfo.ModelNameList, TEXT(",")));
+            LogRapyutaCore, Warning, TEXT("PARSING SDF SUCCEEDED[%s]!"), *FString::Join(robotModelData.ModelNameList, TEXT(",")));
 #endif
     }
     else
@@ -86,32 +89,34 @@ bool FRRSDFParser::LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRRRobo
     }
 
     bool bResult = true;
+    FRRRobotModelData& outRobotModelData = OutRobotModelInfo.Data;
+
     const sdf::ElementPtr topElement = rootElement->GetFirstElement();
     // World
     if (worldElement == topElement)
     {
-        OutRobotModelInfo.WorldName = URRCoreUtils::StdToFString(worldElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        outRobotModelData.WorldName = URRCoreUtils::StdToFString(worldElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
 
         // World's Child Models info
-        bResult &= LoadChildModelsInfo(worldElement, OutRobotModelInfo);
+        bResult &= LoadChildModelsData(worldElement, outRobotModelData);
     }
 
     // Model
     else if (modelElement == topElement)
     {
-        OutRobotModelInfo.ModelNameList.Emplace(URRCoreUtils::StdToFString(modelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME)));
+        outRobotModelData.ModelNameList.Emplace(URRCoreUtils::StdToFString(modelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME)));
 
         // Model's pose info
-        bResult &= LoadPoseInfo(modelElement, OutRobotModelInfo);
+        bResult &= LoadPoseInfo(modelElement, outRobotModelData);
 
         // Model's UE components info
-        bResult &= ParseModelUESpecifics(modelElement, OutRobotModelInfo);
+        bResult &= ParseModelUESpecifics(modelElement, outRobotModelData);
 
         // Model's links/joints info
-        bResult &= LoadLinksJointsInfo(modelElement, OutRobotModelInfo);
+        bResult &= LoadLinksJointsInfo(modelElement, outRobotModelData);
 
         // Model's Child Models info
-        bResult &= LoadChildModelsInfo(modelElement, OutRobotModelInfo);
+        bResult &= LoadChildModelsData(modelElement, outRobotModelData);
     }
 
     // Clear temp read data
@@ -119,7 +124,7 @@ bool FRRSDFParser::LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRRRobo
     return bResult;
 }
 
-bool FRRSDFParser::LoadChildModelsInfo(const sdf::ElementPtr& InParentElement, FRRRobotModelInfo& OutRobotModelInfo)
+bool FRRSDFParser::LoadChildModelsData(const sdf::ElementPtr& InParentElement, FRRRobotModelData& OutRobotModelData)
 {
     bool bResult = true;
     // Read <model> tags
@@ -129,25 +134,27 @@ bool FRRSDFParser::LoadChildModelsInfo(const sdf::ElementPtr& InParentElement, F
         const FString modelName = URRCoreUtils::StdToFString(childModelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
 
         // To make sure each of [ModelNameList] is unique
-        FString modelFullName = FString::Printf(TEXT("%s%s"), *OutRobotModelInfo.WorldName, *modelName);
-        verify(false == OutRobotModelInfo.ModelNameList.Contains(modelName));
+        FString modelFullName = FString::Printf(TEXT("%s%s"), *OutRobotModelData.WorldName, *modelName);
+        ensure(false == OutRobotModelData.ModelNameList.Contains(modelName));
+#if RAPYUTA_SDF_PARSER_DEBUG
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Model %s"), *modelName);
+#endif
 
-        FRRRobotModelInfo modelInfo({modelFullName});
-        modelInfo.ModelDescType = ERRRobotDescriptionType::SDF;
+        FRRRobotModelData modelData({modelFullName});
+        modelData.ModelDescType = ERRRobotDescriptionType::SDF;
 
         // 1- ChildModel's pose info
-        bResult &= LoadPoseInfo(childModelElement, modelInfo);
+        bResult &= LoadPoseInfo(childModelElement, modelData);
 
         // 2- ChildModel's Links/Joints info
-        bResult &= LoadLinksJointsInfo(childModelElement, modelInfo);
+        bResult &= LoadLinksJointsInfo(childModelElement, modelData);
 
         // 3- ChildModel's UE components info, which requires prior Links/Joints info
-        bResult &= ParseModelUESpecifics(childModelElement, modelInfo);
+        bResult &= ParseModelUESpecifics(childModelElement, modelData);
 
-        // Update [ChildModelsInfo] & [ModelNameList]
-        OutRobotModelInfo.ChildModelsInfo.Emplace(MoveTemp(modelInfo));
-        OutRobotModelInfo.ModelNameList.Emplace(MoveTemp(modelFullName));
+        // Update [ChildModelsData] & [ModelNameList]
+        OutRobotModelData.ChildModelsData.Emplace(MoveTemp(modelData));
+        OutRobotModelData.ModelNameList.Emplace(MoveTemp(modelFullName));
 
         // Move to next <model>
         childModelElement = childModelElement->GetNextElement(SDF_ELEMENT_MODEL);
@@ -155,21 +162,21 @@ bool FRRSDFParser::LoadChildModelsInfo(const sdf::ElementPtr& InParentElement, F
     return true;
 }
 
-bool FRRSDFParser::LoadPoseInfo(const sdf::ElementPtr& InElement, FRRRobotModelInfo& OutRobotModelInfo)
+bool FRRSDFParser::LoadPoseInfo(const sdf::ElementPtr& InElement, FRRRobotModelData& OutRobotModelData)
 {
     const auto poseElement = InElement->FindElement(SDF_ELEMENT_POSE);
     if (poseElement)
     {
-        OutRobotModelInfo.ParentFrameName = URRCoreUtils::StdToFString(poseElement->Get<std::string>(SDF_ELEMENT_ATTR_RELATIVE_TO));
+        OutRobotModelData.ParentFrameName = URRCoreUtils::StdToFString(poseElement->Get<std::string>(SDF_ELEMENT_ATTR_RELATIVE_TO));
 
         const auto poseOffset = poseElement->Get<ignition::math::Pose3d>();
-        OutRobotModelInfo.RelativeTransform.SetLocation(GetLocationFromIgnitionPose(poseOffset));
-        OutRobotModelInfo.RelativeTransform.SetRotation(GetRotationFromIgnitionPose(poseOffset));
+        OutRobotModelData.RelativeTransform.SetLocation(GetLocationFromIgnitionPose(poseOffset));
+        OutRobotModelData.RelativeTransform.SetRotation(GetRotationFromIgnitionPose(poseOffset));
     }
     return true;
 }
 
-bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, FRRRobotModelInfo& OutRobotModelInfo)
+bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData)
 {
     sdf::ElementPtr ueElement = InModelElement->FindElement(SDF_ELEMENT_UE);
     if (nullptr == ueElement)
@@ -186,7 +193,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
             TEXT("ERRUEComponentType"), URRCoreUtils::StdToFString(componentElement->Get<std::string>(SDF_ELEMENT_ATTR_TYPE)));
         if (componentTypeVal != INDEX_NONE)
         {
-            OutRobotModelInfo.SetUEComponentEnabled(componentTypeVal);
+            OutRobotModelData.SetUEComponentEnabled(componentTypeVal);
         }
 
         componentElement = componentElement->GetNextElement(SDF_ELEMENT_COMPONENT);
@@ -195,16 +202,16 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
     // 2- Base link name
     if (auto baseLinkElement = ueElement->FindElement(SDF_ELEMENT_BASE_LINK))
     {
-        OutRobotModelInfo.BaseLinkName = URRCoreUtils::StdToFString(baseLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        OutRobotModelData.BaseLinkName = URRCoreUtils::StdToFString(baseLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
     }
 
-    // 3- Articulated links, which uses OutRobotModelInfo.UEComponentTypeFlags
-    if (OutRobotModelInfo.IsPlainManipulatorModel())
+    // 3- Articulated links, which uses OutRobotModelData.UEComponentTypeFlags
+    if (OutRobotModelData.IsPlainManipulatorModel())
     {
         // By default all links are articulated for ARTICULATION_DRIVE-only manipulator type
-        for (const auto& linkProp : OutRobotModelInfo.LinkPropList)
+        for (const auto& linkProp : OutRobotModelData.LinkPropList)
         {
-            OutRobotModelInfo.ArticulatedLinksNames.Add(linkProp.Name);
+            OutRobotModelData.ArticulatedLinksNames.Add(linkProp.Name);
         }
     }
     else
@@ -216,20 +223,20 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
             FString arLinkName = URRCoreUtils::StdToFString(articulatedElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
             if (false == arLinkName.IsEmpty())
             {
-                OutRobotModelInfo.ArticulatedLinksNames.Emplace(MoveTemp(arLinkName));
+                OutRobotModelData.ArticulatedLinksNames.Emplace(MoveTemp(arLinkName));
             }
 
             articulatedElement = articulatedElement->GetNextElement(SDF_ELEMENT_ARTICULATED_LINK);
         }
     }
 
-    // 4- Wheels, which uses OutRobotModelInfo.UEComponentTypeFlags
-    if (OutRobotModelInfo.IsPlainWheeledVehicleModel())
+    // 4- Wheels, which uses OutRobotModelData.UEComponentTypeFlags
+    if (OutRobotModelData.IsPlainWheeledVehicleModel())
     {
         // By default all links are articulated for WHEEL_DRIVE-only vehicle type
-        for (const auto& linkProp : OutRobotModelInfo.LinkPropList)
+        for (const auto& linkProp : OutRobotModelData.LinkPropList)
         {
-            OutRobotModelInfo.WheelPropList.Emplace(FRRRobotWheelProperty(linkProp.Name));
+            OutRobotModelData.WheelPropList.Emplace(FRRRobotWheelProperty(linkProp.Name));
         }
     }
     else
@@ -241,7 +248,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
             FString wheelName = URRCoreUtils::StdToFString(wheelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
             if (false == wheelName.IsEmpty())
             {
-                OutRobotModelInfo.WheelPropList.Emplace(FRRRobotWheelProperty(MoveTemp(wheelName)));
+                OutRobotModelData.WheelPropList.Emplace(FRRRobotWheelProperty(MoveTemp(wheelName)));
             }
 
             wheelElement = wheelElement->GetNextElement(SDF_ELEMENT_WHEEL);
@@ -255,7 +262,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         FString eeName = URRCoreUtils::StdToFString(endEffectorElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
         if (false == eeName.IsEmpty())
         {
-            OutRobotModelInfo.EndEffectorNames.Emplace(MoveTemp(eeName));
+            OutRobotModelData.EndEffectorNames.Emplace(MoveTemp(eeName));
         }
 
         endEffectorElement = endEffectorElement->GetNextElement(SDF_ELEMENT_END_EFFECTOR);
@@ -265,12 +272,12 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
     sdf::ElementPtr staticMeshElement = ueElement->FindElement(SDF_ELEMENT_LINK_STATIC_MESH);
     if (staticMeshElement)
     {
-        OutRobotModelInfo.WholeBodyStaticMeshName =
+        OutRobotModelData.WholeBodyStaticMeshName =
             URRCoreUtils::StdToFString(staticMeshElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
     }
 
     // 7- WholeBody's material
-    auto& materialInfo = OutRobotModelInfo.WholeBodyMaterialInfo;
+    auto& materialInfo = OutRobotModelData.WholeBodyMaterialInfo;
     sdf::ElementPtr materialElement = ueElement->FindElement(SDF_ELEMENT_LINK_MATERIAL);
     if (materialElement)
     {
@@ -304,19 +311,19 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
     return true;
 }
 
-bool FRRSDFParser::LoadLinksJointsInfo(const sdf::ElementPtr& InParentElement, FRRRobotModelInfo& OutRobotModelInfo)
+bool FRRSDFParser::LoadLinksJointsInfo(const sdf::ElementPtr& InParentElement, FRRRobotModelData& OutRobotModelData)
 {
     // Link elements
-    bool bResult = ParseLinksProperty(InParentElement, OutRobotModelInfo);
+    bool bResult = ParseLinksProperty(InParentElement, OutRobotModelData);
     if (bResult)
     {
         // Joint elements
-        bResult = ParseJointsProperty(InParentElement, OutRobotModelInfo);
+        bResult = ParseJointsProperty(InParentElement, OutRobotModelData);
     }
     return bResult;
 }
 
-bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelInfo& OutRobotModelInfo)
+bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData)
 {
     sdf::ElementPtr linkElement = InModelElement->FindElement(SDF_ELEMENT_LINK);
     while (linkElement)
@@ -395,7 +402,7 @@ bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRR
         ParseSensorsProperty(linkElement, newLinkProp.SensorList);
 
         // Add new link prop to the list
-        OutRobotModelInfo.LinkPropList.Emplace(MoveTemp(newLinkProp));
+        OutRobotModelData.LinkPropList.Emplace(MoveTemp(newLinkProp));
 
         linkElement = linkElement->GetNextElement(SDF_ELEMENT_LINK);
     }
@@ -404,8 +411,8 @@ bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRR
 
 bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
                                      const ERRRobotGeometryType InGeometryType,
-                                     FVector LocationBase,
-                                     FQuat RotationBase,
+                                     const FVector& InLocationBase,
+                                     const FQuat& InRotationBase,
                                      TArray<FRRRobotGeometryInfo>& OutGeometryInfoList)
 {
     const FString linkName = URRCoreUtils::StdToFString(InLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
@@ -434,8 +441,8 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
         }
         else
         {
-            geometryInfo.Location = LocationBase;
-            geometryInfo.Rotation = RotationBase;
+            geometryInfo.Location = InLocationBase;
+            geometryInfo.Rotation = InRotationBase;
         }
 
         // Geometry
@@ -641,7 +648,7 @@ bool FRRSDFParser::ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TA
     return true;
 }
 
-bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelInfo& OutRobotModelInfo)
+bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData)
 {
     sdf::ElementPtr jointElement = InModelElement->FindElement(SDF_ELEMENT_JOINT);
     while (jointElement)
@@ -655,7 +662,7 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
             UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Ignore attached-to-world-link joint!"));
 #endif
             jointElement = jointElement->GetNextElement(SDF_ELEMENT_JOINT);
-            OutRobotModelInfo.bHasWorldJoint = true;
+            OutRobotModelData.bHasWorldJoint = true;
             continue;
         }
 
@@ -739,7 +746,7 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
         }
 
         // Add new joint data to the list
-        OutRobotModelInfo.JointPropList.Emplace(MoveTemp(newJointProp));
+        OutRobotModelData.JointPropList.Emplace(MoveTemp(newJointProp));
 
         jointElement = jointElement->GetNextElement(SDF_ELEMENT_JOINT);
     }

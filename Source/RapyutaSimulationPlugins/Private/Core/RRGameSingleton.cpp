@@ -13,6 +13,7 @@ TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_
     {ERRResourceDataType::UE_PHYSICS_ASSET, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_MATERIAL, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_TEXTURE, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
+    {ERRResourceDataType::UE_DATA_TABLE, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
 };
 
 URRGameSingleton::URRGameSingleton()
@@ -89,6 +90,9 @@ bool URRGameSingleton::InitializeResources()
 
     // [TEXTURE] --
     RequestResourcesLoading<ERRResourceDataType::UE_TEXTURE>();
+
+    // [DATATABLE] --
+    RequestResourcesLoading<ERRResourceDataType::UE_DATA_TABLE>();
 
     // [BODY SETUP] --
     // Body setups are dynamically created in runtime only

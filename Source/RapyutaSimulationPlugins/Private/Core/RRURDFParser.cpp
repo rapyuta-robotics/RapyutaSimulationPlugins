@@ -809,13 +809,16 @@ FRRRobotModelInfo FRRURDFParser::LoadModelInfoFromFile(const FString& InURDFPath
     }
     outXMLContent = URRCoreUtils::GetSanitizedXMLString(outXMLContent);
 
+#if RAPYUTA_URDF_PARSER_DEBUG
     UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PARSE URDF CONTENT FROM FILE %s"), *InURDFPath);
+#endif
     FRRRobotModelInfo robotModelInfo;
-    robotModelInfo.ModelDescType = ERRRobotDescriptionType::URDF;
-    robotModelInfo.DescriptionFilePath = InURDFPath;
+    auto& robotModelData = robotModelInfo.Data;
+    robotModelData.ModelDescType = ERRRobotDescriptionType::URDF;
+    robotModelData.DescriptionFilePath = InURDFPath;
     if (LoadModelInfoFromXML(outXMLContent, robotModelInfo))
     {
-        robotModelInfo.UpdateLinksLocationFromJoints();
+        robotModelData.UpdateLinksLocationFromJoints();
     }
     return robotModelInfo;
 }
@@ -844,40 +847,41 @@ bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRRRobotModel
 #if RAPYUTA_URDF_PARSER_DEBUG
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PARSING URDF SUCCEEDED[%s]!"), *ModelName);
 #endif
-        OutRobotModelInfo.ModelNameList.Emplace(MoveTemp(ModelName));
-        OutRobotModelInfo.bHasWorldJoint = bHasWorldJoint;
-        OutRobotModelInfo.UEComponentTypeFlags = UEComponentTypeFlags;
+        FRRRobotModelData& outRobotModelData = OutRobotModelInfo.Data;
+        outRobotModelData.ModelNameList.Emplace(MoveTemp(ModelName));
+        outRobotModelData.bHasWorldJoint = bHasWorldJoint;
+        outRobotModelData.UEComponentTypeFlags = UEComponentTypeFlags;
 
         // 0- BaseLink
-        OutRobotModelInfo.BaseLinkName = MoveTemp(BaseLinkName);
+        outRobotModelData.BaseLinkName = MoveTemp(BaseLinkName);
 
         // 1- Links/Joints
-        OutRobotModelInfo.LinkPropList = MoveTemp(LinkPropList);
-        OutRobotModelInfo.JointPropList = MoveTemp(JointPropList);
+        outRobotModelData.LinkPropList = MoveTemp(LinkPropList);
+        outRobotModelData.JointPropList = MoveTemp(JointPropList);
 
         // 2- ArticulatedLinksNames
         // [Manipulator] as containing ARTICULATION_DRIVE only
         if (IsPlainManipulatorModel())
         {
             // By default all links are articulated for ARTICULATION_DRIVE-only manipulator type
-            for (const auto& linkProp : OutRobotModelInfo.LinkPropList)
+            for (const auto& linkProp : outRobotModelData.LinkPropList)
             {
-                OutRobotModelInfo.ArticulatedLinksNames.Add(linkProp.Name);
+                outRobotModelData.ArticulatedLinksNames.Add(linkProp.Name);
             }
         }
         else
         {
-            OutRobotModelInfo.ArticulatedLinksNames = MoveTemp(ArticulatedLinksNames);
+            outRobotModelData.ArticulatedLinksNames = MoveTemp(ArticulatedLinksNames);
         }
 
         // 3- WheelsNames
-        OutRobotModelInfo.WheelPropList = MoveTemp(WheelPropList);
+        outRobotModelData.WheelPropList = MoveTemp(WheelPropList);
 
         // 4- EndEffectorNames
-        OutRobotModelInfo.EndEffectorNames = MoveTemp(EndEffectorNames);
+        outRobotModelData.EndEffectorNames = MoveTemp(EndEffectorNames);
 
         // 4- WholeBodyMaterialInfo
-        OutRobotModelInfo.WholeBodyMaterialInfo = MoveTemp(WholeBodyMaterialInfo);
+        outRobotModelData.WholeBodyMaterialInfo = MoveTemp(WholeBodyMaterialInfo);
     }
     else
     {

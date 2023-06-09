@@ -33,6 +33,7 @@ enum class ERRResourceDataType : uint8
     UE_PHYSICS_ASSET,
     UE_MATERIAL,
     UE_TEXTURE,
+    UE_DATA_TABLE,
 
     // UOBJECT --
     // Cooked collision data
@@ -172,7 +173,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
     }
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
 {
     // These property names are defined in master material by the artist
