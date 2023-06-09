@@ -98,8 +98,7 @@ enum class ERRRobotJointType : uint8
 UENUM()
 enum class ERRRobotJointStatus : uint8
 {
-    // Invalid -> Idle: After joint drive params are fully configured
-    INVALID,
+    INVALID,    //! Invalid -> Idle: After joint drive params are fully configured
     IDLE,
     MOVING,
     TOTAL
@@ -152,17 +151,16 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
     UPROPERTY(EditAnywhere)
     FString JointName;
     // For Spring-Damper Control Mode --
-    // Stiffness
+    //! [Stiffness](https://docs.unrealengine.com/5.2/en-US/physics-damping-in-unreal-engine)
     UPROPERTY(EditAnywhere,
               Category = "Spring-Damper",
               meta = (ClampMin = "0.0", ClampMax = "1000000000.0", UIMin = "0.0", UIMax = "1000000000.0"))
     float SpringStiff = 0.f;
-    // https://docs.unrealengine.com/en-us/Engine/Physics/FrictionRestitutionAndDamping
     UPROPERTY(EditAnywhere,
               Category = "Spring-Damper",
               meta = (ClampMin = "0.0", ClampMax = "1000000000.0", UIMin = "0.0", UIMax = "1000000000.0"))
     float LimitSpringStiff = 0.f;
-    // Damping
+    //! [Damping](https://docs.unrealengine.com/5.2/en-US/physics-damping-in-unreal-engine)
     UPROPERTY(EditAnywhere,
               Category = "Spring-Damper",
               meta = (ClampMin = "0.0", ClampMax = "500.0", UIMin = "0.0", UIMax = "500.0"))
@@ -184,7 +182,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
               meta = (ClampMin = "0.0", ClampMax = "10000000.0", UIMin = "0.0", UIMax = "10000000.0"))
     float MaxForceLimit = 100000000.f;
 
-    //! Rad(m)/s
+    //! [rad/s or m/s]
     UPROPERTY(EditAnywhere)
     float MaxVelocity = 1000000.f;
 
@@ -244,11 +242,11 @@ public:
     UPROPERTY(VisibleAnywhere)
     ERRRobotJointStatus Status = ERRRobotJointStatus::INVALID;
 
-    //! In URDF/SDF: Child Link's relative Location to its Parent
+    //! [cm] In URDF/SDF: Child Link's relative Location to its Parent
     UPROPERTY(EditAnywhere)
     FVector Location = FVector::ZeroVector;
 
-    //! In URDF/SDF: Child Link's relative Rotation to its Parent
+    //! [Quaternion] In URDF/SDF: Child Link's relative Rotation to its Parent
     UPROPERTY(EditAnywhere)
     FQuat Rotation = FQuat::Identity;
 
@@ -268,6 +266,7 @@ public:
     FString MimicJointName;
     UPROPERTY(EditAnywhere)
     float MimicMultiplier = 1.0f;
+    //! [cm]
     UPROPERTY(EditAnywhere)
     float MimicOffset = 0.0f;
     UPROPERTY(EditAnywhere)
@@ -449,6 +448,9 @@ public:
     }
 };
 
+/**
+ * @brief Joint value struct, mainly to directly store input values from ROS cmds, thus units are in SI to avoid conversion overheads
+ */
 USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointValue
 {
@@ -456,14 +458,17 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointValue
     //! [rad] for REVOLUTE joint, [m] for Prismatic Joint
     UPROPERTY(EditAnywhere, meta = (ToopTip = "rad or m", ClampMin = "-100.0", ClampMax = "100.0", UIMin = "-100", UIMax = "100.0"))
     double Position = 0;
+    //! [m/s]
     UPROPERTY(EditAnywhere, meta = (ToopTip = "m/s", ClampMin = "-100.0", ClampMax = "100.0", UIMin = "-100.0", UIMax = "100.0"))
     double LinearVel = 0;
+    //! [rad/s]
     UPROPERTY(EditAnywhere, meta = (ToopTip = "rad/s", ClampMin = "-10.0", ClampMax = "10.0", UIMin = "-10.0", UIMax = "10.0"))
     double AngularVel = 0;
 
     FString ToString() const
     {
-        return FString::Printf(TEXT("Pos: %lf LinearVel: %lf AngularVel: %lf"), Position, LinearVel, AngularVel);
+        return FString::Printf(
+            TEXT("Pos: %lf[rad or m] LinearVel: %lf[m/s] AngularVel: %lf[rad/s]"), Position, LinearVel, AngularVel);
     }
 
     bool operator==(const FRRRobotJointValue& Other) const
@@ -490,8 +495,10 @@ USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotLinkInertia
 {
     GENERATED_BODY()
+    //! [kg]
     UPROPERTY(EditAnywhere)
     float Mass = 0.f;
+    //! [cm]
     UPROPERTY(EditAnywhere)
     FVector Location = FVector::ZeroVector;
     UPROPERTY(EditAnywhere)
@@ -545,6 +552,11 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotGeometryInfo
     FRRMaterialProperty MaterialInfo;
 };
 
+/**
+ * @brief Sensor lidar info
+ * @sa [URDF-Sensor](http://wiki.ros.org/urdf/XML/sensor)
+ * @sa [SDF-Sensor](http://sdformat.org/spec?elem=sensor)
+ */
 USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo
 {
@@ -552,33 +564,41 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo
     UPROPERTY(EditAnywhere)
     ERRLidarSensorType LidarType = ERRLidarSensorType::NONE;
 
-    //! Scan (angle in deg)
+    //! The number of simulated lidar rays to generate per complete laser sweep cycle
     UPROPERTY(EditAnywhere)
     int32 NHorSamplesPerScan = 360;
 
-    //! Scan (angle in deg)
+    //! The number of simulated lidar rays to generate per complete laser sweep cycle
     UPROPERTY(EditAnywhere)
     int32 NVerSamplesPerScan = 360;
 
-    //! Scan (angle in deg)
+    //! [deg]
     UPROPERTY(EditAnywhere)
     float HMinAngle = 0.f;
+    //! [deg]
     UPROPERTY(EditAnywhere)
     float HMaxAngle = 0.f;
+    //! Factor to be multiplied by samples to determine the number of range data points returned
     UPROPERTY(EditAnywhere)
     float HResolution = 0.f;
+    //! [deg]
     UPROPERTY(EditAnywhere)
     float VMinAngle = 0.f;
+    //! [deg]
     UPROPERTY(EditAnywhere)
     float VMaxAngle = 0.f;
+    //! Factor to be multiplied by samples to determine the number of range data points returned
     UPROPERTY(EditAnywhere)
     float VResolution = 0.f;
 
     // Range
+    //! [cm] The minimum distance for each lidar ray
     UPROPERTY(EditAnywhere)
     float MinRange = 0.f;
+    //! [cm] The maximum distance for each lidar ray
     UPROPERTY(EditAnywhere)
     float MaxRange = 0.f;
+    //! Linear resolution of each lidar ray
     UPROPERTY(EditAnywhere)
     float RangeResolution = 0.f;
 
@@ -763,21 +783,22 @@ public:
     UPROPERTY(EditAnywhere)
     FString WheelName;
 
-    /** If left undefined then the #bAffectedByEngine value is used, if defined then #bAffectedByEngine is ignored and the
-     * differential setup on the vehicle defines which wheels get power from the engine */
+    //! If left undefined then the #bAffectedByEngine value is used, if defined then #bAffectedByEngine is ignored and the
+    //! differential setup on the vehicle defines which wheels get power from the engine
     UPROPERTY(EditAnywhere)
     EAxleType AxleType = EAxleType::Undefined;
 
-    /**
-     * If BoneName is specified, offset the wheel from the bone's location.
-     * Otherwise this offsets the wheel from the vehicle's origin.
-     */
+    //! If BoneName is specified, offset the wheel from the bone's location.
+    //! Otherwise this offsets the wheel from the vehicle's origin.
+    //! [cm]
     UPROPERTY(EditAnywhere)
     FVector Offset = FVector::ZeroVector;
 
+    //! [cm]
     UPROPERTY(EditAnywhere)
     float WheelRadius = 0.f;
 
+    //! [cm]
     UPROPERTY(EditAnywhere)
     float WheelWidth = 0.f;
 
@@ -836,10 +857,12 @@ public:
     FVector SuspensionForceOffset = FVector::ZeroVector;
 
     //! How far the wheel can go above the resting position
+    //! [cm]
     UPROPERTY(EditAnywhere)
     float SuspensionMaxRaise = 10.f;
 
     //! How far the wheel can drop below the resting position
+    //! [cm]
     UPROPERTY(EditAnywhere)
     float SuspensionMaxDrop = 10.f;
 
@@ -847,17 +870,15 @@ public:
     UPROPERTY(EditAnywhere)
     float SuspensionDampingRatio = 0.5f;
 
-    /** Smooth suspension [0-off, 10-max] - Warning might cause momentary visual inter-penetration of the wheel against
-     * objects/terrain */
+    //! Smooth suspension [0-off, 10-max] - Warning might cause momentary visual inter-penetration of the wheel against
+    //! objects/terrain
     UPROPERTY(EditAnywhere)
     int8 SuspensionSmoothing = 0;
 
-    /**
-     * Amount wheel load effects wheel friction.
-     * At 0 wheel friction is completely independent of the loading on the wheel (This is artificial as it always assumes even
-     * balance between all wheels) At 1 wheel friction is based on the force pressing wheel into the ground. This is more
-     * realistic. Lower value cures lift off over-steer, generally makes vehicle easier to handle under extreme motions.
-     */
+    //! Amount wheel load effects wheel friction.
+    //! At 0 wheel friction is completely independent of the loading on the wheel (This is artificial as it always assumes even
+    //! balance between all wheels) At 1 wheel friction is based on the force pressing wheel into the ground. This is more
+    //! realistic. Lower value cures lift off over-steer, generally makes vehicle easier to handle under extreme motions.
     UPROPERTY(EditAnywhere)
     float WheelLoadRatio = 0.5f;
 
@@ -881,23 +902,23 @@ public:
     UPROPERTY(EditAnywhere)
     ESweepType SweepType = ESweepType::SimpleSweep;
 
+    //! [deg]
     UPROPERTY(EditAnywhere)
     float MaxSteerAngleDeg = 50.f;
 
-    //! max brake torque for this wheel (Nm)
+    //! [Nm]
     UPROPERTY(EditAnywhere)
     float MaxBrakeTorque = 1500.f;
 
-    /**
-     * Max handbrake brake torque for this wheel (Nm). A handbrake should have a stronger brake torque
-     * than the brake. This will be ignored for wheels that are not affected by the handbrake.
-     */
+    // ! Max handbrake brake torque for this wheel (Nm). A handbrake should have a stronger brake torque
+    // ! than the brake. This will be ignored for wheels that are not affected by the handbrake.
+    //! [Nm]
     UPROPERTY(EditAnywhere)
     float MaxHandBrakeTorque = 3000.f;
 
     void PrintSelf() const
     {
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("WheelName: %s Radius %f Width %f"), *WheelName, WheelRadius, WheelWidth);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("WheelName: %s Radius %f[cm] Width %f[cm]"), *WheelName, WheelRadius, WheelWidth);
     }
 };
 
@@ -918,9 +939,11 @@ public:
 };
 
 // [ROBOT MODEL] --
-//
+/**
+ * @brief Core UE struct housing robot model data, wrapped by #FRRRobotModelInfo & #FRRRobotModelTableRow
+ */
 USTRUCT(BlueprintType)
-struct FRRRobotModelData : public FTableRowBase
+struct FRRRobotModelData
 {
     GENERATED_BODY()
 public:
@@ -1471,12 +1494,19 @@ public:
     }
 };    // END FRRRobotModelData
 
+/**
+ * @brief Struct, inheriting from #FTableRowBase, storing entry data for #UDataTable
+ * @sa [Ref](https://docs.unrealengine.com/5.2/en-US/API/Runtime/Engine/Engine/FTableRowBase)
+ */
 USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotModelTableRow : public FTableRowBase
 {
     GENERATED_BODY()
 public:
     FRRRobotModelTableRow(const FRRRobotModelData& InRobotModelData) : Data(InRobotModelData)
+    {
+    }
+    FRRRobotModelTableRow(FRRRobotModelData&& InRobotModelData) : Data(MoveTemp(InRobotModelData))
     {
     }
     FRRRobotModelTableRow()
@@ -1486,6 +1516,9 @@ public:
     FRRRobotModelData Data;
 };
 
+/**
+ * @brief Plain struct wrapping robot model data (#FRRRobotModelData), being thread-safe accessible through TSharedRef if created with TSharedPtr
+ */
 struct RAPYUTASIMULATIONPLUGINS_API FRRRobotModelInfo : public TSharedFromThis<FRRRobotModelInfo, ESPMode::ThreadSafe>
 {
 public:

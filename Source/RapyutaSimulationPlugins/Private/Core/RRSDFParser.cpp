@@ -55,7 +55,9 @@ FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
         return FRRRobotModelInfo();
     }
 
+#if RAPYUTA_SDF_PARSER_DEBUG
     UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PARSE SDF CONTENT FROM FILE %s"), *InSDFPath);
+#endif
     FRRRobotModelInfo robotModelInfo;
     auto& robotModelData = robotModelInfo.Data;
     robotModelData.ModelDescType = ERRRobotDescriptionType::SDF;
@@ -134,7 +136,9 @@ bool FRRSDFParser::LoadChildModelsData(const sdf::ElementPtr& InParentElement, F
         // To make sure each of [ModelNameList] is unique
         FString modelFullName = FString::Printf(TEXT("%s%s"), *OutRobotModelData.WorldName, *modelName);
         ensure(false == OutRobotModelData.ModelNameList.Contains(modelName));
+#if RAPYUTA_SDF_PARSER_DEBUG
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Model %s"), *modelName);
+#endif
 
         FRRRobotModelData modelData({modelFullName});
         modelData.ModelDescType = ERRRobotDescriptionType::SDF;

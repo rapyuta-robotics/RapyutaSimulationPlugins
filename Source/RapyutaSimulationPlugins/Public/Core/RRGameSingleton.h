@@ -302,10 +302,8 @@ public:
         if (0 == CollateAssetsInfo<URRAssetObject<InDataType>>(InDataType, GetAssetsFolderName(InDataType)))
         {
             resourceInfo.bHasBeenAllLoaded = true;
-            UE_LOG_WITH_INFO(LogTemp,
-                             Warning,
-                             TEXT("THERE ARE NO [%s] TO BE LOADED."),
-                             *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
+            UE_LOG_WITH_INFO(
+                LogTemp, Warning, TEXT("THERE IS NO [%s] TO BE LOADED"), *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
             return true;
         }
 
