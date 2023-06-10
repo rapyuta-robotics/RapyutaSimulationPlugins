@@ -88,11 +88,11 @@ void URRKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const 
     uint8 i;
     for (i = 0; i < 3; i++)
     {
-        LinearVelocity[i] = FMath::IsNearlyZero(poseDiff[i]) ? 0 : poseDiff[i] < 0 ? LinearVelMin[i] : LinearVelMax[i];
+        LinearVelocity[i] = FMath::IsNearlyZero(poseDiff[i]) ? 0 : poseDiff[i] < 0 ? -LinearVelMax[i] : LinearVelMax[i];
     }
     for (i = 0; i < 3; i++)
     {
-        AngularVelocity[i] = FMath::IsNearlyZero(orientDiff[i]) ? 0 : orientDiff[i] < 0 ? AngularVelMin[i] : AngularVelMax[i];
+        AngularVelocity[i] = FMath::IsNearlyZero(orientDiff[i]) ? 0 : orientDiff[i] < 0 ? -AngularVelMax[i] : AngularVelMax[i];
     }
 }
 

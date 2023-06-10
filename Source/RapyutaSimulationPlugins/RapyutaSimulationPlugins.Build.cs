@@ -113,5 +113,10 @@ public class RapyutaSimulationPlugins : ModuleRules
         {
             AddLib(Target, SdformatPath, "libsdformat12.so", "libsdformat12.so.12");
         }
+
+        // two_point_interpolation
+        string TwoPointsInterpolationPath = GetLibPath("two_points_interpolation_cpp");
+        PublicIncludePaths.Add(TwoPointsInterpolationPath);
+        
     }
 }

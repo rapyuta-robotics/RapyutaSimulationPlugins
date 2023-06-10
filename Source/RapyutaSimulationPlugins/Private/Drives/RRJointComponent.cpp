@@ -21,8 +21,8 @@ void URRJointComponent::Initialize()
 void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
     ControlType = ERRJointControlType::VELOCITY;
-    LinearVelocityTarget = InLinearVelocity.BoundToBox(LinearVelMin, LinearVelMax);
-    AngularVelocityTarget = InAngularVelocity.BoundToBox(AngularVelMin, AngularVelMax);
+    LinearVelocityTarget = InLinearVelocity.BoundToBox(-LinearVelMax, LinearVelMax);
+    AngularVelocityTarget = InAngularVelocity.BoundToBox(-AngularVelMax, AngularVelMax);
 };
 
 bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, const float InAngularTolerance)
@@ -32,8 +32,8 @@ bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, 
 
 void URRJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
-    LinearVelocity = InLinearVelocity.BoundToBox(LinearVelMin, LinearVelMax);
-    AngularVelocity = InAngularVelocity.BoundToBox(AngularVelMin, AngularVelMax);
+    LinearVelocity = InLinearVelocity.BoundToBox(-LinearVelMax, LinearVelMax);
+    AngularVelocity = InAngularVelocity.BoundToBox(-AngularVelMax, AngularVelMax);
 };
 
 void URRJointComponent::VelocityFromArray(const TArray<float>& InVelocity, FVector& OutLinearVelocity, FVector& OutAngularVelocity)
@@ -86,8 +86,11 @@ void URRJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
 void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     ControlType = ERRJointControlType::POSITION;
-    PositionTarget = InPosition;
-    OrientationTarget = InOrientation;
+    PositionTarget = InPosition.BoundToBox(PositionMin, PositionMax);
+    OrientationTarget =
+        FRotator(IsLimitPitch ? FMath::Clamp(InOrientation.Pitch, OrientationMin.Pitch, OrientationMax.Pitch) : InOrientation.Pitch,
+                 IsLimitYaw ? FMath::Clamp(InOrientation.Yaw, OrientationMin.Yaw, OrientationMax.Yaw) : InOrientation.Yaw,
+                 IsLimitRoll ? FMath::Clamp(InOrientation.Roll, OrientationMin.Roll, OrientationMax.Roll) : InOrientation.Roll);
 };
 
 bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, const float InOrientationTolerance)

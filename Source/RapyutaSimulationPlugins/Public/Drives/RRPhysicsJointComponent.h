@@ -15,6 +15,9 @@
 #include "Core/RRGeneralUtils.h"
 #include "Drives/RRJointComponent.h"
 
+//Thirdparty
+#include "two_points_interpolation_constant_acc.hpp"
+
 #include "RRPhysicsJointComponent.generated.h"
 
 /**
@@ -133,25 +136,10 @@ protected:
     //! OrientationTarget for smoothing
     FRotator MidOrientationTarget = FRotator::ZeroRotator;
 
-    //todo move to general utils?
+    virtual void UpdateState(const float DeltaTime);
 
-    /**
-     * @brief update current value with step to reach target within tolerance
-     * 
-     * @param current 
-     * @param target 
-     * @param step 
-     * @param tolerance 
-     */
-    virtual bool StepUpdateFloat(double& current, const double target, const double step, const double tolerance);
+    virtual void UpdateControl(const float DeltaTime);
 
-    /**
-     * @brief update current value with step to reach target within tolerance
-     * 
-     * @param current 
-     * @param target 
-     * @param step 
-     * @param tolerance 
-     */
-    virtual bool StepUpdateAngle(double& current, const double target, const double step, const double tolerance);
+    TStaticArray<TwoPointInterpolation, 3> PositionTPI;
+    TStaticArray<TwoAngleInterpolation, 3> OrientationTPI;
 };
