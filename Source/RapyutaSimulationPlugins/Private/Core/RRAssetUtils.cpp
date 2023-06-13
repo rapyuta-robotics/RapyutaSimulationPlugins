@@ -179,19 +179,25 @@ UObject* URRAssetUtils::SaveObjectToAssetInModule(UObject* InObject,
                                                   const FString& InAssetUniqueName,
                                                   const TCHAR* InModuleName,
                                                   bool bSaveDuplicatedObject,
-                                                  bool bInStripEditorOnlyContent)
+                                                  bool bInStripEditorOnlyContent,
+                                                  bool bInAsyncSave,
+                                                  bool bInAlwaysOverwrite)
 {
     return URRAssetUtils::SaveObjectToAsset(
         InObject,
         URRGameSingleton::Get()->GetDynamicAssetPath(InAssetDataType, InAssetUniqueName, InModuleName),
         bSaveDuplicatedObject,
-        bInStripEditorOnlyContent);
+        bInStripEditorOnlyContent,
+        bInAsyncSave,
+        bInAlwaysOverwrite);
 }
 
 UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
                                           const FString& InAssetPath,
                                           bool bSaveDuplicatedObject,
-                                          bool bInStripEditorOnlyContent)
+                                          bool bInStripEditorOnlyContent,
+                                          bool bInAsyncSave,
+                                          bool bInAlwaysOverwrite)
 {
     // Compose package name
     FString uniquePackageName, uniqueAssetName;
@@ -206,12 +212,23 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
                          *uniqueAssetName,
                          *InObject->GetName());
 #else
-        UE_LOG_WITH_INFO(LogRapyutaCore,
-                         Error,
-                         TEXT("[%s] ASSET ALREADY EXISTS -> cannot create asset of that name from [%s]"),
-                         *InAssetPath,
-                         *InObject->GetName());
-        return nullptr;
+        if (bInAlwaysOverwrite)
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Warning,
+                             TEXT(" [%s]->[%s] ASSET ALREADY EXISTS -> WILL BE OVERWRITTEN"),
+                             *InObject->GetName(),
+                             *InAssetPath);
+        }
+        else
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Error,
+                             TEXT("[%s] ASSET ALREADY EXISTS -> cannot create asset of that name from [%s]"),
+                             *InAssetPath,
+                             *InObject->GetName());
+            return nullptr;
+        }
 #endif
     }
     uniquePackageName = InAssetPath;
@@ -238,10 +255,10 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
     FAssetRegistryModule::AssetCreated(savedObject);
 
     // Save [package] to uasset file on disk
-    return SavePackageToAsset(package, savedObject) ? savedObject : nullptr;
+    return SavePackageToAsset(package, savedObject, bInAsyncSave, bInAlwaysOverwrite) ? savedObject : nullptr;
 }
 
-bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, bool bAsyncSave)
+bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, bool bInAsyncSave, bool bInAlwaysOverwrite)
 {
     // Mark  both dirty
     if (InObject)
@@ -253,7 +270,7 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, b
     // Save package args
     FSavePackageArgs saveArgs;
     saveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-    saveArgs.SaveFlags = (bAsyncSave ? SAVE_Async : SAVE_None) | SAVE_NoError | SAVE_KeepDirty | SAVE_FromAutosave |
+    saveArgs.SaveFlags = (bInAsyncSave ? SAVE_Async : SAVE_None) | SAVE_NoError | SAVE_KeepDirty | SAVE_FromAutosave |
                          SAVE_KeepEditorOnlyCookedPackages;
     saveArgs.Error = GWarn;
     saveArgs.bWarnOfLongFilename = false;
@@ -269,9 +286,10 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, b
            *InPackage->GetName(),
            *packageFileName);
 #endif
-    if (FPaths::FileExists(packageFileName))
+    const bool bAlreadyExistOnDisk = FPaths::FileExists(packageFileName);
+    if ((false == bInAlwaysOverwrite) && bAlreadyExistOnDisk)
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] FAILED SAVING OBJECT TO UASSET, ALREADY EXISTS"), *packageFileName);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("[%s] FAILED SAVING OBJECT TO UASSET, ALREADY EXISTS"), *packageFileName);
         return false;
     }
     else
@@ -287,19 +305,24 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, b
         const FSavePackageResultStruct result = UPackage::Save(InPackage, InObject, *packageFileName, saveArgs);
         if (ESavePackageResult::Success == result.Result)
         {
-            if (bAsyncSave)
+            if (bInAsyncSave)
             {
-                URRThreadUtils::DoAsyncTaskInThread<void>(
-                    []() { UPackage::WaitForAsyncFileWrites(); },
-                    [packageFileName]() { UE_LOG(LogRapyutaCore, Log, TEXT("SAVED UASSET %s"), *packageFileName); });
+                URRThreadUtils::DoAsyncTaskInThread<void>([]() { UPackage::WaitForAsyncFileWrites(); },
+                                                          [packageFileName, bAlreadyExistOnDisk]() {
+                                                              UE_LOG(LogRapyutaCore,
+                                                                     Warning,
+                                                                     TEXT("SAVED UASSET %s - Overwritten %d"),
+                                                                     *packageFileName,
+                                                                     bAlreadyExistOnDisk);
+                                                          });
             }
             else
             {
-                UE_LOG(LogRapyutaCore,
-                       Log,
-                       TEXT("[%s] SAVED TO UASSET %s"),
-                       InObject ? *InObject->GetName() : *InPackage->GetName(),
-                       *packageFileName);
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Log,
+                                 TEXT("[%s] -> %s"),
+                                 InObject ? *InObject->GetName() : *InPackage->GetName(),
+                                 *packageFileName);
             }
             return true;
         }

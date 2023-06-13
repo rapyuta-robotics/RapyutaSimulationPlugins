@@ -315,6 +315,8 @@ public:
      * @param InModuleName
      * @param bSaveDuplicatedObject
      * @param bInStripEditorOnlyContent
+     * @param bInAsyncSave default true to avoid block-waiting on data writing to disk
+     * @param bInAlwaysOverwrite default false to avoid liberty of overwriting
      * @return true if succeeded
      */
     static UObject* SaveObjectToAssetInModule(UObject* InObject,
@@ -322,13 +324,17 @@ public:
                                               const FString& InAssetUniqueName,
                                               const TCHAR* InModuleName,
                                               bool bSaveDuplicatedObject = false,
-                                              bool bInStripEditorOnlyContent = false);
+                                              bool bInStripEditorOnlyContent = false,
+                                              bool bInAsyncSave = true,
+                                              bool bInAlwaysOverwrite = false);
     /**
      * @brief Save object in memory to asset file on disk
      * @param InObject
      * @param InAssetPath Full UE asset path of the output asset (eg: /Game/Contents/DynamicContents/SK_Obj)
      * @param bSaveDuplicatedObject
      * @param bInStripEditorOnlyContent
+     * @param bInAsyncSave default true to avoid block-waiting on data writing to disk
+     * @param bInAlwaysOverwrite default false to avoid liberty of overwriting
      * @return true if succeeded
      * @sa https://forums.unrealengine.com/t/calling-upackage-savepackage-causes-fatal-assert-in-staticfindobjectfast/447917
      * @sa https://forums.unrealengine.com/t/dynamically-created-primary-assets-not-registering-with-asset-manager/210255
@@ -337,15 +343,21 @@ public:
     static UObject* SaveObjectToAsset(UObject* InObject,
                                       const FString& InAssetPath,
                                       bool bSaveDuplicatedObject = false,
-                                      bool bInStripEditorOnlyContent = false);
+                                      bool bInStripEditorOnlyContent = false,
+                                      bool bInAsyncSave = true,
+                                      bool bInAlwaysOverwrite = false);
 
     /**
      * @brief Save package to asset file on disk
      * @param InObject
-     * @param bAsyncSave default true to avoid block-waiting on data writing to disk
+     * @param bInAsyncSave default true to avoid block-waiting on data writing to disk
+     * @param bInAlwaysOverwrite default false to avoid liberty of overwriting
      * @return true if succeeded
      */
-    static bool SavePackageToAsset(UPackage* InPackage, UObject* InObject, bool bAsyncSave = true);
+    static bool SavePackageToAsset(UPackage* InPackage,
+                                   UObject* InObject,
+                                   bool bInAsyncSave = true,
+                                   bool bInAlwaysOverwrite = false);
 
     /**
      * @brief Find generated UClass from blueprint class name
