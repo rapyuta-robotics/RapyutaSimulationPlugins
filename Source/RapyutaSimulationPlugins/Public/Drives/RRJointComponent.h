@@ -43,6 +43,8 @@ protected:
     virtual void VelocityFromArray(const TArray<float>& InVelocity, FVector& OutLinearVelocity, FVector& OutAngularVelocity);
 
 public:
+    virtual bool IsValid();
+
     /**
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
      * 

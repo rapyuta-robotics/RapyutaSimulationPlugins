@@ -221,7 +221,7 @@ public:
 
         if (!bResult && bIsLogged)
         {
-            UE_LOG(LogTemp, Error, TEXT("Command line argument not found under the name [%s]"), InArgName);
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("Command line argument not found under the name [%s]"), InArgName);
         }
         return bResult;
     }

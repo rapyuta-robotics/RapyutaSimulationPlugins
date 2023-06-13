@@ -35,6 +35,8 @@ public:
     URRPhysicsJointComponent();
 
 public:
+    virtual bool IsValid() override;
+
 
     /**
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
@@ -121,6 +123,35 @@ public:
     //! [degree/s] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float AngularVelocityTolerance = 10;
+
+    //! [kg/ss]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float LinearSpring = 1000;
+
+    //! [kg/s]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float LinearBamper = 10;
+
+    //! [kg.cm/ss]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float LinearForceLimit = UE_BIG_NUMBER;
+
+    //! [kg.cm/ss]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float AngularSpring = 100000;
+
+    //! [kg.cm/s]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float AngularBamper = 10000;
+
+    //! [kg.deg.deg/ss]
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float AngularForceLimit = UE_BIG_NUMBER;
+
+    //! if false, physics constraints parameters are set from #SetJoint .
+    //! Plese set true if you want to set physics constraints parameter manually.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bManualConstraintSetting = false;
 
 protected:
 

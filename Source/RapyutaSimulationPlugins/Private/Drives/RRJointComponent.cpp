@@ -14,6 +14,11 @@ void URRJointComponent::BeginPlay()
     Super::BeginPlay();
 }
 
+bool URRJointComponent::IsValid()
+{
+    return ChildLink && ParentLink;
+}
+
 void URRJointComponent::Initialize()
 {}
 
@@ -40,11 +45,11 @@ void URRJointComponent::VelocityFromArray(const TArray<float>& InVelocity, FVect
 {
     if (InVelocity.Num() != LinearDOF + RotationalDOF)
     {
-        UE_LOG_WITH_INFO(LogTemp,
-                         Warning,
-                         TEXT("Given joint command num is not much with joint DOF. Linear DOF %i and Rotational DOF %i"),
-                         LinearDOF,
-                         RotationalDOF);
+        UE_LOG_WITH_INFO_NAMED(LogTemp,
+                            Warning,
+                            TEXT("Given joint command num is not much with joint DOF. Linear DOF %i and Rotational DOF %i"),
+                            LinearDOF,
+                            RotationalDOF);
         return;
     }
 

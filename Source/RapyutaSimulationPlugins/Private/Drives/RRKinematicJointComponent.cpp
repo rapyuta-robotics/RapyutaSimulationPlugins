@@ -10,9 +10,19 @@ URRKinematicJointComponent::URRKinematicJointComponent()
 
 void URRKinematicJointComponent::Initialize()
 {
-    // set joints relations and save initial parent to joint transformation.
-    JointToChildLink = ChildLink->GetRelativeTransform();
-    ParentLinkToJoint = GetRelativeTransform();
+    if(IsValid())
+    {
+        // set joints relations and save initial parent to joint transformation.
+        JointToChildLink = ChildLink->GetRelativeTransform();
+        ParentLinkToJoint = GetRelativeTransform();
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_NAMED(LogTemp,
+                    Error,
+                    TEXT("JointComponent must have ChildLink and ParentLink."));
+    }
+
 }
 
 // Called every frame
@@ -98,6 +108,10 @@ void URRKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const 
 
 void URRKinematicJointComponent::UpdatePose()
 {
+    if(!IsValid())
+    {
+        return;
+    }
     FHitResult SweepHitResult;
     K2_SetWorldTransform(FTransform(Orientation, Position) *  // joint changes
                          ParentLinkToJoint *                 // joint to child l 

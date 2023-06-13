@@ -6,63 +6,92 @@
 URRPhysicsJointComponent::URRPhysicsJointComponent()
 {
     // todo initializing physicsconstaints here does not work somehow.
-    // Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("%sPhysicsConstraint"), *GetName());
-    // Constraint->SetupAttachment(this);
+    Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("%sPhysicsConstraint"), *GetName());
+    Constraint->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
+}
+
+bool URRPhysicsJointComponent::IsValid()
+{
+    return Super::IsValid() && Constraint;
 }
 
 void URRPhysicsJointComponent::Initialize()
 {
-    SetJoint();
-
-    // set joints relations and save initial parent to joint transformation.
-    JointToChildLink = URRGeneralUtils::GetRelativeTransform(
-            Constraint->GetComponentTransform(),
-            ChildLink->GetComponentTransform());
-    ParentLinkToJoint = URRGeneralUtils::GetRelativeTransform(
-            ParentLink->GetComponentTransform(),
-            Constraint->GetComponentTransform());
-    
-    for (uint8 i = 0; i < 3; i++)
+    if(IsValid())
     {
-        PositionTPI[i] = TwoPointInterpolation(true);
-        OrientationTPI[i] = TwoAngleInterpolation(true);
+        if(!bManualConstraintSetting)
+        {
+            SetJoint();
+        }
+
+        // set joints relations and save initial parent to joint transformation.
+        JointToChildLink = URRGeneralUtils::GetRelativeTransform(
+                Constraint->GetComponentTransform(),
+                ChildLink->GetComponentTransform());
+        ParentLinkToJoint = URRGeneralUtils::GetRelativeTransform(
+                ParentLink->GetComponentTransform(),
+                Constraint->GetComponentTransform());
+        
+        for (uint8 i = 0; i < 3; i++)
+        {
+            PositionTPI[i] = TwoPointInterpolation(true);
+            OrientationTPI[i] = TwoAngleInterpolation(true);
+        }
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_NAMED(LogTemp,
+                    Error,
+                    TEXT("JointComponent must have Physics Constraints"));
     }
 }
 
 void URRPhysicsJointComponent::SetJoint()
 {
-    if (Constraint)
+    Constraint->SetConstrainedComponents(ParentLink, NAME_None, ChildLink, NAME_None);
+
+    // set linear drive
+    // LinearDOF = 1 => x, 2 => x,y, 3 => x,y,z
+    bool linearEnabled[3] = {false, false, false};
+    for (uint8 i=0; i<3; i++)
     {
-        FName dummy;
-        UPrimitiveComponent* component1;
-        UPrimitiveComponent* component2;
-        Constraint->GetConstrainedComponents(component1, dummy, component2, dummy);
-
-        if (component1 && component2)
+        if (LinearDOF > i)
         {
-            ChildLink = Cast<UStaticMeshComponent>(component2);
-            ParentLink = Cast<UStaticMeshComponent>(component1);
+            linearEnabled[i] = true;
         }
-        else {
-            UE_LOG(LogRapyutaCore, Error, TEXT("PhysicsConstraints do not have components."));
+    }
+    Constraint->SetLinearPositionDrive(linearEnabled[0], linearEnabled[1], linearEnabled[2]);
+    Constraint->SetLinearVelocityDrive(linearEnabled[0], linearEnabled[1], linearEnabled[2]);
+    Constraint->SetLinearXLimit(linearEnabled[0] ? ELinearConstraintMotion::LCM_Free : ELinearConstraintMotion::LCM_Locked, 0);
+    Constraint->SetLinearYLimit(linearEnabled[1] ? ELinearConstraintMotion::LCM_Free : ELinearConstraintMotion::LCM_Locked, 0);
+    Constraint->SetLinearZLimit(linearEnabled[2] ? ELinearConstraintMotion::LCM_Free : ELinearConstraintMotion::LCM_Locked, 0);
+    Constraint->SetLinearDriveParams(LinearSpring, LinearBamper, LinearForceLimit);
+
+    // set angular drive
+    // RotationalDOF = 1 => Twist, 2 => Swing1, 3 => Swing2
+    bool angleEnabled[3] = {false, false, false};
+    for (uint8 i=0; i<3; i++)
+    {
+        if (RotationalDOF > i)
+        {
+            angleEnabled[i] = true;
         }
-
-        // todo initializing physicsconstaints here does not work somehow.
-        // Constraint->SetConstrainedComponents(ParentLink, TEXT("parent"), ChildLink, TEXT("child"));
-        // Constraint->ComponentName2.ComponentName = ChildLink->GetFName();
-        // Constraint->ComponentName1.ComponentName = ParentLink->GetFName();    
-
-
-        JointToChildLink = URRGeneralUtils::GetRelativeTransform(
-            Constraint->GetComponentTransform(),
-            ChildLink->GetComponentTransform());
-
     }
-    else {
-         UE_LOG(LogRapyutaCore, Error, TEXT("PhysicsConstraints are not set."));
+    Constraint->SetAngularDriveMode(angleEnabled[2] ? EAngularDriveMode::SLERP : EAngularDriveMode::TwistAndSwing);
+    if (angleEnabled[2]) // if DOF==3, it uses SLERP
+    {
+        Constraint->SetOrientationDriveSLERP(true);
+        Constraint->SetAngularVelocityDriveSLERP(true);
     }
-    
-    // todo add param to constraints, pose
+    else
+    {
+        Constraint->SetAngularOrientationDrive(angleEnabled[1], angleEnabled[0]);
+        Constraint->SetAngularVelocityDrive(angleEnabled[1], angleEnabled[0]);
+    }
+    Constraint->SetAngularTwistLimit(angleEnabled[0] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked, 0);
+    Constraint->SetAngularSwing1Limit(angleEnabled[1] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked, 0);
+    Constraint->SetAngularSwing2Limit(angleEnabled[2] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked, 0);
+    Constraint->SetAngularDriveParams(AngularSpring, AngularBamper, AngularForceLimit);
 }
 
 void URRPhysicsJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
