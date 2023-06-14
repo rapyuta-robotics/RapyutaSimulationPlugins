@@ -16,6 +16,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRGameSingleton.h"
+#include "Core/RRThreadUtils.h"
 
 UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
                                             const FString& InBlueprintClassName,
@@ -164,42 +165,79 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
     return nullptr;
 }
 
-bool URRAssetUtils::SaveObjectToAssetInModule(UObject* InObject,
-                                              const ERRResourceDataType InAssetDataType,
-                                              const FString& InAssetUniqueName,
-                                              const TCHAR* InModuleName,
-                                              bool bSaveDuplicatedObject,
-                                              bool bInStripEditorOnlyContent)
+UPackage* URRAssetUtils::CreatePackageForSavingToAsset(const TCHAR* InPackageName, const EPackageFlags InPackageFlags)
 {
-    URRGameSingleton* gameSingleton = URRGameSingleton::Get();
-    const FString baseAssetsPath = gameSingleton->GetDynamicAssetsBasePath(InModuleName);
+    UPackage* package = CreatePackage(InPackageName);
+    // NOTE: [GetMetaData()] is required to avoid error "Illegal call to StaticFindObjectFast()" during package saving later
+    package->GetMetaData();
+    package->SetPackageFlags(InPackageFlags);
+    return package;
+}
+
+UObject* URRAssetUtils::SaveObjectToAssetInModule(UObject* InObject,
+                                                  const ERRResourceDataType InAssetDataType,
+                                                  const FString& InAssetUniqueName,
+                                                  const TCHAR* InModuleName,
+                                                  bool bSaveDuplicatedObject,
+                                                  bool bInStripEditorOnlyContent,
+                                                  bool bInAsyncSave,
+                                                  bool bInAlwaysOverwrite)
+{
     return URRAssetUtils::SaveObjectToAsset(
         InObject,
         URRGameSingleton::Get()->GetDynamicAssetPath(InAssetDataType, InAssetUniqueName, InModuleName),
         bSaveDuplicatedObject,
-        bInStripEditorOnlyContent);
+        bInStripEditorOnlyContent,
+        bInAsyncSave,
+        bInAlwaysOverwrite);
 }
 
-bool URRAssetUtils::SaveObjectToAsset(UObject* InObject,
-                                      const FString& InAssetPath,
-                                      bool bSaveDuplicatedObject,
-                                      bool bInStripEditorOnlyContent)
+UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
+                                          const FString& InAssetPath,
+                                          bool bSaveDuplicatedObject,
+                                          bool bInStripEditorOnlyContent,
+                                          bool bInAsyncSave,
+                                          bool bInAlwaysOverwrite)
 {
     // Compose package name
-#if WITH_EDITOR
     FString uniquePackageName, uniqueAssetName;
-    URRAssetUtils::GetAssetToolsModule().CreateUniqueAssetName(InAssetPath, TEXT(""), uniquePackageName, uniqueAssetName);
+    if (DoesAssetExist(InAssetPath))
+    {
+#if RAPYUTA_SIM_DEBUG && WITH_EDITOR
+        URRAssetUtils::GetAssetToolsModule().CreateUniqueAssetName(InAssetPath, TEXT(""), uniquePackageName, uniqueAssetName);
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("[%s] ASSET ALREADY EXISTS -> [%s] is used as the saved asset name for [%s]"),
+                         *InAssetPath,
+                         *uniqueAssetName,
+                         *InObject->GetName());
 #else
-    const FString uniquePackageName = InAssetPath;
-    const FString uniqueAssetName = FPaths::GetBaseFilename(InAssetPath);
+        if (bInAlwaysOverwrite)
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Warning,
+                             TEXT(" [%s]->[%s] ASSET ALREADY EXISTS -> WILL BE OVERWRITTEN"),
+                             *InObject->GetName(),
+                             *InAssetPath);
+        }
+        else
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Error,
+                             TEXT("[%s] ASSET ALREADY EXISTS -> cannot create asset of that name from [%s]"),
+                             *InAssetPath,
+                             *InObject->GetName());
+            return nullptr;
+        }
 #endif
+    }
+    uniquePackageName = InAssetPath;
+    uniqueAssetName = FPaths::GetBaseFilename(InAssetPath);
 
     // Create package wrapping [savedObject]
-    UPackage* package = CreatePackage(*uniquePackageName);
-    // NOTE: [GetMetaData()] is required to avoid error "Illegal call to StaticFindObjectFast()"
-    package->GetMetaData();
-    package->SetPackageFlags(PKG_NewlyCreated | PKG_RuntimeGenerated |
-                             (bInStripEditorOnlyContent ? PKG_FilterEditorOnly : PKG_None));
+    UPackage* package = CreatePackageForSavingToAsset(
+        *uniquePackageName,
+        PKG_NewlyCreated | PKG_RuntimeGenerated | (bInStripEditorOnlyContent ? PKG_FilterEditorOnly : PKG_None));
 
     // Configure [savedObject]
     UObject* savedObject = nullptr;
@@ -214,20 +252,26 @@ bool URRAssetUtils::SaveObjectToAsset(UObject* InObject,
         savedObject = InObject;
     }
     savedObject->SetFlags(EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
-    savedObject->MarkPackageDirty();
     FAssetRegistryModule::AssetCreated(savedObject);
-    package->MarkPackageDirty();
 
     // Save [package] to uasset file on disk
-    return SavePackageToAsset(package, savedObject);
+    return SavePackageToAsset(package, savedObject, bInAsyncSave, bInAlwaysOverwrite) ? savedObject : nullptr;
 }
 
-bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject)
+bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, bool bInAsyncSave, bool bInAlwaysOverwrite)
 {
+    // Mark  both dirty
+    if (InObject)
+    {
+        InObject->MarkPackageDirty();
+    }
+    InPackage->MarkPackageDirty();
+
     // Save package args
     FSavePackageArgs saveArgs;
     saveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-    saveArgs.SaveFlags = SAVE_Async | SAVE_NoError | SAVE_KeepDirty | SAVE_FromAutosave | SAVE_KeepEditorOnlyCookedPackages;
+    saveArgs.SaveFlags = (bInAsyncSave ? SAVE_Async : SAVE_None) | SAVE_NoError | SAVE_KeepDirty | SAVE_FromAutosave |
+                         SAVE_KeepEditorOnlyCookedPackages;
     saveArgs.Error = GWarn;
     saveArgs.bWarnOfLongFilename = false;
 
@@ -242,29 +286,44 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject)
            *InPackage->GetName(),
            *packageFileName);
 #endif
-    if (FPaths::FileExists(packageFileName))
+    const bool bAlreadyExistOnDisk = FPaths::FileExists(packageFileName);
+    if ((false == bInAlwaysOverwrite) && bAlreadyExistOnDisk)
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("[%s] FAILED SAVING OBJECT TO UASSET, ALREADY EXISTS"), *packageFileName);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("[%s] FAILED SAVING OBJECT TO UASSET, ALREADY EXISTS"), *packageFileName);
         return false;
     }
     else
     {
-        // Make sure [InPackage] is [InObject]'s outer
-        if (InObject->GetOuter() != InPackage)
+        // Make sure [InPackage] is [InObject]'s package
+        if (InObject->GetPackage() != InPackage)
         {
             InObject->Rename(nullptr, InPackage);
         }
 
         // NOTE: [UPackage::Save()] is in-Engine api, while [SavePackageHelper(InPackage, packageFileName))] is in-Editor
+        // Use [result] to print error code later
         const FSavePackageResultStruct result = UPackage::Save(InPackage, InObject, *packageFileName, saveArgs);
         if (ESavePackageResult::Success == result.Result)
         {
-            UPackage::WaitForAsyncFileWrites();
-            UE_LOG(LogRapyutaCore,
-                   Log,
-                   TEXT("[%s] SAVED TO UASSET %s"),
-                   InObject ? *InObject->GetName() : *InPackage->GetName(),
-                   *packageFileName);
+            if (bInAsyncSave)
+            {
+                URRThreadUtils::DoAsyncTaskInThread<void>([]() { UPackage::WaitForAsyncFileWrites(); },
+                                                          [packageFileName, bAlreadyExistOnDisk]() {
+                                                              UE_LOG(LogRapyutaCore,
+                                                                     Warning,
+                                                                     TEXT("SAVED UASSET %s - Overwritten %d"),
+                                                                     *packageFileName,
+                                                                     bAlreadyExistOnDisk);
+                                                          });
+            }
+            else
+            {
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Log,
+                                 TEXT("[%s] -> %s"),
+                                 InObject ? *InObject->GetName() : *InPackage->GetName(),
+                                 *packageFileName);
+            }
             return true;
         }
         else

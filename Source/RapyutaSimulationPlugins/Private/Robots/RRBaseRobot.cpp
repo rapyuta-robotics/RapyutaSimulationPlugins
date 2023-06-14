@@ -141,6 +141,11 @@ FString ARRBaseRobot::GetDynamicResourceName(const ERRResourceDataType InDataTyp
     return URRUObjectUtils::ComposeDynamicResourceName(URRGameSingleton::GetAssetNamePrefix(InDataType), *RobotModelName);
 }
 
+FString ARRBaseRobot::GetDynamicResourceAssetPath(const ERRResourceDataType InDataType) const
+{
+    return RRGameSingleton->GetSimResourceInfo(InDataType).Data.FindRef(GetDynamicResourceName(InDataType)).GetAssetPath();
+}
+
 void ARRBaseRobot::PreInitializeComponents()
 {
     if (ROSSpawnParameters)

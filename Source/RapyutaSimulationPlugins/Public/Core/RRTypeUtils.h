@@ -18,7 +18,7 @@
 
 /**
  * @brief UE/std type related utils
- * 
+ *
  */
 template<typename T>
 struct TIsBoolean
@@ -38,14 +38,21 @@ struct TIsBoolean<bool>
     };
 };
 
+template<typename T>
+struct TIsCharPointer
+{
+    enum
+    {
+        Value = TAnd<TIsPointer<T>, TIsCharType<typename TRemoveCV<typename TRemovePointer<T>::Type>::Type>>::Value
+    };
+};
+
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRTypeUtils : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 
 public:
-    // UE-TYPE RELATED UTILS ==
-    //
     // UE-TYPE RELATED UTILS ==
     //
     template<typename TEnum>

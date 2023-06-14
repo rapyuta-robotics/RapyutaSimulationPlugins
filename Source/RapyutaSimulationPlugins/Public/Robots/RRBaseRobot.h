@@ -145,10 +145,18 @@ public:
     }
 
     /**
-     * @brief Get name of a dynamic robot resource (mesh, skeleton, physics asset, etc.)
+     * @brief Get name of an already-stored dynamic robot resource (mesh, skeleton, physics asset, etc.)
      * @param InDataType
+     * @return FString
      */
     FString GetDynamicResourceName(const ERRResourceDataType InDataType) const;
+
+    /**
+     * @brief Get UE asset path of an already-stored dynamic robot resource (mesh, skeleton, physics asset, etc.)
+     * @param InDataType
+     * @return FString
+     */
+    FString GetDynamicResourceAssetPath(const ERRResourceDataType InDataType) const;
 
     //! Robot creation done delegate
     FOnRobotCreationDone OnRobotCreationDone;
