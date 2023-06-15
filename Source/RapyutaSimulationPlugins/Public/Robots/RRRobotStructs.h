@@ -1119,7 +1119,55 @@ public:
                                 { return (InWheelProp.WheelName == InLinkName); });
     }
 
-    const FRRRobotLinkProperty FindLinkProp(int8 InLinkIndex) const
+    FRRRobotLinkProperty GetBaseLinkProp() const
+    {
+        for (const auto& linkProp : LinkPropList)
+        {
+            if (linkProp.Name == BaseLinkName)
+            {
+                return linkProp;
+            }
+        }
+        return FRRRobotLinkProperty();
+    }
+
+    FRRRobotLinkProperty GetLinkProp(const FString& InLinkName) const
+    {
+        for (const auto& linkProp : LinkPropList)
+        {
+            if (linkProp.Name == InLinkName)
+            {
+                return linkProp;
+            }
+        }
+        return FRRRobotLinkProperty();
+    }
+
+    FRRRobotJointProperty GetJointProp(const FString& InJointName) const
+    {
+        for (const auto& jointProp : JointPropList)
+        {
+            if (jointProp.Name == InJointName)
+            {
+                return jointProp;
+            }
+        }
+        return FRRRobotJointProperty();
+    }
+
+    FRRRobotJointProperty GetJointPropFromChildLinkName(const FString& InChildLinkName) const
+    {
+        for (const auto& jointProp : JointPropList)
+        {
+            if (jointProp.ChildLinkName == InChildLinkName)
+            {
+                return jointProp;
+            }
+        }
+        return FRRRobotJointProperty();
+    }
+
+    FRRRobotLinkProperty FindLinkProp(int8 InLinkIndex) const
     {
         for (const auto& linkProp : LinkPropList)
         {
@@ -1128,14 +1176,12 @@ public:
                 return linkProp;
             }
         }
-
         return FRRRobotLinkProperty();
     }
 
-    const FRRRobotJointProperty FindJointPropByLinkIndex(int8 InLinkIndex) const
+    FRRRobotJointProperty FindJointPropByLinkIndex(int8 InLinkIndex) const
     {
         const FRRRobotLinkProperty linkProp = FindLinkProp(InLinkIndex);
-
         for (const auto& jointProp : JointPropList)
         {
             if (linkProp.Name == jointProp.ChildLinkName)
@@ -1143,7 +1189,6 @@ public:
                 return jointProp;
             }
         }
-
         return FRRRobotJointProperty();
     }
 
@@ -1612,6 +1657,26 @@ public:
     FORCEINLINE void RemoveLinkJointProp(const FString& InLinkName)
     {
         Data.RemoveLinkJointProp(InLinkName);
+    }
+
+    FORCEINLINE FRRRobotLinkProperty GetBaseLinkProp() const
+    {
+        return Data.GetBaseLinkProp();
+    }
+
+    FORCEINLINE FRRRobotLinkProperty GetLinkProp(const FString& InLinkName) const
+    {
+        return Data.GetLinkProp(InLinkName);
+    }
+
+    FORCEINLINE FRRRobotJointProperty GetJointProp(const FString& InJointName) const
+    {
+        return Data.GetJointProp(InJointName);
+    }
+
+    FORCEINLINE FRRRobotJointProperty GetJointPropFromChildLinkName(const FString& InChildLinkName) const
+    {
+        return Data.GetJointPropFromChildLinkName(InChildLinkName);
     }
 
     FORCEINLINE const FRRRobotLinkProperty FindLinkProp(int8 InLinkIndex) const

@@ -84,11 +84,11 @@ public:
 
     /**
      * @brief Read all sim dynamic resouces(Uassets) info from designated folders
-     *
+     * @param bInRequestResourceLoading
      * @return true
      * @return false
      */
-    bool InitializeResources();
+    bool InitializeResources(bool bInRequestResourceLoading = true);
 
     /**
      * @brief Finalize #ResourceMap by calling #FRRResourceInfo::Finalize
