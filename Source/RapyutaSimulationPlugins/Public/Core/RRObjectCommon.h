@@ -19,7 +19,7 @@
 // Note: For avoiding cyclic inclusion, only UE built-in source header files could be included herein.
 
 /**
- * @brief Sim resource data
+ * @brief Sim resource(Uassets) data types
  *
  */
 UENUM(BlueprintType)
@@ -43,7 +43,8 @@ enum class ERRResourceDataType : uint8
 };
 
 /**
- * @brief The atomic Sim resource
+ * @brief The atomic Sim resouces(Uassets)
+ * #FRRResourceInfo has TMap of this to store pointers to asset of each #ERRResourceDataType
  *
  */
 USTRUCT()
@@ -92,8 +93,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResource
 };
 
 /**
- * @brief Structure to store resources information.
- *
+ * @brief Structure to store resources(Uassets) information.
+ * #RRGameSingleton has TMap of this to store info for each #ERRResourceDataType
+ * #Data is TMap of FRRResource which has pointer to AssetData.
  */
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo

@@ -29,7 +29,10 @@
 
 /**
  * @brief Asset utils.
- *
+ * - Save asset with [UPackage](https://docs.unrealengine.com/4.27/en-US/API/Runtime/CoreUObject/UObject/UPackage/)
+ * - Load asset meta data with [UObjectLibrary](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UObjectLibrary/)
+ * @sa [AsyncLoading](https://docs.unrealengine.com/5.1/en-US/asynchronous-asset-loading-in-unreal-engine/)
+ * @sa [AssetRegistry](https://docs.unrealengine.com/5.1/en-US/asset-registry-in-unreal-engine/)
  */
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API URRAssetUtils : public UBlueprintFunctionLibrary
@@ -46,7 +49,8 @@ public:
 #if WITH_EDITOR
     static IAssetTools& GetAssetToolsModule()
     {
-        static FAssetToolsModule& assetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools");
+        // FModuleManager::LoadModuleChecked are used internally
+        static FAssetToolsModule& assetToolsModule = FAssetToolsModule::GetModule();
         return assetToolsModule.Get();
     }
 #endif
@@ -211,7 +215,7 @@ public:
      * @param bHasBPAsset
      * @param bIsFullLoad
      * @sa [UObjectLibrary](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UObjectLibrary/)
-     * @sa [AsyncLoading](https://docs.unrealengine.com/en-US/Programming/Assets/AsyncLoading/index.html)
+     * @sa [AsyncLoading](https://docs.unrealengine.com/5.1/en-US/asynchronous-asset-loading-in-unreal-engine/)
      */
     template<typename T>
     static void LoadAssetDataList(const FString& InAssetsPath,
@@ -245,7 +249,7 @@ public:
      * @tparam T
      * @param Outer
      * @param InAssetPath
-     * @return FORCEINLINE*
+     * @return T*
      */
     template<typename T>
     FORCEINLINE static T* LoadObjFromAssetPath(UObject* Outer, const FString& InAssetPath)
@@ -407,13 +411,14 @@ public:
 
     /**
      * @brief Create a child blueprint class from parent UClass.
-     * Ref: [FKismetEditorUtilities::CreateBlueprintFromClass()]
      * @param InParentClass
      * @param InBlueprintClassName
-     * @param InCDOFunc
+     * @param InCDOFunc Function to get Class Default Object(CDO) as arg.
      * @param bInSaveBP Whether or not saving the output BP to disk
      * @param InBPBasePath Base UE path for saving BP
      * @return UClass*
+     * @sa [FKismetEditorUtilities::CreateBlueprintFromClass()]
+     * @sa [Objects](https://docs.unrealengine.com/5.1/en-US/objects-in-unreal-engine/)
      */
     static UClass* CreateBlueprintClass(UClass* InParentClass,
                                         const FString& InBlueprintClassName,

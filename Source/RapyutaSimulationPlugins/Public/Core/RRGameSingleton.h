@@ -55,7 +55,11 @@ using URRAssetObject = typename TChooseClass<
 /**
  * @brief GameSingleton class which handles asset loading.
  * GameSingleton class can exist during editor usage.
+ * - #InitializeResources will async load data into #ResourceMap for each #ERRResourceDataType
+ * - Get Asset meta data with URRAssetUtils.
+ * - Load data with [UAssetManager](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UAssetManager/)
  * @sa [GameSingleton](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UEngine/GameSingleton/)
+ * @sa [AsyncLoading](https://docs.unrealengine.com/5.1/en-US/asynchronous-asset-loading-in-unreal-engine/)
  */
 UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API URRGameSingleton : public UObject
