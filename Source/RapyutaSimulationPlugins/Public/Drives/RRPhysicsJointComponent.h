@@ -122,7 +122,7 @@ public:
     
     //! [degree/s] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float AngularVelocityTolerance = 10;
+    float AngularVelocityTolerance = 10.f;
 
     //! [kg/ss]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
