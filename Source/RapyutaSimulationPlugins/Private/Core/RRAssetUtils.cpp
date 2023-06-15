@@ -167,11 +167,15 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
 
 UPackage* URRAssetUtils::CreatePackageForSavingToAsset(const TCHAR* InPackageName, const EPackageFlags InPackageFlags)
 {
+#if WITH_EDITOR
     UPackage* package = CreatePackage(InPackageName);
     // NOTE: [GetMetaData()] is required to avoid error "Illegal call to StaticFindObjectFast()" during package saving later
     package->GetMetaData();
     package->SetPackageFlags(InPackageFlags);
     return package;
+#else
+    return nullptr;
+#endif
 }
 
 UObject* URRAssetUtils::SaveObjectToAssetInModule(UObject* InObject,
@@ -234,11 +238,18 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
     uniquePackageName = InAssetPath;
     uniqueAssetName = FPaths::GetBaseFilename(InAssetPath);
 
+#if WITH_EDITOR
     // Create package wrapping [savedObject]
     UPackage* package = CreatePackageForSavingToAsset(
         *uniquePackageName,
         PKG_NewlyCreated | PKG_RuntimeGenerated | (bInStripEditorOnlyContent ? PKG_FilterEditorOnly : PKG_None));
 
+    if (nullptr == package)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("[%s] UNABLE TO CREATE PACKAGE FOR [%s]"), *InAssetPath, *InObject->GetName());
+        return nullptr;
+    }
+  
     // Configure [savedObject]
     UObject* savedObject = nullptr;
     if (bSaveDuplicatedObject)
@@ -256,6 +267,10 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
 
     // Save [package] to uasset file on disk
     return SavePackageToAsset(package, savedObject, bInAsyncSave, bInAlwaysOverwrite) ? savedObject : nullptr;
+    
+#else
+    return nullptr;
+#endif
 }
 
 bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, bool bInAsyncSave, bool bInAlwaysOverwrite)
