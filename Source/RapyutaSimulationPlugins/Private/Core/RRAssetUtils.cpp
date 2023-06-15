@@ -240,6 +240,12 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
         *uniquePackageName,
         PKG_NewlyCreated | PKG_RuntimeGenerated | (bInStripEditorOnlyContent ? PKG_FilterEditorOnly : PKG_None));
 
+    if (nullptr == package)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("[%s] UNABLE TO CREATE PACKAGE FOR [%s]"), *InAssetPath, *InObject->GetName());
+        return nullptr;
+    }
+  
     // Configure [savedObject]
     UObject* savedObject = nullptr;
     if (bSaveDuplicatedObject)
