@@ -114,7 +114,7 @@ public:
 
     //! [degree] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float OrientationTolerance = 1;
+    float OrientationTolerance = 1.f;
 
     //! [cm/s] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
