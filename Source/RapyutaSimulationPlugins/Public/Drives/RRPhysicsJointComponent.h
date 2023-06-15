@@ -156,15 +156,19 @@ public:
 protected:
 
     //! LinearVelocityTarget for smoothing
+    UPROPERTY(VisibleAnywhere)
     FVector MidLinearVelocityTarget = FVector::ZeroVector;
 
     //! AngularVelocityTarget for smoothing
+    UPROPERTY(VisibleAnywhere)
     FVector MidAngularVelocityTarget = FVector::ZeroVector;
 
     //! PositionTarget for smoothing
+    UPROPERTY(VisibleAnywhere)
     FVector MidPositionTarget = FVector::ZeroVector;
 
     //! OrientationTarget for smoothing
+    UPROPERTY(VisibleAnywhere)
     FRotator MidOrientationTarget = FRotator::ZeroRotator;
 
     virtual void UpdateState(const float DeltaTime);

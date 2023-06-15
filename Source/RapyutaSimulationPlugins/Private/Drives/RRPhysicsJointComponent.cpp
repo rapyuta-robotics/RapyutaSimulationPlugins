@@ -31,12 +31,6 @@ void URRPhysicsJointComponent::Initialize()
         ParentLinkToJoint = URRGeneralUtils::GetRelativeTransform(
                 ParentLink->GetComponentTransform(),
                 Constraint->GetComponentTransform());
-        
-        for (uint8 i = 0; i < 3; i++)
-        {
-            PositionTPI[i] = TwoPointInterpolation(true);
-            OrientationTPI[i] = TwoAngleInterpolation(true);
-        }
     }
     else
     {
