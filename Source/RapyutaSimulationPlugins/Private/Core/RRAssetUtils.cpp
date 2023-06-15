@@ -234,6 +234,7 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
     uniquePackageName = InAssetPath;
     uniqueAssetName = FPaths::GetBaseFilename(InAssetPath);
 
+#if WITH_EDITOR
     // Create package wrapping [savedObject]
     UPackage* package = CreatePackageForSavingToAsset(
         *uniquePackageName,
@@ -256,6 +257,10 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
 
     // Save [package] to uasset file on disk
     return SavePackageToAsset(package, savedObject, bInAsyncSave, bInAlwaysOverwrite) ? savedObject : nullptr;
+    
+#else
+    return nullptr;
+#endif
 }
 
 bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, bool bInAsyncSave, bool bInAlwaysOverwrite)
