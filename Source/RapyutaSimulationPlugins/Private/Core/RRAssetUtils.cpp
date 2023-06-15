@@ -104,7 +104,7 @@ UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
         return bpGeneratedClass;
     }
 #else
-    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("UClass runtime creation requires WITH_EDITOR"));
+    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("UClass runtime creation is Editor-only"));
 #endif
     return nullptr;
 }
@@ -174,6 +174,7 @@ UPackage* URRAssetUtils::CreatePackageForSavingToAsset(const TCHAR* InPackageNam
     package->SetPackageFlags(InPackageFlags);
     return package;
 #else
+    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Package creation is Editor-only"));
     return nullptr;
 #endif
 }
@@ -187,6 +188,7 @@ UObject* URRAssetUtils::SaveObjectToAssetInModule(UObject* InObject,
                                                   bool bInAsyncSave,
                                                   bool bInAlwaysOverwrite)
 {
+#if WITH_EDITOR
     return URRAssetUtils::SaveObjectToAsset(
         InObject,
         URRGameSingleton::Get()->GetDynamicAssetPath(InAssetDataType, InAssetUniqueName, InModuleName),
@@ -194,6 +196,10 @@ UObject* URRAssetUtils::SaveObjectToAssetInModule(UObject* InObject,
         bInStripEditorOnlyContent,
         bInAsyncSave,
         bInAlwaysOverwrite);
+#else
+    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Editor-only api!"));
+    return nullptr;
+#endif
 }
 
 UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
@@ -203,6 +209,7 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
                                           bool bInAsyncSave,
                                           bool bInAlwaysOverwrite)
 {
+#if WITH_EDITOR
     // Compose package name
     FString uniquePackageName, uniqueAssetName;
     if (DoesAssetExist(InAssetPath))
@@ -238,7 +245,6 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
     uniquePackageName = InAssetPath;
     uniqueAssetName = FPaths::GetBaseFilename(InAssetPath);
 
-#if WITH_EDITOR
     // Create package wrapping [savedObject]
     UPackage* package = CreatePackageForSavingToAsset(
         *uniquePackageName,
@@ -249,7 +255,7 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
         UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("[%s] UNABLE TO CREATE PACKAGE FOR [%s]"), *InAssetPath, *InObject->GetName());
         return nullptr;
     }
-  
+
     // Configure [savedObject]
     UObject* savedObject = nullptr;
     if (bSaveDuplicatedObject)
@@ -267,14 +273,15 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
 
     // Save [package] to uasset file on disk
     return SavePackageToAsset(package, savedObject, bInAsyncSave, bInAlwaysOverwrite) ? savedObject : nullptr;
-    
 #else
+    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Editor-only api!"));
     return nullptr;
 #endif
 }
 
 bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, bool bInAsyncSave, bool bInAlwaysOverwrite)
 {
+#if WITH_EDITOR
     // Mark both dirty
     if (InObject)
     {
@@ -351,4 +358,8 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, b
             return false;
         }
     }
+#else
+    UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Editor-only api!"));
+    return false;
+#endif
 }
