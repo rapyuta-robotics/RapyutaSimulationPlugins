@@ -205,7 +205,8 @@ void URRCoreUtils::ExecuteSimQuitCommand(const UObject* InContextObject)
 //
 bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
                                      TArray<FString>& OutFilePaths,
-                                     const TArray<ERRFileType>& InFileTypes)
+                                     const TArray<ERRFileType>& InFileTypes,
+                                     const bool bInRecursive)
 {
     bool bResult = false;
 
@@ -215,8 +216,15 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
         for (const auto& fileType : InFileTypes)
         {
             TArray<FString> filePaths;
-            fileManager.FindFilesRecursive(
-                filePaths, *InFolderPath, *FString::Printf(TEXT("*%s"), URRCoreUtils::GetSimFileExt(fileType)), true, false);
+            if (bInRecursive)
+            {
+                fileManager.FindFilesRecursive(
+                    filePaths, *InFolderPath, *FString::Printf(TEXT("*%s"), URRCoreUtils::GetSimFileExt(fileType)), true, false);
+            }
+            else
+            {
+                fileManager.FindFiles(filePaths, *InFolderPath, URRCoreUtils::GetSimFileExt(fileType));
+            }
             OutFilePaths.Append(filePaths);
         }
 
@@ -225,11 +233,7 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
         {
             const FString& fileTypesStr = FString::JoinBy(
                 InFileTypes, TEXT(","), [](const ERRFileType& InFileType) { return URRCoreUtils::GetSimFileExt(InFileType); });
-            UE_LOG_WITH_INFO(LogRapyutaCore,
-                             Error,
-                             TEXT("Failed to find any files of extension [%s] inside [%s]"),
-                             *fileTypesStr,
-                             *InFolderPath);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("NO files of extension [%s] inside [%s]"), *fileTypesStr, *InFolderPath);
         }
     }
     else

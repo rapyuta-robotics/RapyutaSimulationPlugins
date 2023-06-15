@@ -59,7 +59,6 @@ public class RapyutaSimulationPlugins : ModuleRules
                 new string[]
                 {
                     "UnrealEd",
-                    "EditorScriptingUtilities",
                     "AssetTools",
                     "PhysicsUtilities"
                 }

@@ -81,12 +81,10 @@ public:
 
     // SIM RESOURCES ==
     //
-
     /**
      * @brief Read all sim dynamic resouces(Uassets) info from designated folders
      * @param bInRequestResourceLoading
-     * @return true
-     * @return false
+     * @return true if inited successfully
      */
     bool InitializeResources(bool bInRequestResourceLoading = true);
 

@@ -174,6 +174,22 @@ URRActorCommon* URRActorCommon::GetActorCommon(int8 InSceneInstanceId, UClass* I
 {
     if (!SActorCommonList.Contains(InSceneInstanceId))
     {
+#if WITH_EDITOR
+        // Running as cmdlet -> auto specify Outer & type class
+        if (IsRunningCommandlet())
+        {
+            if (nullptr == InOuter)
+            {
+                InOuter = URRCoreUtils::GetEditorWorld();
+                ensure(InOuter);
+            }
+            if (nullptr == InActorCommonClass)
+            {
+                InActorCommonClass = URRActorCommon::StaticClass();
+            }
+        }
+#endif
+
         // First time fetching should come with valid [InOuter] for the creation
         if (InOuter->IsValidLowLevel() && InActorCommonClass)
         {

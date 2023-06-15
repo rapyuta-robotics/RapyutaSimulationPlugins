@@ -90,30 +90,31 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
         ResourceMap.Add(dataType, FRRResourceInfo(dataType));
     }
 
+    bool bResult = true;
     if (bInRequestResourceLoading)
     {
         // READ ALL SIM DYNAMIC RESOURCES (UASSETS) INFO FROM DESGINATED [~CONTENT] FOLDERS
         // & REGISTER THEM TO BE ASYNC LOADED INTO [ResourceMap]
         // [STATIC MESH] --
-        RequestResourcesLoading<ERRResourceDataType::UE_STATIC_MESH>();
+        bResult &= RequestResourcesLoading<ERRResourceDataType::UE_STATIC_MESH>();
 
         // [SKELETAL MESH] --
-        RequestResourcesLoading<ERRResourceDataType::UE_SKELETAL_MESH>();
+        bResult &= RequestResourcesLoading<ERRResourceDataType::UE_SKELETAL_MESH>();
 
         // [SKELETON] --
-        RequestResourcesLoading<ERRResourceDataType::UE_SKELETON>();
+        bResult &= RequestResourcesLoading<ERRResourceDataType::UE_SKELETON>();
 
         // [PHYSICS ASSET] --
-        RequestResourcesLoading<ERRResourceDataType::UE_PHYSICS_ASSET>();
+        bResult &= RequestResourcesLoading<ERRResourceDataType::UE_PHYSICS_ASSET>();
 
         // [MATERIAL] --
-        RequestResourcesLoading<ERRResourceDataType::UE_MATERIAL>();
+        bResult &= RequestResourcesLoading<ERRResourceDataType::UE_MATERIAL>();
 
         // [TEXTURE] --
-        RequestResourcesLoading<ERRResourceDataType::UE_TEXTURE>();
+        bResult &= RequestResourcesLoading<ERRResourceDataType::UE_TEXTURE>();
 
         // [DATATABLE] --
-        RequestResourcesLoading<ERRResourceDataType::UE_DATA_TABLE>();
+        bResult &= RequestResourcesLoading<ERRResourceDataType::UE_DATA_TABLE>();
 
         // [BODY SETUP] --
         // Body setups are dynamically created in runtime only
@@ -123,7 +124,7 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("RESOURCES REGISTERED TO BE LOADED!"));
 #endif
     }
-    return true;
+    return bResult;
 }
 
 void URRGameSingleton::FinalizeResources()
