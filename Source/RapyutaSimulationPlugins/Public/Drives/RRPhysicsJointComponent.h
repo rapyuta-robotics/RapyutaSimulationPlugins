@@ -110,7 +110,7 @@ public:
 
     //! [cm] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float PositionTolerance = 1;
+    float PositionTolerance = 1.f;
 
     //! [degree] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
