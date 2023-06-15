@@ -189,7 +189,7 @@ public:
 
     //! Orientation Limitations[deg]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FRotator OrientationMax = FRotator(180, 180, 180);
+    FRotator OrientationMax = FRotator(180.f);
 
     //! Orientation Limitations[deg]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
