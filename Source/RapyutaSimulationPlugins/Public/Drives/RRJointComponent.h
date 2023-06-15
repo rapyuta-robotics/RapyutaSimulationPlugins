@@ -202,7 +202,7 @@ public:
 
     //! Angular Velocity Limitations[deg/s]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector AngularVelMax = FVector(180, 180, 180);
+    FVector AngularVelMax = FVector(180.f);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bLimitRoll = true;
