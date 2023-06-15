@@ -167,11 +167,15 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
 
 UPackage* URRAssetUtils::CreatePackageForSavingToAsset(const TCHAR* InPackageName, const EPackageFlags InPackageFlags)
 {
+#if WITH_EDITOR
     UPackage* package = CreatePackage(InPackageName);
     // NOTE: [GetMetaData()] is required to avoid error "Illegal call to StaticFindObjectFast()" during package saving later
     package->GetMetaData();
     package->SetPackageFlags(InPackageFlags);
     return package;
+#else
+    return nullptr;
+#endif
 }
 
 UObject* URRAssetUtils::SaveObjectToAssetInModule(UObject* InObject,
