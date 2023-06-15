@@ -205,13 +205,13 @@ public:
     FVector AngularVelMax = FVector(180, 180, 180);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool IsLimitRoll = true;
+    bool bLimitRoll = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool IsLimitPitch = true;
+    bool bLimitPitch = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool IsLimitYaw = true;
+    bool bLimitYaw = true;
 
 protected:
 
