@@ -215,6 +215,8 @@ public:
 
 protected:
 
-    FTransform JointToChildLink;
-    FTransform ParentLinkToJoint;
+    UPROPERTY()
+    FTransform JointToChildLink = FTransform::Identity;
+    UPROPERTY()
+    FTransform ParentLinkToJoint = FTransform::Identity;
 };
