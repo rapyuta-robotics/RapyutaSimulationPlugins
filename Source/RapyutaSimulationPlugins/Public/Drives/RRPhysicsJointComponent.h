@@ -102,7 +102,7 @@ public:
 
     //! Acceleration[cm/ss] used by velocity smoothing if #bVelocitySmoothing = true.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float LinearVelocitySmoothingAcc = 10;
+    float LinearVelocitySmoothingAcc = 10.f;
 
     //! Acceleration[deg/ss] used by velocity smoothing if #bVelocitySmoothing = true.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
