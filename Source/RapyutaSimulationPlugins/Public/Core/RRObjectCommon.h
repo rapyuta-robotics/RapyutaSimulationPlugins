@@ -11,6 +11,9 @@
 #include "PhysicsEngine/BodySetup.h"
 #include "UObject/Object.h"
 
+// rclUE
+#include "logUtilities.h"
+
 // RapyutaSim
 #include "RapyutaSimulationPlugins.h"
 

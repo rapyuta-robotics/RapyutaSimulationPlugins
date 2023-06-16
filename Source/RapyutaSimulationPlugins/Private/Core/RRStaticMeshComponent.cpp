@@ -65,13 +65,15 @@ void URRStaticMeshComponent::SetMesh(UStaticMesh* InStaticMesh)
     if ((ECollisionEnabled::PhysicsOnly == collisionType) || (ECollisionEnabled::QueryAndPhysics == collisionType))
     {
         UBodySetup* bodySetup = InStaticMesh->GetBodySetup();
-        verify(bodySetup);
-        verify(EBodyCollisionResponse::BodyCollision_Enabled == bodySetup->CollisionReponse);
-        if (bUseDefaultSimpleCollision)
+        if (ensure(bodySetup))
         {
-            verify(bodySetup->bCreatedPhysicsMeshes);
-            verify(false == bodySetup->bFailedToCreatePhysicsMeshes);
-            verify(bodySetup->bHasCookedCollisionData);
+            ensure(EBodyCollisionResponse::BodyCollision_Enabled == bodySetup->CollisionReponse);
+            if (bUseDefaultSimpleCollision)
+            {
+                ensure(bodySetup->bCreatedPhysicsMeshes);
+                ensure(false == bodySetup->bFailedToCreatePhysicsMeshes);
+                ensure(bodySetup->bHasCookedCollisionData);
+            }
         }
     }
 

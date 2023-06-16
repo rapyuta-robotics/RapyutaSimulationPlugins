@@ -113,6 +113,23 @@ public:
 
 public:
     /**
+     * @brief ACTOR INTIALIZING GENERAL INFO (Unique name, mesh list, material list, etc.)
+     *
+     * @tparam TActorSpawnInfo
+     * @param InActorInfo
+     * @return true
+     * @return false
+     */
+    template<typename TActorSpawnInfo>
+    bool InitializeWithSpawnInfo(const TActorSpawnInfo& InActorInfo)
+    {
+        ActorInfo = MakeShared<TActorSpawnInfo>(InActorInfo);
+
+        // ACTOR INTIALIZING GENERAL INFO (Unique name, mesh list, material list, etc.)
+        return Initialize();
+    }
+
+    /**
      * @brief Set #GameMode #GameState #GameSingleton #PlayerController
      * (NOTE) This method, if being called, could only go with a RRGameMode-inheriting game mode setup!
      * Currently, ARRROS2GameMode & ARRGameMode are separate ones.

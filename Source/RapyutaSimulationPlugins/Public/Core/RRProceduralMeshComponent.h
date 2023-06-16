@@ -43,7 +43,8 @@ public:
 
     FString GetBodySetupModelName() const
     {
-        return URRUObjectUtils::ComposeDynamicResourceName(TEXT("BS"), MeshUniqueName);
+        return URRUObjectUtils::ComposeDynamicResourceName(URRGameSingleton::GetAssetNamePrefix(ERRResourceDataType::UE_BODY_SETUP),
+                                                           MeshUniqueName);
     }
 
     UPROPERTY()

@@ -43,11 +43,13 @@ void URRGameSingleton::PrintSimConfig() const
     for (auto i = static_cast<int8>(ERRResourceDataType::NONE); i < static_cast<int8>(ERRResourceDataType::TOTAL); ++i)
     {
         const ERRResourceDataType dataType = static_cast<ERRResourceDataType>(i);
-        UE_LOG(
-            LogRapyutaCore, Display, TEXT("[%s]'s dynamic-assets paths:"), *URRTypeUtils::GetERRResourceDataTypeAsString(dataType));
-        for (const auto& path : GetDynamicAssetsPathList(dataType))
+        UE_LOG(LogRapyutaCore,
+               Display,
+               TEXT("[%s]'s dynamic-assets base paths:"),
+               *URRTypeUtils::GetERRResourceDataTypeAsString(dataType));
+        for (const auto& basePath : GetDynamicAssetsBasePathList(dataType))
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("%s"), *path);
+            UE_LOG(LogRapyutaCore, Display, TEXT("%s"), *basePath);
         }
     }
 }

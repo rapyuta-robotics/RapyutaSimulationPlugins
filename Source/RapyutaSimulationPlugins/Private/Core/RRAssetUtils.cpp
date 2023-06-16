@@ -35,10 +35,8 @@ UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
     kismetCompilerModule.GetBlueprintTypesForClass(InParentClass, blueprintClass, blueprintGeneratedClass);
 
     // 2- Create blueprint package for the class asset
-    FString bpPackageName =
-        FString::Printf(TEXT("%s/%s"),
-                        (InBPBasePath.IsEmpty() ? *URRGameSingleton::Get()->ASSETS_RUNTIME_BP_SAVE_BASE_PATH : *InBPBasePath),
-                        *InBlueprintClassName);
+    FString bpPackageName = InBPBasePath.IsEmpty() ? URRGameSingleton::Get()->GetDynamicBPAssetPath(InBlueprintClassName)
+                                                   : InBPBasePath / InBlueprintClassName;
     FString bpAssetName;
     assetToolsModule.Get().CreateUniqueAssetName(bpPackageName, TEXT(""), bpPackageName, bpAssetName);
     UPackage* bpPackage = CreatePackage(*bpPackageName);
@@ -116,8 +114,7 @@ UBlueprint* URRAssetUtils::CreateBlueprintFromActor(AActor* InActor,
 {
 #if WITH_EDITOR
     // 1- Create blueprint package as child class of [InActor]'s GetClass()
-    FString bpPackageName =
-        FString::Printf(TEXT("%s/%s"), *URRGameSingleton::Get()->ASSETS_RUNTIME_BP_SAVE_BASE_PATH, *InBlueprintClassName);
+    FString bpPackageName = URRGameSingleton::Get()->GetDynamicBPAssetPath(InBlueprintClassName);
     FString bpAssetName;
     URRAssetUtils::GetAssetToolsModule().CreateUniqueAssetName(bpPackageName, TEXT(""), bpPackageName, bpAssetName);
 

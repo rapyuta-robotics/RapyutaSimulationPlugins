@@ -97,7 +97,7 @@ public:
     UPROPERTY()
     bool bIsStationary = false;
 
-    //! Whether static mesh is built with simple collision, should be configured in ARRMeshActor::Initialize()
+    //! Whether static mesh is built with simple collision, also configurable in ARRMeshActor::Initialize()
     UPROPERTY()
     bool bUseDefaultSimpleCollision = true;
 
