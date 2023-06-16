@@ -484,9 +484,10 @@ public:
      * @brief Parse Json parameters in #ROSSpawnParameters
      * This function is called in #PreInitializeComponents
      * Please overwrite this function to parse your custom parameters
+     * @return true/false
     */
     UFUNCTION(BlueprintCallable)
-    virtual void InitPropertiesFromJSON();
+    virtual bool InitPropertiesFromJSON();
 
     // UI WIDGET --
     UPROPERTY()

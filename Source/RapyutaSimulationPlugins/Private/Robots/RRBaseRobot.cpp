@@ -150,7 +150,7 @@ void ARRBaseRobot::PreInitializeComponents()
 {
     if (ROSSpawnParameters)
     {
-        InitPropertiesFromJSON();
+        ensure(InitPropertiesFromJSON());
         RobotModelName = ROSSpawnParameters->ActorModelName;
         RobotUniqueName = ROSSpawnParameters->ActorName;
     }
@@ -584,61 +584,72 @@ void ARRBaseRobot::Tick(float DeltaSeconds)
     }
 }
 
-void ARRBaseRobot::InitPropertiesFromJSON()
+bool ARRBaseRobot::InitPropertiesFromJSON()
 {
+    // Verify [ROSSpawnParameters], which house JSON
+    if (nullptr == ROSSpawnParameters)
+    {
+        // ELSE: This could only be a BP robot & Editor operations might be being done
+        RR_VERIFY_STATIC_BP_ROBOT(this);
+        return false;
+    }
+    return true;
+
+#if RAPYUTA_SIM_DEBUG
     // Example Implementation of Json parser
     // Please overwrite this function to parse your custom parameters
 
-    // if (nullptr == ROSSpawnParameters)
-    // {
-    //     return;
-    // }
+    if (false == Super::InitPropertiesFromJSON())
+    {
+        return false;
+    }
 
-    // TSharedRef<TJsonReader<TCHAR>> jsonReader = TJsonReaderFactory<TCHAR>::Create(ROSSpawnParameters->ActorJsonConfigs);
-    // TSharedPtr<FJsonObject> jsonObj = MakeShareable(new FJsonObject());
-    // if (!FJsonSerializer::Deserialize(jsonReader, jsonObj) && jsonObj.IsValid())
-    // {
-    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("Failed to deserialize json to object"));
-    //     return;
-    // }
+    TSharedRef<TJsonReader<TCHAR>> jsonReader = TJsonReaderFactory<TCHAR>::Create(ROSSpawnParameters->ActorJsonConfigs);
+    TSharedPtr<FJsonObject> jsonObj = MakeShareable(new FJsonObject());
+    if (!FJsonSerializer::Deserialize(jsonReader, jsonObj) && jsonObj.IsValid())
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("Failed to deserialize json to object"));
+        return false;
+    }
 
-    // // Parse single value
-    // bool bParam = false;
-    // if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("bool_value"), bParam))
-    // {
-    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("bool value: %d"), bParam);
-    // }
-    // else
-    // {
-    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s [bool_value] not found in json config"));
-    // }
+    // Parse single value
+    bool bParam = false;
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("bool_value"), bParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("bool value: %d"), bParam);
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s [bool_value] not found in json config"));
+    }
 
-    // // Parse array
-    // const TArray<TSharedPtr<FJsonValue>>* paramArray;
-    // if (!jsonObj->TryGetArrayField(TEXT("array_value"), paramArray))
-    // {
-    //     return;
-    // }
+    // Parse array
+    const TArray<TSharedPtr<FJsonValue>>* paramArray;
+    if (!jsonObj->TryGetArrayField(TEXT("array_value"), paramArray))
+    {
+        return false;
+    }
 
-    // for (const auto& param : *paramArray)
-    // {
-    //     const TSharedPtr<FJsonObject>* jObj;
-    //     if (!param->TryGetObject(jObj))
-    //     {
-    //         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s Not an object !!"));
-    //         continue;
-    //     }
+    for (const auto& param : *paramArray)
+    {
+        const TSharedPtr<FJsonObject>* jObj;
+        if (!param->TryGetObject(jObj))
+        {
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s Not an object !!"));
+            continue;
+        }
 
-    //     // Parse value in array
-    //     float valueInParam = 0.0;
-    //     if( URRGeneralUtils::GetJsonField(*jObj, TEXT("value_in_array"), valueInParam, 0.0f) )
-    //     {
-    //         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("value_in_array : %f"), valueInParam);
-    //     }
-    //     else
-    //     {
-    //         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s [value_in_array] not found in json config"));
-    //     }
-
-    // }
+        // Parse value in array
+        float valueInParam = 0.0;
+        if (URRGeneralUtils::GetJsonField(*jObj, TEXT("value_in_array"), valueInParam, 0.0f))
+        {
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("value_in_array : %f"), valueInParam);
+        }
+        else
+        {
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s [value_in_array] not found in json config"));
+        }
+    }
+    return true;
+#endif
 }

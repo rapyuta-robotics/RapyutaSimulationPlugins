@@ -198,6 +198,13 @@ public:
 // SIM COMMAND LINE EXECUTION --
 #define CCMDLINE_ARG_FORMAT (TEXT("%s="))
     static constexpr const TCHAR* CCMDLINE_ARG_INT_PHYSX_DISPATCHER_NUM = TEXT("physxDispatcher");
+
+    template<typename TCmdlet>
+    static bool IsRunningSimCommandlet()
+    {
+        return IsRunningCommandlet() && GetRunningCommandletClass()->IsChildOf<TCmdlet>();
+    }
+
     static void ExecuteConsoleCommand(const UObject* InContextObject, const FString& InCommandText)
     {
         if (IsRunningCommandlet())

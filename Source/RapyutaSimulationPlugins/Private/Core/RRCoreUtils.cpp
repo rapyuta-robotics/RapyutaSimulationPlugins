@@ -233,7 +233,12 @@ bool URRCoreUtils::LoadFullFilePaths(const FString& InFolderPath,
         {
             const FString& fileTypesStr = FString::JoinBy(
                 InFileTypes, TEXT(","), [](const ERRFileType& InFileType) { return URRCoreUtils::GetSimFileExt(InFileType); });
-            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("NO files of extension [%s] inside [%s]"), *fileTypesStr, *InFolderPath);
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Warning,
+                             TEXT("NO files of extension [%s] %s inside [%s]"),
+                             *fileTypesStr,
+                             bInRecursive ? EMPTY_STR : TEXT("directly"),
+                             *InFolderPath);
         }
     }
     else

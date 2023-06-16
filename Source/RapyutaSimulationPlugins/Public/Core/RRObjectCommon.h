@@ -11,9 +11,6 @@
 #include "PhysicsEngine/BodySetup.h"
 #include "UObject/Object.h"
 
-// rclUE
-#include "logUtilities.h"
-
 // RapyutaSim
 #include "RapyutaSimulationPlugins.h"
 
@@ -181,6 +178,8 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
 USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
 {
+    GENERATED_BODY()
+
     // These property names are defined in master material by the artist
     static constexpr const TCHAR* PROP_NAME_ALBEDO = TEXT("AlbedoTexture");
     static constexpr const TCHAR* PROP_NAME_ORM = TEXT("MergeMapInput");
@@ -189,7 +188,6 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
     static constexpr const TCHAR* PROP_NAME_COLOR_ALBEDO = TEXT("ColorAlbedo");
     static constexpr const TCHAR* PROP_NAME_EMISSIVE_STRENGTH = TEXT("EmissiveStrength");
 
-    GENERATED_BODY()
     UPROPERTY(VisibleAnywhere)
     FString Name;
     UPROPERTY(VisibleAnywhere)
@@ -207,17 +205,16 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
 
     void PrintSelf() const
     {
-        UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Material: %s"), *Name);
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Color: %s"), *Color.ToString());
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- AlbedoTextureNameList: %s"), *FString::Join(AlbedoTextureNameList, TEXT(",")));
-        UE_LOG_WITH_INFO(
-            LogTemp,
-            Display,
-            TEXT("- AlbedoColorList: %s"),
-            *FString::JoinBy(AlbedoColorList, TEXT(","), [](const FLinearColor& InColor) { return InColor.ToString(); }));
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- MaskTextureName: %s"), *MaskTextureName);
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- ORMTextureName: %s"), *ORMTextureName);
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- NormalTextureName: %s"), *NormalTextureName);
+        UE_LOG(LogTemp, Warning, TEXT("Material: %s"), *Name);
+        UE_LOG(LogTemp, Display, TEXT("- Color: %s"), *Color.ToString());
+        UE_LOG(LogTemp, Display, TEXT("- AlbedoTextureNameList: %s"), *FString::Join(AlbedoTextureNameList, TEXT(",")));
+        UE_LOG(LogTemp,
+               Display,
+               TEXT("- AlbedoColorList: %s"),
+               *FString::JoinBy(AlbedoColorList, TEXT(","), [](const FLinearColor& InColor) { return InColor.ToString(); }));
+        UE_LOG(LogTemp, Display, TEXT("- MaskTextureName: %s"), *MaskTextureName);
+        UE_LOG(LogTemp, Display, TEXT("- ORMTextureName: %s"), *ORMTextureName);
+        UE_LOG(LogTemp, Display, TEXT("- NormalTextureName: %s"), *NormalTextureName);
     }
 
     bool HasTexture(const FString& InTextureName)
