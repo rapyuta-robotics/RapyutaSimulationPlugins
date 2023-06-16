@@ -8,20 +8,28 @@ URRKinematicJointComponent::URRKinematicJointComponent()
     // todo add initialization
 }
 
-// Called when the game starts
-void URRKinematicJointComponent::BeginPlay()
+void URRKinematicJointComponent::Initialize()
 {
-    // set joints relations and save initial parent to joint transformation.
-    ParentLinkToJoint = GetRelativeTransform();
+    if(IsValid())
+    {
+        // set joints relations and save initial parent to joint transformation.
+        JointToChildLink = ChildLink->GetRelativeTransform();
+        ParentLinkToJoint = GetRelativeTransform();
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_NAMED(LogTemp,
+                    Error,
+                    TEXT("JointComponent must have ChildLink and ParentLink."));
+    }
 
-    Super::BeginPlay();
 }
 
 // Called every frame
 void URRKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-    if (LinearVelocity != FVector::ZeroVector || AngularVelocity != FVector::ZeroVector)
+    if (!LinearVelocity.IsZero() || !AngularVelocity.IsZero())
     {
         FVector dPos = LinearVelocity * DeltaTime;
         FVector dRot = AngularVelocity * DeltaTime;
@@ -69,6 +77,12 @@ void URRKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickT
     }
 }
 
+void URRKinematicJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
+{
+    Super::SetVelocityTarget(InLinearVelocity, InAngularVelocity);
+    SetVelocity(InLinearVelocity, InAngularVelocity);
+};
+
 void URRKinematicJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
 {
     Super::SetPose(InPosition, InOrientation);
@@ -78,27 +92,31 @@ void URRKinematicJointComponent::SetPose(const FVector& InPosition, const FRotat
 void URRKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     Super::SetPoseTarget(InPosition, InOrientation);
-
+        
     FVector poseDiff = PositionTarget - Position;
     FVector orientDiff = OrientationTarget.Euler() - Orientation.Euler();
     uint8 i;
     for (i = 0; i < 3; i++)
     {
-        LinearVelocity[i] = FMath::IsNearlyZero(poseDiff[i]) ? 0 : poseDiff[i] < 0 ? LinearVelMin[i] : LinearVelMax[i];
+        LinearVelocity[i] = FMath::IsNearlyZero(poseDiff[i]) ? 0 : poseDiff[i] < 0 ? -LinearVelMax[i] : LinearVelMax[i];
     }
     for (i = 0; i < 3; i++)
     {
-        AngularVelocity[i] = FMath::IsNearlyZero(orientDiff[i]) ? 0 : orientDiff[i] < 0 ? AngularVelMin[i] : AngularVelMax[i];
+        AngularVelocity[i] = FMath::IsNearlyZero(orientDiff[i]) ? 0 : orientDiff[i] < 0 ? -AngularVelMax[i] : AngularVelMax[i];
     }
 }
 
 void URRKinematicJointComponent::UpdatePose()
 {
+    if(!IsValid())
+    {
+        return;
+    }
     FHitResult SweepHitResult;
-    K2_SetWorldTransform(FTransform(Orientation, Position) *         // joint changes
-                             ParentLinkToJoint *                     // initial transform parentlink to joint
-                             ParentLink->GetComponentTransform(),    // world orogin to parent
-                         true,                                       // bSweep
+    K2_SetWorldTransform(FTransform(Orientation, Position) *  // joint changes
+                         ParentLinkToJoint *                 // joint to child l 
+                         ParentLink->GetComponentTransform(),             // world orogin to parent
+                         true,                                // bSweep
                          SweepHitResult,
                          false    // bTeleport
     );

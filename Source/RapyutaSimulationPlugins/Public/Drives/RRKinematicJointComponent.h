@@ -32,11 +32,12 @@ class RAPYUTASIMULATIONPLUGINS_API URRKinematicJointComponent : public URRJointC
 public:
     // Sets default values for this component's properties
     URRKinematicJointComponent();
-
-protected:
-    virtual void BeginPlay() override;
-
-    FTransform ParentLinkToJoint;
+    
+    /**
+     * @brief Initialize #JointToChildLink and #ParentLinkToJoint
+     * 
+     */
+    virtual void Initialize() override;
 
 public:
     /**
@@ -48,6 +49,17 @@ public:
      */
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+    /**
+     * @brief Set velocity target
+     * Velocity become same value as VelocityTarget with Kinematic Mode.
+     * @param InLinearVelocity
+     * @param InAngularVelocity
+     */
+    virtual void SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity) override;
+
+    /**
+     * @brief Super::SetPose + #UpdatePose
+    */
     virtual void SetPose(const FVector& InPosition, const FRotator& InOrientation) override;
 
     /**

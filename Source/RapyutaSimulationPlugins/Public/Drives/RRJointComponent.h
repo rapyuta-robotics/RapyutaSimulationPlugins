@@ -12,6 +12,8 @@
 
 #include "RRJointComponent.generated.h"
 
+#define RAPYUTA_JOINT_DEBUG (0)
+
 UENUM(BlueprintType)
 enum class ERRJointControlType : uint8
 {
@@ -36,9 +38,19 @@ public:
     URRJointComponent();
 
 protected:
+    virtual void BeginPlay() override;
     virtual void PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation);
+    virtual void VelocityFromArray(const TArray<float>& InVelocity, FVector& OutLinearVelocity, FVector& OutAngularVelocity);
 
 public:
+    virtual bool IsValid();
+
+    /**
+     * @brief Initialize #JointToChildLink and #ParentLinkToJoint
+     * 
+     */
+    virtual void Initialize();
+
     /**
      * @brief Directly set velocity.
      * Control to move joint with this velocity should be implemented in child class.
@@ -49,6 +61,15 @@ public:
     virtual void SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity);
 
     /**
+     * @brief Set velocity target
+     * Control to move joint with this velocity should be implemented in child class.
+     * @param InLinearVelocity
+     * @param InAngularVelocity
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity);
+
+    /**
      * @brief Set the Velocity With TArray.
      * Control to move joint with this velocity should be implemented in child class.
      * TArray size should be #LinearDOF +  #RotationalDOF
@@ -56,6 +77,22 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetVelocityWithArray(const TArray<float>& InVelocity);
+
+    /**
+     * @brief Set the Velocity Target.
+     * Control to move joint with this velocity should be implemented in child class.
+     * TArray size should be #LinearDOF +  #RotationalDOF
+     * @param InVelocity
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetVelocityTargetWithArray(const TArray<float>& InVelocity);
+
+    /**
+     * @brief Check Pose reach the target pose.
+     *
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual bool HasReachedVelocityTarget(const float InLinearTolerance, const float InAngularTolerance);
 
     /**
      * @brief Directly set pose.
@@ -80,7 +117,7 @@ public:
      *
      */
     UFUNCTION(BlueprintCallable)
-    virtual bool HasReachedPoseTarget(const float InTolerance);
+    virtual bool HasReachedPoseTarget(const float InPositionTolerance, const float InOrientationTolerance);
 
     /**
      * @brief Directly set pose.
@@ -105,6 +142,12 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector AngularVelocity = FVector::ZeroVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector LinearVelocityTarget = FVector::ZeroVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector AngularVelocityTarget = FVector::ZeroVector;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector PositionTarget = FVector::ZeroVector;
@@ -144,18 +187,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector PositionMin = FVector(-1000, -1000, -1000);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool IsLimitRoll = true;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool IsLimitPitch = true;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool IsLimitYaw = true;
-
     //! Orientation Limitations[deg]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FRotator OrientationMax = FRotator(180, 180, 180);
+    FRotator OrientationMax = FRotator(180.f);
 
     //! Orientation Limitations[deg]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -166,15 +200,23 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector LinearVelMax = FVector(1000, 1000, 1000);
 
-    //! Linear Velocity Limitations[cm/s]
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector LinearVelMin = FVector(-1000, -1000, -1000);
-
     //! Angular Velocity Limitations[deg/s]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector AngularVelMax = FVector(180, 180, 180);
+    FVector AngularVelMax = FVector(180.f);
 
-    //! Angular Velocity Limitations[deg/s]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector AngularVelMin = FVector(-180, -180, -180);
+    bool bLimitRoll = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bLimitPitch = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bLimitYaw = true;
+
+protected:
+
+    UPROPERTY()
+    FTransform JointToChildLink = FTransform::Identity;
+    UPROPERTY()
+    FTransform ParentLinkToJoint = FTransform::Identity;
 };

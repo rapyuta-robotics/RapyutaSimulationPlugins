@@ -362,6 +362,70 @@ public:
         return FLinearColor(GetRandomBias(), GetRandomBias(), GetRandomBias(), GetRandomBias());
     }
 
+    /**
+     * @brief update current value with step to reach target within tolerance
+     * 
+     * @param current 
+     * @param target 
+     * @param step 
+     * @param tolerance 
+     */
+    FORCEINLINE static bool StepUpdate(double& current, const double target, const double step, const double tolerance)
+    {
+        bool reached = false;
+        double diff = target - current;
+        double absStep = FMath::Abs(step);
+        double signedStep = diff > 0 ? absStep : -absStep;
+        if(FMath::Abs(diff)<=absStep || //can reach target in step
+            FMath::Abs(diff)<=FMath::Abs(tolerance) || //with in tolerance
+            (signedStep > 0 && diff < 0) || (signedStep < 0 && diff > 0) //overshoot
+        )
+        {
+            current = target;
+            reached = true;
+        }
+        else 
+        {
+            current += signedStep;
+        }
+
+        return reached;
+    }
+
+    /**
+     * @brief update current value with step to reach target within tolerance
+     * 
+     * @param current 
+     * @param target 
+     * @param step 
+     * @param tolerance 
+     */
+    FORCEINLINE static bool StepUpdateAngle(double& current, const double target, const double step, const double tolerance)
+    {
+        bool reached = false;
+        double currentNormalized = FRotator::NormalizeAxis(current);
+        const double targetNormalized = FRotator::NormalizeAxis(target);
+        double diff = FRotator::NormalizeAxis(targetNormalized  - currentNormalized);
+        double absStep = FMath::Abs(step);
+        double signedStep = diff > 0 ? absStep : -absStep;
+        if(FMath::Abs(diff)<=absStep || //can reach target in step
+            FMath::Abs(diff)<=FMath::Abs(tolerance) || //with in tolerance
+            (signedStep > 0 && diff < 0) || (signedStep < 0 && diff > 0) //overshoot
+        )
+        {
+            currentNormalized = targetNormalized;
+            reached = true;
+        }
+        else
+        {
+            currentNormalized += signedStep;
+            currentNormalized = FRotator::NormalizeAxis(currentNormalized);
+        }
+
+        current = currentNormalized;
+        return reached;
+    }
+
 private:
     static FRandomStream RandomStream;
 };
