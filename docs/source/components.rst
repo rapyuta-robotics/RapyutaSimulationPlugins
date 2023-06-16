@@ -50,12 +50,33 @@ Drives
     - `URRKinematicJointComponent <doxygen_generated/html/d2/d69/class_u_r_r_kinematic_joint_component.html>`_
         Kinematics Joint Component which has pose and velocity control interface. 
 
+        Joint are teleported with maximum speed with every tick.
+
         Example robot is 
         `BP_KinematicSimpleArm <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/SampleArm/BP_KinematicSimpleArm.uasset>`_
 
 
     - `URRPhysicsJointComponent <doxygen_generated/html/da/dfb/class_u_r_r_physics_joint_component.html>`_
-        todo
+        Physics Joint Component which has UPhysicsConstraintComponent and pose/velocity control interface.
+
+        Control inputs are passed to following method of UPhysicsConstraintComponent
+
+        - `SetLinearPositionTarget <https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetLinearPositio-_1/>`_
+        - `SetLinearVelocityTarget <https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetLinearVelocit-_1/>`_
+        - `SetAngularOrientationTarget <https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularOrient-_1/>`_
+        - `SetAngularVelocityTarget <https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVeloci-_3/>`_
+
+        There is a parameter named 
+        `bSmoothing <https://rapyutasimulationplugins.readthedocs.io/en/devel/doxygen_generated/html/da/dfb/class_u_r_r_physics_joint_component.html#adeb82e7c48bc96e8bb3469eb9af0939e>`_
+        Control inputs are interpolated if this param set true.
+
+        Example robot is 
+        `BP_PhysicsUR10 <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/UR10/BP_PhysicsUR10.uasset>`_
+
+        reference:
+
+        - `UPhysicsConstraintComponent <https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/>`_
+        - `Constraints User Guide <https://docs.unrealengine.com/5.1/en-US/constraints-user-guide-in-unreal-engine/>`_
 
 Sensors
 -------
