@@ -59,7 +59,7 @@ void URRPhysicsJointComponent::SetJoint()
     Constraint->SetLinearXLimit(linearEnabled[0] ? ELinearConstraintMotion::LCM_Free : ELinearConstraintMotion::LCM_Locked, 0);
     Constraint->SetLinearYLimit(linearEnabled[1] ? ELinearConstraintMotion::LCM_Free : ELinearConstraintMotion::LCM_Locked, 0);
     Constraint->SetLinearZLimit(linearEnabled[2] ? ELinearConstraintMotion::LCM_Free : ELinearConstraintMotion::LCM_Locked, 0);
-    Constraint->SetLinearDriveParams(LinearSpring, LinearBamper, LinearForceLimit);
+    Constraint->SetLinearDriveParams(LinearSpring, LinearDamper, LinearForceLimit);
 
     // set angular drive
     // RotationalDOF = 1 => Twist, 2 => Swing1, 3 => Swing2
@@ -85,7 +85,7 @@ void URRPhysicsJointComponent::SetJoint()
     Constraint->SetAngularTwistLimit(angleEnabled[0] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked, 0);
     Constraint->SetAngularSwing1Limit(angleEnabled[1] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked, 0);
     Constraint->SetAngularSwing2Limit(angleEnabled[2] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked, 0);
-    Constraint->SetAngularDriveParams(AngularSpring, AngularBamper, AngularForceLimit);
+    Constraint->SetAngularDriveParams(AngularSpring, AngularDamper, AngularForceLimit);
 }
 
 void URRPhysicsJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)

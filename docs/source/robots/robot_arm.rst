@@ -43,28 +43,37 @@ SimpleArm
 
 UR10 
 ^^^^^^^^^^^^^^
+These BP class are child class of ARRBaseRobot and added joint and link setting. 
+
+reference: `Universal_Robots_ROS2_Description <https://github.com/UniversalRobots/Universal_Robots_ROS2_Description/tree/ros2/meshes>`_
+
+.. image:: ../images/ur10.png
+
+In `Construction script in BP <https://docs.unrealengine.com/5.1/en-US/construction-script-in-unreal-engine/>`_, 
+all joint and link relations are set. JointName which is used by ROS 2 is also set in here. 
+
+These robots can be controlled with ur_description package.
+
+.. code-block:: shell
+
+    sudo apt install ros-humble-ur-description
+    ros2 launch ur_description view_ur.launch.py ur_type:=ur10
 
 - `BP_KinematicUR10 <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/UR10/BP_KinematicUR10.uasset>`_
+    Joints are `URRKinematicJointComponent <doxygen_generated/html/d2/d69/class_u_r_r_kinematic_joint_component.html>`_
     
-    This BP class is child class of ARRBaseRobot and added joint and link setting. 
-    
-    reference: `Universal_Robots_ROS2_Description <https://github.com/UniversalRobots/Universal_Robots_ROS2_Description/tree/ros2/meshes>`_
-    
-    .. image:: ../images/ur10.png
-
-    In `Construction script in BP <https://docs.unrealengine.com/5.1/en-US/construction-script-in-unreal-engine/>`_, 
-    all joint and link relations are set. JointName which is used by ROS 2 is also set in here. 
-
-    This robot can be controlled with ur_description package.
-
-    .. code-block:: shell
-    
-        sudo apt install ros-humble-ur-description
-        ros2 launch ur_description view_ur.launch.py ur_type:=ur10
-
-    .. video:: ../_static/videos/ur10.mp4
+    .. video:: ../_static/videos/ur10_kinematic.mp4
         :width: 750
         :height: 450
+
+-  `BP_PhysicsUR10 <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/UR10/BP_PhysicsUR10.uasset>`_
+    Joints are `URRPhysicsJointComponent <doxygen_generated/html/da/dfb/class_u_r_r_physics_joint_component.html>`_
+    
+    .. video:: ../_static/videos/ur10_physics.mp4
+        :width: 750
+        :height: 450
+
+
 
 Todo
 --------------------------

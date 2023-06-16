@@ -130,7 +130,7 @@ public:
 
     //! [kg/s]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float LinearBamper = 10;
+    float LinearDamper = 10;
 
     //! [kg.cm/ss]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -142,7 +142,7 @@ public:
 
     //! [kg.cm/s]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float AngularBamper = 10000;
+    float AngularDamper = 10000;
 
     //! [kg.deg.deg/ss]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
