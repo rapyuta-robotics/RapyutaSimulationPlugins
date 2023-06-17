@@ -136,13 +136,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FVector VectorROSToUE(const FVector& Input)
     {
-        FVector Output = Input;
-
-        Output.X = Output.X;
-        Output.Y = -Output.Y;
-        Output.Z = Output.Z;
-
-        return 100.f * Output;
+        return 100.f * ConvertHandedness(Input);
     }
 
     FORCEINLINE static void VectorROSToUE(const FVector& Input, FVector& Output)

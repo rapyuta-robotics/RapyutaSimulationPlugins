@@ -275,7 +275,7 @@ UObject* URRAssetUtils::SaveObjectToAsset(UObject* InObject,
 
 bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, bool bInAsyncSave, bool bInAlwaysOverwrite)
 {
-    // Mark  both dirty
+    // Mark both dirty
     if (InObject)
     {
         InObject->MarkPackageDirty();
