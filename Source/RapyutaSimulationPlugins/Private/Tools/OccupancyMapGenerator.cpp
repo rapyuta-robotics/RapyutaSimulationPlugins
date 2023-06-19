@@ -1,6 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/OccupancyMapGenerator.h"
+#include "logUtilities.h"
 
 #include "DrawDebugHelpers.h"
 #include "HAL/PlatformFileManager.h"
@@ -16,12 +17,21 @@ void AOccupancyMapGenerator::BeginPlay()
 {
     Super::BeginPlay();
 
+    if (Map == nullptr)
+    {
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore, Warning, TEXT("Map is nullptr. Please sepcify Map to generate occupancy map."));
+        return;
+    }
+
     // this could be done via shader if GPU raycast is accessible
     // result would be saved on texture
     FVector Center;
     FVector Extent;
     Map->GetActorBounds(false, Center, Extent, true);
-
+    UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore, Display, TEXT("Generate occupancy map with %s whose center is %s, box extent is %s"), *Map->GetName(), *Center.ToString(), *Extent.ToString());
+    
     FVector Origin = Center - Extent;
 
     float GridRes_cm = GridRes * 100;
