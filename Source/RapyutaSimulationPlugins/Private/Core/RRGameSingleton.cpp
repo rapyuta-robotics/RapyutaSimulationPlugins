@@ -126,6 +126,15 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("RESOURCES REGISTERED TO BE LOADED!"));
 #endif
     }
+    else
+    {
+        // NOTE: NO dynamic resources required -> considered to have been all loaded
+        for (auto& [_, resourceInfo] : ResourceMap)
+        {
+            resourceInfo.bHasBeenAllLoaded = true;
+        }
+    }
+
     return bResult;
 }
 
@@ -141,18 +150,19 @@ void URRGameSingleton::FinalizeResources()
 
 bool URRGameSingleton::HaveAllResourcesBeenLoaded(bool bIsLogged) const
 {
-    bool bResult = true;
     for (const auto& resourceInfo : ResourceMap)
     {
-        bResult &= resourceInfo.Value.bHasBeenAllLoaded;
-        if (!bResult && bIsLogged)
+        if (false == resourceInfo.Value.bHasBeenAllLoaded)
         {
-            UE_LOG_WITH_INFO(LogRapyutaCore,
-                             Warning,
-                             TEXT("[%s] Resources have not yet been fully loaded!"),
-                             *URRTypeUtils::GetERRResourceDataTypeAsString(resourceInfo.Key));
+            if (bIsLogged)
+            {
+                UE_LOG_WITH_INFO(LogRapyutaCore,
+                                 Warning,
+                                 TEXT("[%s] Resources have not yet been fully loaded!"),
+                                 *URRTypeUtils::GetERRResourceDataTypeAsString(resourceInfo.Key));
+            }
+            return false;
         }
     }
-
-    return bResult;
+    return true;
 }
