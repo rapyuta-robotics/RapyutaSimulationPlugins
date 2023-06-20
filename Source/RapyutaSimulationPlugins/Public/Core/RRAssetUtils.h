@@ -55,6 +55,18 @@ public:
     }
 #endif
 
+    /**
+     * @brief Get full asset file path on disk of an UE asset
+     * @param InAssetPath UE asset path
+     * @param OutAssetFilePath Output asset file path on disk (local path)
+     * @return true if convertible
+     */
+    static bool GetAssetFilePathOnDisk(const FString& InAssetPath, FString& OutAssetFilePath)
+    {
+        return FPackageName::TryConvertLongPackageNameToFilename(
+            InAssetPath, OutAssetFilePath, FPackageName::GetAssetPackageExtension());
+    }
+
     static bool IsAssetPackageValid(const FAssetData& InAssetData, bool bIsLogged = false)
     {
         // Package's availability

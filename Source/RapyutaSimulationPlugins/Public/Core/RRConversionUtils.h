@@ -267,6 +267,10 @@ public:
         {
             return InValue.ToString();
         }
+        else if constexpr (TIsSame<T, FString>::Value)
+        {
+            return InValue;
+        }
         else
         {
             UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[%s] is not yet supported"), TNameOf<T>::GetName());

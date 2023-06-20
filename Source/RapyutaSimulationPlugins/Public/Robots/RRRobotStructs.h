@@ -1083,6 +1083,10 @@ public:
         }
     }
 
+    /**
+     * @brief Remove all link properties of InLinkName and its corresponding joint properties having their #ParentLinkName as InLinkName
+     * @param InLinkName
+     */
     void RemoveLinkJointProp(const FString& InLinkName)
     {
         // 1- Rem joint prop having [ParentLinkName] as [InLinkName]
@@ -1119,7 +1123,80 @@ public:
                                 { return (InWheelProp.WheelName == InLinkName); });
     }
 
-    const FRRRobotLinkProperty FindLinkProp(int8 InLinkIndex) const
+    /**
+     * @brief Get the property of base link of which the name is denoted by #BaseLinkName
+     * @return FRRRobotLinkProperty
+     */
+    FRRRobotLinkProperty GetBaseLinkProp() const
+    {
+        for (const auto& linkProp : LinkPropList)
+        {
+            if (linkProp.Name == BaseLinkName)
+            {
+                return linkProp;
+            }
+        }
+        return FRRRobotLinkProperty();
+    }
+
+    /**
+     * @brief Get the property of a link by name read from URDF/SDF or CAD like FBX/COLLADA
+     * @param InLinkName
+     * @return FRRRobotLinkProperty
+     */
+    FRRRobotLinkProperty GetLinkProp(const FString& InLinkName) const
+    {
+        for (const auto& linkProp : LinkPropList)
+        {
+            if (linkProp.Name == InLinkName)
+            {
+                return linkProp;
+            }
+        }
+        return FRRRobotLinkProperty();
+    }
+
+    /**
+     * @brief Get the property of a joint by name read from URDF/SDF or CAD like FBX/COLLADA
+     * @param InJointName
+     * @return FRRRobotJointProperty
+     */
+    FRRRobotJointProperty GetJointProp(const FString& InJointName) const
+    {
+        for (const auto& jointProp : JointPropList)
+        {
+            if (jointProp.Name == InJointName)
+            {
+                return jointProp;
+            }
+        }
+        return FRRRobotJointProperty();
+    }
+
+    /**
+     * @brief Get the property of the first joint having its child link name as InChildLinkName
+     * @param InChildLinkName
+     * @return FRRRobotJointProperty
+     */
+    FRRRobotJointProperty GetJointPropFromChildLinkName(const FString& InChildLinkName) const
+    {
+        for (const auto& jointProp : JointPropList)
+        {
+            if (jointProp.ChildLinkName == InChildLinkName)
+            {
+                return jointProp;
+            }
+        }
+        return FRRRobotJointProperty();
+    }
+
+    /**
+     * @brief Get the property of a link by its LinkIndex
+     * NOTE: LinkIndex is assigned indendently from its index in #LinkPropList as building robot skeleton structure
+     * @param InLinkIndex
+     * @return FRRRobotLinkProperty
+     */
+    FRRRobotLinkProperty FindLinkProp(int8 InLinkIndex) const
     {
         for (const auto& linkProp : LinkPropList)
         {
@@ -1128,14 +1205,18 @@ public:
                 return linkProp;
             }
         }
-
         return FRRRobotLinkProperty();
     }
 
-    const FRRRobotJointProperty FindJointPropByLinkIndex(int8 InLinkIndex) const
+    /**
+     * @brief Get the property of a joint of which the child link name matchs the link property fetched by its LinkIndex
+     * NOTE: LinkIndex is assigned indendently from its index in #LinkPropList as building robot skeleton structure
+     * @param InLinkIndex
+     * @return FRRRobotJointProperty
+     */
+    FRRRobotJointProperty FindJointPropByLinkIndex(int8 InLinkIndex) const
     {
         const FRRRobotLinkProperty linkProp = FindLinkProp(InLinkIndex);
-
         for (const auto& jointProp : JointPropList)
         {
             if (linkProp.Name == jointProp.ChildLinkName)
@@ -1143,16 +1224,27 @@ public:
                 return jointProp;
             }
         }
-
         return FRRRobotJointProperty();
     }
 
+    /**
+     * @brief Get visual offset transform of a link by its LinkIndex
+     * NOTE: LinkIndex is assigned indendently from its index in #LinkPropList as building robot skeleton structure
+     * @param InLinkIndex
+     * @return FTransform
+     */
     FTransform GetLinkVisualOffset(int8 InLinkIndex) const
     {
         const FRRRobotLinkProperty& linkProp = FindLinkProp(InLinkIndex);
         return linkProp.GetVisualOffset();
     }
 
+    /**
+     * @brief Get the absolute transform of a link (in owner robot's frame) by its LinkIndex
+     * NOTE: LinkIndex is assigned indendently from its index in #LinkPropList as building robot skeleton structure
+     * @param InLinkIndex
+     * @return FTransform
+     */
     FTransform GetLinkAbsoluteTransform(int8 InLinkIndex) const
     {
         int8 linkIndexCurrent = InLinkIndex;
@@ -1182,6 +1274,12 @@ public:
         return resultTransform;
     }
 
+    /**
+     * @brief Get the relative transform of a link to its parent by its LinkIndex
+     * NOTE: LinkIndex is assigned indendently from its index in #LinkPropList as building robot skeleton structure
+     * @param InLinkIndex
+     * @return FTransform
+     */
     FTransform GetLinkRelativeTransform(int8 InLinkIndex) const
     {
         const FRRRobotJointProperty jointProp = FindJointPropByLinkIndex(InLinkIndex);
@@ -1204,6 +1302,12 @@ public:
         }
     }
 
+    /**
+     * @brief Get the relative transform of a link to base link its LinkIndex
+     * NOTE: LinkIndex is assigned indendently from its index in #LinkPropList as building robot skeleton structure
+     * @param InLinkIndex
+     * @return FTransform
+     */
     FTransform GetLinkRelTransformToBase(int8 InLinkIndex) const
     {
         if (InLinkIndex <= 0)
@@ -1221,6 +1325,12 @@ public:
         return FTransform::Identity;
     }
 
+    /**
+     * @brief Get the visual offset transform of a link to base link its LinkIndex
+     * NOTE: LinkIndex is assigned indendently from its index in #LinkPropList as building robot skeleton structure
+     * @param InLinkIndex
+     * @return FTransform
+     */
     FTransform GetLinkVisualOffsetToBase(int8 InLinkIndex) const
     {
         int8 linkIndexCurrent = InLinkIndex;
@@ -1243,6 +1353,9 @@ public:
         return resultTransform;
     }
 
+    /**
+     * @brief Get model visual info
+     */
     FRRRobotGeometryInfo GetVisualInfo() const
     {
         return ((LinkPropList.Num() > 0) && (LinkPropList[0].VisualList.Num() > 0)) ? LinkPropList[0].VisualList[0]
@@ -1612,6 +1725,26 @@ public:
     FORCEINLINE void RemoveLinkJointProp(const FString& InLinkName)
     {
         Data.RemoveLinkJointProp(InLinkName);
+    }
+
+    FORCEINLINE FRRRobotLinkProperty GetBaseLinkProp() const
+    {
+        return Data.GetBaseLinkProp();
+    }
+
+    FORCEINLINE FRRRobotLinkProperty GetLinkProp(const FString& InLinkName) const
+    {
+        return Data.GetLinkProp(InLinkName);
+    }
+
+    FORCEINLINE FRRRobotJointProperty GetJointProp(const FString& InJointName) const
+    {
+        return Data.GetJointProp(InJointName);
+    }
+
+    FORCEINLINE FRRRobotJointProperty GetJointPropFromChildLinkName(const FString& InChildLinkName) const
+    {
+        return Data.GetJointPropFromChildLinkName(InChildLinkName);
     }
 
     FORCEINLINE const FRRRobotLinkProperty FindLinkProp(int8 InLinkIndex) const

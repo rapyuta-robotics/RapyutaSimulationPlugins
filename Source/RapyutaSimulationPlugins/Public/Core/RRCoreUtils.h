@@ -12,6 +12,7 @@
 
 // UE
 #if WITH_EDITOR
+#include "Subsystems/UnrealEditorSubsystem.h"
 #include "UnrealEd.h"
 #endif
 #include "Delegates/Delegate.h"
@@ -197,12 +198,26 @@ public:
 // SIM COMMAND LINE EXECUTION --
 #define CCMDLINE_ARG_FORMAT (TEXT("%s="))
     static constexpr const TCHAR* CCMDLINE_ARG_INT_PHYSX_DISPATCHER_NUM = TEXT("physxDispatcher");
+
+    template<typename TCmdlet>
+    static bool IsRunningSimCommandlet()
+    {
+        return IsRunningCommandlet() && GetRunningCommandletClass()->IsChildOf<TCmdlet>();
+    }
+
     static void ExecuteConsoleCommand(const UObject* InContextObject, const FString& InCommandText)
     {
-        GetPlayerController<APlayerController>(0, InContextObject)->ConsoleCommand(InCommandText);
-        // OR either one of these:
-        // + GEngine->Exec(World, *InCommandText);
-        // + World->Exec(World, *InCommandText);
+        if (IsRunningCommandlet())
+        {
+#if WITH_EDITOR
+            GEngine->Exec(URRCoreUtils::GetEditorWorld(), *InCommandText);
+#endif
+        }
+        else
+        {
+            GetPlayerController<APlayerController>(0, InContextObject)->ConsoleCommand(InCommandText);
+            // OR: GEngine->Exec(World, *InCommandText);
+        }
     }
 
     // T must be primitive type only!
@@ -251,6 +266,19 @@ public:
 
     // SIM WORLDS --
     static constexpr const TCHAR* PIXEL_STREAMER_PLAYER_NAME = TEXT("pixelstreamer");
+    static UWorld* GetEditorWorld()
+    {
+        UWorld* editorWorld = nullptr;
+#if WITH_EDITOR
+        if (UUnrealEditorSubsystem* UnrealEditorSubsystem = GEditor->GetEditorSubsystem<UUnrealEditorSubsystem>())
+        {
+            // NOTE: This also returns [GEditor->GetEditorWorldContext().World()]
+            editorWorld = UnrealEditorSubsystem->GetEditorWorld();
+        }
+#endif
+        return editorWorld;
+    }
+
     template<typename T>
     static T* GetGameMode(const UObject* InContextObject = nullptr)
     {
@@ -437,7 +465,10 @@ public:
     // -------------------------------------------------------------------------------------------------------------------------
     // FILE/DIR UTILS --
     //
-    static bool LoadFullFilePaths(const FString& FolderPath, TArray<FString>& OutFilePaths, const TArray<ERRFileType>& InFileTypes);
+    static bool LoadFullFilePaths(const FString& FolderPath,
+                                  TArray<FString>& OutFilePaths,
+                                  const TArray<ERRFileType>& InFileTypes,
+                                  const bool bInRecursive = true);
 
     static bool CreateDirectoryIfNotExisting(const FString& DirPath)
     {

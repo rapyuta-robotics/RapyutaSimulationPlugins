@@ -113,12 +113,29 @@ public:
 
 public:
     /**
+     * @brief ACTOR INTIALIZING GENERAL INFO (Unique name, mesh list, material list, etc.)
+     * NOTE: This allows child actor to create custom ActorSpawnInfo of its own
+     * @tparam TActorSpawnInfo
+     * @param InActorInfo
+     * @return true
+     * @return false
+     */
+    template<typename TActorSpawnInfo>
+    bool InitializeWithSpawnInfo(const TActorSpawnInfo& InActorInfo)
+    {
+        ActorInfo = MakeShared<TActorSpawnInfo>(InActorInfo);
+
+        // ACTOR INTIALIZING GENERAL INFO (Unique name, mesh list, material list, etc.)
+        return Initialize();
+    }
+
+    /**
      * @brief Set #GameMode #GameState #GameSingleton #PlayerController
      * (NOTE) This method, if being called, could only go with a RRGameMode-inheriting game mode setup!
      * Currently, ARRROS2GameMode & ARRGameMode are separate ones.
      * & Maps of ARRROS2GameMode do NOT YET have actors invoking this method.
      * It is up to the Child class, [Initialize()] could be run inside [BeginPlay()] or some place else in advance!
-     *
+     * ALSO, DUE TO BEING VIRTUAL, CANNOT BE MERGED WITH [InitializeWithSpawnInfo()]
      * @return true
      * @return false
      */

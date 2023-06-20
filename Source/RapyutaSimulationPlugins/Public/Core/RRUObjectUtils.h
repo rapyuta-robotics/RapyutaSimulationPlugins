@@ -569,7 +569,8 @@ public:
         const FString& InEntityModelName,
         const FString& InActorName = EMPTY_STR,
         const FTransform& InActorTransform = FTransform::Identity,
-        const ESpawnActorCollisionHandlingMethod InCollisionHandlingType = ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+        const ESpawnActorCollisionHandlingMethod InCollisionHandlingType = ESpawnActorCollisionHandlingMethod::AlwaysSpawn,
+        const FRRActorSpawnInfo& InActorSpawnInfo = FRRActorSpawnInfo());
 
     FORCEINLINE static FVector GetRelativeLocFrom(const AActor* InActor, const AActor* InBaseActor)
     {

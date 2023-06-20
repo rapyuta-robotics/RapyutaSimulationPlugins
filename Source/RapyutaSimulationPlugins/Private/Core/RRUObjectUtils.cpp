@@ -219,7 +219,8 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
                                              const FString& InEntityModelName,
                                              const FString& InActorName,
                                              const FTransform& InActorTransform,
-                                             const ESpawnActorCollisionHandlingMethod InCollisionHandlingType)
+                                             const ESpawnActorCollisionHandlingMethod InCollisionHandlingType,
+                                             const FRRActorSpawnInfo& InActorSpawnInfo)
 {
     // This is needed for any actor that is spawned after Sim initialization, when its BeginPlay() is invoked later
     ARRBaseActor::SSceneInstanceId = InSceneInstanceId;
@@ -246,7 +247,14 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
 #endif
 
         // Initializing itself
-        ensure(newActor->Initialize());
+        if (InActorSpawnInfo.IsValid())
+        {
+            ensure(newActor->InitializeWithSpawnInfo(InActorSpawnInfo));
+        }
+        else
+        {
+            ensure(newActor->Initialize());
+        }
     }
     else
     {

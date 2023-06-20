@@ -36,42 +36,25 @@ public:
 
 public:
     /**
-     * @brief ACTOR INTIALIZING GENERAL INFO (Unique name, mesh list, material list, etc.)
-     * 
-     * @tparam TActorSpawnInfo 
-     * @param InActorInfo 
-     * @return true 
-     * @return false 
-     */
-    template<typename TActorSpawnInfo>
-    bool InitializeWithSpawnInfo(const TActorSpawnInfo& InActorInfo)
-    {
-        ActorInfo = MakeShared<TActorSpawnInfo>(InActorInfo);
-
-        // ACTOR INTIALIZING GENERAL INFO (Unique name, mesh list, material list, etc.)
-        return Initialize();
-    }
-
-    /**
-     * @brief Initialize MeshActor by 1)Create child mesh components, 2)#SetCustomDepthEnabled, 3)Set mobility. 
-     * 
-     * @return true 
-     * @return false 
+     * @brief Initialize MeshActor by 1)Create child mesh components, 2)#SetCustomDepthEnabled, 3)Set mobility.
+     *
+     * @return true
+     * @return false
      */
     virtual bool Initialize() override;
 
     /**
      * @brief Checm #MeshCompList and #BaseMeshComp
-     * 
-     * @param bIsLogged 
-     * @return true 
-     * @return false 
+     *
+     * @param bIsLogged
+     * @return true
+     * @return false
      */
     virtual bool HasInitialized(bool bIsLogged = false) const override;
 
     /**
      * @brief Reset #MeshCompList
-     * 
+     *
      */
     virtual void Reset() override;
     void DrawTransform();
@@ -104,8 +87,8 @@ public:
 
     /**
      * @brief Declare mesh actor full creation with all meshes created
-     * 
-     * @param bInCreationResult 
+     *
+     * @param bInCreationResult
      */
     virtual void DeclareFullCreation(bool bInCreationResult);
 
@@ -228,28 +211,28 @@ public:
 
     /**
      * @brief Enable/Disable Custom Depth rendering pass
-     * @param bIsCustomDepthEnabled 
+     * @param bIsCustomDepthEnabled
      */
     void SetCustomDepthEnabled(bool bIsCustomDepthEnabled);
-    
+
     /**
      * @brief Set Custom Depth Stencil value uniformly for all child mesh comps
-      * 
-      * @param InCustomDepthStencilValue 
+      *
+      * @param InCustomDepthStencilValue
       */
     void SetCustomDepthStencilValue(int32 InCustomDepthStencilValue);
 
     /**
      * @brief Whether Custom depth rendering is enabled
-      * 
-      * @return true 
-      * @return false 
+      *
+      * @return true
+      * @return false
       */
     bool IsCustomDepthEnabled() const;
 
     /**
      * @brief Get mesh comps' custom depth stencil values
-      * @return TArray<int32> 
+      * @return TArray<int32>
       */
     TArray<int32> GetCustomDepthStencilValueList() const;
 
@@ -258,8 +241,8 @@ public:
 
     /**
      * @brief Activate/Deactivate mesh actor
-      * 
-      * @param bInIsActivated 
+      *
+      * @param bInIsActivated
       */
     FORCEINLINE virtual void SetActivated(bool bInIsActivated)
     {

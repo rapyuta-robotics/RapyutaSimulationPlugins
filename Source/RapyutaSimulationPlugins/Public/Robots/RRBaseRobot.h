@@ -484,9 +484,66 @@ public:
      * @brief Parse Json parameters in #ROSSpawnParameters
      * This function is called in #PreInitializeComponents
      * Please overwrite this function to parse your custom parameters
+     *
+     * \code{Example Implementation of Json parser:}
+     * if (false == Super::InitPropertiesFromJSON())
+     * {
+     *     return false;
+     * }
+
+     * TSharedRef<TJsonReader<TCHAR>> jsonReader = TJsonReaderFactory<TCHAR>::Create(ROSSpawnParameters->ActorJsonConfigs);
+     * TSharedPtr<FJsonObject> jsonObj = MakeShareable(new FJsonObject());
+     * if (!FJsonSerializer::Deserialize(jsonReader, jsonObj) && jsonObj.IsValid())
+     * {
+     *     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("Failed to deserialize json to object"));
+     *     return false;
+     * }
+
+     * // Parse single value
+     * bool bParam = false;
+     * if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("bool_value"), bParam))
+     * {
+     *     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("bool value: %d"), bParam);
+     * }
+     * else
+     * {
+     *     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s [bool_value] not found in json config"));
+     * }
+
+     * // Parse array
+     * const TArray<TSharedPtr<FJsonValue>>* paramArray;
+     * if (!jsonObj->TryGetArrayField(TEXT("array_value"), paramArray))
+     * {
+     *     return false;
+     * }
+
+     * for (const auto& param : *paramArray)
+     * {
+     *     const TSharedPtr<FJsonObject>* jObj;
+     *     if (!param->TryGetObject(jObj))
+     *     {
+     *         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s Not an object !!"));
+     *         continue;
+     *     }
+
+     *     // Parse value in array
+     *     float valueInParam = 0.0;
+     *     if (URRGeneralUtils::GetJsonField(*jObj, TEXT("value_in_array"), valueInParam, 0.0f))
+     *     {
+     *         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("value_in_array : %f"), valueInParam);
+     *     }
+     *     else
+     *     {
+     *         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("%s [value_in_array] not found in json config"));
+     *     }
+     * }
+     * return true;
+     * \endcode
+     *
+     * @return true/false
     */
     UFUNCTION(BlueprintCallable)
-    virtual void InitPropertiesFromJSON();
+    virtual bool InitPropertiesFromJSON();
 
     // UI WIDGET --
     UPROPERTY()

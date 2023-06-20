@@ -81,14 +81,12 @@ public:
 
     // SIM RESOURCES ==
     //
-
     /**
      * @brief Read all sim dynamic resouces(Uassets) info from designated folders
-     *
-     * @return true
-     * @return false
+     * @param bInRequestResourceLoading
+     * @return true if inited successfully
      */
-    bool InitializeResources();
+    bool InitializeResources(bool bInRequestResourceLoading = true);
 
     /**
      * @brief Finalize #ResourceMap by calling #FRRResourceInfo::Finalize
@@ -107,6 +105,18 @@ public:
 
     UPROPERTY(Config)
     FString ASSETS_RUNTIME_BP_SAVE_BASE_PATH = TEXT("/Game/RapyutaContents/Blueprints");
+
+    /**
+     * @brief Get UE asset path of a dynamically created BP asset
+     * @param InBPAssetName
+     * @return as #ASSETS_RUNTIME_BP_SAVE_BASE_PATH / InBPAssetName
+     * @note Dynamic BP assets are loaded by UE itself, not by Sim resource early loading as other dynamic resources (static meshes, textures, etc.).
+     * Also, in order for them to reference any other arbitrary asset, it's advisable to save them into project's Content (not into plugins)
+     */
+    FString GetDynamicBPAssetPath(const FString& InBPAssetName)
+    {
+        return FString(ASSETS_RUNTIME_BP_SAVE_BASE_PATH) / InBPAssetName;
+    }
 
     /**
      * @brief Get name prefix of asset
@@ -155,8 +165,6 @@ public:
      */
     FORCEINLINE static FString GetAssetsBasePath(const TCHAR* InModuleName)
     {
-        // For particular handling, please set the asset path ending with '/'
-        // This concatenation operator ensure only a single '/' is put in between
         return FString(ASSETS_ROOT_PATH) / InModuleName;
     }
 
@@ -225,17 +233,22 @@ public:
     /**
      * @brief Get the Dynamic Assets Path List object
      * Return the TArray of #SASSET_OWNING_MODULE_NAMES[i] / #DYNAMIC_CONTENTS_FOLDER_NAME
+     * @note #SASSET_OWNING_MODULE_NAMES must have been initialized earlier & once only at Sim start by [ConfigureSimInPlay()]
      * @param InDataType
      * @return TArray<FString>
      */
-    FORCEINLINE static TArray<FString> GetDynamicAssetsPathList(const ERRResourceDataType InDataType)
+    FORCEINLINE static TArray<FString> GetDynamicAssetsBasePathList(const ERRResourceDataType InDataType)
     {
-        static TArray<FString> runtimeAssetsPathList;
-        for (const auto& moduleName : SASSET_OWNING_MODULE_NAMES[InDataType])
+        static TArray<FString> dynamicAssetsBasePathList = [InDataType]()
         {
-            runtimeAssetsPathList.Emplace(GetDynamicAssetsBasePath(moduleName));
-        }
-        return runtimeAssetsPathList;
+            TArray<FString> basePaths;
+            for (const auto& moduleName : SASSET_OWNING_MODULE_NAMES[InDataType])
+            {
+                basePaths.Emplace(GetDynamicAssetsBasePath(moduleName));
+            }
+            return basePaths;
+        }();
+        return dynamicAssetsBasePathList;
     }
 
     /**
@@ -251,10 +264,10 @@ public:
         FRRResourceInfo& outResourceInfo = GetSimResourceInfo(InDataType);
 
         TArray<FAssetData> totalAssetDataList;
-        for (const auto& assetsPath : GetDynamicAssetsPathList(InDataType))
+        for (const auto& assetsBasePath : GetDynamicAssetsBasePathList(InDataType))
         {
             TArray<FAssetData> assetDataList;
-            URRAssetUtils::LoadAssetDataList<T>(assetsPath / InAssetRelativeFolderPath, assetDataList);
+            URRAssetUtils::LoadAssetDataList<T>(assetsBasePath / InAssetRelativeFolderPath, assetDataList);
             totalAssetDataList.Append(assetDataList);
         }
 
