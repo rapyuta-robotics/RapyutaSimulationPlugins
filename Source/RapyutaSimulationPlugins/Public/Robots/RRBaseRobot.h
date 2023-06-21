@@ -272,7 +272,7 @@ public:
 
     //! Robot Model Name (loaded from URDF/SDF)
     UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, meta = (ExposeOnSpawn = "true"), Replicated)
-    FString RobotModelName;
+    FString& RobotModelName = EntityModelName;
 
     /**
      * @brief Get robot model name

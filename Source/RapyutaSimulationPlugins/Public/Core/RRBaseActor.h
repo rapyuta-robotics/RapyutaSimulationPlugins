@@ -14,6 +14,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Robots/RRRobotStructs.h"
 
 #include "RRBaseActor.generated.h"
 
