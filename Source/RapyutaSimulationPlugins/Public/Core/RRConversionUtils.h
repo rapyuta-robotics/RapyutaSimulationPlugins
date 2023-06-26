@@ -11,6 +11,7 @@
 #pragma once
 
 // rclUE
+#include "Msgs/ROS2HitResult.h"
 #include "Msgs/ROS2Odom.h"
 #include "Msgs/ROS2Pose.h"
 #include "Msgs/ROS2Time.h"
@@ -293,5 +294,34 @@ public:
             strArray.Add(URRConversionUtils::ToString(InArray[i]));
         }
         return FString::Join(strArray, InDelimiter);
+    }
+
+    // HitResult
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FROSHitResult HitResultUEToROS(const FHitResult& InHit)
+    {
+        FROSHitResult result;
+        result.bBlockingHit = InHit.bBlockingHit;
+        result.bStartPenetrating = InHit.bStartPenetrating;
+        result.ComponentName = InHit.Component->GetName();
+        result.ActorName = InHit.HitObjectHandle.GetName();
+        result.Distance = InHit.Distance;
+        result.ElementIndex = InHit.ElementIndex;
+        result.FaceIndex = InHit.FaceIndex;
+        result.BoneName = InHit.BoneName.ToString();
+        result.Item = InHit.Item;
+        result.MyBoneName = InHit.MyBoneName.ToString();
+        result.MyItem = InHit.MyItem;
+        result.PenetrationDepth = InHit.PenetrationDepth;
+        result.PhysicsMaterialName = InHit.PhysMaterial->GetName();
+        result.Time = InHit.Time;
+        result.ImpactNormal = InHit.ImpactNormal;
+        result.ImpactPoint = InHit.ImpactPoint;
+        result.Normal = InHit.Normal;
+        result.Location = InHit.Location;
+        result.TraceStart = InHit.TraceStart;
+        result.TraceEnd = InHit.TraceEnd;
+
+        return result;
     }
 };
