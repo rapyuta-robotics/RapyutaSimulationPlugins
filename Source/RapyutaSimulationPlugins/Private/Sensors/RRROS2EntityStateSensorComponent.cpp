@@ -8,7 +8,8 @@
 
 URRROS2EntityStateSensorComponent::URRROS2EntityStateSensorComponent()
 {
-    SensorPublisherClass = URRROS2EntityStatePublisher::StaticClass();
+    TopicName = TEXT("entity_state");
+    MsgClass = UROS2EntityStateMsg::StaticClass();
 }
 
 void URRROS2EntityStateSensorComponent::BeginPlay()

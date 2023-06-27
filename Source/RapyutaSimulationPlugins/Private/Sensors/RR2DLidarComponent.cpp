@@ -6,7 +6,8 @@
 
 URR2DLidarComponent::URR2DLidarComponent()
 {
-    SensorPublisherClass = URRROS2LaserScanPublisher::StaticClass();
+    TopicName = TEXT("scan");
+    MsgClass = UROS2LaserScanMsg::StaticClass();
 }
 
 void URR2DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

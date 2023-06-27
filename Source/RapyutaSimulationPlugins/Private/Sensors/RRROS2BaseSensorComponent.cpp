@@ -41,6 +41,11 @@ void URRROS2BaseSensorComponent::PreInitializePublisher(UROS2NodeComponent* InRO
 {
     if (IsValid(SensorPublisher))
     {
+        // Overwrite MsgClass if it is not default value.
+        if (MsgClass != UROS2GenericMsg::StaticClass())
+        {
+            SensorPublisher->MsgClass = MsgClass;
+        }
         SensorPublisher->PublicationFrequencyHz = PublicationFrequencyHz;
 
         // Update [SensorPublisher]'s topic name

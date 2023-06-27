@@ -21,24 +21,6 @@
 #include "RRROS2HitSensorComponent.generated.h"
 
 /**
- * @brief Entity(Actor) state publisher class
- * @todo add ROSService to change reference frame
- */
-UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRROS2HitEventPublisher : public URRROS2BaseSensorPublisher
-{
-    GENERATED_BODY()
-
-public:
-    URRROS2HitEventPublisher()
-    {
-        TopicName = TEXT("entity_state");
-        MsgClass = UROS2HitEventMsg::StaticClass();
-        PublicationFrequencyHz = 0;    //Event based trigger
-    };
-};
-
-/**
  * @brief Publish Status of  hit
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
@@ -53,7 +35,10 @@ public:
      */
     URRROS2HitSensorComponent()
     {
-        SensorPublisherClass = URRROS2HitEventPublisher::StaticClass();
+        // ROS 2 param
+        TopicName = TEXT("collisions");
+        MsgClass = UROS2HitEventMsg::StaticClass();
+        PublicationFrequencyHz = 0;    //Event based trigger
     }
 
     void BeginPlay() override;

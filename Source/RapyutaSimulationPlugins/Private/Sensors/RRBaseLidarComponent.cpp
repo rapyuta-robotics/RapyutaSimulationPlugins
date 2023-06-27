@@ -2,9 +2,6 @@
 
 #include "Sensors/RRBaseLidarComponent.h"
 
-// RapyutaSimulationPlugins
-#include "Tools/RRROS2LidarPublisher.h"
-
 URRBaseLidarComponent::URRBaseLidarComponent()
 {
     BWithNoise = true;
