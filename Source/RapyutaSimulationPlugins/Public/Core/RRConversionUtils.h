@@ -313,7 +313,7 @@ public:
         result.MyBoneName = InHit.MyBoneName.ToString();
         result.MyItem = InHit.MyItem;
         result.PenetrationDepth = InHit.PenetrationDepth;
-        result.PhysicsMaterialName = InHit.PhysMaterial->GetName();
+        result.PhysicsMaterialName = InHit.PhysMaterial == nullptr ? TEXT("") : InHit.PhysMaterial->GetName();
         result.Time = InHit.Time;
         result.ImpactNormal = InHit.ImpactNormal;
         result.ImpactPoint = InHit.ImpactPoint;
