@@ -53,7 +53,14 @@ public:
     TArray<UObject*> TargetObjects;
 
     UFUNCTION(BlueprintCallable)
-    void BoundCallbacks(const TArray<UObject*> InTargetObjects);
+    virtual void BoundCallbacks(const TArray<UObject*> InTargetObjects);
+
+    UFUNCTION()
+    virtual void OnHit(AActor* SelfActor,
+                       AActor* OtherActor,
+                       FVector NormalImpulse,
+                       const FHitResult& Hit,
+                       const FString& Name = TEXT(""));
 
     UFUNCTION()
     virtual void OnComponentHit(UPrimitiveComponent* HitComp,

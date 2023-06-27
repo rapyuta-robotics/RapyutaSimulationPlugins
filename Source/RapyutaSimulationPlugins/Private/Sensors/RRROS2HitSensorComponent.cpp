@@ -47,22 +47,22 @@ void URRROS2HitSensorComponent::OnComponentHit(UPrimitiveComponent* HitComp,
                                                FVector NormalImpulse,
                                                const FHitResult& Hit)
 {
-    Data.SelfName = HitComp->GetName();
-    Data.OtherActorName = OtherActor->GetName();
-    Data.NormalImpluse = NormalImpulse;
-    Data.HitResult = URRConversionUtils::HitResultUEToROS(Hit);
-    Data.OtherComponentName = OtherComp->GetName();
-    if (IsIgnore(HitComp->GetOwner(), OtherActor, OtherComp))
-    {
-        return;
-    }
-    SetROS2Msg(SensorPublisher->TopicMessage);
-    SensorPublisher->Publish();
+    OnHit(HitComp->GetOwner(), OtherActor, NormalImpulse, Hit, HitComp->GetName());
 }
 
 void URRROS2HitSensorComponent::OnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
 {
-    Data.SelfName = SelfActor->GetName();
+    OnHit(SelfActor, OtherActor, NormalImpulse, Hit);
+}
+
+void URRROS2HitSensorComponent::OnHit(AActor* SelfActor,
+                                      AActor* OtherActor,
+                                      FVector NormalImpulse,
+                                      const FHitResult& Hit,
+                                      const FString& Name)
+{
+    Data = FROSHitEvent();
+    Data.SelfName = Name.IsEmpty() ? SelfActor->GetName() : Name;
     Data.OtherActorName = OtherActor->GetName();
     Data.NormalImpluse = NormalImpulse;
     Data.HitResult = URRConversionUtils::HitResultUEToROS(Hit);
@@ -74,11 +74,6 @@ void URRROS2HitSensorComponent::OnActorHit(AActor* SelfActor, AActor* OtherActor
 
     SetROS2Msg(SensorPublisher->TopicMessage);
     SensorPublisher->Publish();
-}
-
-void URRROS2HitSensorComponent::SensorUpdate()
-{
-    bIsValid = true;
 }
 
 void URRROS2HitSensorComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
