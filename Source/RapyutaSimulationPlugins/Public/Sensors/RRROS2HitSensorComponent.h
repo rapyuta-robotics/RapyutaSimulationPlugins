@@ -64,18 +64,20 @@ public:
      */
     virtual void SensorUpdate() override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    UObject* TargetObject = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<UObject*> TargetObjects;
 
     UFUNCTION(BlueprintCallable)
-    void BoundCallbacks(UObject* InTargetObject);
+    void BoundCallbacks(const TArray<UObject*> InTargetObjects);
 
+    UFUNCTION()
     virtual void OnComponentHit(UPrimitiveComponent* HitComp,
                                 AActor* OtherActor,
                                 UPrimitiveComponent* OtherComp,
                                 FVector NormalImpulse,
                                 const FHitResult& Hit);
 
+    UFUNCTION()
     virtual void OnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
 
     // ROS
@@ -89,7 +91,13 @@ public:
     UPROPERTY(BlueprintReadWrite)
     FROSHitEvent Data;
 
-private:
-    //     UPROPERTY()
-    //     FTransform RootOffset = FTransform::Identity;
+    // Ignore collision with Owner Actor or self
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bIgnoreSelf = true;
+
+    // List of object which collise with are ignored.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<UObject*> IgnoreList;
+
+    bool IsIgnore(AActor* SelfActor, AActor* OtherActor, UPrimitiveComponent* OtherComp);
 };
