@@ -1,7 +1,7 @@
 // Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/RRROS2BaseSensorPublisher.h"
-class URRROS2BaseSensorComponent;
+
 URRROS2BaseSensorPublisher::URRROS2BaseSensorPublisher()
 {
     // TopicName could be overridden later by users

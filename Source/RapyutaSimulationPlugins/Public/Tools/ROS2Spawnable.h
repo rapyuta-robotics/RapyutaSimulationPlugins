@@ -41,7 +41,7 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated)
     FString ActorReferenceFrame;
-
+    
     /**
      * @brief Set Actor name and ROS 2 namespace from SpawnEntity service request.
      * @sa [ue_msgs/SpawnEntity.srv](https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv)
@@ -73,8 +73,6 @@ public:
 
     UFUNCTION(BlueprintCallable)
     virtual void SetNetworkPlayerId(const int32 InNetworkPlayerId);
-
-    // virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
     virtual void OnComponentCreated() override;
