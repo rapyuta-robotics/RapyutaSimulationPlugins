@@ -14,7 +14,6 @@
 #include "RRROS2BaseSensorComponent.h"
 
 #include <Msgs/ROS2OverlapEvent.h>
-#include <Msgs/ROS2Overlaps.h>
 
 // RapyutaSimulationPlugins
 #include "Core/RRGeneralUtils.h"
@@ -34,12 +33,13 @@ public:
      * @brief Construct a new URRROS2OverlapSensorComponent object
      *
      */
-    URRROS2OverlapSensorComponent();
-
-    virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
-                                   const FString& InPublisherName = EMPTY_STR,
-                                   const FString& InTopicName = EMPTY_STR,
-                                   const UROS2QoS InQoS = UROS2QoS::SensorData) override;
+    URRROS2OverlapSensorComponent()
+    {
+        // ROS 2 param
+        TopicName = TEXT("overlaps");
+        MsgClass = UROS2OverlapEventMsg::StaticClass();
+        PublicationFrequencyHz = 0;    //Event based trigger
+    }
 
     void BeginPlay() override;
 
@@ -52,16 +52,17 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<UObject*> TargetObjects;
 
-    void AddTarget(UObject* InTargetObject);
+    UFUNCTION(BlueprintCallable)
+    void BoundCallbacks(const TArray<UObject*> InTargetObjects);
 
-    void BindCallback(UObject* InTargetObject);
-
+    UFUNCTION()
     void OnOverlap(AActor* OverlappedActor,
                    AActor* OtherActor,
                    UPrimitiveComponent* OtherComp,
                    const bool InBegin,
                    const FString& Name = TEXT(""));
 
+    UFUNCTION()
     void OnComponentOverlap(UPrimitiveComponent* OverlappedComponent,
                             AActor* OtherActor,
                             UPrimitiveComponent* OtherComp,
@@ -96,17 +97,8 @@ public:
      */
     virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UROS2Publisher* EventPublisher = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString EventTopicName = TEXT("");
-
     UPROPERTY(BlueprintReadWrite)
     FROSOverlapEvent Data;
-
-    UPROPERTY(BlueprintReadWrite)
-    FROSOverlaps Overlaps;
 
     // Ignore collision with Owner Actor or self
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
