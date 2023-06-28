@@ -43,17 +43,11 @@ public:
 
     void BeginPlay() override;
 
-    /**
-     * @brief Calculate relative pose with #URRGeneralUtils and update #Data
-     * @todo Currently twist = ZeroVectors. Should be filled for physics actors.
-     */
-    virtual void SensorUpdate() override;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<UObject*> TargetObjects;
 
     UFUNCTION(BlueprintCallable)
-    virtual void BoundCallbacks(const TArray<UObject*> InTargetObjects);
+    virtual void BindCallback(UObject* InTargetObject);
 
     UFUNCTION()
     virtual void OnHit(AActor* SelfActor,
@@ -63,14 +57,14 @@ public:
                        const FString& Name = TEXT(""));
 
     UFUNCTION()
-    virtual void OnComponentHit(UPrimitiveComponent* HitComp,
-                                AActor* OtherActor,
-                                UPrimitiveComponent* OtherComp,
-                                FVector NormalImpulse,
-                                const FHitResult& Hit);
+    virtual void OnTargetComponentHit(UPrimitiveComponent* HitComp,
+                                      AActor* OtherActor,
+                                      UPrimitiveComponent* OtherComp,
+                                      FVector NormalImpulse,
+                                      const FHitResult& Hit);
 
     UFUNCTION()
-    virtual void OnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+    virtual void OnTargetActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
 
     // ROS
     /**

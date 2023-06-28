@@ -4,7 +4,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
-#include "Core/RRUObjectUtils.h"
+#include "Core/RRGeneralUtils.h"
 
 void URRROS2HitSensorComponent::BeginPlay()
 {
@@ -16,41 +16,44 @@ void URRROS2HitSensorComponent::BeginPlay()
         TargetObjects.Add(GetOwner());
     }
 
-    BoundCallbacks(TargetObjects);
-}
-
-void URRROS2HitSensorComponent::BoundCallbacks(const TArray<UObject*> InTargetObjects)
-{
-    for (const auto target : InTargetObjects)
+    for (const auto target : TargetObjects)
     {
-        auto primitiveComp = Cast<UPrimitiveComponent>(target);
-        if (primitiveComp)
-        {
-            primitiveComp->OnComponentHit.AddDynamic(this, &URRROS2HitSensorComponent::OnComponentHit);
-            return;
-        }
-
-        auto actor = Cast<AActor>(target);
-        if (actor)
-        {
-            actor->OnActorHit.AddDynamic(this, &URRROS2HitSensorComponent::OnActorHit);
-            return;
-        }
-
-        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("TargetObject must be child class of UPrimitiveComponent or AActor"))
+        BindCallback(target);
     }
 }
 
-void URRROS2HitSensorComponent::OnComponentHit(UPrimitiveComponent* HitComp,
-                                               AActor* OtherActor,
-                                               UPrimitiveComponent* OtherComp,
-                                               FVector NormalImpulse,
-                                               const FHitResult& Hit)
+void URRROS2HitSensorComponent::BindCallback(UObject* InTargetObject)
+{
+    auto primitiveComp = Cast<UPrimitiveComponent>(InTargetObject);
+    if (primitiveComp)
+    {
+        primitiveComp->OnComponentHit.AddDynamic(this, &URRROS2HitSensorComponent::OnTargetComponentHit);
+        return;
+    }
+
+    auto actor = Cast<AActor>(InTargetObject);
+    if (actor)
+    {
+        actor->OnActorHit.AddDynamic(this, &URRROS2HitSensorComponent::OnTargetActorHit);
+        return;
+    }
+
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("TargetObject must be child class of UPrimitiveComponent or AActor"))
+}
+
+void URRROS2HitSensorComponent::OnTargetComponentHit(UPrimitiveComponent* HitComp,
+                                                     AActor* OtherActor,
+                                                     UPrimitiveComponent* OtherComp,
+                                                     FVector NormalImpulse,
+                                                     const FHitResult& Hit)
 {
     OnHit(HitComp->GetOwner(), OtherActor, NormalImpulse, Hit, HitComp->GetName());
 }
 
-void URRROS2HitSensorComponent::OnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
+void URRROS2HitSensorComponent::OnTargetActorHit(AActor* SelfActor,
+                                                 AActor* OtherActor,
+                                                 FVector NormalImpulse,
+                                                 const FHitResult& Hit)
 {
     OnHit(SelfActor, OtherActor, NormalImpulse, Hit);
 }
