@@ -69,24 +69,24 @@ public:
                             const bool InBegin);
 
     UFUNCTION()
-    virtual void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent,
-                                         AActor* OtherActor,
-                                         UPrimitiveComponent* OtherComp,
-                                         int32 OtherBodyIndex,
-                                         bool bFromSweep,
-                                         const FHitResult& SweepResult);
-
-    UFUNCTION()
-    virtual void OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent,
+    void OnTargetComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent,
                                        AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp,
-                                       int32 OtherBodyIndex);
+                                       int32 OtherBodyIndex,
+                                       bool bFromSweep,
+                                       const FHitResult& SweepResult);
 
     UFUNCTION()
-    void OnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+    void OnTargetComponentEndOverlap(UPrimitiveComponent* OverlappedComponent,
+                                     AActor* OtherActor,
+                                     UPrimitiveComponent* OtherComp,
+                                     int32 OtherBodyIndex);
 
     UFUNCTION()
-    void OnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
+    void OnTargetActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
+    UFUNCTION()
+    void OnTargetActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
     // ROS
     /**

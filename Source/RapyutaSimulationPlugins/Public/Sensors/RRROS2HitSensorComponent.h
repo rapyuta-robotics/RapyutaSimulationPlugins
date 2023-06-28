@@ -50,21 +50,17 @@ public:
     virtual void BoundCallbacks(const TArray<UObject*> InTargetObjects);
 
     UFUNCTION()
-    virtual void OnHit(AActor* SelfActor,
-                       AActor* OtherActor,
-                       FVector NormalImpulse,
-                       const FHitResult& Hit,
-                       const FString& Name = TEXT(""));
+    void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit, const FString& Name = TEXT(""));
 
     UFUNCTION()
-    virtual void OnComponentHit(UPrimitiveComponent* HitComp,
-                                AActor* OtherActor,
-                                UPrimitiveComponent* OtherComp,
-                                FVector NormalImpulse,
-                                const FHitResult& Hit);
+    void OnComponentHit(UPrimitiveComponent* HitComp,
+                        AActor* OtherActor,
+                        UPrimitiveComponent* OtherComp,
+                        FVector NormalImpulse,
+                        const FHitResult& Hit);
 
     UFUNCTION()
-    virtual void OnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+    void OnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
 
     // ROS
     /**

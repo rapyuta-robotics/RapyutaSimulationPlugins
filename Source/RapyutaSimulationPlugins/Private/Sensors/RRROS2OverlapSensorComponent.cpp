@@ -54,16 +54,16 @@ void URRROS2OverlapSensorComponent::BindCallback(UObject* InTargetObject)
     auto primitiveComp = Cast<UPrimitiveComponent>(InTargetObject);
     if (primitiveComp)
     {
-        primitiveComp->OnComponentBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnComponentBeginOverlap);
-        primitiveComp->OnComponentEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnComponentEndOverlap);
+        // primitiveComp->OnComponentBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnTargetComponentBeginOverlap);
+        // primitiveComp->OnComponentEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnTargetComponentEndOverlap);
         return;
     }
 
     auto actor = Cast<AActor>(InTargetObject);
     if (actor)
     {
-        actor->OnActorBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnActorBeginOverlap);
-        actor->OnActorEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnActorEndOverlap);
+        actor->OnActorBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnTargetActorBeginOverlap);
+        actor->OnActorEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnTargetActorEndOverlap);
         return;
     }
 
@@ -89,7 +89,7 @@ void URRROS2OverlapSensorComponent::OnOverlap(AActor* OverlappedActor,
     Data = FROSOverlapEvent();
 }
 
-void URRROS2OverlapSensorComponent::OnComponentOverlap(UPrimitiveComponent* OverlappedComponent,
+void URRROS2OverlapSensorComponent::OnComponentOverlap(UPrimitiveComponent* OverlappedComp,
                                                        AActor* OtherActor,
                                                        UPrimitiveComponent* OtherComp,
                                                        int32 OtherBodyIndex,
@@ -97,35 +97,35 @@ void URRROS2OverlapSensorComponent::OnComponentOverlap(UPrimitiveComponent* Over
 {
     Data.OtherComponentName = OtherComp->GetName();
     Data.OtherBodyIndex = OtherBodyIndex;
-    OnOverlap(OverlappedComponent->GetOwner(), OtherActor, OtherComp, InBegin, OverlappedComponent->GetName());
+    OnOverlap(OverlappedComp->GetOwner(), OtherActor, OtherComp, InBegin, OverlappedComp->GetName());
 }
 
-void URRROS2OverlapSensorComponent::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent,
-                                                            AActor* OtherActor,
-                                                            UPrimitiveComponent* OtherComp,
-                                                            int32 OtherBodyIndex,
-                                                            bool bFromSweep,
-                                                            const FHitResult& SweepResult)
+void URRROS2OverlapSensorComponent::OnTargetComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent,
+                                                                  AActor* OtherActor,
+                                                                  UPrimitiveComponent* OtherComp,
+                                                                  int32 OtherBodyIndex,
+                                                                  bool bFromSweep,
+                                                                  const FHitResult& SweepResult)
 {
     Data.bFromSweep = bFromSweep;
     Data.SweepResult = URRConversionUtils::HitResultUEToROS(SweepResult);
     OnComponentOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, true);
 }
 
-void URRROS2OverlapSensorComponent::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent,
-                                                          AActor* OtherActor,
-                                                          UPrimitiveComponent* OtherComp,
-                                                          int32 OtherBodyIndex)
+void URRROS2OverlapSensorComponent::OnTargetComponentEndOverlap(UPrimitiveComponent* OverlappedComponent,
+                                                                AActor* OtherActor,
+                                                                UPrimitiveComponent* OtherComp,
+                                                                int32 OtherBodyIndex)
 {
     OnComponentOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, false);
 }
 
-void URRROS2OverlapSensorComponent::OnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
+void URRROS2OverlapSensorComponent::OnTargetActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
     OnOverlap(OverlappedActor, OtherActor, nullptr, true);
 }
 
-void URRROS2OverlapSensorComponent::OnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
+void URRROS2OverlapSensorComponent::OnTargetActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
     OnOverlap(OverlappedActor, OtherActor, nullptr, false);
 }
