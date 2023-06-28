@@ -6,6 +6,26 @@
 #include "Core/RRConversionUtils.h"
 #include "Core/RRUObjectUtils.h"
 
+URRROS2OverlapSensorComponent::URRROS2OverlapSensorComponent()
+{
+    // collisions publisher
+    TopicName = TEXT("overlaps");
+    MsgClass = UROS2OverlapsMsg::StaticClass();
+    PublicationFrequencyHz = 10;
+
+    EventTopicName = TEXT("overlap_event");
+}
+
+void URRROS2OverlapSensorComponent::InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
+                                                      const FString& InPublisherName,
+                                                      const FString& InTopicName,
+                                                      const UROS2QoS InQoS)
+{
+    Super::InitalizeWithROS2(InROS2Node, InPublisherName, InTopicName, InQoS);
+    EventPublisher =
+        InROS2Node->CreatePublisher(EventTopicName, UROS2Publisher::StaticClass(), UROS2OverlapEventMsg::StaticClass());
+}
+
 void URRROS2OverlapSensorComponent::BeginPlay()
 {
     Super::BeginPlay();
@@ -16,31 +36,38 @@ void URRROS2OverlapSensorComponent::BeginPlay()
         TargetObjects.Add(GetOwner());
     }
 
-    BoundCallbacks(TargetObjects);
+    // Initialize Overlapping struct
+    for (const auto target : TargetObjects)
+    {
+        AddTarget(target);
+    }
 }
 
-void URRROS2OverlapSensorComponent::BoundCallbacks(const TArray<UObject*> InTargetObjects)
+void URRROS2OverlapSensorComponent::AddTarget(UObject* InTargetObject)
 {
-    for (const auto target : InTargetObjects)
+    Overlaps.Targets.Add(InTargetObject->GetName());
+    BindCallback(InTargetObject);
+}
+
+void URRROS2OverlapSensorComponent::BindCallback(UObject* InTargetObject)
+{
+    auto primitiveComp = Cast<UPrimitiveComponent>(InTargetObject);
+    if (primitiveComp)
     {
-        auto primitiveComp = Cast<UPrimitiveComponent>(target);
-        if (primitiveComp)
-        {
-            primitiveComp->OnComponentBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnComponentBeginOverlap);
-            primitiveComp->OnComponentEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnComponentEndOverlap);
-            return;
-        }
-
-        auto actor = Cast<AActor>(target);
-        if (actor)
-        {
-            actor->OnActorBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnActorBeginOverlap);
-            actor->OnActorEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnActorEndOverlap);
-            return;
-        }
-
-        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("TargetObject must be child class of UPrimitiveComponent or AActor"))
+        primitiveComp->OnComponentBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnComponentBeginOverlap);
+        primitiveComp->OnComponentEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnComponentEndOverlap);
+        return;
     }
+
+    auto actor = Cast<AActor>(InTargetObject);
+    if (actor)
+    {
+        actor->OnActorBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnActorBeginOverlap);
+        actor->OnActorEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnActorEndOverlap);
+        return;
+    }
+
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("TargetObject must be child class of UPrimitiveComponent or AActor"))
 }
 
 void URRROS2OverlapSensorComponent::OnOverlap(AActor* OverlappedActor,
@@ -51,15 +78,14 @@ void URRROS2OverlapSensorComponent::OnOverlap(AActor* OverlappedActor,
 {
     Data.bBegin = InBegin;
     Data.SelfName = Name.IsEmpty() ? OverlappedActor->GetName() : Name;
-    ;
     Data.OtherActorName = OtherActor->GetName();
     if (IsIgnore(OverlappedActor, OtherActor, OtherComp))
     {
         return;
     }
 
-    SetROS2Msg(SensorPublisher->TopicMessage);
-    SensorPublisher->Publish();
+    CastChecked<UROS2OverlapEventMsg>(EventPublisher->TopicMessage)->SetMsg(Data);
+    EventPublisher->Publish();
     Data = FROSOverlapEvent();
 }
 
@@ -82,7 +108,7 @@ void URRROS2OverlapSensorComponent::OnComponentBeginOverlap(UPrimitiveComponent*
                                                             const FHitResult& SweepResult)
 {
     Data.bFromSweep = bFromSweep;
-    Data.HitResult = URRConversionUtils::HitResultUEToROS(SweepResult);
+    Data.SweepResult = URRConversionUtils::HitResultUEToROS(SweepResult);
     OnComponentOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, true);
 }
 
@@ -107,11 +133,44 @@ void URRROS2OverlapSensorComponent::OnActorEndOverlap(AActor* OverlappedActor, A
 void URRROS2OverlapSensorComponent::SensorUpdate()
 {
     bIsValid = true;
+    // Initialize Overlapping struct
+    for (const auto target : TargetObjects)
+    {
+        FROSOverlappingObjects overlappingObjects;
+        TArray<UPrimitiveComponent*> overlappingComponents;
+        TArray<AActor*> overlappingActors;
+
+        auto primitiveComp = Cast<UPrimitiveComponent>(target);
+        if (primitiveComp)
+        {
+            primitiveComp->GetOverlappingActors(overlappingActors);
+            primitiveComp->GetOverlappingComponents(overlappingComponents);
+        }
+
+        auto actor = Cast<AActor>(target);
+        if (actor)
+        {
+            actor->GetOverlappingActors(overlappingActors);
+            actor->GetOverlappingComponents(overlappingComponents);
+        }
+
+        for (const auto oactor : overlappingActors)
+        {
+            overlappingObjects.Actors.Add(oactor->GetName());
+        }
+        for (const auto comp : overlappingComponents)
+        {
+            overlappingObjects.Components.Add(comp->GetName());
+        }
+
+        Overlaps.Overlaps.Empty();
+        Overlaps.Overlaps.Add(overlappingObjects);
+    }
 }
 
 void URRROS2OverlapSensorComponent::SetROS2Msg(UROS2GenericMsg* InMessage)
 {
-    CastChecked<UROS2OverlapEventMsg>(InMessage)->SetMsg(Data);
+    CastChecked<UROS2OverlapsMsg>(InMessage)->SetMsg(Overlaps);
 }
 
 bool URRROS2OverlapSensorComponent::IsIgnore(AActor* SelfActor, AActor* OtherActor, UPrimitiveComponent* OtherComp)

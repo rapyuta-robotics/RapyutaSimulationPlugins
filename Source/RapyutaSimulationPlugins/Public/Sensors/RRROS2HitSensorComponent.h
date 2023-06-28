@@ -43,12 +43,6 @@ public:
 
     void BeginPlay() override;
 
-    /**
-     * @brief Calculate relative pose with #URRGeneralUtils and update #Data
-     * @todo Currently twist = ZeroVectors. Should be filled for physics actors.
-     */
-    virtual void SensorUpdate() override;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<UObject*> TargetObjects;
 
