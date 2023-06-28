@@ -2,8 +2,12 @@
 
 #include "Tools/RRROS2ActorTFPublisher.h"
 
+// rclUE
 #include "ROS2ServiceServer.h"
+
 // RapyutaSimulationPlugins
+#include "Core/RRConversionUtils.h"
+#include "Core/RRGeneralUtils.h"
 #include "Core/RRUObjectUtils.h"
 
 bool URRROS2ActorTFPublisher::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
