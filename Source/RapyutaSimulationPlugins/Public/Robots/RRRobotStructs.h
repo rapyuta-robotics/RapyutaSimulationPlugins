@@ -30,9 +30,11 @@ UENUM()
 enum class ERRRobotDescriptionType : uint8
 {
     NONE,
-    URDF,
-    SDF,
-    UASSET,
+    URDF,             //! [URDF](https://wiki.ros.org/urdf)
+    SDF,              //! [SDF](http://sdformat.org)
+    UE_DATA_TABLE,    //! [UDataTable](https://docs.unrealengine.com/5.2/en-US/API/Runtime/Engine/Engine/UDataTable)
+    SINGLE_CAD,       //! Raw single CAD (FBX, COLLADA, etc.)
+    TOTAL
 };
 
 /**
@@ -223,6 +225,13 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointProperty
 {
     GENERATED_BODY()
 public:
+    FRRRobotJointProperty()
+    {
+    }
+    FRRRobotJointProperty(FString InName) : Name(MoveTemp(InName))
+    {
+    }
+
     UPROPERTY(EditAnywhere)
     FString Name;
 
@@ -630,6 +639,12 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotLinkProperty
 {
     GENERATED_BODY()
 public:
+    FRRRobotLinkProperty()
+    {
+    }
+    FRRRobotLinkProperty(FString InName) : Name(MoveTemp(InName))
+    {
+    }
     UPROPERTY(EditAnywhere)
     FString Name;
 
@@ -773,10 +788,7 @@ public:
     FRRRobotWheelProperty()
     {
     }
-    FRRRobotWheelProperty(const FString& InWheelName) : WheelName(InWheelName)
-    {
-    }
-    FRRRobotWheelProperty(FString&& InWheelName) : WheelName(MoveTemp(InWheelName))
+    FRRRobotWheelProperty(FString InWheelName) : WheelName(MoveTemp(InWheelName))
     {
     }
 
@@ -910,8 +922,8 @@ public:
     UPROPERTY(EditAnywhere)
     float MaxBrakeTorque = 1500.f;
 
-    // ! Max handbrake brake torque for this wheel (Nm). A handbrake should have a stronger brake torque
-    // ! than the brake. This will be ignored for wheels that are not affected by the handbrake.
+    //! Max handbrake brake torque for this wheel (Nm). A handbrake should have a stronger brake torque
+    //! than the brake. This will be ignored for wheels that are not affected by the handbrake.
     //! [Nm]
     UPROPERTY(EditAnywhere)
     float MaxHandBrakeTorque = 3000.f;
@@ -950,6 +962,9 @@ public:
     FRRRobotModelData(const TArray<FString>& InModelNameList) : ModelNameList(InModelNameList)
     {
     }
+    FRRRobotModelData(TArray<FString>&& InModelNameList) : ModelNameList(MoveTemp(InModelNameList))
+    {
+    }
     FRRRobotModelData()
     {
     }
@@ -965,11 +980,14 @@ public:
     {
         return (ERRRobotDescriptionType::SDF == ModelDescType);
     }
-    bool IsUAsset() const
+    bool IsUEDataTable() const
     {
-        return (ERRRobotDescriptionType::UASSET == ModelDescType);
+        return (ERRRobotDescriptionType::UE_DATA_TABLE == ModelDescType);
     }
-
+    bool IsSingleCAD() const
+    {
+        return (ERRRobotDescriptionType::SINGLE_CAD == ModelDescType);
+    }
     UPROPERTY(EditAnywhere)
     FString WorldName;
     UPROPERTY()
@@ -1445,7 +1463,7 @@ public:
             }
             return false;
         }
-        else if (WorldName.IsEmpty() && (0 == LinkPropList.Num()))
+        else if ((false == IsSingleCAD()) && WorldName.IsEmpty() && (0 == LinkPropList.Num()))
         {
             if (bIsLogged)
             {
@@ -1636,6 +1654,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotModelInfo : public TSharedFromThis<F
 {
 public:
     FRRRobotModelInfo(const FRRRobotModelData& InRobotModelData) : Data(InRobotModelData)
+    {
+    }
+    FRRRobotModelInfo(FRRRobotModelData&& InRobotModelData) : Data(MoveTemp(InRobotModelData))
     {
     }
     FRRRobotModelInfo()

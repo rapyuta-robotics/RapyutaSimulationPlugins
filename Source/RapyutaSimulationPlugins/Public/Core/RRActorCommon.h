@@ -29,6 +29,7 @@
 
 #define RAPYUTA_SIM_VERBOSE (0)    // todo make this CVar
 
+//! NOTES: These 2 DEBUG directives are used mainly for ref code annnotation, thus must NEVER be turned on here globally!
 #define RAPYUTA_SIM_DEBUG (0)
 #define RAPYUTA_SIM_VISUAL_DEBUG (0)
 
