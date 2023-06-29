@@ -22,7 +22,8 @@
 #include "RRROS2OverlapSensorComponent.generated.h"
 
 /**
- * @brief Publish Status of  Overlap
+ * @brief Publish overlappping acotors and components and begin/end event.
+ *
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2OverlapSensorComponent : public URRROS2BaseSensorComponent
@@ -36,6 +37,14 @@ public:
      */
     URRROS2OverlapSensorComponent();
 
+    /**
+     * @brief Initialize #EventPublisher and #SensorPublisher
+     *
+     * @param InROS2Node
+     * @param InPublisherName
+     * @param InTopicName
+     * @param InQoS
+     */
     virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                    const FString& InPublisherName = EMPTY_STR,
                                    const FString& InTopicName = EMPTY_STR,
@@ -44,24 +53,29 @@ public:
     void BeginPlay() override;
 
     /**
-     * @brief Calculate relative pose with #URRGeneralUtils and update #Data
-     * @todo Currently twist = ZeroVectors. Should be filled for physics actors.
+     * @brief Update #Overlaps by GetOverlappingComponents and GetOverlappingActors of #TargetObjects
      */
     virtual void SensorUpdate() override;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<UObject*> TargetObjects;
 
+    //! Add name of TargetObject to #Overlaps and #BindCallback
     void AddTarget(UObject* InTargetObject);
 
+    //! Bind OnComponentBeginOverlap. OnComponentEndOverlap, OnActorBeginOverlap and OnActorEndOverlap
     void BindCallback(UObject* InTargetObject);
 
+    //! Common overlap process called from #OnComponentOverlap, #OnTargetActorBeginOverlap and #OnTargetActorEndOverlap
+    //! Fill data and publish topic.
     void OnOverlap(AActor* OverlappedActor,
                    AActor* OtherActor,
                    UPrimitiveComponent* OtherComp,
                    const bool InBegin,
                    const FString& Name = TEXT(""));
 
+    //! Common component overlap process called from #OnTargetComponentBeginOverlap and #OnTargetComponentEndOverlap
+    //! Fill data and call #OnOverlap
     void OnComponentOverlap(UPrimitiveComponent* OverlappedComponent,
                             AActor* OtherActor,
                             UPrimitiveComponent* OtherComp,
@@ -96,23 +110,29 @@ public:
      */
     virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
 
+    /**
+     * @brief Publisher for begin/end overlapping event
+     *
+     */
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UROS2Publisher* EventPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString EventTopicName = TEXT("");
 
+    //! Overlap Event data
     UPROPERTY(BlueprintReadWrite)
     FROSOverlapEvent Data;
 
+    //! List of Overlapping Actors and Components
     UPROPERTY(BlueprintReadWrite)
     FROSOverlaps Overlaps;
 
-    // Ignore collision with Owner Actor or self
+    //! Ignore collision with Owner Actor or self component.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bIgnoreSelf = true;
 
-    // List of object which collise with are ignored.
+    //! List of object which collide with are ignored.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<UObject*> IgnoreList;
 

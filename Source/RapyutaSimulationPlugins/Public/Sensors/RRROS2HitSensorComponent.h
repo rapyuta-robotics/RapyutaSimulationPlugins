@@ -21,7 +21,8 @@
 #include "RRROS2HitSensorComponent.generated.h"
 
 /**
- * @brief Publish Status of  hit
+ * @brief Publish Hit status with OnActorHit and OnComponentHit
+ * Publish event when hit event happened from #TargetObjects
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2HitSensorComponent : public URRROS2BaseSensorComponent
@@ -43,12 +44,17 @@ public:
 
     void BeginPlay() override;
 
+    //! List of UObject which is whether child class of PrimitiveComponent or Actor
+    //! Topic is published when Hit event happen from the object in this list.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<UObject*> TargetObjects;
 
+    //! Bind OnActorHit and OnComponentHit delegate with #TargetObjects
     UFUNCTION(BlueprintCallable)
     virtual void BindCallback(UObject* InTargetObject);
 
+    //! Common hit process called from #OnTargetComponentHit and #OnTargetActorHit
+    //! Fill data and publish topic.
     UFUNCTION()
     virtual void OnHit(AActor* SelfActor,
                        AActor* OtherActor,
@@ -77,11 +83,11 @@ public:
     UPROPERTY(BlueprintReadWrite)
     FROSHitEvent Data;
 
-    // Ignore collision with Owner Actor or self
+    //! Ignore collision with Owner Actor or self component.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bIgnoreSelf = true;
 
-    // List of object which collise with are ignored.
+    //! List of object which collide with are ignored.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<UObject*> IgnoreList;
 
