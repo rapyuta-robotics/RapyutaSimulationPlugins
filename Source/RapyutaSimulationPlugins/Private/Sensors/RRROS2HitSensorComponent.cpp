@@ -64,16 +64,17 @@ void URRROS2HitSensorComponent::OnHit(AActor* SelfActor,
                                       const FHitResult& Hit,
                                       const FString& Name)
 {
+    if (IsIgnore(SelfActor, OtherActor, Hit.Component.Get()))
+    {
+        return;
+    }
+
     Data = FROSHitEvent();
     Data.SelfName = Name.IsEmpty() ? SelfActor->GetName() : Name;
     Data.OtherActorName = OtherActor->GetName();
     Data.NormalImpluse = NormalImpulse;
     Data.HitResult = URRConversionUtils::HitResultUEToROS(Hit);
     Data.OtherComponentName = Data.HitResult.ComponentName;
-    if (IsIgnore(SelfActor, OtherActor, Hit.Component.Get()))
-    {
-        return;
-    }
 
     SetROS2Msg(SensorPublisher->TopicMessage);
     SensorPublisher->Publish();

@@ -76,13 +76,14 @@ void URRROS2OverlapSensorComponent::OnOverlap(AActor* OverlappedActor,
                                               const bool InBegin,
                                               const FString& Name)
 {
-    Data.bBegin = InBegin;
-    Data.SelfName = Name.IsEmpty() ? OverlappedActor->GetName() : Name;
-    Data.OtherActorName = OtherActor->GetName();
     if (IsIgnore(OverlappedActor, OtherActor, OtherComp))
     {
         return;
     }
+
+    Data.bBegin = InBegin;
+    Data.SelfName = Name.IsEmpty() ? OverlappedActor->GetName() : Name;
+    Data.OtherActorName = OtherActor->GetName();
 
     CastChecked<UROS2OverlapEventMsg>(EventPublisher->TopicMessage)->SetMsg(Data);
     EventPublisher->Publish();
