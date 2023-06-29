@@ -2,6 +2,9 @@
 
 #include "Tools/ROS2Spawnable.h"
 
+// UE
+#include "Net/UnrealNetwork.h"
+
 // rclUE
 #include "Srvs/ROS2SpawnEntity.h"
 

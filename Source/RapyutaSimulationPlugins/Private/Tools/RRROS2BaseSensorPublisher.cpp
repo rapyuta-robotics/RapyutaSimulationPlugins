@@ -2,6 +2,8 @@
 
 #include "Tools/RRROS2BaseSensorPublisher.h"
 
+#include "Sensors/RRROS2BaseSensorComponent.h"
+
 URRROS2BaseSensorPublisher::URRROS2BaseSensorPublisher()
 {
     // TopicName could be overridden later by users

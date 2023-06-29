@@ -140,27 +140,38 @@ void URRROS2OverlapSensorComponent::SensorUpdate()
         TArray<UPrimitiveComponent*> overlappingComponents;
         TArray<AActor*> overlappingActors;
 
+        AActor* actor;
         auto primitiveComp = Cast<UPrimitiveComponent>(target);
         if (primitiveComp)
         {
             primitiveComp->GetOverlappingActors(overlappingActors);
             primitiveComp->GetOverlappingComponents(overlappingComponents);
-        }
 
-        auto actor = Cast<AActor>(target);
-        if (actor)
+            actor = primitiveComp->GetOwner();
+        }
+        else
         {
-            actor->GetOverlappingActors(overlappingActors);
-            actor->GetOverlappingComponents(overlappingComponents);
+            actor = Cast<AActor>(target);
+            if (actor)
+            {
+                actor->GetOverlappingActors(overlappingActors);
+                actor->GetOverlappingComponents(overlappingComponents);
+            }
         }
 
         for (const auto oactor : overlappingActors)
         {
-            overlappingObjects.Actors.Add(oactor->GetName());
+            if (!IsIgnore(actor, oactor, nullptr))
+            {
+                overlappingObjects.Actors.Add(oactor->GetName());
+            }
         }
         for (const auto comp : overlappingComponents)
         {
-            overlappingObjects.Components.Add(comp->GetName());
+            if (!IsIgnore(actor, comp->GetOwner(), comp))
+            {
+                overlappingObjects.Components.Add(comp->GetName());
+            }
         }
 
         Overlaps.Overlaps.Empty();
