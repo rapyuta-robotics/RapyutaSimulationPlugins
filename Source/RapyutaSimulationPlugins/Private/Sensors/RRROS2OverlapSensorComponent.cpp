@@ -54,8 +54,8 @@ void URRROS2OverlapSensorComponent::BindCallback(UObject* InTargetObject)
     auto primitiveComp = Cast<UPrimitiveComponent>(InTargetObject);
     if (primitiveComp)
     {
-        // primitiveComp->OnComponentBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnTargetComponentBeginOverlap);
-        // primitiveComp->OnComponentEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnTargetComponentEndOverlap);
+        primitiveComp->OnComponentBeginOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnTargetComponentBeginOverlap);
+        primitiveComp->OnComponentEndOverlap.AddDynamic(this, &URRROS2OverlapSensorComponent::OnTargetComponentEndOverlap);
         return;
     }
 
@@ -100,25 +100,25 @@ void URRROS2OverlapSensorComponent::OnComponentOverlap(UPrimitiveComponent* Over
     OnOverlap(OverlappedComponent->GetOwner(), OtherActor, OtherComp, InBegin, OverlappedComponent->GetName());
 }
 
-// void URRROS2OverlapSensorComponent::OnTargetComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent,
-//                                                                   AActor* OtherActor,
-//                                                                   UPrimitiveComponent* OtherComp,
-//                                                                   int32 OtherBodyIndex,
-//                                                                   bool bFromSweep,
-//                                                                   const FHitResult& SweepResult)
-// {
-//     Data.bFromSweep = bFromSweep;
-//     Data.SweepResult = URRConversionUtils::HitResultUEToROS(SweepResult);
-//     OnComponentOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, true);
-// }
+void URRROS2OverlapSensorComponent::OnTargetComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent,
+                                                                  AActor* OtherActor,
+                                                                  UPrimitiveComponent* OtherComp,
+                                                                  int32 OtherBodyIndex,
+                                                                  bool bFromSweep,
+                                                                  const FHitResult& SweepResult)
+{
+    Data.bFromSweep = bFromSweep;
+    Data.SweepResult = URRConversionUtils::HitResultUEToROS(SweepResult);
+    OnComponentOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, true);
+}
 
-// void URRROS2OverlapSensorComponent::OnTargetComponentEndOverlap(UPrimitiveComponent* OverlappedComponent,
-//                                                                 AActor* OtherActor,
-//                                                                 UPrimitiveComponent* OtherComp,
-//                                                                 int32 OtherBodyIndex)
-// {
-//     OnComponentOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, false);
-// }
+void URRROS2OverlapSensorComponent::OnTargetComponentEndOverlap(UPrimitiveComponent* OverlappedComponent,
+                                                                AActor* OtherActor,
+                                                                UPrimitiveComponent* OtherComp,
+                                                                int32 OtherBodyIndex)
+{
+    OnComponentOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, false);
+}
 
 void URRROS2OverlapSensorComponent::OnTargetActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
