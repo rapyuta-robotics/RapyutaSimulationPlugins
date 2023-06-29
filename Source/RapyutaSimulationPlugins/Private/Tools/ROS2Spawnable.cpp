@@ -1,6 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/ROS2Spawnable.h"
+
+// UE
+#include "Net/UnrealNetwork.h"
 
 // rclUE
 #include "Srvs/ROS2SpawnEntity.h"

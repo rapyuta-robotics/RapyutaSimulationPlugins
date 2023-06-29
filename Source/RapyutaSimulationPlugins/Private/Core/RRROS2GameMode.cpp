@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Core/RRROS2GameMode.h"
 
@@ -74,7 +74,7 @@ void ARRROS2GameMode::InitROS2()
     MainROS2Node = UROS2NodeComponent::CreateNewNode(this, MainROS2NodeName, TEXT("/"));
 
     // MainSimState
-    if(MainSimState == nullptr)
+    if (MainSimState == nullptr)
     {
         UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed to create MainSimState."));
         return;

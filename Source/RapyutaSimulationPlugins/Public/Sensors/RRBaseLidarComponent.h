@@ -4,7 +4,7 @@
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #pragma once
 
@@ -26,7 +26,7 @@ class URRROS2LidarPublisher;
 
 /**
  * @brief Base ROS 2 LIDAR Component class. Other lidar class should inherit from this class.
- * 
+ *
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRBaseLidarComponent : public URRROS2BaseSensorComponent
@@ -42,9 +42,9 @@ protected:
 public:
     /**
      * @brief Return true if laser hits the target actor. This method should be overwritten by child class.
-     * @param TargetActor 
-     * @return true 
-     * @return false 
+     * @param TargetActor
+     * @return true
+     * @return false
      */
     UFUNCTION(BlueprintCallable)
     virtual bool Visible(AActor* TargetActor)
@@ -58,8 +58,8 @@ public:
      * adding the rest of the necessary information might be tedious
      * eventually split into multiple getters
      *
-     * @param OutHits 
-     * @param OutTime 
+     * @param OutHits
+     * @param OutTime
      */
     UFUNCTION(BlueprintCallable)
     void GetData(TArray<FHitResult>& OutHits, float& OutTime) const;

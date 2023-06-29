@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Core/RRCamera.h"
 
@@ -72,6 +72,6 @@ void ARRCamera::RandomizePose(const FVector& InBaseLocation, bool bIsRandomLocat
 float ARRCamera::GetDistanceToFloor() const
 {
     return ActorCommon->SceneFloor
-             ? FVector::Dist(CameraComponent->GetComponentLocation(), ActorCommon->SceneFloor->GetActorLocation())
-             : 0.f;
+               ? FVector::Dist(CameraComponent->GetComponentLocation(), ActorCommon->SceneFloor->GetActorLocation())
+               : 0.f;
 }

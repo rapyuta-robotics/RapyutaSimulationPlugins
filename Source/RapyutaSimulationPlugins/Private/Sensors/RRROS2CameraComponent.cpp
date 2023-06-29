@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Sensors/RRROS2CameraComponent.h"
 
@@ -11,7 +11,8 @@ URRROS2CameraComponent::URRROS2CameraComponent()
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
     CameraComponent->SetupAttachment(this);
 
-    SensorPublisherClass = URRROS2ImagePublisher::StaticClass();
+    TopicName = TEXT("raw_image");
+    MsgClass = UROS2ImgMsg::StaticClass();
 }
 
 void URRROS2CameraComponent::PreInitializePublisher(UROS2NodeComponent* InROS2Node, const FString& InTopicName)

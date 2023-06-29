@@ -18,7 +18,6 @@
 
 // RapyutaSimulationPlugins
 #include "Sensors/RRBaseLidarComponent.h"
-#include "Tools/RRROS2LidarPublisher.h"
 
 // Others
 #include <limits>

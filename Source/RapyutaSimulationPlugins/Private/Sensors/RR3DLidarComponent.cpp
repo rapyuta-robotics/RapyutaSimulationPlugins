@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Sensors/RR3DLidarComponent.h"
 
@@ -6,7 +6,8 @@
 
 URR3DLidarComponent::URR3DLidarComponent()
 {
-    SensorPublisherClass = URRROS2PointCloud2Publisher::StaticClass();
+    TopicName = TEXT("scan");
+    MsgClass = UROS2PointCloud2Msg::StaticClass();
 }
 void URR3DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

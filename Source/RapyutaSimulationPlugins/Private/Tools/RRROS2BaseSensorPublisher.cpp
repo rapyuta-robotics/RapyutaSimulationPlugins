@@ -1,6 +1,8 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/RRROS2BaseSensorPublisher.h"
+
+#include "Sensors/RRROS2BaseSensorComponent.h"
 
 URRROS2BaseSensorPublisher::URRROS2BaseSensorPublisher()
 {

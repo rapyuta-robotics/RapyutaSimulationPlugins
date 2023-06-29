@@ -17,7 +17,6 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRGeneralUtils.h"
-#include "Tools/RRROS2EntityStatePublisher.h"
 
 #include "RRROS2EntityStateSensorComponent.generated.h"
 

@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Drives/RRJointComponent.h"
 
@@ -20,7 +20,8 @@ bool URRJointComponent::IsValid()
 }
 
 void URRJointComponent::Initialize()
-{}
+{
+}
 
 // velocity
 void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
@@ -32,7 +33,8 @@ void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const
 
 bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, const float InAngularTolerance)
 {
-    return LinearVelocityTarget.Equals(LinearVelocity, InLinearTolerance) && AngularVelocityTarget.Equals(AngularVelocity, InAngularTolerance);
+    return LinearVelocityTarget.Equals(LinearVelocity, InLinearTolerance) &&
+           AngularVelocityTarget.Equals(AngularVelocity, InAngularTolerance);
 };
 
 void URRJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
@@ -46,10 +48,10 @@ void URRJointComponent::VelocityFromArray(const TArray<float>& InVelocity, FVect
     if (InVelocity.Num() != LinearDOF + RotationalDOF)
     {
         UE_LOG_WITH_INFO_NAMED(LogTemp,
-                            Warning,
-                            TEXT("Given joint command num is not much with joint DOF. Linear DOF %i and Rotational DOF %i"),
-                            LinearDOF,
-                            RotationalDOF);
+                               Warning,
+                               TEXT("Given joint command num is not much with joint DOF. Linear DOF %i and Rotational DOF %i"),
+                               LinearDOF,
+                               RotationalDOF);
         return;
     }
 
@@ -77,7 +79,6 @@ void URRJointComponent::SetVelocityTargetWithArray(const TArray<float>& InVeloci
     VelocityFromArray(InVelocity, OutLinearVelocity, OutAngularVelocity);
     SetVelocityTarget(OutLinearVelocity, OutAngularVelocity);
 }
-
 
 void URRJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
 {
