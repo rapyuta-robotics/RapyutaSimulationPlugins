@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Robots/Turtlebot3/TurtlebotBurger.h"
 
@@ -27,7 +27,7 @@ void ATurtlebotBurger::SetupBody()
     WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
     CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
 
-    if(RootComponent)
+    if (RootComponent)
     {
         Base->SetupAttachment(RootComponent);
     }

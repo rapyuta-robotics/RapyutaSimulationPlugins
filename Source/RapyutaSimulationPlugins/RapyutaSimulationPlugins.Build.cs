@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 using System;
 using System.IO;
@@ -116,6 +116,6 @@ public class RapyutaSimulationPlugins : ModuleRules
         // two_point_interpolation
         string TwoPointsInterpolationPath = GetLibPath("two_points_interpolation_cpp");
         PublicIncludePaths.Add(TwoPointsInterpolationPath);
-        
+
     }
 }

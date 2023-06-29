@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Drives/RRKinematicJointComponent.h"
 
@@ -10,7 +10,7 @@ URRKinematicJointComponent::URRKinematicJointComponent()
 
 void URRKinematicJointComponent::Initialize()
 {
-    if(IsValid())
+    if (IsValid())
     {
         // set joints relations and save initial parent to joint transformation.
         JointToChildLink = ChildLink->GetRelativeTransform();
@@ -18,11 +18,8 @@ void URRKinematicJointComponent::Initialize()
     }
     else
     {
-        UE_LOG_WITH_INFO_NAMED(LogTemp,
-                    Error,
-                    TEXT("JointComponent must have ChildLink and ParentLink."));
+        UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("JointComponent must have ChildLink and ParentLink."));
     }
-
 }
 
 // Called every frame
@@ -92,7 +89,7 @@ void URRKinematicJointComponent::SetPose(const FVector& InPosition, const FRotat
 void URRKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     Super::SetPoseTarget(InPosition, InOrientation);
-        
+
     FVector poseDiff = PositionTarget - Position;
     FVector orientDiff = OrientationTarget.Euler() - Orientation.Euler();
     uint8 i;
@@ -108,15 +105,15 @@ void URRKinematicJointComponent::SetPoseTarget(const FVector& InPosition, const 
 
 void URRKinematicJointComponent::UpdatePose()
 {
-    if(!IsValid())
+    if (!IsValid())
     {
         return;
     }
     FHitResult SweepHitResult;
-    K2_SetWorldTransform(FTransform(Orientation, Position) *  // joint changes
-                         ParentLinkToJoint *                 // joint to child l 
-                         ParentLink->GetComponentTransform(),             // world orogin to parent
-                         true,                                // bSweep
+    K2_SetWorldTransform(FTransform(Orientation, Position) *         // joint changes
+                             ParentLinkToJoint *                     // joint to child l
+                             ParentLink->GetComponentTransform(),    // world orogin to parent
+                         true,                                       // bSweep
                          SweepHitResult,
                          false    // bTeleport
     );
