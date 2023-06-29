@@ -245,7 +245,7 @@ bool ASimulationState::ServerCheckAttachRequest(const FROSAttachReq& InRequest)
     {
         return false;
     }
-    return ((PrevAttachEntityRequest.Name1 != InRequest.Name1) || (PrevAttachEntityRequest.Name2 != InRequest.Name2));
+    return true;
 }
 
 void ASimulationState::ServerAttach(const FROSAttachReq& InRequest)
@@ -316,7 +316,7 @@ bool ASimulationState::ServerCheckSpawnRequest(const FROSSpawnEntityReq& InReque
         PrevSpawnEntityRequest.State.Pose.Orientation == InRequest.State.Pose.Orientation &&
         PrevSpawnEntityRequest.State.ReferenceFrame == InRequest.State.ReferenceFrame)
     {
-        return false;
+        return true;
     }
     else
     {
@@ -461,7 +461,7 @@ bool ASimulationState::ServerCheckDeleteRequest(const FROSDeleteEntityReq& InReq
     {
         return false;
     }
-    return (PrevDeleteEntityRequest.Name != InRequest.Name);
+    return true;
 }
 
 void ASimulationState::ServerDeleteEntity(const FROSDeleteEntityReq& InRequest)
