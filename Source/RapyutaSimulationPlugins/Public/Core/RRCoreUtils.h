@@ -124,6 +124,7 @@ public:
         TEXT(""),    // ERRFileType::NONE
         // UE & General
         TEXT(".uasset"),    // ERRFileType::UASSET
+        TEXT(".pak"),       // ERRFileType::PAK
         TEXT(".ini"),       // ERRFileType::INI
         TEXT(".yaml"),      // ERRFileType::YAML
 
