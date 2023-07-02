@@ -623,16 +623,16 @@ public:
     static TMap<ERRFileType, TSharedPtr<IImageWrapper>> SImageWrappers;
     static void LoadImageWrapperModule();
 
-    FORCEINLINE static UTexture2D* LoadImageToTexture(const FString& InFullFilePath, const FString& InTextureName)
-    {
-        UTexture2D* loadedTexture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
-        if (loadedTexture)
-        {
-            loadedTexture->Rename(*InTextureName);
-        }
-
-        return loadedTexture;
-    }
+    /**
+     * @brief Load image to texture
+     * @param InFullFilePath
+     * @param InTextureName
+     * @param bInSaveToAsset if True -> use ImportObject(), otherwise FImageUtils::ImportFileAsTexture2D()
+     * @return UTexture2D*
+     */
+    static UTexture2D* LoadImageToTexture(const FString& InFullFilePath,
+                                          const FString& InTextureName,
+                                          const bool bInSaveToAsset = false);
 
     static bool LoadImagesFromFolder(const FString& InImageFolderPath,
                                      const TArray<ERRFileType>& InImageFileTypes,

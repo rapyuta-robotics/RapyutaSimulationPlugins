@@ -7,9 +7,13 @@
 #include "HAL/PlatformProcess.h"
 #include "IESConverter.h"
 #include "ImageUtils.h"
+#if WITH_EDITOR
+#include "Factories/TextureFactory.h"
+#endif
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Core/RRAssetUtils.h"
 #include "Core/RRBaseActor.h"
 #include "Core/RRGameMode.h"
 #include "Core/RRGameSingleton.h"
@@ -298,6 +302,37 @@ bool URRCoreUtils::CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
 // -------------------------------------------------------------------------------------------------------------------------
 // IMAGE UTILS --
 //
+UTexture2D* URRCoreUtils::LoadImageToTexture(const FString& InFullFilePath, const FString& InTextureName, const bool bInSaveToAsset)
+{
+    if (bInSaveToAsset)
+    {
+#if WITH_EDITOR
+        UPackage* texturePkg = URRAssetUtils::CreatePackageForSavingToAsset(*URRGameSingleton::Get()->GetDynamicAssetPath(
+            ERRResourceDataType::UE_TEXTURE, InTextureName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME));
+        static UTextureFactory* sTextureFactory =
+            NewObject<UTextureFactory>(GetTransientPackage(), TEXT("TextureFactory"), RF_MarkAsRootSet);
+        UTexture2D* texture = ImportObject<UTexture2D>(
+            texturePkg, *InTextureName, RF_Public | RF_Standalone, *InFullFilePath, texturePkg, sTextureFactory);
+
+        // Save [texture] to uasset file on disk, logged here-in
+        return URRAssetUtils::SavePackageToAsset(texturePkg, texture) ? texture : nullptr;
+#else
+        UE_LOG_WITH_INFO(LogTemp, Error, TEXT("Texture saving to uasset is Editor-only feature"));
+        return nullptr;
+#endif
+    }
+    else
+    {
+        // NOTE: This use [UTexture2D::CreateTransient()], which is ineligible for saving to asset
+        UTexture2D* texture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
+        if (texture)
+        {
+            texture->Rename(*InTextureName);
+        }
+        return texture;
+    }
+}
+
 bool URRCoreUtils::LoadImagesFromFolder(const FString& InImageFolderPath,
                                         const TArray<ERRFileType>& InImageFileTypes,
                                         TArray<UTexture*>& OutImageTextureList,

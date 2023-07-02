@@ -2,12 +2,17 @@
 
 #include "Tools/OccupancyMapGenerator.h"
 
+// UE
 #include "DrawDebugHelpers.h"
 #include "HAL/PlatformFileManager.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "logUtilities.h"
 #include "RapyutaSimulationPlugins.h"
 #include "Misc/FileHelper.h"
+
+// RapyutaSimulationPlugins
+#include "RapyutaSimulationPlugins.h"
 
 // Sets default values
 AOccupancyMapGenerator::AOccupancyMapGenerator()
