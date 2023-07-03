@@ -32,6 +32,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Core/RRGeneralUtils.h"
 #include "Core/RRTextureData.h"
 #include "Core/RRTypeUtils.h"
 

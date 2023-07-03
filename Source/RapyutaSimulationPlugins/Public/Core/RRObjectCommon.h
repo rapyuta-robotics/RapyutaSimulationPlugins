@@ -83,6 +83,7 @@ enum class ERRResourceDataType : uint8
 {
     NONE,
     // UASSET --
+    UE_PAK,
     UE_STATIC_MESH,
     UE_SKELETAL_MESH,
     UE_SKELETON,

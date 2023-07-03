@@ -545,7 +545,6 @@ public:
     static void OnPostWorldCleanup(UWorld* InWorld, bool /*bInSessionEnded*/, bool /*bInCleanupResources*/);
 
 public:
-#define EMPTY_STR (TEXT(""))    // Using TCHAR* = TEXT("") -> could causes linking error in some case!
     static constexpr const TCHAR* SPACE_STR = TEXT(" ");
     static constexpr const TCHAR* DELIMITER_STR = TEXT(",");
     static constexpr const TCHAR* UNDERSCORE_STR = TEXT("_");

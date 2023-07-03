@@ -3,10 +3,12 @@
 #include "Core/RRGameSingleton.h"
 
 // RapyutaSim
+#include "Core/RRPakLoader.h"
 #include "Core/RRTypeUtils.h"
 
 TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_MODULE_NAMES = {
     // Only required for statically loaded UASSET
+    {ERRResourceDataType::UE_PAK, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_STATIC_MESH, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_SKELETAL_MESH, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_SKELETON, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
@@ -30,26 +32,27 @@ URRGameSingleton::~URRGameSingleton()
 
 void URRGameSingleton::PrintSimConfig() const
 {
-    UE_LOG(LogRapyutaCore, Display, TEXT("RRGameSingleton Configs:"));
-    UE_LOG(LogRapyutaCore, Display, TEXT("- SIM PROFILING: %d"), BSIM_PROFILING);
-    UE_LOG(LogRapyutaCore, Display, TEXT("- ASSETS_RUNTIME_BP_SAVE_BASE_PATH: %s"), *ASSETS_RUNTIME_BP_SAVE_BASE_PATH);
-    UE_LOG(LogRapyutaCore, Display, TEXT("- FOLDER_PATH_ASSET_STATIC_MESHES: %s"), *FOLDER_PATH_ASSET_STATIC_MESHES);
-    UE_LOG(LogRapyutaCore, Display, TEXT("- FOLDER_PATH_ASSET_SKELETAL_MESHES: %s"), *FOLDER_PATH_ASSET_SKELETAL_MESHES);
-    UE_LOG(LogRapyutaCore, Display, TEXT("- FOLDER_PATH_ASSET_SKELETONS: %s"), *FOLDER_PATH_ASSET_SKELETONS);
-    UE_LOG(LogRapyutaCore, Display, TEXT("- FOLDER_PATH_PHYSICS_ASSETS: %s"), *FOLDER_PATH_PHYSICS_ASSETS);
-    UE_LOG(LogRapyutaCore, Display, TEXT("- FOLDER_PATH_ASSET_MATERIALS: %s"), *FOLDER_PATH_ASSET_MATERIALS);
-    UE_LOG(LogRapyutaCore, Display, TEXT("- FOLDER_PATH_ASSET_TEXTURES: %s"), *FOLDER_PATH_ASSET_TEXTURES);
-    UE_LOG(LogRapyutaCore, Display, TEXT("- FOLDER_PATH_ASSET_DATA_TABLES: %s"), *FOLDER_PATH_ASSET_DATA_TABLES);
+    UE_LOG(LogRapyutaCore, Log, TEXT("RRGameSingleton Configs:"));
+    UE_LOG(LogRapyutaCore, Log, TEXT("- SIM PROFILING: %d"), BSIM_PROFILING);
+    UE_LOG(LogRapyutaCore, Log, TEXT("- ASSETS_RUNTIME_BP_SAVE_BASE_PATH: %s"), *ASSETS_RUNTIME_BP_SAVE_BASE_PATH);
+    UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_PAKS: %s"), *FOLDER_PATH_ASSET_PAKS);
+    UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_STATIC_MESHES: %s"), *FOLDER_PATH_ASSET_STATIC_MESHES);
+    UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_SKELETAL_MESHES: %s"), *FOLDER_PATH_ASSET_SKELETAL_MESHES);
+    UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_SKELETONS: %s"), *FOLDER_PATH_ASSET_SKELETONS);
+    UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_PHYSICS_ASSETS: %s"), *FOLDER_PATH_PHYSICS_ASSETS);
+    UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_MATERIALS: %s"), *FOLDER_PATH_ASSET_MATERIALS);
+    UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_TEXTURES: %s"), *FOLDER_PATH_ASSET_TEXTURES);
+    UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_DATA_TABLES: %s"), *FOLDER_PATH_ASSET_DATA_TABLES);
     for (auto i = static_cast<int8>(ERRResourceDataType::NONE); i < static_cast<int8>(ERRResourceDataType::TOTAL); ++i)
     {
         const ERRResourceDataType dataType = static_cast<ERRResourceDataType>(i);
         UE_LOG(LogRapyutaCore,
-               Display,
+               Log,
                TEXT("[%s]'s dynamic-assets base paths:"),
                *URRTypeUtils::GetERRResourceDataTypeAsString(dataType));
         for (const auto& basePath : GetDynamicAssetsBasePathList(dataType))
         {
-            UE_LOG(LogRapyutaCore, Display, TEXT("%s"), *basePath);
+            UE_LOG(LogRapyutaCore, Log, TEXT("%s"), *basePath);
         }
     }
 }
@@ -97,6 +100,33 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
     {
         // READ ALL SIM DYNAMIC RESOURCES (UASSETS) INFO FROM DESGINATED [~CONTENT] FOLDERS
         // & REGISTER THEM TO BE ASYNC LOADED INTO [ResourceMap]
+#if (!WITH_EDITOR)
+        // [PAK] --
+        // NOTE: PakLoader is only available in packaged Sim
+        PakLoader = URRUObjectUtils::CreateSelfSubobject<URRPakLoader>(this, TEXT("RRPakLoader"));
+        if (PakLoader->Initialize())
+        {
+            // Load pak files
+            for (const auto& paksBasePath : GetDynamicAssetsBasePathList(ERRResourceDataType::UE_PAK))
+            {
+                FString paksBaseFolderPath;
+                if (FPackageName::TryConvertLongPackageNameToFilename(paksBasePath, paksBaseFolderPath))
+                {
+                    const FString paksFolderPath = paksBaseFolderPath / GetAssetsFolderName(ERRResourceDataType::UE_PAK);
+                    if (FPaths::DirectoryExists(paksFolderPath))
+                    {
+                        PakLoader->LoadPAKFiles(paksFolderPath);
+                    }
+                }
+                else
+                {
+                    UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("Failed converting [%s] to local disk path"), *paksBasePath);
+                }
+            }
+        }
+#endif
+        GetSimResourceInfo(ERRResourceDataType::UE_PAK).bHasBeenAllLoaded = true;
+
         // [STATIC MESH] --
         bResult &= RequestResourcesLoading<ERRResourceDataType::UE_STATIC_MESH>();
 

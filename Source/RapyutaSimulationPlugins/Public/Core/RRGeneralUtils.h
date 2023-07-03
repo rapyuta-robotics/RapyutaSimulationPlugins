@@ -14,6 +14,9 @@
 
 #include "RRGeneralUtils.generated.h"
 
+// NOTE: Using TCHAR* = TEXT("") -> could cause linking error in some case!
+#define EMPTY_STR (TEXT(""))
+
 /**
  * @brief General utils
  *
