@@ -271,13 +271,24 @@ public:
     }
 
     //! Robot Model Name (loaded from URDF/SDF)
+    //! should be same as EntityModelName in #ARRBaseActor
+    //! @todo move to protected member
     UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, meta = (ExposeOnSpawn = "true"), Replicated)
-    FString& RobotModelName = EntityModelName;
+    FString RobotModelName;
 
-    /**
-     * @brief Get robot model name
-     */
-    FString GetModelName() const
+    UFUNCTION(BlueprintCallable)
+    virtual void SetRobotModelName(const FString InName)
+    {
+        RobotModelName = InName;
+        EntityModelName = InName;
+        if (ActorInfo.IsValid())
+        {
+            ActorInfo->EntityModelName = InName;
+        }
+    }
+
+    UFUNCTION(BlueprintCallable)
+    virtual FString GetRobotModelName()
     {
         return RobotModelName;
     }
