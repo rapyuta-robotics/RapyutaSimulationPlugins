@@ -10,6 +10,8 @@
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
 #include "Kismet/KismetMathLibrary.h"
+// #include "Containers/EnumAsByte.h"
+#include <Containers/EnumAsByte.h>
 
 //RapyutaSimulationPlugins
 #include "Core/RRGeneralUtils.h"
@@ -85,6 +87,15 @@ public:
     virtual void SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation) override;
 
     /**
+     * @brief Disable collision and set target pose to given pose.
+     * @note temporary implementation. it should teleported target pose instantly.
+     * 
+     * @param InPosition 
+     * @param InOrientation 
+     */
+    virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation) override;
+
+    /**
      * Set joints parameter and etc
      */
     UFUNCTION(BlueprintCallable)
@@ -93,6 +104,7 @@ public:
     //! Physics Constraints
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UPhysicsConstraintComponent* Constraint = nullptr;
+    
 
     //! Smoothing TargetPose to #Constraint.
     //! If this is false, step pose target are used by #SetPoseTarget
@@ -171,10 +183,25 @@ protected:
     UPROPERTY(VisibleAnywhere)
     FRotator MidOrientationTarget = FRotator::ZeroRotator;
 
+    UFUNCTION()
     virtual void UpdateState(const float DeltaTime);
 
+    UFUNCTION()
     virtual void UpdateControl(const float DeltaTime);
 
     TStaticArray<TwoPointInterpolation, 3> PositionTPI;
     TStaticArray<TwoAngleInterpolation, 3> OrientationTPI;
+
+    /**
+     * @brief Set all primitiv collision to UCollisionProfile::NoCollision_ProfileName or back to original profile.
+     * This is used to move robot to initial pose as a initialization step.
+     * @sa [NoCollision_ProfileName](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/Engine/UCollisionProfile/NoCollision_ProfileName/)
+     * @param InEnable 
+     */
+    UFUNCTION()
+    virtual void SetCollision(const bool InEnable);   
+
+    // UPROPERTY()
+    TMap<UPrimitiveComponent*, ECollisionEnabled::Type> OriginalCollisionProfiles;
+
 };

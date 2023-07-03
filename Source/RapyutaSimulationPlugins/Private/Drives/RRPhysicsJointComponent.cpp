@@ -31,6 +31,8 @@ void URRPhysicsJointComponent::Initialize()
         ParentLinkToJoint = URRGeneralUtils::GetRelativeTransform(
                 ParentLink->GetComponentTransform(),
                 Constraint->GetComponentTransform());
+        Teleport(InitialPosition, InitialOrientation);
+
     }
     else
     {
@@ -235,17 +237,30 @@ void URRPhysicsJointComponent::UpdateState(const float DeltaTime)
 
     FVector prevOrientationEuler = prevOrientation.Euler();
     FVector OrientationEuler = Orientation.Euler();
-    for (uint8 i = 0; i < 3; i++)
+    if(bTeleported)
     {
-        LinearVelocity[i] = UKismetMathLibrary::SafeDivide(
-                Position[i] - prevPosition[i], 
-                DeltaTime
-            );
-        //todo update with quat?
-        AngularVelocity[i] = UKismetMathLibrary::SafeDivide(
-                FRotator::NormalizeAxis(OrientationEuler[i] - prevOrientationEuler[i]), 
-                DeltaTime
-            );
+        if( HasReachedPoseTarget(5, 1)) //temp value
+        {
+            LinearVelocity = FVector::ZeroVector;
+            AngularVelocity = FVector::ZeroVector;
+            bTeleported = false;
+            SetCollision(true);
+        }
+    }
+    else
+    {
+        for (uint8 i = 0; i < 3; i++)
+        {
+            LinearVelocity[i] = UKismetMathLibrary::SafeDivide(
+                    Position[i] - prevPosition[i], 
+                    DeltaTime
+                );
+            //todo update with quat?
+            AngularVelocity[i] = UKismetMathLibrary::SafeDivide(
+                    FRotator::NormalizeAxis(OrientationEuler[i] - prevOrientationEuler[i]), 
+                    DeltaTime
+                );
+        }
     }
 #if RAPYUTA_JOINT_DEBUG
     if(RotationalDOF>0)
@@ -376,4 +391,130 @@ void URRPhysicsJointComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
     UpdateState(DeltaTime);
     UpdateControl(DeltaTime);
+}
+
+void URRPhysicsJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)
+{
+    Super::Teleport(InPosition, InOrientation);
+
+    //! @note K2_SetWorldTransform not works with physics constraints
+    // FHitResult SweepHitResult;
+    // K2_SetWorldTransform(FTransform(Orientation, Position) *  // joint changes
+    //                      Constraint->GetComponentTransform(),             // world orogin to parent
+    //                      true,                                // bSweep
+    //                      SweepHitResult,
+    //                      false    // bTeleport
+    // );
+
+    //! @note temp implementation.
+    //! Instead of SetPose, disable collision and move and enable collision again.
+    SetCollision(false);
+
+    SetPoseTarget(InPosition, InOrientation);
+    SetVelocityTarget(FVector::ZeroVector, FVector::ZeroVector);
+};
+
+void URRPhysicsJointComponent::SetCollision(const bool InEnable)
+{
+    // Enable/Disable collision
+    auto processComp = [InEnable, this](USceneComponent* comp){
+        auto primComp = Cast<UPrimitiveComponent>(comp);
+        if(primComp)
+        {
+            // UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("processComp: %s %d"),
+            //     *primComp->GetName(), InEnable
+            // );
+            if(InEnable)
+            {
+                if(OriginalCollisionProfiles.Contains(primComp))
+                {
+                    // primComp->SetCollisionProfileName(OriginalCollisionProfiles[primComp]);
+                    primComp->SetCollisionEnabled(OriginalCollisionProfiles[primComp]);
+                }
+            }
+            else
+            {
+                // OriginalCollisionProfiles.Emplace(primComp, primComp->GetCollisionProfileName());
+                // primComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+                OriginalCollisionProfiles.Emplace(primComp, primComp->GetCollisionEnabled());
+                primComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            }
+        }
+    };
+
+    // Recursively disable collision if it is not RRJointComponent
+    std::function<void(USceneComponent*)> processChildren;
+    processChildren = [&](USceneComponent* InComponent) {
+        processComp(InComponent);
+        TArray<USceneComponent*> components;
+        InComponent->GetChildrenComponents(false, components);
+        for (auto& comp : components)
+        {
+            if(!Cast<URRJointComponent>(comp))
+            {
+                processChildren(comp);
+            }
+        }
+    };
+
+    // Recursively disable collision if it is not RRJointComponent
+    std::function<void(USceneComponent*)> processParents;
+    processParents = [&](USceneComponent* InComponent) {
+        processComp(InComponent);
+        TArray<USceneComponent*> components;
+        InComponent->GetParentComponents(components);
+        for (auto& comp : components)
+        {
+            if(!Cast<URRJointComponent>(comp))
+            {
+                processParents(comp);
+            }
+        }
+    };
+
+
+    processChildren(ChildLink);
+    processParents(ParentLink);
+
+    for(const auto comp: OriginalCollisionProfiles)
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("processComp: %s %d"),
+            *comp.Key->GetName(), comp.Value
+        );
+    }
+
+    // for (auto& childComp : childrenComponents)
+    // {
+
+    //     if(InEnable)
+    //     {
+    //         if(OriginalCollisionProfiles.Contains(childComp))
+    //         {
+    //             primComp->SetCollisionProfileName(OriginalCollisionProfiles[primComp]);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         OriginalCollisionProfiles.Emplace(primComp, primComp->GetCollisionProfileName());
+    //         primComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+    //     }
+    // }
+
+    
+    // TInlineComponentArray<UPrimitiveComponent*> primComponents(this);
+    // for (auto& primComp : primComponents)
+    // {
+    //     if(InEnable)
+    //     {
+    //         if(OriginalCollisionProfiles.Contains(primComp))
+    //         {
+    //             primComp->SetCollisionProfileName(OriginalCollisionProfiles[primComp]);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         OriginalCollisionProfiles.Emplace(primComp, primComp->GetCollisionProfileName());
+    //         primComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+    //     }
+    // }
 }

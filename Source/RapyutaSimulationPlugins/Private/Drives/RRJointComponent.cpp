@@ -158,3 +158,8 @@ void URRJointComponent::SetPoseWithArray(const TArray<float>& InPose)
     PoseFromArray(InPose, OutPosition, OutOrientation);
     SetPose(OutPosition, OutOrientation);
 }
+
+void URRJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)
+{
+    bTeleported = true;
+};

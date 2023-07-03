@@ -132,7 +132,7 @@ public:
     
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(BlueprintReadWrite, Replicated)
-    FString JointCmdTopicName = TEXT("joint_commands");
+    FString JointCmdTopicName = TEXT("isaac_joint_commands");
 
     /**
      * @brief Update Joint State msg
@@ -152,7 +152,7 @@ public:
 
     //! Joint state topic
     UPROPERTY(BlueprintReadWrite, Replicated)
-    FString JointStateTopicName = TEXT("joint_states");
+    FString JointStateTopicName = TEXT("isaac_joint_states");
 
 
     UPROPERTY(BlueprintReadWrite, Replicated)

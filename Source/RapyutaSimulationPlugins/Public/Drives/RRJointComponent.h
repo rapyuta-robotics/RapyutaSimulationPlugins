@@ -137,6 +137,14 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetPoseTargetWithArray(const TArray<float>& InPose);
 
+
+    /**
+     * @brief Teleport robot to given pose. Implementation is in child class.
+     * 
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation);
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector LinearVelocity = FVector::ZeroVector;
 
@@ -213,10 +221,19 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bLimitYaw = true;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector InitialPosition = FVector::ZeroVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FRotator InitialOrientation = FRotator::ZeroRotator;
+
 protected:
 
     UPROPERTY()
     FTransform JointToChildLink = FTransform::Identity;
     UPROPERTY()
     FTransform ParentLinkToJoint = FTransform::Identity;
+
+    UPROPERTY()
+    bool bTeleported = false;
 };
