@@ -97,11 +97,26 @@ public:
     UPROPERTY()
     URRActorCommon* ActorCommon = nullptr;
 
+    /**
+     * @brief
+     * Actually Object's Name is also unique as noted by UE, but we just do not want to rely on it.
+     * Instead, we use [EntityUniqueName] to make the robot id control more indpendent of ue internal name handling.
+     * Reasons:
+     * + An Actor's Name could get updated as its Label is updated
+     * + In pending-kill state, GetName() goes to [None]
+     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
+    FString EntityUniqueName;
+
     UPROPERTY(VisibleAnywhere)
     FString EntityModelName;
     void SetEntityModelName(const FString& InEntityModelName)
     {
         EntityModelName = InEntityModelName;
+        if (ActorInfo.IsValid())
+        {
+            ActorInfo->EntityModelName = InName;
+        }
     }
 
     bool IsDataSynthEntity() const
@@ -156,6 +171,14 @@ public:
      * @param bInIsTickEnabled
      */
     void SetTickEnabled(bool bInIsTickEnabled);
+
+    /**
+     * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
+     * replicated properties
+     *
+     * @param OutLifetimeProps Output lifetime properties
+     */
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
     /**

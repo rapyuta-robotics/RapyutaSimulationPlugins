@@ -116,3 +116,15 @@ void ARRBaseActor::Reset()
 {
     ActorInfo->ClearMeshInfo();
 }
+
+void ARRBaseActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    UBlueprintGeneratedClass* bpClass = Cast<UBlueprintGeneratedClass>(this->GetClass());
+    if (bpClass)
+    {
+        bpClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
+    }
+    DOREPLIFETIME(ARRBaseActor, EntityModelName);
+    DOREPLIFETIME(ARRBaseActor, EntityUniqueName);
+}

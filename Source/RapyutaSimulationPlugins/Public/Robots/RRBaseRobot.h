@@ -245,22 +245,10 @@ public:
 
     /**
      * @brief
-     * Actually Object's Name is also unique as noted by UE, but we just do not want to rely on it.
-     * Instead, we use [RobotUniqueName] to make the robot id control more indpendent of ue internal name handling.
-     * Reasons:
-     * + An Actor's Name could get updated as its Label is updated
-     * + In pending-kill state, GetName() goes to [None]
+     * @deprecated Please use EntityUniqueName
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString RobotUniqueName;
-
-    /**
-     * @brief Get robot unique name
-     */
-    FString GetRobotName() const
-    {
-        return RobotUniqueName;
-    }
 
     /**
      * @brief Set robot unique name
@@ -268,6 +256,7 @@ public:
     void SetRobotName(const FString& InRobotName)
     {
         RobotUniqueName = InRobotName;
+        EntityUniqueName = InRobotName;
     }
 
     //! Robot Model Name (loaded from URDF/SDF)
