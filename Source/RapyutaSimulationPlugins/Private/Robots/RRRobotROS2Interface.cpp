@@ -188,9 +188,12 @@ bool URRRobotROS2Interface::InitSubscriptions()
         RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);
     }
 
-    // Subscription with callback to enqueue vehicle spawn info.
-    RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(
-        JointCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointCmdCallback);
+    if (Robot && Robot->bJointControl)
+    {
+        // Subscription with callback to enqueue vehicle spawn info.
+        RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(
+            JointsCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointStateCallback);
+    }
 
     // Additional subscribers by child class or robot
     for (auto& sub : Subscribers)
