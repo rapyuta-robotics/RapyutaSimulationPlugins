@@ -6,6 +6,8 @@
 #include "HAL/PlatformFileManager.h"
 #include "Misc/Paths.h"
 #include "logUtilities.h"
+#include "RapyutaSimulationPlugins.h"
+#include "Misc/FileHelper.h"
 
 // Sets default values
 AOccupancyMapGenerator::AOccupancyMapGenerator()
