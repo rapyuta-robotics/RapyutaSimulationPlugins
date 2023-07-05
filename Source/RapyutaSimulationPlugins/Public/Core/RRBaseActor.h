@@ -11,6 +11,7 @@
 
 // UE
 #include "GameFramework/Pawn.h"
+#include "Net/UnrealNetwork.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
@@ -108,14 +109,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString EntityUniqueName;
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(VisibleAnywhere, Replicated)
     FString EntityModelName;
     void SetEntityModelName(const FString& InEntityModelName)
     {
         EntityModelName = InEntityModelName;
         if (ActorInfo.IsValid())
         {
-            ActorInfo->EntityModelName = InName;
+            ActorInfo->EntityModelName = InEntityModelName;
         }
     }
 

@@ -563,18 +563,6 @@ protected:
      */
     virtual bool InitMoveComponent();
 
-    /**
-     * @brief This method is called inside #PostInitializeComponents.
-     * Custom initialization of child class can be done by overwritting this method.
-     *
-     */
-    virtual void ConfigureMovementComponent();
-
-    /**
-     * @brief Create & init #UIWidgetComp
-     */
-    virtual void InitUIWidget();
-
 public:
     /**
      * @brief Parse Json parameters in #ROSSpawnParameters
@@ -675,10 +663,10 @@ public:
     UPROPERTY()
     TMap<UPrimitiveComponent*, FName> OriginalCollisionProfiles;
 
-    
     UFUNCTION(BlueprintCallable)
     virtual bool InitPropertiesFromJSONAll()
     {
-        return InitPropertiesFromJSON() && BPInitPropertiesFromJSON();;
+        return InitPropertiesFromJSON() && BPInitPropertiesFromJSON();
+        ;
     };
 };

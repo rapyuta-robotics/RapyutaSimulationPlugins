@@ -152,7 +152,7 @@ void ARRBaseRobot::PreInitializeComponents()
     {
         InitPropertiesFromJSONAll();
         SetRobotModelName(ROSSpawnParameters->ActorModelName);
-        SetRobotUniqueName(ROSSpawnParameters->ActorName);
+        SetRobotName(ROSSpawnParameters->ActorName);
     }
 
     if (ROS2InterfaceClass)
