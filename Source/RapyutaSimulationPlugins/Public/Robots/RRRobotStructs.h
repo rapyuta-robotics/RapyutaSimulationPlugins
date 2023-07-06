@@ -1060,6 +1060,11 @@ public:
     {
         return (ERRUEComponentType::WHEEL_DRIVE == static_cast<ERRUEComponentType>(UEComponentTypeFlags));
     }
+    bool HasDriveComponents() const
+    {
+        return IsUEComponentEnabled(static_cast<int32>(ERRUEComponentType::ARTICULATION_DRIVE | ERRUEComponentType::DIFF_DRIVE |
+                                                       ERRUEComponentType::WHEEL_DRIVE));
+    }
 
     // Link/Joint list
     UPROPERTY(EditAnywhere)
@@ -1715,6 +1720,10 @@ public:
     FORCEINLINE bool IsPlainWheeledVehicleModel() const
     {
         return Data.IsPlainWheeledVehicleModel();
+    }
+    FORCEINLINE bool HasDriveComponents() const
+    {
+        return Data.HasDriveComponents();
     }
 
     // Link/Joint list

@@ -120,7 +120,7 @@ void ARRSceneDirector::OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhas
             UE_LOG_WITH_SCENE_ID(LogRapyutaCore,
                                  Log,
                                  TEXT("DATA COLLECTION DONE - TOOK [%lf] secs!"),
-                                 URRCoreUtils::GetElapsedTime(DataCollectionTimeStamp));
+                                 URRCoreUtils::GetElapsedTimeSecs(DataCollectionTimeStamp));
         }
     }
 }

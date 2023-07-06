@@ -330,8 +330,7 @@ public:
         }
 
         // 1- COLLATE ALL ASSETS INFO
-        int32 assetsNum = CollateAssetsInfo<URRAssetObject<InDataType>>(InDataType, GetAssetsFolderName(InDataType));
-        if (0 == assetsNum)
+        if (0 == CollateAssetsInfo<URRAssetObject<InDataType>>(InDataType, GetAssetsFolderName(InDataType)))
         {
             resourceInfo.bHasBeenAllLoaded = true;
             UE_LOG_WITH_INFO(

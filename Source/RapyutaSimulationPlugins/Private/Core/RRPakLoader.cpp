@@ -9,10 +9,6 @@
 #include "Core/RRAssetUtils.h"
 #include "Core/RRGameSingleton.h"
 
-// Internal folder name to use as base for the assets found in the mounted PAK files
-// NOTE: This is a hard-coded name defined by UE!
-static constexpr const TCHAR* UE_PAK_MOUNTED_BASE_FOLDER_NAME = TEXT("Paks");
-
 bool URRPakLoader::Initialize()
 {
 #if WITH_EDITOR

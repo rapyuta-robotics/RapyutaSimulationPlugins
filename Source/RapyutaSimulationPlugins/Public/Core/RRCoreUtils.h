@@ -20,12 +20,14 @@
 #include "Engine/LevelStreaming.h"
 #include "Engine/TextureLightProfile.h"
 #include "Engine/World.h"
+#include "HAL/PlatformProcess.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
 #include "ImageUtils.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/Guid.h"
+#include "Misc/MonitoredProcess.h"
 #include "Stats/Stats.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
@@ -526,7 +528,7 @@ public:
     }
 
     template<typename T, typename = TEnableIf<TIsFloatingPoint<T>::Value>>
-    static T GetElapsedTime(T& InLastTimestamp)
+    static T GetElapsedTimeSecs(const T& InLastTimestamp)
     {
         return GetSeconds() - InLastTimestamp;
     }
@@ -613,6 +615,31 @@ public:
         check(IsValid(InWorld));
         // Also invalidate it here-in!
         InWorld->GetTimerManager().ClearTimer(InTimerHandle);
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------------
+    // PROCESS UTILS --
+    //
+    static int32 RunMonitoredProcess(FMonitoredProcess* InProcess, const float InTimeOutSecs)
+    {
+        // Launch [InProcess]
+        if (false == InProcess->Launch())
+        {
+            UE_LOG_WITH_INFO_SHORT(LogTemp, Error, TEXT("Failed launching process"));
+            return -1;
+        }
+
+        // Wait for it to finish with [InTimeOutSecs]
+        const float lastMarkedTime = URRCoreUtils::GetSeconds();
+        while (InProcess->Update())
+        {
+            // Already slept in [Update()]
+            if (URRCoreUtils::GetElapsedTimeSecs(lastMarkedTime) > InTimeOutSecs)
+            {
+                InProcess->Cancel();
+            }
+        }
+        return InProcess->GetReturnCode();
     }
 
     // -------------------------------------------------------------------------------------------------------------------------
