@@ -1066,6 +1066,16 @@ public:
                                                        ERRUEComponentType::WHEEL_DRIVE));
     }
 
+    bool IsRobotModel() const
+    {
+        return HasDriveComponents();
+    }
+
+    bool IsObjectModel() const
+    {
+        return (false == IsRobotModel());
+    }
+
     // Link/Joint list
     UPROPERTY(EditAnywhere)
     FString BaseLinkName;
@@ -1721,9 +1731,13 @@ public:
     {
         return Data.IsPlainWheeledVehicleModel();
     }
-    FORCEINLINE bool HasDriveComponents() const
+    FORCEINLINE bool IsRobotModel() const
     {
-        return Data.HasDriveComponents();
+        return Data.IsRobotModel();
+    }
+    FORCEINLINE bool IsObjectModel() const
+    {
+        return Data.IsObjectModel();
     }
 
     // Link/Joint list
