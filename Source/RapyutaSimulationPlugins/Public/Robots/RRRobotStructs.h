@@ -1068,7 +1068,7 @@ public:
 
     bool IsRobotModel() const
     {
-        return HasDriveComponents();
+        return (JointPropList.Num() > 0) || HasDriveComponents();
     }
 
     bool IsObjectModel() const
