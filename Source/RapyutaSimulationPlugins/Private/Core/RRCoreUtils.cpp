@@ -261,18 +261,16 @@ bool URRCoreUtils::WaitUntilThenAct(TFunctionRef<bool()> InCond,
                                     float InTimeoutInSec,
                                     float InIntervalTimeInSec)
 {
-    FDateTime begin(FDateTime::UtcNow());
-    double elapsed_time = 0;
+    const float startTime = URRCoreUtils::GetSeconds();
     // Wait with a timeout
     bool bResult = false;
-    while (!bResult && elapsed_time < InTimeoutInSec)
+    while (!bResult && (URRCoreUtils::GetElapsedTimeSecs(startTime) < InTimeoutInSec))
     {
         bResult = InCond();
         // Sleep takes seconds, not msec
         FPlatformProcess::Sleep(InIntervalTimeInSec);
-        elapsed_time = FTimespan(FDateTime::UtcNow() - begin).GetTotalSeconds();
     }
-    // Either InCond() is met or [elapsed_ticks] is over [InTimeoutInSec]
+    // Either InCond() is met or [ElapsedTime] is over [InTimeoutInSec]
 
     if (bResult)
     {

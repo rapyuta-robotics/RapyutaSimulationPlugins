@@ -620,12 +620,14 @@ public:
     // -------------------------------------------------------------------------------------------------------------------------
     // PROCESS UTILS --
     //
-    static int32 RunMonitoredProcess(FMonitoredProcess* InProcess, const float InTimeOutSecs)
+    static int32 RunMonitoredProcess(FMonitoredProcess* InProcess,
+                                     const float InTimeOutSecs,
+                                     const FString& InProcessName = EMPTY_STR)
     {
         // Launch [InProcess]
         if (false == InProcess->Launch())
         {
-            UE_LOG_WITH_INFO_SHORT(LogTemp, Error, TEXT("Failed launching process"));
+            UE_LOG_WITH_INFO_SHORT(LogTemp, Error, TEXT("[%s] Process failed being launched"), *InProcessName);
             return -1;
         }
 
@@ -636,6 +638,11 @@ public:
             // Already slept in [Update()]
             if (URRCoreUtils::GetElapsedTimeSecs(lastMarkedTime) > InTimeOutSecs)
             {
+                UE_LOG_WITH_INFO(LogTemp,
+                                 Error,
+                                 TEXT("[%s] Process is about to be terminated after timeout [%f secs]"),
+                                 *InProcessName,
+                                 InTimeOutSecs);
                 InProcess->Cancel();
             }
         }
