@@ -82,4 +82,6 @@ public:
      * @param InOrientation 
      */
     virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation) override;
+
+    virtual void MoveToInitPose();
 };

@@ -32,7 +32,18 @@ void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const
 
 bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, const float InAngularTolerance)
 {
-    return LinearVelocityTarget.Equals(LinearVelocity, InLinearTolerance) && AngularVelocityTarget.Equals(AngularVelocity, InAngularTolerance);
+    float linearTolerance = InLinearTolerance;
+    if (linearTolerance < 0)
+    {
+        linearTolerance = LinearVelocityTolerance;
+    }
+    float angularTolerance = InAngularTolerance;
+    if (angularTolerance < 0)
+    {
+        angularTolerance = AngularVelocityTolerance;
+    }
+    
+    return LinearVelocityTarget.Equals(LinearVelocity, linearTolerance) && AngularVelocityTarget.Equals(AngularVelocity, angularTolerance);
 };
 
 void URRJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
@@ -100,7 +111,17 @@ void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator&
 
 bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, const float InOrientationTolerance)
 {
-    return PositionTarget.Equals(Position, InPositionTolerance) && OrientationTarget.Equals(Orientation, InOrientationTolerance);
+    float positionTolerance = InPositionTolerance;
+    if (positionTolerance < 0)
+    {
+        positionTolerance = PositionTolerance;
+    }
+    float orientationTolerance = InOrientationTolerance;
+    if (orientationTolerance < 0)
+    {
+        orientationTolerance = OrientationTolerance;
+    }
+    return PositionTarget.Equals(Position, positionTolerance) && OrientationTarget.Equals(Orientation, orientationTolerance);
 };
 
 void URRJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
@@ -161,5 +182,8 @@ void URRJointComponent::SetPoseWithArray(const TArray<float>& InPose)
 
 void URRJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)
 {
-    bTeleported = true;
 };
+
+void URRJointComponent::MoveToInitPose()
+{
+}

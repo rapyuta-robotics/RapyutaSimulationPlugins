@@ -95,6 +95,8 @@ public:
      */
     virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation) override;
 
+    virtual void MoveToInitPose();
+
     /**
      * Set joints parameter and etc
      */
@@ -119,22 +121,6 @@ public:
     //! Acceleration[deg/ss] used by velocity smoothing if #bVelocitySmoothing = true.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float AngularVelocitySmoothingAcc = 10.f;
-
-    //! [cm] tolerance for control
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float PositionTolerance = 1.f;
-
-    //! [degree] tolerance for control
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float OrientationTolerance = 1.f;
-
-    //! [cm/s] tolerance for control
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float LinearVelocityTolerance = 10.f;
-    
-    //! [degree/s] tolerance for control
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float AngularVelocityTolerance = 10.f;
 
     //! [kg/ss]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -191,17 +177,5 @@ protected:
 
     TStaticArray<TwoPointInterpolation, 3> PositionTPI;
     TStaticArray<TwoAngleInterpolation, 3> OrientationTPI;
-
-    /**
-     * @brief Set all primitiv collision to UCollisionProfile::NoCollision_ProfileName or back to original profile.
-     * This is used to move robot to initial pose as a initialization step.
-     * @sa [NoCollision_ProfileName](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/Engine/UCollisionProfile/NoCollision_ProfileName/)
-     * @param InEnable 
-     */
-    UFUNCTION()
-    virtual void SetCollision(const bool InEnable);   
-
-    // UPROPERTY()
-    TMap<UPrimitiveComponent*, ECollisionEnabled::Type> OriginalCollisionProfiles;
 
 };

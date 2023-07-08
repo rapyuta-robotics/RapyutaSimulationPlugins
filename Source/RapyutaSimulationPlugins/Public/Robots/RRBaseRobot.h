@@ -324,6 +324,22 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, URRJointComponent*> Joints;
 
+
+    /**
+     * Initialize #Joints or not. Initial pose are set in each joint.
+     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bInitializeJoints = true;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void StartJointsInitialization();
+
+    UFUNCTION(BlueprintCallable)
+    virtual void CheckJointsInitialization();
+
+    UFUNCTION(BlueprintCallable)
+    virtual void EnableDisableCollision(const bool IsEnable);
+
     /**
      * @brief Initialize sensors components which are child class of #URRROS2BaseSensorComponent.
      *
@@ -614,4 +630,14 @@ protected:
      * @brief Create & init #UIWidgetComp
      */
     virtual void InitUIWidget();
+
+    
+    /**
+     * Initialize #Joints or not. Initial pose are set in each joint.
+     */
+    UPROPERTY(BlueprintReadWrite)
+    bool bInitializingJoints = false;
+
+    UPROPERTY()
+    TMap<UPrimitiveComponent*, FName> OriginalCollisionProfiles;
 };

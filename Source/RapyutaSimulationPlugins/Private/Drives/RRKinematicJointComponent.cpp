@@ -22,7 +22,6 @@ void URRKinematicJointComponent::Initialize()
                     Error,
                     TEXT("JointComponent must have ChildLink and ParentLink."));
     }
-    Teleport(InitialPosition, InitialOrientation);
 }
 
 // Called every frame
@@ -127,3 +126,10 @@ void URRKinematicJointComponent::Teleport(const FVector& InPosition, const FRota
     Super::Teleport(InPosition, InOrientation);
     SetPose(InPosition, InOrientation);
 };
+
+
+void URRKinematicJointComponent::MoveToInitPose()
+{
+    Teleport(InitialPosition, InitialOrientation);
+    SetPoseTarget(InitialPosition, InitialOrientation);
+}

@@ -89,10 +89,10 @@ public:
 
     /**
      * @brief Check Pose reach the target pose.
-     *
+     * If minus values are given or called without args, #LinearVelocityTolerance and #AngularVelocityTolerance will be used.
      */
     UFUNCTION(BlueprintCallable)
-    virtual bool HasReachedVelocityTarget(const float InLinearTolerance, const float InAngularTolerance);
+    virtual bool HasReachedVelocityTarget(const float InLinearTolerance = -1, const float InAngularTolerance = -1);
 
     /**
      * @brief Directly set pose.
@@ -114,10 +114,11 @@ public:
 
     /**
      * @brief Check Pose reach the target pose.
+     * If minus values are given, #PositionTolerance and #OrientationTolerance will be used.
      *
      */
     UFUNCTION(BlueprintCallable)
-    virtual bool HasReachedPoseTarget(const float InPositionTolerance, const float InOrientationTolerance);
+    virtual bool HasReachedPoseTarget(const float InPositionTolerance = -1, const float InOrientationTolerance = -1);
 
     /**
      * @brief Directly set pose.
@@ -137,13 +138,15 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetPoseTargetWithArray(const TArray<float>& InPose);
 
-
     /**
      * @brief Teleport robot to given pose. Implementation is in child class.
      * 
      */
     UFUNCTION(BlueprintCallable)
     virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation);
+
+    UFUNCTION(BlueprintCallable)
+    virtual void MoveToInitPose();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector LinearVelocity = FVector::ZeroVector;
@@ -168,6 +171,22 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRotator Orientation = FRotator::ZeroRotator;
+
+    //! [cm] tolerance for control
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float PositionTolerance = 1.f;
+
+    //! [degree] tolerance for control
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float OrientationTolerance = 1.f;
+
+    //! [cm/s] tolerance for control
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float LinearVelocityTolerance = 10.f;
+    
+    //! [degree/s] tolerance for control
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float AngularVelocityTolerance = 10.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UStaticMeshComponent* ParentLink;
@@ -234,6 +253,4 @@ protected:
     UPROPERTY()
     FTransform ParentLinkToJoint = FTransform::Identity;
 
-    UPROPERTY()
-    bool bTeleported = false;
 };
