@@ -43,7 +43,8 @@ void URRGameSingleton::PrintSimConfig() const
     UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_MATERIALS: %s"), *FOLDER_PATH_ASSET_MATERIALS);
     UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_TEXTURES: %s"), *FOLDER_PATH_ASSET_TEXTURES);
     UE_LOG(LogRapyutaCore, Log, TEXT("- FOLDER_PATH_ASSET_DATA_TABLES: %s"), *FOLDER_PATH_ASSET_DATA_TABLES);
-    for (auto i = static_cast<int8>(ERRResourceDataType::NONE); i < static_cast<int8>(ERRResourceDataType::TOTAL); ++i)
+#if RAPYUTA_SIM_VERBOSE
+    for (auto i = static_cast<int8>(ERRResourceDataType::NONE) + 1; i < static_cast<int8>(ERRResourceDataType::TOTAL); ++i)
     {
         const ERRResourceDataType dataType = static_cast<ERRResourceDataType>(i);
         UE_LOG(LogRapyutaCore,
@@ -55,6 +56,7 @@ void URRGameSingleton::PrintSimConfig() const
             UE_LOG(LogRapyutaCore, Log, TEXT("%s"), *basePath);
         }
     }
+#endif
 }
 
 URRGameSingleton* URRGameSingleton::Get()
