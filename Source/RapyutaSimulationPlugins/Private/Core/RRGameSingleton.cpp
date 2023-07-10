@@ -62,7 +62,7 @@ URRGameSingleton* URRGameSingleton::Get()
     URRGameSingleton* singleton = Cast<URRGameSingleton>(GEngine->GameSingleton);
     if (!singleton)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("NOT YET SET AS GAME SINGLETON!!"));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("[GEngine->GameSingletonClassName] IS NOT SET AS [URRGameSingleton]"));
         return nullptr;
     }
 

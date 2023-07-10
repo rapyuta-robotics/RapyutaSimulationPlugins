@@ -201,8 +201,6 @@ public:
 
 // SIM COMMAND LINE EXECUTION --
 #define CCMDLINE_ARG_FORMAT (TEXT("%s="))
-    static constexpr const TCHAR* CCMDLINE_ARG_INT_PHYSX_DISPATCHER_NUM = TEXT("physxDispatcher");
-
     template<typename TCmdlet>
     static bool IsRunningSimCommandlet()
     {
@@ -633,16 +631,20 @@ public:
 
         // Wait for it to finish with [InTimeOutSecs]
         const float lastMarkedTime = URRCoreUtils::GetSeconds();
+        bool bCancelled = false;
         while (InProcess->Update())
         {
             // Already slept in [Update()]
-            if (URRCoreUtils::GetElapsedTimeSecs(lastMarkedTime) > InTimeOutSecs)
+            if ((!bCancelled) && (URRCoreUtils::GetElapsedTimeSecs(lastMarkedTime) > InTimeOutSecs))
             {
+                bCancelled = true;
                 UE_LOG_WITH_INFO(LogTemp,
                                  Error,
                                  TEXT("[%s] Process is about to be terminated after timeout [%f secs]"),
                                  *InProcessName,
                                  InTimeOutSecs);
+
+                // NOTE: This would trigger process cancelling, which should be waited for completion before this while loop exits
                 InProcess->Cancel();
             }
         }

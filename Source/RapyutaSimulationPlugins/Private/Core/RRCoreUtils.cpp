@@ -270,7 +270,7 @@ bool URRCoreUtils::WaitUntilThenAct(TFunctionRef<bool()> InCond,
         // Sleep takes seconds, not msec
         FPlatformProcess::Sleep(InIntervalTimeInSec);
     }
-    // Either InCond() is met or [ElapsedTime] is over [InTimeoutInSec]
+    // Now, either InCond() has been met or [GetElapsedTimeSecs()] is over [InTimeoutInSec]
 
     if (bResult)
     {

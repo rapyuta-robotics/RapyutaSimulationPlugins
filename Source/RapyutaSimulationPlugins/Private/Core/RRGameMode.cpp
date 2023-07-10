@@ -45,7 +45,7 @@ void ARRGameMode::PrintSimConfig() const
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("- bBenchmark: %d"), bBenchmark);
 }
 
-void ARRGameMode::PrintUEPreprocessors() const
+void ARRGameMode::PrintUEPreprocessors()
 {
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("UE PREPROCESSORS:"));
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("* [DO_CHECK] %s!"), URRCoreUtils::GetBoolPreprocessorText<DO_CHECK>());
@@ -71,6 +71,11 @@ void ARRGameMode::PrintUEPreprocessors() const
     UE_LOG_WITH_INFO(
         LogRapyutaCore, Display, TEXT("* [WITH_UNREALJPEG] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_UNREALJPEG>());
 
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Display,
+                     TEXT("* [USING_THREAD_SANITISER] %s!"),
+                     URRCoreUtils::GetBoolPreprocessorText<USING_THREAD_SANITISER>());
+
 #if (!WITH_EDITOR)
     UE_LOG_WITH_INFO(LogRapyutaCore,
                      Display,
@@ -78,22 +83,14 @@ void ARRGameMode::PrintUEPreprocessors() const
                      FAsyncLoadingThreadSettings::Get().bAsyncLoadingThreadEnabled);
 #endif
 
-    // Fetch [-physxDispatcher]
-    // Ref: UnrealEngine/Engine/Source/Runtime/Engine/Private/PhysicsEngine/PhysScene_PhysX.cpp:1812
-    int8 physXDispatcherNum = 0;
+    // Physics [Single/Multi-threaded mode]
     if (PhysSingleThreadedMode())
     {
-        // UnrealEngine/Engine/Source/Runtime/Engine/Private/PhysicsEngine/PhysScene_PhysX.cpp:1519
         UE_LOG_WITH_INFO(LogTemp, Display, TEXT("PHYSICS RUNS IN GAME THREAD!"));
-    }
-    else if (URRCoreUtils::GetCommandLineArgumentValue<int8>(URRCoreUtils::CCMDLINE_ARG_INT_PHYSX_DISPATCHER_NUM,
-                                                             physXDispatcherNum))
-    {
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("PHYSICS RUNS IN [%d] THREADS!"), physXDispatcherNum);
     }
     else
     {
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("PHYSICS RUNS IN A SINGLE THREAD!"));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("PHYSICS RUNS IN A MULTI-THREADED MODE!"));
     }
 }
 
@@ -114,13 +111,13 @@ void ARRGameMode::StartPlay()
 {
 #if RAPYUTA_SIM_VERBOSE
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("START PLAY!"))
-    PrintSimConfig();
     PrintUEPreprocessors();
 #endif
+    PrintSimConfig();
 
     if (URRGameSingleton::Get() == nullptr)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("GameSingleton is not child class of0 URRGameSingleton."));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("GameSingleton is not child class of URRGameSingleton."));
     }
 
 #if !WITH_EDITOR
@@ -157,9 +154,7 @@ void ARRGameMode::StartSim()
     auto* gameSingleton = URRGameSingleton::Get();
     if (gameSingleton)
     {
-#if RAPYUTA_SIM_VERBOSE
         gameSingleton->PrintSimConfig();
-#endif
         gameSingleton->InitializeResources();
     }
 
