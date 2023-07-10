@@ -44,63 +44,6 @@ class ARRMeshActor;
 class ARRCamera;
 class URRCoreUtils;
 
-/**
- * @brief todo
- *
- */
-UENUM()
-enum class ERRFileType : uint8
-{
-    NONE,
-    UASSET,    // UE Asset file
-    INI,
-    YAML,
-
-    // Image
-    IMAGE_JPG,
-    IMAGE_GRAYSCALE_JPG,
-    IMAGE_PNG,
-    IMAGE_TGA,
-    IMAGE_EXR,
-    IMAGE_HDR,
-
-    // Light Profile
-    LIGHT_PROFILE_IES,
-
-    // Meta Data
-    JSON,
-
-    // 3D Description Format
-    URDF,
-    SDF,
-    GAZEBO_WORLD,
-    MJCF,    // MuJoCo
-
-    // 3D CAD
-    CAD_FBX,
-    CAD_OBJ,
-    CAD_STL,
-    CAD_DAE,
-    TOTAL
-};
-
-/**
- * @brief todo
- *
- */
-UENUM()
-enum class ERRShapeType : uint8
-{
-    NONE,
-    PLANE,
-    BOX,
-    CYLINDER,
-    SPHERE,
-    CAPSULE,
-    MESH,
-    TOTAL
-};
-
 USTRUCT()
 struct RAPYUTASIMULATIONPLUGINS_API FRRStreamingLevelInfo
 {
@@ -602,7 +545,6 @@ public:
     static void OnPostWorldCleanup(UWorld* InWorld, bool /*bInSessionEnded*/, bool /*bInCleanupResources*/);
 
 public:
-#define EMPTY_STR (TEXT(""))    // Using TCHAR* = TEXT("") -> could causes linking error in some case!
     static constexpr const TCHAR* SPACE_STR = TEXT(" ");
     static constexpr const TCHAR* DELIMITER_STR = TEXT(",");
     static constexpr const TCHAR* UNDERSCORE_STR = TEXT("_");

@@ -1060,6 +1060,21 @@ public:
     {
         return (ERRUEComponentType::WHEEL_DRIVE == static_cast<ERRUEComponentType>(UEComponentTypeFlags));
     }
+    bool HasDriveComponents() const
+    {
+        return IsUEComponentEnabled(static_cast<int32>(ERRUEComponentType::ARTICULATION_DRIVE | ERRUEComponentType::DIFF_DRIVE |
+                                                       ERRUEComponentType::WHEEL_DRIVE));
+    }
+
+    bool IsRobotModel() const
+    {
+        return (JointPropList.Num() > 0) || HasDriveComponents();
+    }
+
+    bool IsObjectModel() const
+    {
+        return (false == IsRobotModel());
+    }
 
     // Link/Joint list
     UPROPERTY(EditAnywhere)
@@ -1715,6 +1730,14 @@ public:
     FORCEINLINE bool IsPlainWheeledVehicleModel() const
     {
         return Data.IsPlainWheeledVehicleModel();
+    }
+    FORCEINLINE bool IsRobotModel() const
+    {
+        return Data.IsRobotModel();
+    }
+    FORCEINLINE bool IsObjectModel() const
+    {
+        return Data.IsObjectModel();
     }
 
     // Link/Joint list

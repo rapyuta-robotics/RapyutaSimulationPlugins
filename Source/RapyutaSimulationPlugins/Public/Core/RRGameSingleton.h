@@ -21,11 +21,14 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRAssetUtils.h"
+#include "Core/RRGeneralUtils.h"
 #include "Core/RRObjectCommon.h"
 #include "Core/RRTypeUtils.h"
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRGameSingleton.generated.h"
+
+class URRPakLoader;
 
 template<const ERRResourceDataType InDataType>
 using URRAssetObject = typename TChooseClass<
@@ -94,15 +97,23 @@ public:
      */
     void FinalizeResources();
 
+    // PAKS --
+    UPROPERTY(Config)
+    FString FOLDER_PATH_ASSET_PAKS = TEXT("Paks");
+    UPROPERTY()
+    TObjectPtr<URRPakLoader> PakLoader = nullptr;
+
     // ASSETS --
     //! This list specifically hosts names of which module houses the UE assets based on their data type
     static TMap<ERRResourceDataType, TArray<const TCHAR*>> SASSET_OWNING_MODULE_NAMES;
 
-    //! This only returns base path of assets residing in Plugin, not from Project level, which should starts with [/Game/]
-    //! And please note that the Sim does not store assets in Project, just to make them accessible among plugins.
+    //! [ASSETS_ROOT_PATH] only returns base path of assets residing in Plugin, not from Project level, which should starts with [/Game/]
+    //! And ideally, Sim should not store common runtime-created assets in Project, since they should be accessible among plugins.
     static constexpr const TCHAR* ASSETS_ROOT_PATH = TEXT("/");
+    static constexpr const TCHAR* ASSETS_PROJECT_BASE_MODULE_NAME = TEXT("Game");
     static constexpr const TCHAR* ASSETS_PROJECT_MODULE_NAME = TEXT("Game/RapyutaContents");
 
+    //! Base path whereby runtime-created blueprint classes are saved, ideally in Project, so it could reference all plugins' assets.
     UPROPERTY(Config)
     FString ASSETS_RUNTIME_BP_SAVE_BASE_PATH = TEXT("/Game/RapyutaContents/Blueprints");
 
@@ -178,6 +189,9 @@ public:
     {
         switch (InDataType)
         {
+            case ERRResourceDataType::UE_PAK:
+                return FOLDER_PATH_ASSET_PAKS;
+
             case ERRResourceDataType::UE_STATIC_MESH:
                 return FOLDER_PATH_ASSET_STATIC_MESHES;
 
@@ -274,13 +288,13 @@ public:
         for (const auto& asset : totalAssetDataList)
         {
 #if RAPYUTA_SIM_DEBUG
-            UE_LOG_WITH_INFO(LogTemp,
-                             Warning,
-                             TEXT("[%s] ASSET [%s] [%s]"),
-                             *asset.AssetName.ToString(),
-                             *asset.PackagePath.ToString(),
-                             *asset.GetFullName(),
-                             *asset.ToSoftObjectPath().ToString());
+            UE_LOG_WITH_INFO_SHORT(LogTemp,
+                                   Warning,
+                                   TEXT("[%s] ASSET [%s] [%s] [%s]"),
+                                   *asset.AssetName.ToString(),
+                                   *asset.PackagePath.ToString(),
+                                   *asset.GetFullName(),
+                                   *asset.ToSoftObjectPath().ToString());
 #endif
             outResourceInfo.AddResource(asset.AssetName.ToString(), asset.ToSoftObjectPath().ToString(), nullptr);
         }
@@ -435,7 +449,7 @@ public:
 #if RAPYUTA_SIM_DEBUG
             UE_LOG_WITH_INFO(LogTemp,
                              Warning,
-                             TEXT("%d [%s] [%s:%s] RESOURCE LOADED %d"),
+                             TEXT("%d [%s] [%s:%s] RESOURCE LOADED %u"),
                              resourceInfo.ToBeAsyncLoadedResourceNum,
                              *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
                              *InResourceUniqueName,

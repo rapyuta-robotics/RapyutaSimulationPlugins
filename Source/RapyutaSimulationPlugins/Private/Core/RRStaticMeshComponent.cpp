@@ -333,10 +333,8 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
     {
         if (visualMesh->GetSourceModel(0).IsMeshDescriptionValid())
         {
-#endif
             URRAssetUtils::SaveObjectToAssetInModule(
                 visualMesh, ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME);
-#if WITH_EDITOR
         }
         else
         {

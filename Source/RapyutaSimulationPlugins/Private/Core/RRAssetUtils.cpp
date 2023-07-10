@@ -319,6 +319,9 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, b
             InObject->Rename(nullptr, InPackage);
         }
 
+        // Make sure [InObject] has RF_Transient cleared
+        InObject->ClearFlags(EObjectFlags::RF_Transient);
+
         // NOTE: [UPackage::Save()] is in-Engine api, while [SavePackageHelper(InPackage, packageFileName))] is in-Editor
         // Use [result] to print error code later
         const FSavePackageResultStruct result = UPackage::Save(InPackage, InObject, *packageFileName, saveArgs);

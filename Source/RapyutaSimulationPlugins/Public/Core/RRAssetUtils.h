@@ -249,7 +249,7 @@ public:
         }
 
         objectLibrary->GetAssetDataList(OutAssetDataList);
-        verify(IsAssetDataListValid(OutAssetDataList, bIsFullLoad, true));
+        ensure(IsAssetDataListValid(OutAssetDataList, bIsFullLoad, true));
     }
 
     /**
