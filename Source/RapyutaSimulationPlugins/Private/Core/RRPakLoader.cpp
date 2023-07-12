@@ -83,7 +83,7 @@ void URRPakLoader::MountPAKFiles(const TArray<FString>& InPAKPaths)
 
         // 2- VERIFY Pak contents' mounted paths
         // THESE MOUNTED RESOURCE-PATHS ARE THEN CONVERTED TO SOFT-OBJECT-PATHS as BEING LOADED BY [AssetManager's FStreamableManager]
-        // -> THUS STARTING FROM PACKAGE DIR, THEY MUST BE EXACTLY THE SAME AS IN THE PROJECT DIR WHEN BEING PACKED.
+        // -> THUS STARTING FROM PACKAGE DIR, THEY MUST BE EXACTLY THE SAME AS IN THE PROJECT DIR WHEN BEING PACKED.(*)
         // EG: <PackageDir>/Plugins/<PluginDir>/Content/DynamicContents/<ResourceTypeDir>/<ResourceFile>
         TArray<FString> pakContentPathList;
         pakFile.FindPrunedFilesAtPath(pakContentPathList, *pakFile.GetMountPoint(), true, false, true);
@@ -94,16 +94,23 @@ void URRPakLoader::MountPAKFiles(const TArray<FString>& InPAKPaths)
         }
     }
 
-    // 3- Force rescan of all assets after mounting PAKs -> assets
-    URRAssetUtils::GetAssetRegistry().ScanPathsSynchronous(
-        URRGameSingleton::GetDynamicAssetsBasePathList(ERRResourceDataType::UE_PAK), true);
+    // 3- Force rescan of all PAK-mounted asset paths after mounting PAKs -> {dynamic resource assets & BPs} (due to (*))
+    auto scannedAssetsPathList = URRGameSingleton::GetDynamicAssetsBasePathList(ERRResourceDataType::UE_PAK);
+    scannedAssetsPathList.AddUnique(RRGameSingleton->ASSETS_RUNTIME_BP_SAVE_BASE_PATH);
+    URRAssetUtils::GetAssetRegistry().ScanPathsSynchronous(scannedAssetsPathList, true);
 
 #if RAPYUTA_SIM_VERBOSE
+    // 3.1- Print scan results
+    UE_LOG(LogRapyutaCore, Warning, TEXT("SCANNED ASSETS PATHS:"));
+    for (const auto& scannedPath : scannedAssetsPathList)
+    {
+        UE_LOG(LogRapyutaCore, Warning, TEXT("- %s"), *scannedPath);
+    }
+
+    UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Warning, TEXT("ASSETS PATHS FETCHED FROM ASSET REGISTRY:"));
     TArray<FString> allAssetPaths;
     URRAssetUtils::GetAssetRegistry().GetAllCachedPaths(allAssetPaths);
-
-    UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Warning, TEXT("All PAK-mounted asset paths fetched from AssetRegistry"));
-    for (const FString& path : allAssetPaths)
+    for (const auto& path : allAssetPaths)
     {
         UE_LOG(LogRapyutaCore, Warning, TEXT("- %s"), *path);
     }
