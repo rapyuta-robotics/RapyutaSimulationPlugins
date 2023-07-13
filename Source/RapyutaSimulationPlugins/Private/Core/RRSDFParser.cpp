@@ -587,13 +587,19 @@ bool FRRSDFParser::ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TA
         {
             auto& lidarInfo = sensorProp.LidarInfo;
 
+            lidarInfo.TopicName = URRCoreUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_SENSOR_TOPIC));
+            ensure(false == lidarInfo.TopicName.IsEmpty());
+            lidarInfo.FrameId = URRCoreUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_SENSOR_FRAME_ID));
+            lidarInfo.PublicationFrequencyHz = sensorElement->Get<float>(SDF_ELEMENT_SENSOR_UPDATE_RATE);
+            ensure(lidarInfo.PublicationFrequencyHz > 0.f);
+
             // Make sure <lidar>/<ray> exists
             sdf::ElementPtr rayLidarElement = sensorElement->FindElement(SDF_ELEMENT_SENSOR_LIDAR);
             if (nullptr == rayLidarElement)
             {
                 rayLidarElement = sensorElement->FindElement(SDF_ELEMENT_SENSOR_RAY);
             }
-            verify(rayLidarElement.get());
+            ensure(rayLidarElement.get());
 
             // (NOTE) SDF does not support adding a custom element or attribute type, thus must make use of [SensorName]
             lidarInfo.LidarType = sensorProp.SensorName.EndsWith(TEXT("2d"))   ? ERRLidarSensorType::TWO_D

@@ -70,6 +70,9 @@ private:
     static constexpr const char* SDF_ELEMENT_LINK_SENSOR = "sensor";
     // "lidar" and "ray" types are equivalent, the latter will be deprecated
     static constexpr const char* SDF_ELEMENT_SENSOR_LIDAR = "lidar";
+    static constexpr const char* SDF_ELEMENT_SENSOR_TOPIC = "topic";
+    static constexpr const char* SDF_ELEMENT_SENSOR_FRAME_ID = "frame_id";
+    static constexpr const char* SDF_ELEMENT_SENSOR_UPDATE_RATE = "update_rate";
     static constexpr const char* SDF_ELEMENT_SENSOR_RAY = "ray";
     // SDF seems not to support custom attr name, so one like "ue_sensor_type" is not recognized
     static constexpr const char* SDF_ELEMENT_ATTR_UE_SENSOR_TYPE = "type";
