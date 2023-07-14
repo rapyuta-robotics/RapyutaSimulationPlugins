@@ -562,25 +562,26 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotGeometryInfo
 };
 
 /**
- * @brief Sensor info
+ * @brief Sensor base info which includes essential base attributes such as Topic name, frame id, publication rate.
+ * Any custom sensor-type info struct (lidar, camera, imu, etc.) should inherit from this struct.
  * @sa [URDF-Sensor](http://wiki.ros.org/urdf/XML/sensor)
  * @sa [SDF-Sensor](http://sdformat.org/spec?elem=sensor)
  */
 USTRUCT(BlueprintType)
-struct RAPYUTASIMULATIONPLUGINS_API FRRSensorInfo
+struct RAPYUTASIMULATIONPLUGINS_API FRRSensorBaseInfo
 {
     GENERATED_BODY()
 
-    virtual ~FRRSensorInfo()
+    virtual ~FRRSensorBaseInfo()
     {
     }
-    //! ROS Topic name to which lidar data is published to
+    //! ROS Topic name to which sensor data is published to
     UPROPERTY(EditAnywhere)
-    FString TopicName = TEXT("scan");
+    FString TopicName = TEXT("sensor_data");
 
-    //! The coordinate frame in which lidar data is published under in the tf tree
+    //! The coordinate frame in which sensor data is published under in the tf tree
     UPROPERTY(EditAnywhere)
-    FString FrameId = TEXT("base_scan");
+    FString FrameId = TEXT("sensor_frame");
 
     //! The publishing rate
     UPROPERTY(EditAnywhere)
@@ -600,7 +601,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRSensorInfo
  * @sa [SDF-Lidar](http://sdformat.org/spec?elem=sensor#sensor_lidar)
  */
 USTRUCT(BlueprintType)
-struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo : public FRRSensorInfo
+struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo : public FRRSensorBaseInfo
 {
     GENERATED_BODY()
     UPROPERTY(EditAnywhere)

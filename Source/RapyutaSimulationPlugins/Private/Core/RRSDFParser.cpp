@@ -591,7 +591,6 @@ bool FRRSDFParser::ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TA
             ensure(false == lidarInfo.TopicName.IsEmpty());
             lidarInfo.FrameId = URRCoreUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_SENSOR_FRAME_ID));
             lidarInfo.PublicationFrequencyHz = sensorElement->Get<float>(SDF_ELEMENT_SENSOR_UPDATE_RATE);
-            ensure(lidarInfo.PublicationFrequencyHz > 0.f);
 
             // Make sure <lidar>/<ray> exists
             sdf::ElementPtr rayLidarElement = sensorElement->FindElement(SDF_ELEMENT_SENSOR_LIDAR);
