@@ -451,11 +451,25 @@ void URRRobotROS2Interface::UpdateJointState(UROS2GenericMsg* InMessage)
         // UE to ROS conversion
         if (joint.Value->LinearDOF == 1)
         {
-            msg.Position.Emplace(URRConversionUtils::DistanceUEToROS(joint.Value->Position[0]));
-            msg.Velocity.Emplace(URRConversionUtils::DistanceUEToROS(joint.Value->LinearVelocity[0]));
+            // double pos = FMath::Abs(joint.Value->Position[0]) < 0.01 ? 0.0 : joint.Value->Position[0];
+            // double vel = FMath::Abs(joint.Value->LinearVelocity[0]) < 0.01 ? 0.0 : joint.Value->LinearVelocity[0];
+            // pos = FMath::Floor(URRConversionUtils::DistanceUEToROS(pos) * 100) / 100;
+            // vel = FMath::Floor(URRConversionUtils::DistanceUEToROS(vel) * 100) / 100;
+            // UE_LOG_WITH_INFO_NAMED(LogTemp, Warning, TEXT("%f, %f"), pos, vel);
+            // double pos = joint.Value->Position[0];
+            // double vel = joint.Value->LinearVelocity[0];
+            msg.Position.Emplace(joint.Value->Position[0]);
+            msg.Velocity.Emplace(joint.Value->LinearVelocity[0]);
         }
         else if (joint.Value->RotationalDOF == 1)
         {
+            // double pos = FMath::Abs(joint.Value->Orientation.Euler()[0]) < 0.01 ? 0.0 : joint.Value->Orientation.Euler()[0];
+            // double vel = FMath::Abs(joint.Value->AngularVelocity[0]) < 0.01 ? 0.0 : joint.Value->AngularVelocity[0];
+            // pos = FMath::Floor(FMath::DegreesToRadians(pos) * 100) / 100;
+            // vel = FMath::Floor(FMath::DegreesToRadians(vel) * 100) / 100;
+            // UE_LOG_WITH_INFO_NAMED(LogTemp, Warning, TEXT("%f, %f"), pos, vel);
+            // double pos = FMath::DegreesToRadians(joint.Value->Orientation.Euler()[0]);
+            // double vel = FMath::DegreesToRadians(joint.Value->AngularVelocity[0]);
             msg.Position.Emplace(FMath::DegreesToRadians(joint.Value->Orientation.Euler()[0]));
             msg.Velocity.Emplace(FMath::DegreesToRadians(joint.Value->AngularVelocity[0]));
         }    

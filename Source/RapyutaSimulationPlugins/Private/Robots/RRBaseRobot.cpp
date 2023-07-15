@@ -618,7 +618,10 @@ void ARRBaseRobot::StartJointsInitialization()
     // move to initial pose
     for (auto& joint : Joints)
     {
-        joint.Value->MoveToInitPose();
+        if(joint.Value)
+        {
+            joint.Value->MoveToInitPose();
+        }
     }
 }
 
@@ -627,8 +630,29 @@ void ARRBaseRobot::CheckJointsInitialization()
     bool res = true;
     for (auto& joint : Joints)
     {
-        bool res1 = joint.Value->HasReachedPoseTarget();
-        res &= res1;
+        if(joint.Value)
+        {
+            bool res1 = joint.Value->HasReachedPoseTarget();
+            res &= res1;
+            if(!res1)
+            {
+                UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("%s"), *joint.Value->GetName());
+                UE_LOG_WITH_INFO(
+                    LogRapyutaCore,
+                    Warning,
+                    TEXT("%s, %s"),
+                    *joint.Value->Position.ToString(),
+                    *joint.Value->Orientation.ToString()
+                );
+                UE_LOG_WITH_INFO(
+                    LogRapyutaCore,
+                    Warning,
+                    TEXT("%s %s"),
+                    *joint.Value->PositionTarget.ToString(),
+                    *joint.Value->OrientationTarget.ToString()
+                );
+            }
+        }
     }
     bInitializingJoints = !res;
 

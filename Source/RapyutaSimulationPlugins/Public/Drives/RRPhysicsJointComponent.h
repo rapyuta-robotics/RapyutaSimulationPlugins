@@ -114,6 +114,24 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bSmoothing = false;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Kvp = 10.0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Kva = 10.0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Kip = 10.0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Kia = 10.0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector PErrInt = FVector::ZeroVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector AErrInt = FVector::ZeroVector;
+
     //! Acceleration[cm/ss] used by velocity smoothing if #bVelocitySmoothing = true.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float LinearVelocitySmoothingAcc = 10.f;
@@ -174,6 +192,15 @@ protected:
 
     UFUNCTION()
     virtual void UpdateControl(const float DeltaTime);
+
+    UFUNCTION()
+    virtual void UpdateIntegral(const FVector InPositionDiff, const FVector InOrientationDiff, const float DeltaTime);
+
+    UFUNCTION()
+    virtual void UpdateVelocityTargetFromPose(const FVector InPositionDiff, const FVector InOrientationDiff);
+
+    UFUNCTION()
+    virtual FRotator GetOrientationTargetFromEuler(const FVector InOrientationTarget);
 
     TStaticArray<TwoPointInterpolation, 3> PositionTPI;
     TStaticArray<TwoAngleInterpolation, 3> OrientationTPI;
