@@ -114,23 +114,21 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bSmoothing = false;
 
+    //! Position Velocity Gain used with #bSmoothing = false
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Kvp = 10.0;
 
+    //! Angular Velocity Gain used with #bSmoothing = false. 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Kva = 10.0;
 
+    //! Position Integral Gain used with #bSmoothing = false
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Kip = 10.0;
 
+    //! Angular Integral Gain used with #bSmoothing = false
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Kia = 10.0;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector PErrInt = FVector::ZeroVector;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector AErrInt = FVector::ZeroVector;
 
     //! Acceleration[cm/ss] used by velocity smoothing if #bVelocitySmoothing = true.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -194,15 +192,47 @@ protected:
     virtual void UpdateControl(const float DeltaTime);
 
     UFUNCTION()
+    /**
+     * @brief Update #LinearVelocityTarget from InPositionDiff and #Kvp.
+     * And update #AngularVelocityTarget from InOrientationDiff and #Kva.
+     * @param InPositionDiff 
+     * @param InPositionDiff 
+     * @param InOrientationDiff 
+     * @param DeltaTime 
+     */
     virtual void UpdateIntegral(const FVector InPositionDiff, const FVector InOrientationDiff, const float DeltaTime);
 
+    /**
+     * @brief Update #LinearVelocityTarget from InPositionDiff and #Kvp.
+     * And update #AngularVelocityTarget from InOrientationDiff and #Kva.
+     * @param InPositionDiff 
+     * @param InOrientationDiff 
+     */
     UFUNCTION()
     virtual void UpdateVelocityTargetFromPose(const FVector InPositionDiff, const FVector InOrientationDiff);
 
+    /**
+     * @brief Get the Orientation Target to SetAngularOrientationTarget from Euler angle 
+     * 
+     * @param InOrientationTarget 
+     * @return FRotator 
+     */
     UFUNCTION()
     virtual FRotator GetOrientationTargetFromEuler(const FVector InOrientationTarget);
 
+    //! Position Two Point Interpolation used with #bSmoothing = true
     TStaticArray<TwoPointInterpolation, 3> PositionTPI;
+
+    //! Angular Two Point Interpolation used with #bSmoothing = true
     TStaticArray<TwoAngleInterpolation, 3> OrientationTPI;
+
+
+    //! Position Error Integral used with #bSmoothing = false
+    UPROPERTY(VisibleAnywhere)
+    FVector PErrInt = FVector::ZeroVector;
+
+    //! Angular Error Integral used with #bSmoothing = false
+    UPROPERTY(VisibleAnywhere)
+    FVector AErrInt = FVector::ZeroVector;
 
 };
