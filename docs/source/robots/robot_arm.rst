@@ -18,15 +18,17 @@ Example Robots
      - joint state command
 
 
-Robot arm are designed to be controlled by joint state msg. 
+Robot arm are designed to be controlled by joint state msg and publish joint state msg. 
 
 .. code-block:: bash
 
-        $ ros2 topic pub /arm/joint_states sensor_msgs/msg/JointState  "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, name: ['joint12', 'joint23', 'joint34'], position: [1.57,1.57,1.57], velocity: [], effort: []}"
+        $ ros2 topic pub /arm/ue_joint_commands sensor_msgs/msg/JointState  "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, name: ['joint12', 'joint23', 'joint34'], position: [1.57,1.57,1.57], velocity: [], effort: []}"
 
 
 SimpleArm 
 ^^^^^^^^^^^^^^
+
+Example map is at `turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/RobotArmExample.umap>`_
 
 - `BP_KinematicSimpleArm <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/SampleArm/BP_KinematicSimpleArm.uasset>`_
     Example kinematic robot implementation in BP. 
@@ -44,6 +46,8 @@ SimpleArm
 UR10 
 ^^^^^^^^^^^^^^
 These BP class are child class of ARRBaseRobot and added joint and link setting. 
+
+Example map is at `turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/RobotArmExample.umap>`_
 
 reference: `Universal_Robots_ROS2_Description <https://github.com/UniversalRobots/Universal_Robots_ROS2_Description/tree/ros2/meshes>`_
 
@@ -80,7 +84,14 @@ JointCmdTopicName of ROS2Interface is changed to `joint_states` to control with 
 Panda 
 ^^^^^^^^^^^^^^
 These BP class are child class of ARRBaseRobot and added joint and link setting. 
+
 Panda arm is example to be controlled with moveit2.
+
+Example map is at 
+`turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExample.umap>`_ 
+and
+`turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExamplePhysics.umap>`_ 
+.
 
 reference: `How To Command Simulated Isaac Robot <https://moveit.picknik.ai/main/doc/how_to_guides/isaac_panda/isaac_panda_tutorial.html>`_
 
@@ -125,12 +136,6 @@ To run moveit2 ws
     .. video:: ../_static/videos/panda_moveit2_physics.mp4
         :width: 750
         :height: 450
-
-
-Todo
---------------------------
-- Support ros2 control
-- Add moveit example
 
 
 Custom Robot Creation TIPS
