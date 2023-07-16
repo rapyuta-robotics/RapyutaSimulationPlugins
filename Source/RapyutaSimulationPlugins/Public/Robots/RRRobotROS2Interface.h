@@ -114,7 +114,7 @@ public:
     float OdomPublicationFrequencyHz = 30;
 
     //! Movement command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite, Replicated)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString CmdVelTopicName = TEXT("cmd_vel");
 
     //////////////////////////////
@@ -131,8 +131,8 @@ public:
     virtual void JointCmdCallback(const UROS2GenericMsg* Msg);
     
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite, Replicated)
-    FString JointCmdTopicName = TEXT("isaac_joint_commands");
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    FString JointCmdTopicName = TEXT("ue_joint_commands");
 
     /**
      * @brief Update Joint State msg
@@ -147,15 +147,15 @@ public:
     UROS2Publisher* JointStatePublisher = nullptr;
 
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite, Replicated)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     float JointStatePublicationFrequencyHz = 30;
 
     //! Joint state topic
-    UPROPERTY(BlueprintReadWrite, Replicated)
-    FString JointStateTopicName = TEXT("isaac_joint_states");
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    FString JointStateTopicName = TEXT("ue_joint_states");
 
 
-    UPROPERTY(BlueprintReadWrite, Replicated)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bWarnAboutMissingLink = true;
 
     /**

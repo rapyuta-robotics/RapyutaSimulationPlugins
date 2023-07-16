@@ -124,11 +124,11 @@ public:
 
     //! Position Integral Gain used with #bSmoothing = false
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float Kip = 10.0;
+    float Kip = 0.0;
 
     //! Angular Integral Gain used with #bSmoothing = false
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float Kia = 10.0;
+    float Kia = 0.0;
 
     //! Acceleration[cm/ss] used by velocity smoothing if #bVelocitySmoothing = true.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

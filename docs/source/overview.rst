@@ -22,7 +22,7 @@ Features
 - ROS 2 interface
     ARRBaseRobot is designed to be controlled from ROS 2 via URRRobotROS2Interface.
     
-    ARRBaseRobot has only basic interface such as `/cmd_vel`, `/odom`. `/joint_states`.
+    ARRBaseRobot has only basic interface such as `/cmd_vel`, `/odom`, `/joint_states` , `/joint_commands`.
     Please create child class and add necessary ROS 2 APIs.
 
 - Spawning from ROS 2 with parameters
@@ -45,6 +45,10 @@ Components
 - `URRRobotROS2Interface <doxygen_generated/html/d6/d64/class_u_r_r_robot_r_o_s2_interface.html>`_ 
     Controls ROS 2 node, publisher/subscriber, service client/server and action via 
     `UROS2NodeComponent <https://rclue.readthedocs.io/en/latest/doxygen_generated/html/d7/d68/class_u_r_o_s2_node_component.html>`_ 
+
+    ROS2Interface is created in the PreInitializeComponents if ROS2InterfaceClass is specified and initialized by ROS2Controller.
+
+    ROS2Interface can be override from Bluepritn as well.
    
 - `ARRBaseRobot <doxygen_generated/html/df/d13/class_a_r_r_base_robot.html>`_
     Base Robot class which has basic ROS 2 topic interfaces such as Twist msg, JointState and etc via ROS2Interface.
@@ -68,7 +72,7 @@ Components
 
 
 - `ARRBaseRobotROSController <doxygen_generated/html/d1/d45/class_a_r_r_base_robot_r_o_s_controller.html>`_ 
-    Actor controller class which has authority to start/stop ROS 2 publishers.
+    Actor controller class which has authority to start/stop ROS 2 Interfaces.
     Following the Pawn and AIController structure in Unreal Engine, 
     `Ref <https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Framework/Pawn/>`_.
 
