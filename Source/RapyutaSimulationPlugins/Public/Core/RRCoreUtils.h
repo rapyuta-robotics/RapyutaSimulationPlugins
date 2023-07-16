@@ -20,18 +20,21 @@
 #include "Engine/LevelStreaming.h"
 #include "Engine/TextureLightProfile.h"
 #include "Engine/World.h"
+#include "HAL/PlatformProcess.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
 #include "ImageUtils.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/Guid.h"
+#include "Misc/MonitoredProcess.h"
 #include "Stats/Stats.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
+#include "Core/RRGeneralUtils.h"
 #include "Core/RRTextureData.h"
 #include "Core/RRTypeUtils.h"
 
@@ -124,6 +127,7 @@ public:
         TEXT(""),    // ERRFileType::NONE
         // UE & General
         TEXT(".uasset"),    // ERRFileType::UASSET
+        TEXT(".pak"),       // ERRFileType::PAK
         TEXT(".ini"),       // ERRFileType::INI
         TEXT(".yaml"),      // ERRFileType::YAML
 
@@ -197,8 +201,6 @@ public:
 
 // SIM COMMAND LINE EXECUTION --
 #define CCMDLINE_ARG_FORMAT (TEXT("%s="))
-    static constexpr const TCHAR* CCMDLINE_ARG_INT_PHYSX_DISPATCHER_NUM = TEXT("physxDispatcher");
-
     template<typename TCmdlet>
     static bool IsRunningSimCommandlet()
     {
@@ -524,7 +526,7 @@ public:
     }
 
     template<typename T, typename = TEnableIf<TIsFloatingPoint<T>::Value>>
-    static T GetElapsedTime(T& InLastTimestamp)
+    static T GetElapsedTimeSecs(const T& InLastTimestamp)
     {
         return GetSeconds() - InLastTimestamp;
     }
@@ -614,6 +616,42 @@ public:
     }
 
     // -------------------------------------------------------------------------------------------------------------------------
+    // PROCESS UTILS --
+    //
+    static int32 RunMonitoredProcess(FMonitoredProcess* InProcess,
+                                     const float InTimeOutSecs,
+                                     const FString& InProcessName = EMPTY_STR)
+    {
+        // Launch [InProcess]
+        if (false == InProcess->Launch())
+        {
+            UE_LOG_WITH_INFO_SHORT(LogTemp, Error, TEXT("[%s] Process failed being launched"), *InProcessName);
+            return -1;
+        }
+
+        // Wait for it to finish with [InTimeOutSecs]
+        const float lastMarkedTime = URRCoreUtils::GetSeconds();
+        bool bCancelled = false;
+        while (InProcess->Update())
+        {
+            // Already slept in [Update()]
+            if ((!bCancelled) && (URRCoreUtils::GetElapsedTimeSecs(lastMarkedTime) > InTimeOutSecs))
+            {
+                bCancelled = true;
+                UE_LOG_WITH_INFO(LogTemp,
+                                 Error,
+                                 TEXT("[%s] Process is about to be terminated after timeout [%f secs]"),
+                                 *InProcessName,
+                                 InTimeOutSecs);
+
+                // NOTE: This would trigger process cancelling, which should be waited for completion before this while loop exits
+                InProcess->Cancel();
+            }
+        }
+        return InProcess->GetReturnCode();
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------------
     // IMAGE UTILS --
     //
     // SIM IMAGE WRAPPERS --
@@ -622,16 +660,16 @@ public:
     static TMap<ERRFileType, TSharedPtr<IImageWrapper>> SImageWrappers;
     static void LoadImageWrapperModule();
 
-    FORCEINLINE static UTexture2D* LoadImageToTexture(const FString& InFullFilePath, const FString& InTextureName)
-    {
-        UTexture2D* loadedTexture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
-        if (loadedTexture)
-        {
-            loadedTexture->Rename(*InTextureName);
-        }
-
-        return loadedTexture;
-    }
+    /**
+     * @brief Load image to texture
+     * @param InFullFilePath
+     * @param InTextureName
+     * @param bInSaveToAsset if True -> use ImportObject(), otherwise FImageUtils::ImportFileAsTexture2D()
+     * @return UTexture2D*
+     */
+    static UTexture2D* LoadImageToTexture(const FString& InFullFilePath,
+                                          const FString& InTextureName,
+                                          const bool bInSaveToAsset = false);
 
     static bool LoadImagesFromFolder(const FString& InImageFolderPath,
                                      const TArray<ERRFileType>& InImageFileTypes,

@@ -99,9 +99,19 @@ public:
      */
     virtual void StartPlay() override;
 
+    /**
+     * @brief Print GameMode's user configs in INI
+     */
     virtual void PrintSimConfig() const;
-    virtual void PrintUEPreprocessors() const;
 
+    /**
+     * @brief Print UE global preprocessors' values
+     */
+    static void PrintUEPreprocessors();
+
+    /**
+     * @brief Config Sim global configs in prep for play
+     */
     virtual void ConfigureSimInPlay();
 
     /**

@@ -1,6 +1,9 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/RRROS2ActorsRvizMarkerPublisher.h"
+
+#include "Core/RRConversionUtils.h"
+#include "Core/RRGeneralUtils.h"
 
 URRROS2ActorsRvizMarkerPublisher::URRROS2ActorsRvizMarkerPublisher()
 {

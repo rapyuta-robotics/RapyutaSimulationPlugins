@@ -1,10 +1,14 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/RRROS2ClockPublisher.h"
 
 // rclUE
 #include "Msgs/ROS2Clock.h"
 #include "rclcUtilities.h"
+
+// RapyutaSimulationPlugins
+#include "Core/RRConversionUtils.h"
+#include "Core/RRGeneralUtils.h"
 
 URRROS2ClockPublisher::URRROS2ClockPublisher()
 {

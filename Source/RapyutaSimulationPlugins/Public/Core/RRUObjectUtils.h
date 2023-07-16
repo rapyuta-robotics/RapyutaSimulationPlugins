@@ -15,6 +15,7 @@
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameState.h"
+#include "Core/RRGeneralUtils.h"
 #include "Core/RRTextureData.h"
 #include "Core/RRThreadUtils.h"
 

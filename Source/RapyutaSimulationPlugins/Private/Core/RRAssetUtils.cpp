@@ -18,6 +18,69 @@
 #include "Core/RRGameSingleton.h"
 #include "Core/RRThreadUtils.h"
 
+using URRBlueprint = typename TChooseClass<WITH_EDITOR, UBlueprint, UBlueprintGeneratedClass>::Result;
+
+UClass* URRAssetUtils::FindBlueprintClass(const FString& InBlueprintClassName)
+{
+    IAssetRegistry& assetRegistry = GetAssetRegistry();
+    if (assetRegistry.IsLoadingAssets())
+    {
+        assetRegistry.SearchAllAssets(true);
+    }
+
+#if WITH_EDITOR
+    // [UBlueprint]'s child-BP's type name does not have ending _C
+    FString targetBPClassName = InBlueprintClassName;
+    targetBPClassName.RemoveFromEnd(TEXT("_C"), ESearchCase::IgnoreCase);
+#else
+    // [UBlueprintGeneratedClass]'s child-BP's type name always ends with _C
+    FString targetBPClassName =
+        InBlueprintClassName.EndsWith(TEXT("_C")) ? InBlueprintClassName : FString::Printf(TEXT("%s_C"), *InBlueprintClassName);
+#endif
+
+    // Note: For the assets to be listed in Package build, Go to ProjectSettings to configure [PrimaryAssetTypesToScan].
+    // Configuring PackagePaths here does not work
+    // https://maladius.com/posts/asset_manager_1
+    FARFilter filter;
+    filter.bRecursivePaths = true;
+    filter.bRecursiveClasses = true;
+    filter.ClassPaths.Add(URRBlueprint::StaticClass()->GetClassPathName());
+
+    // Find the blueprint asset of [InBlueprintClassName]
+    UClass* foundBPClass = nullptr;
+    assetRegistry.EnumerateAssets(
+        filter,
+        [&foundBPClass, &targetBPClassName](const FAssetData& InAssetData)
+        {
+            // NOTE: This lambda search for [InAssetData] that has name or object path as [targetBPClassName]
+            // -> Return whether or not the searching should continue
+            if ((InAssetData.AssetName.ToString() == targetBPClassName) || (InAssetData.GetObjectPathString() == targetBPClassName))
+            {
+                if (auto* bp = Cast<URRBlueprint>(InAssetData.GetAsset()))
+                {
+                    if constexpr (TIsSame<URRBlueprint, UBlueprint>::Value)
+                    {
+                        foundBPClass = Cast<UBlueprint>(bp)->GeneratedClass;
+                    }
+                    else if constexpr (TIsSame<URRBlueprint, UBlueprintGeneratedClass>::Value)
+                    {
+                        foundBPClass = Cast<UClass>(bp);
+                    }
+                    else
+                    {
+                        UE_LOG_WITH_INFO(LogRapyutaCore,
+                                         Error,
+                                         TEXT("[URRBlueprint] must be either [UBlueprint] or [UBlueprintGeneratedClass]"));
+                    }
+                    return false;
+                }
+            }
+            return true;
+        });
+
+    return foundBPClass;
+}
+
 UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
                                             const FString& InBlueprintClassName,
                                             const TFunction<void(UObject* InCDO)>& InCDOFunc,
@@ -318,6 +381,9 @@ bool URRAssetUtils::SavePackageToAsset(UPackage* InPackage, UObject* InObject, b
         {
             InObject->Rename(nullptr, InPackage);
         }
+
+        // Make sure [InObject] has RF_Transient cleared
+        InObject->ClearFlags(EObjectFlags::RF_Transient);
 
         // NOTE: [UPackage::Save()] is in-Engine api, while [SavePackageHelper(InPackage, packageFileName))] is in-Editor
         // Use [result] to print error code later

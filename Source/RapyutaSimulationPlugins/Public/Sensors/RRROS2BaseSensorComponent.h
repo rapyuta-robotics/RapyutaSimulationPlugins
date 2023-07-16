@@ -126,6 +126,9 @@ public:
     URRROS2BaseSensorPublisher* SensorPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<UROS2GenericMsg> MsgClass = UROS2GenericMsg::StaticClass();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString TopicName = TEXT("sensor_data");
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

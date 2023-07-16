@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 using System;
 using System.IO;
@@ -44,8 +44,9 @@ public class RapyutaSimulationPlugins : ModuleRules
         bEnableExceptions = true;
 
         // Runtime modules
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "Renderer", "RHI", "PhysicsCore", "XmlParser", "IESFile",
-                                                            "AIModule", "NavigationSystem", "TimeManagement", "Json", "UMG",
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "RenderCore", "Renderer", "RHI", "PhysicsCore",
+                                                            "ImageWrapper", "XmlParser", "Json", "PakFile", "IESFile",
+                                                            "AIModule", "NavigationSystem", "TimeManagement", "UMG",
                                                             "ChaosVehicles",
                                                             "ProceduralMeshComponent", "MeshDescription", "StaticMeshDescription", "MeshConversion",
                                                             "rclUE"});
@@ -116,6 +117,6 @@ public class RapyutaSimulationPlugins : ModuleRules
         // two_point_interpolation
         string TwoPointsInterpolationPath = GetLibPath("two_points_interpolation_cpp");
         PublicIncludePaths.Add(TwoPointsInterpolationPath);
-        
+
     }
 }

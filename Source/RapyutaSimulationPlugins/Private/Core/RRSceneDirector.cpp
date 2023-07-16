@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Core/RRSceneDirector.h"
 
@@ -120,7 +120,7 @@ void ARRSceneDirector::OnDataCollectionPhaseDone(bool bIsFinalDataCollectingPhas
             UE_LOG_WITH_SCENE_ID(LogRapyutaCore,
                                  Log,
                                  TEXT("DATA COLLECTION DONE - TOOK [%lf] secs!"),
-                                 URRCoreUtils::GetElapsedTime(DataCollectionTimeStamp));
+                                 URRCoreUtils::GetElapsedTimeSecs(DataCollectionTimeStamp));
         }
     }
 }

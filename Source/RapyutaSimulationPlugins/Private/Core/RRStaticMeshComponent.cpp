@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 #include "Core/RRStaticMeshComponent.h"
 
 // UE
@@ -67,6 +67,11 @@ void URRStaticMeshComponent::SetMesh(UStaticMesh* InStaticMesh)
         UBodySetup* bodySetup = InStaticMesh->GetBodySetup();
         if (ensure(bodySetup))
         {
+            // NOTE: Only stationary object is supported to have Complex collision
+            if (!bIsStationary)
+            {
+                ensure(bodySetup->CollisionTraceFlag != ECollisionTraceFlag::CTF_UseComplexAsSimple);
+            }
             ensure(EBodyCollisionResponse::BodyCollision_Enabled == bodySetup->CollisionReponse);
             if (bUseDefaultSimpleCollision)
             {
@@ -106,6 +111,7 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
         case ERRShapeType::MESH:
             if (bStaticMeshAlreadyExists)
             {
+                UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Warning, TEXT("REUSE IN-MEMORY STATIC MESH[%s]"), *MeshUniqueName);
                 SetMesh(staticMesh);
             }
             else if (gameSingleton->HasSimResource(ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName))
@@ -121,6 +127,9 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
                         {
                             // Stop the repeat timer first, note that this will invalidate all the captured variants except this
                             URRCoreUtils::StopRegisteredExecution(GetWorld(), StaticMeshTimerHandle);
+
+                            UE_LOG_WITH_INFO_SHORT(
+                                LogRapyutaCore, Warning, TEXT("REUSE IN-MEMORY STATIC MESH[%s]"), *MeshUniqueName);
                             SetMesh(existentStaticMesh);
                         }
                     },
@@ -135,7 +144,7 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
                 TSharedPtr<FRRMeshData> meshData = FRRMeshData::GetMeshData(MeshUniqueName);
                 if (meshData.IsValid())
                 {
-                    verify(CreateMeshBody(*meshData));
+                    ensure(CreateMeshBody(*meshData));
                 }
                 else
                 {
@@ -158,12 +167,13 @@ bool URRStaticMeshComponent::InitializeMesh(const FString& InMeshFileName)
                                 AsyncTask(ENamedThreads::GameThread,
                                           [this, loadedMeshData = MoveTemp(runtimeMeshData)]() mutable
                                           {
-                                              verify(loadedMeshData.IsValid());
                                               // Create mesh body, signalling [OnMeshCreationDone()]
-                                              verify(CreateMeshBody(loadedMeshData));
-                                              // Save [loadedMeshData] to [FRRMeshData::MeshDataStore]
-                                              FRRMeshData::AddMeshData(MeshUniqueName,
-                                                                       MakeShared<FRRMeshData>(MoveTemp(loadedMeshData)));
+                                              if (ensure(loadedMeshData.IsValid()) && ensure(CreateMeshBody(loadedMeshData)))
+                                              {
+                                                  // Save [loadedMeshData] to [FRRMeshData::MeshDataStore]
+                                                  FRRMeshData::AddMeshData(MeshUniqueName,
+                                                                           MakeShared<FRRMeshData>(MoveTemp(loadedMeshData)));
+                                              }
                                           });
                             }
                         });
@@ -212,8 +222,8 @@ UStaticMesh* URRStaticMeshComponent::CreateMesh(const FRRMeshData& InMeshData, b
     // Build static mesh
     UStaticMesh::FBuildMeshDescriptionsParams meshDescParams;
     meshDescParams.bUseHashAsGuid = true;
-    // NOTE: bFastBuild off is only supported for WITH_EDITOR
-    meshDescParams.bFastBuild = true;
+    // NOTE: bFastBuild must be true in packaged Sim, in Editor it is supported for both true & false
+    meshDescParams.bFastBuild = !WITH_EDITOR;
     meshDescParams.bBuildSimpleCollision = false;
 #if RAPYUTA_SIM_DEBUG
     // If this function runs in thread, do not mark the package dirty since MarkPackageDirty is not thread safe
@@ -223,10 +233,8 @@ UStaticMesh* URRStaticMeshComponent::CreateMesh(const FRRMeshData& InMeshData, b
     // NOTE: Commit might be slow but needed since we want the mesh to be saved out to disk for reuse
     meshDescParams.bCommitMeshDescription = true;
 
-#if !WITH_EDITOR
-    // Force build process to keep index buffer for complex collision when in game
-    meshDescParams.bAllowCpuAccess = true;
-#endif
+    // Only allow CPU access in Game & for complex collision, which might be expensive to be sent to GPU
+    meshDescParams.bAllowCpuAccess = !WITH_EDITOR && bUseComplexCollision;
 
     UStaticMesh* staticMesh = NewObject<UStaticMesh>(
         this, bInAsVisualMesh ? FName(*MeshUniqueName) : FName(*FString::Printf(TEXT("UCX_%s"), *MeshUniqueName)));
@@ -313,13 +321,14 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
             bodySetup->InvalidatePhysicsData();
             bodySetup->CreatePhysicsMeshes();
 #if RAPYUTA_SIM_DEBUG
-            // These would cause crash & are not surely required, kept purely for debug reference
+            // This rebuilds only renderable data thus may not be required, also possibly causing crash -> kept purely for debug reference
             visualMesh->Build(true);
             visualMesh->PostLoad();
 #endif
         }
     }
-    ensure(visualMesh->GetRenderData() && visualMesh->GetRenderData()->IsInitialized());
+    // NOTE: visualMesh's RenderData, upon [FBuildMeshDescriptionsParams::bFastBuild == false] will be defer-created in [FinishPostLoadInternal()->InitResources()],
+    // thus [visualMeshRenderData->IsInitialized()] may not instantly inited here like in fast build.
 
     // Add to the global resource store
     URRGameSingleton::Get()->AddDynamicResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, visualMesh, MeshUniqueName);
@@ -333,10 +342,8 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
     {
         if (visualMesh->GetSourceModel(0).IsMeshDescriptionValid())
         {
-#endif
             URRAssetUtils::SaveObjectToAssetInModule(
                 visualMesh, ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME);
-#if WITH_EDITOR
         }
         else
         {

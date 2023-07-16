@@ -249,7 +249,7 @@ public:
         }
 
         objectLibrary->GetAssetDataList(OutAssetDataList);
-        verify(IsAssetDataListValid(OutAssetDataList, bIsFullLoad, true));
+        ensure(IsAssetDataListValid(OutAssetDataList, bIsFullLoad, true));
     }
 
     /**
@@ -377,49 +377,13 @@ public:
 
     /**
      * @brief Find generated UClass from blueprint class name
-     * @param InBlueprintClassName
+     * @param InBlueprintClassName Either name or object path to blueprint class
      * @return UClass*
+     * @note Refs: EditorUtilitySubsystem
+     * @sa https://maladius.com/posts/asset_manager_1
+     * @sa http://kantandev.com/articles/finding-all-classes-blueprints-with-a-given-base
      */
-    // Ref: EditorUtilitySubsystem
-    FORCEINLINE static UClass* FindBlueprintClass(const FString& InBlueprintClassName)
-    {
-        IAssetRegistry& assetRegistry = GetAssetRegistry();
-        if (assetRegistry.IsLoadingAssets())
-        {
-            assetRegistry.SearchAllAssets(true);
-        }
-
-        FString targetName = InBlueprintClassName;
-        targetName.RemoveFromEnd(TEXT("_C"), ESearchCase::CaseSensitive);
-
-        // Note: For the assets to be listed in Package build, Go to ProjectSettings to configure [PrimaryAssetTypesToScan].
-        // Configuring PackagePaths here does not work
-        // https://maladius.com/posts/asset_manager_1
-        FARFilter filter;
-        filter.bRecursivePaths = true;
-        filter.bRecursiveClasses = true;
-        filter.ClassPaths.Add(UBlueprintCore::StaticClass()->GetClassPathName());
-
-        // Find the blueprint asset of [InBlueprintClassName]
-        UClass* foundClass = nullptr;
-        assetRegistry.EnumerateAssets(
-            filter,
-            [&foundClass, targetName](const FAssetData& AssetData)
-            {
-                if ((AssetData.AssetName.ToString() == targetName) || (AssetData.GetObjectPathString() == targetName))
-                {
-                    if (UBlueprint* bp = Cast<UBlueprint>(AssetData.GetAsset()))
-                    {
-                        foundClass = bp->GeneratedClass;
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-
-        return foundClass;
-    }
+    static UClass* FindBlueprintClass(const FString& InBlueprintClassName);
 
     /**
      * @brief Create a child blueprint class from parent UClass.

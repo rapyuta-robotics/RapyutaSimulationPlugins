@@ -17,7 +17,6 @@
 
 // RapyutaSimulationPlugins
 #include "RRROS2BaseSensorComponent.h"
-#include "Tools/RRROS2ImagePublisher.h"
 
 #include "RRROS2CameraComponent.generated.h"
 

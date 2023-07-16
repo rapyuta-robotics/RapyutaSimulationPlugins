@@ -1,11 +1,18 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/OccupancyMapGenerator.h"
-#include "logUtilities.h"
 
+// UE
 #include "DrawDebugHelpers.h"
 #include "HAL/PlatformFileManager.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "logUtilities.h"
+#include "RapyutaSimulationPlugins.h"
+#include "Misc/FileHelper.h"
+
+// RapyutaSimulationPlugins
+#include "RapyutaSimulationPlugins.h"
 
 // Sets default values
 AOccupancyMapGenerator::AOccupancyMapGenerator()
@@ -19,8 +26,7 @@ void AOccupancyMapGenerator::BeginPlay()
 
     if (Map == nullptr)
     {
-        UE_LOG_WITH_INFO_NAMED(
-            LogRapyutaCore, Warning, TEXT("Map is nullptr. Please sepcify Map to generate occupancy map."));
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Map is nullptr. Please sepcify Map to generate occupancy map."));
         return;
     }
 
@@ -29,9 +35,13 @@ void AOccupancyMapGenerator::BeginPlay()
     FVector Center;
     FVector Extent;
     Map->GetActorBounds(false, Center, Extent, true);
-    UE_LOG_WITH_INFO_NAMED(
-            LogRapyutaCore, Display, TEXT("Generate occupancy map with %s whose center is %s, box extent is %s"), *Map->GetName(), *Center.ToString(), *Extent.ToString());
-    
+    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
+                           Display,
+                           TEXT("Generate occupancy map with %s whose center is %s, box extent is %s"),
+                           *Map->GetName(),
+                           *Center.ToString(),
+                           *Extent.ToString());
+
     FVector Origin = Center - Extent;
 
     float GridRes_cm = GridRes * 100;

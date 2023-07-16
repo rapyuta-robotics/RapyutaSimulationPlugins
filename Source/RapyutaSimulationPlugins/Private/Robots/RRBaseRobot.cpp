@@ -151,7 +151,7 @@ void ARRBaseRobot::PreInitializeComponents()
     if (ROSSpawnParameters)
     {
         InitPropertiesFromJSON();
-        RobotModelName = ROSSpawnParameters->ActorModelName;
+        SetRobotModelName(ROSSpawnParameters->ActorModelName);
         RobotUniqueName = ROSSpawnParameters->ActorName;
     }
 

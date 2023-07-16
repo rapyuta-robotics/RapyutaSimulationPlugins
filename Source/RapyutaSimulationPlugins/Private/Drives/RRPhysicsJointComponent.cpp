@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Drives/RRPhysicsJointComponent.h"
 
@@ -17,26 +17,22 @@ bool URRPhysicsJointComponent::IsValid()
 
 void URRPhysicsJointComponent::Initialize()
 {
-    if(IsValid())
+    if (IsValid())
     {
-        if(!bManualConstraintSetting)
+        if (!bManualConstraintSetting)
         {
             SetJoint();
         }
 
         // set joints relations and save initial parent to joint transformation.
-        JointToChildLink = URRGeneralUtils::GetRelativeTransform(
-                Constraint->GetComponentTransform(),
-                ChildLink->GetComponentTransform());
-        ParentLinkToJoint = URRGeneralUtils::GetRelativeTransform(
-                ParentLink->GetComponentTransform(),
-                Constraint->GetComponentTransform());
+        JointToChildLink =
+            URRGeneralUtils::GetRelativeTransform(Constraint->GetComponentTransform(), ChildLink->GetComponentTransform());
+        ParentLinkToJoint =
+            URRGeneralUtils::GetRelativeTransform(ParentLink->GetComponentTransform(), Constraint->GetComponentTransform());
     }
     else
     {
-        UE_LOG_WITH_INFO_NAMED(LogTemp,
-                    Error,
-                    TEXT("JointComponent must have Physics Constraints"));
+        UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("JointComponent must have Physics Constraints"));
     }
 }
 
@@ -47,7 +43,7 @@ void URRPhysicsJointComponent::SetJoint()
     // set linear drive
     // LinearDOF = 1 => x, 2 => x,y, 3 => x,y,z
     bool linearEnabled[3] = {false, false, false};
-    for (uint8 i=0; i<3; i++)
+    for (uint8 i = 0; i < 3; i++)
     {
         if (LinearDOF > i)
         {
@@ -64,7 +60,7 @@ void URRPhysicsJointComponent::SetJoint()
     // set angular drive
     // RotationalDOF = 1 => Twist, 2 => Swing1, 3 => Swing2
     bool angleEnabled[3] = {false, false, false};
-    for (uint8 i=0; i<3; i++)
+    for (uint8 i = 0; i < 3; i++)
     {
         if (RotationalDOF > i)
         {
@@ -72,7 +68,7 @@ void URRPhysicsJointComponent::SetJoint()
         }
     }
     Constraint->SetAngularDriveMode(angleEnabled[2] ? EAngularDriveMode::SLERP : EAngularDriveMode::TwistAndSwing);
-    if (angleEnabled[2]) // if DOF==3, it uses SLERP
+    if (angleEnabled[2])    // if DOF==3, it uses SLERP
     {
         Constraint->SetOrientationDriveSLERP(true);
         Constraint->SetAngularVelocityDriveSLERP(true);
@@ -82,16 +78,19 @@ void URRPhysicsJointComponent::SetJoint()
         Constraint->SetAngularOrientationDrive(angleEnabled[1], angleEnabled[0]);
         Constraint->SetAngularVelocityDrive(angleEnabled[1], angleEnabled[0]);
     }
-    Constraint->SetAngularTwistLimit(angleEnabled[0] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked, 0);
-    Constraint->SetAngularSwing1Limit(angleEnabled[1] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked, 0);
-    Constraint->SetAngularSwing2Limit(angleEnabled[2] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked, 0);
+    Constraint->SetAngularTwistLimit(angleEnabled[0] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked,
+                                     0);
+    Constraint->SetAngularSwing1Limit(angleEnabled[1] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked,
+                                      0);
+    Constraint->SetAngularSwing2Limit(angleEnabled[2] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked,
+                                      0);
     Constraint->SetAngularDriveParams(AngularSpring, AngularDamper, AngularForceLimit);
     Constraint->SetDisableCollision(true);
 }
 
 void URRPhysicsJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
 {
-     UE_LOG(LogRapyutaCore, Error, TEXT("Can't set velocity directly to physics joint"));
+    UE_LOG(LogRapyutaCore, Error, TEXT("Can't set velocity directly to physics joint"));
 }
 
 void URRPhysicsJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
@@ -107,7 +106,7 @@ void URRPhysicsJointComponent::SetVelocityTarget(const FVector& InLinearVelocity
     if (!bSmoothing)
     {
         Constraint->SetLinearVelocityTarget(InLinearVelocity);
-        Constraint->SetAngularVelocityTarget(InAngularVelocity/360.0);
+        Constraint->SetAngularVelocityTarget(InAngularVelocity / 360.0);
     }
     else
     {
@@ -116,11 +115,11 @@ void URRPhysicsJointComponent::SetVelocityTarget(const FVector& InLinearVelocity
     }
 
 #if RAPYUTA_JOINT_DEBUG
-    if(RotationalDOF>0)
+    if (RotationalDOF > 0)
     {
         UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *InAngularVelocity.ToString());
     }
-    if(LinearDOF>0)
+    if (LinearDOF > 0)
     {
         UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *InLinearVelocity.ToString());
     }
@@ -129,14 +128,13 @@ void URRPhysicsJointComponent::SetVelocityTarget(const FVector& InLinearVelocity
 
 void URRPhysicsJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
 {
-     UE_LOG(LogRapyutaCore, Error, TEXT("Can't set pose directly to physics joint"));
+    UE_LOG(LogRapyutaCore, Error, TEXT("Can't set pose directly to physics joint"));
 }
 
 void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation)
 {
     // if target is within tolerance, ignore it.
-    if (PositionTarget.Equals(InPosition, PositionTolerance) && 
-        OrientationTarget.Equals(InOrientation, OrientationTolerance))
+    if (PositionTarget.Equals(InPosition, PositionTolerance) && OrientationTarget.Equals(InOrientation, OrientationTolerance))
     {
         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Verbose, TEXT("New target is within tolerance."));
         return;
@@ -149,9 +147,9 @@ void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FR
 
     FVector OrientationEuler = Orientation.Euler();
     FVector OrientationTargetEuler = OrientationTarget.Euler();
-    uint8 i; 
+    uint8 i;
     if (!bSmoothing)
-    { 
+    {
         // set maximum velocity for target direction.
         FVector poseDiff = PositionTarget - Position;
         FVector orientationDiff = OrientationTargetEuler - OrientationEuler;
@@ -164,7 +162,7 @@ void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FR
             float diff = FRotator::NormalizeAxis(orientationDiff[i]);
             AngularVelocityTarget[i] = FMath::Clamp(Kva * poseDiff[i], -AngularVelMax[i], AngularVelMax[i]);
         }
-    
+
         Constraint->SetLinearVelocityTarget(LinearVelocityTarget);
         Constraint->SetAngularVelocityTarget(AngularVelocityTarget/360.0); // rev/s
         Constraint->SetLinearPositionTarget(InPosition + PErrInt);
@@ -177,45 +175,41 @@ void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FR
         MidOrientationTarget = Orientation;
         float t0 = GetWorld()->GetTimeSeconds();
         for (i = 0; i < 3; i++)
-        {    
+        {
             if (!FMath::IsNearlyEqual(Position[i], PositionTarget[i], PositionTolerance))
             {
-                PositionTPI[i].calcTrajectory(
-                    Position[i], PositionTarget[i], //pose
-                    LinearVelocitySmoothingAcc, LinearVelMax[i], //max
-                    t0, 
-                    LinearVelocity[i], 0.0 //velocity
+                PositionTPI[i].calcTrajectory(Position[i],
+                                              PositionTarget[i],    //pose
+                                              LinearVelocitySmoothingAcc,
+                                              LinearVelMax[i],    //max
+                                              t0,
+                                              LinearVelocity[i],
+                                              0.0    //velocity
                 );
             }
 
             if (!FMath::IsNearlyEqual(OrientationEuler[i], OrientationTargetEuler[i], OrientationTolerance))
             {
-                OrientationTPI[i].calcTrajectory(
-                    FMath::DegreesToRadians(OrientationEuler[i]), 
-                    FMath::DegreesToRadians(OrientationTargetEuler[i]), //pose
-                    FMath::DegreesToRadians(AngularVelocitySmoothingAcc), 
-                    FMath::DegreesToRadians(AngularVelMax[i]), //max
-                    t0, 
-                    FMath::DegreesToRadians(AngularVelocity[i]), 0.0 //velocity
+                OrientationTPI[i].calcTrajectory(FMath::DegreesToRadians(OrientationEuler[i]),
+                                                 FMath::DegreesToRadians(OrientationTargetEuler[i]),    //pose
+                                                 FMath::DegreesToRadians(AngularVelocitySmoothingAcc),
+                                                 FMath::DegreesToRadians(AngularVelMax[i]),    //max
+                                                 t0,
+                                                 FMath::DegreesToRadians(AngularVelocity[i]),
+                                                 0.0    //velocity
                 );
             }
         }
     }
 #if RAPYUTA_JOINT_DEBUG
-        if(RotationalDOF>0)
-        {
-            UE_LOG(LogRapyutaCore, Warning, TEXT("%s | %s"),
-                *AngularVelocityTarget.ToString(),
-                *InOrientation.Euler().ToString()
-            );
-        }
-        if(LinearDOF>0)
-        {
-            UE_LOG(LogRapyutaCore, Warning, TEXT("%s | %s"),
-                *LinearVelocityTarget.ToString(),
-                *InPosition.ToString()
-            );
-        }
+    if (RotationalDOF > 0)
+    {
+        UE_LOG(LogRapyutaCore, Warning, TEXT("%s | %s"), *AngularVelocityTarget.ToString(), *InOrientation.Euler().ToString());
+    }
+    if (LinearDOF > 0)
+    {
+        UE_LOG(LogRapyutaCore, Warning, TEXT("%s | %s"), *LinearVelocityTarget.ToString(), *InPosition.ToString());
+    }
 #endif
 }
 
@@ -224,50 +218,36 @@ void URRPhysicsJointComponent::UpdateState(const float DeltaTime)
     FVector prevPosition = Position;
     FRotator prevOrientation = Orientation;
 
-    FTransform relativeTrans = URRGeneralUtils::GetRelativeTransform(
-            Constraint->GetComponentTransform(),
-            ChildLink->GetComponentTransform());
+    FTransform relativeTrans =
+        URRGeneralUtils::GetRelativeTransform(Constraint->GetComponentTransform(), ChildLink->GetComponentTransform());
 
     Position = relativeTrans.GetLocation() - JointToChildLink.GetLocation();
-    Orientation = (relativeTrans.GetRotation()*JointToChildLink.GetRotation().Inverse()).Rotator();
+    Orientation = (relativeTrans.GetRotation() * JointToChildLink.GetRotation().Inverse()).Rotator();
 
     FVector prevOrientationEuler = prevOrientation.Euler();
     FVector OrientationEuler = Orientation.Euler();
 
     for (uint8 i = 0; i < 3; i++)
     {
-        LinearVelocity[i] = UKismetMathLibrary::SafeDivide(
-                Position[i] - prevPosition[i], 
-                DeltaTime
-            );
+        LinearVelocity[i] = UKismetMathLibrary::SafeDivide(Position[i] - prevPosition[i], DeltaTime);
         //todo update with quat?
-        AngularVelocity[i] = UKismetMathLibrary::SafeDivide(
-                FRotator::NormalizeAxis(OrientationEuler[i] - prevOrientationEuler[i]), 
-                DeltaTime
-            );
+        AngularVelocity[i] =
+            UKismetMathLibrary::SafeDivide(FRotator::NormalizeAxis(OrientationEuler[i] - prevOrientationEuler[i]), DeltaTime);
     }
 #if RAPYUTA_JOINT_DEBUG
-    if(RotationalDOF>0)
+    if (RotationalDOF > 0)
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("Target: %s | %s"),
-                *AngularVelocityTarget.ToString(),
-                *OrientationTarget.Euler().ToString()
-            );
-        UE_LOG(LogRapyutaCore, Error, TEXT("Status: %s | %s"),
-                *AngularVelocity.ToString(),
-                *Orientation.Euler().ToString()
-            );
+        UE_LOG(LogRapyutaCore,
+               Error,
+               TEXT("Target: %s | %s"),
+               *AngularVelocityTarget.ToString(),
+               *OrientationTarget.Euler().ToString());
+        UE_LOG(LogRapyutaCore, Error, TEXT("Status: %s | %s"), *AngularVelocity.ToString(), *Orientation.Euler().ToString());
     }
-    if(LinearDOF>0)
+    if (LinearDOF > 0)
     {
-        UE_LOG(LogRapyutaCore, Error, TEXT("Target: %s | %s"),
-                *LinearVelocityTarget.ToString(),
-                *PositionTarget.ToString()
-            );
-        UE_LOG(LogRapyutaCore, Error, TEXT("Status: %s | %s"),
-                *LinearVelocity.ToString(),
-                *Position.ToString()
-            );
+        UE_LOG(LogRapyutaCore, Error, TEXT("Target: %s | %s"), *LinearVelocityTarget.ToString(), *PositionTarget.ToString());
+        UE_LOG(LogRapyutaCore, Error, TEXT("Status: %s | %s"), *LinearVelocity.ToString(), *Position.ToString());
     }
 #endif
 }
@@ -317,7 +297,7 @@ void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
         {
             // input
             float t = GetWorld()->GetTimeSeconds();
-            
+
             // output
             FVector MidOrientationTargetEuler = MidOrientationTarget.Euler();
             bool initialized = true;
@@ -333,7 +313,7 @@ void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
                 {
                     std::vector<double> resOri = OrientationTPI[i].getPoint(t);
                     MidOrientationTargetEuler[i] = FMath::RadiansToDegrees(resOri[0]);
-                    MidAngularVelocityTarget[i] = FMath::RadiansToDegrees(resOri[1]);   
+                    MidAngularVelocityTarget[i] = FMath::RadiansToDegrees(resOri[1]);
                 }
             }
             Constraint->SetLinearVelocityTarget(MidLinearVelocityTarget);
@@ -361,33 +341,41 @@ void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
         // Linear update of velocity
         for (i = 0; i < 3; i++)
         {
-            URRMathUtils::StepUpdate(MidLinearVelocityTarget[i], LinearVelocityTarget[i], LinearVelocitySmoothingAcc*DeltaTime, LinearVelocityTolerance);
-            URRMathUtils::StepUpdate(MidAngularVelocityTarget[i], AngularVelocityTarget[i], AngularVelocitySmoothingAcc*DeltaTime, AngularVelocityTolerance);
+            URRMathUtils::StepUpdate(MidLinearVelocityTarget[i],
+                                     LinearVelocityTarget[i],
+                                     LinearVelocitySmoothingAcc * DeltaTime,
+                                     LinearVelocityTolerance);
+            URRMathUtils::StepUpdate(MidAngularVelocityTarget[i],
+                                     AngularVelocityTarget[i],
+                                     AngularVelocitySmoothingAcc * DeltaTime,
+                                     AngularVelocityTolerance);
         }
 
-        if(!HasReachedVelocityTarget(LinearVelocityTolerance, AngularVelocityTolerance) && bSmoothing)
+        if (!HasReachedVelocityTarget(LinearVelocityTolerance, AngularVelocityTolerance) && bSmoothing)
         {
             Constraint->SetLinearVelocityTarget(MidLinearVelocityTarget);
-            Constraint->SetAngularVelocityTarget(MidAngularVelocityTarget/360.0); 
+            Constraint->SetAngularVelocityTarget(MidAngularVelocityTarget / 360.0);
         }
     }
 
 #if RAPYUTA_JOINT_DEBUG
-    if(bSmoothing)
+    if (bSmoothing)
     {
-        if(RotationalDOF>0)
+        if (RotationalDOF > 0)
         {
-            UE_LOG(LogRapyutaCore, Error, TEXT("Smoothing mid: %s | %s"),
-                *MidAngularVelocityTarget.ToString(),
-                *MidOrientationTarget.Euler().ToString()   
-            );
+            UE_LOG(LogRapyutaCore,
+                   Error,
+                   TEXT("Smoothing mid: %s | %s"),
+                   *MidAngularVelocityTarget.ToString(),
+                   *MidOrientationTarget.Euler().ToString());
         }
-        if(LinearDOF>0)
+        if (LinearDOF > 0)
         {
-            UE_LOG(LogRapyutaCore, Error, TEXT("Smoothing mid: %s | %s"),
-                *MidLinearVelocityTarget.ToString(),
-                *MidPositionTarget.ToString()
-            );
+            UE_LOG(LogRapyutaCore,
+                   Error,
+                   TEXT("Smoothing mid: %s | %s"),
+                   *MidLinearVelocityTarget.ToString(),
+                   *MidPositionTarget.ToString());
         }
     }
 #endif
