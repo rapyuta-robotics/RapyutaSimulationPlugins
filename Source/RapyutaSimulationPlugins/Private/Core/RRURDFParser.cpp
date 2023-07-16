@@ -527,14 +527,13 @@ bool FRRURDFParser::ParseLinkProperty()
 
     if (ParseGeometryInfo(linkName, ERREntityGeometryType::VISUAL, visualGeometryInfo))
     {
-        const FString& visualMeshName = visualGeometryInfo.MeshName;
+#if RAPYUTA_URDF_PARSER_DEBUG
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("URDF: VISUAL MESH FULL NAME: %s"), *visualGeometryInfo.MeshName);
+#endif
+
         // [Visual's Geometry] --
-        visualGeometryInfo.MeshName = visualMeshName;
         visualGeometryInfo.Location = visualLocation;
         visualGeometryInfo.Rotation = visualRotation;
-#if RAPYUTA_URDF_PARSER_DEBUG
-        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("URDF: VISUAL MESH FULL NAME: %s"), *visualMeshName);
-#endif
 
         // !NOTE: newLinkProp.Location & newLinkProp.Rotation would be read from the joint that has NewLink as child link
         // --> Refer to FRREntityModelInfo::UpdateLinksTransformInfoFromJoints()
@@ -562,17 +561,25 @@ bool FRRURDFParser::ParseLinkProperty()
     }
 
     FRREntityGeometryInfo collisionGeometryInfo;
-    bool isCollisionParsed = ParseGeometryInfo(linkName, ERREntityGeometryType::COLLISION, collisionGeometryInfo);
-    const FString& collisionMeshName = collisionGeometryInfo.MeshName;
-
-    // [Collision's Geometry] --
-    collisionGeometryInfo.MeshName = collisionMeshName;
-    collisionGeometryInfo.Location = collisionLocation;
-    collisionGeometryInfo.Rotation = collisionRotation;
-    newLinkProp.CollisionList.Emplace(MoveTemp(collisionGeometryInfo));
+    if (ParseGeometryInfo(linkName, ERREntityGeometryType::COLLISION, collisionGeometryInfo))
+    {
 #if RAPYUTA_URDF_PARSER_DEBUG
-    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("URDF: COLLISION MESH FULL NAME: %s"), *collisionMeshName);
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("URDF: COLLISION MESH FULL NAME: %s"), *collisionGeometryInfo.MeshName);
 #endif
+        // Auto let collision take after visual if not explicitly specified
+        if (collisionGeometryInfo.LinkType == ERRShapeType::NONE)
+        {
+            collisionGeometryInfo.LinkType = visualGeometryInfo.LinkType;
+            collisionGeometryInfo.MeshName = visualGeometryInfo.MeshName;
+            collisionGeometryInfo.Size = visualGeometryInfo.Size;
+            collisionGeometryInfo.WorldScale = visualGeometryInfo.WorldScale;
+        }
+
+        // [Collision's Geometry] --
+        collisionGeometryInfo.Location = collisionLocation;
+        collisionGeometryInfo.Rotation = collisionRotation;
+        newLinkProp.CollisionList.Emplace(MoveTemp(collisionGeometryInfo));
+    }
 
     // Add new link prop to the list
     LinkPropList.Emplace(MoveTemp(newLinkProp));
@@ -744,14 +751,15 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
                                       const ERREntityGeometryType InGeometryType,
                                       FRREntityGeometryInfo& OutGeometryInfo)
 {
-    bool parsed = true;
-    OutGeometryInfo.LinkName = InLinkName;
-    OutGeometryInfo.Name = InLinkName;
-
     const TCHAR* geometryTypePrefix = (ERREntityGeometryType::VISUAL == InGeometryType)      ? GEOMETRY_TYPE_PREFIX_VISUAL
                                       : (ERREntityGeometryType::COLLISION == InGeometryType) ? GEOMETRY_TYPE_PREFIX_COLLISION
+                                      : (ERREntityGeometryType::INERTIA == InGeometryType)   ? GEOMETRY_TYPE_PREFIX_INERTIAL
                                                                                              : nullptr;
     check(geometryTypePrefix);
+
+    bool parsed = true;
+    OutGeometryInfo.LinkName = InLinkName;
+    OutGeometryInfo.Name = FString::Printf(TEXT("%s_%s"), geometryTypePrefix, *InLinkName);
 
     // [BOX] --
     const FString boxSizeElementName = FString::Printf(TEXT("%s_box_size"), geometryTypePrefix);

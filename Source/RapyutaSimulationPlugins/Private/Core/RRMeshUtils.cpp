@@ -333,7 +333,7 @@ FRRMeshData URRMeshUtils::LoadMeshFromFile(const FString& InMeshFilePath, Assimp
         // + [aiProcess_FlipWindingOrder] makes CW while UE has CCW vertice winding order already, which makes a face' normal
         // face outward. aiProcessPreset_TargetRealtime_Fast | aiProcessPreset_TargetRealtime_Quality
         scene =
-            InMeshImporter.ReadFile(URRCoreUtils::FToStdString(InMeshFilePath).c_str(),
+            InMeshImporter.ReadFile(URRConversionUtils::FToStdString(InMeshFilePath).c_str(),
                                     flags | (aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_Triangulate |
                                              aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_FindInvalidData));
     }

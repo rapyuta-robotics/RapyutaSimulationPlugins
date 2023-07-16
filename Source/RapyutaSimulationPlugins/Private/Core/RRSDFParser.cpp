@@ -34,13 +34,13 @@ FRREntityModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
     sdf::setFindCallback(
         [InSDFPath](const std::string& InModelName)
         {
-            return URRCoreUtils::FToStdString(FString::Printf(
+            return URRConversionUtils::FToStdString(FString::Printf(
                 TEXT("%s%s"),
                 *FRREntityDescriptionParser::GetRealPathFromMeshName(FString(InModelName.c_str()), FPaths::GetPath(InSDFPath)),
                 URRCoreUtils::GetSimFileExt(ERRFileType::SDF)));
         });
     sdf::Errors outErrors;
-    sdf::SDFPtr outSDFContent = sdf::readFile(URRCoreUtils::FToStdString(InSDFPath), outErrors);
+    sdf::SDFPtr outSDFContent = sdf::readFile(URRConversionUtils::FToStdString(InSDFPath), outErrors);
     if (nullptr == outSDFContent)
     {
         UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed reading SDF file [%s]"), *InSDFPath);
@@ -50,7 +50,7 @@ FRREntityModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
                              Error,
                              TEXT("SDF Error: %d %s"),
                              static_cast<uint8>(error.Code()),
-                             *URRCoreUtils::StdToFString(error.Message()));
+                             *URRConversionUtils::StdToFString(error.Message()));
         }
         return FRREntityModelInfo();
     }
@@ -95,7 +95,7 @@ bool FRRSDFParser::LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRREnti
     // World
     if (worldElement == topElement)
     {
-        outRobotModelData.WorldName = URRCoreUtils::StdToFString(worldElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        outRobotModelData.WorldName = URRConversionUtils::StdToFString(worldElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
 
         // World's Child Models info
         bResult &= LoadChildModelsData(worldElement, outRobotModelData);
@@ -104,7 +104,8 @@ bool FRRSDFParser::LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRREnti
     // Model
     else if (modelElement == topElement)
     {
-        outRobotModelData.ModelNameList.Emplace(URRCoreUtils::StdToFString(modelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME)));
+        outRobotModelData.ModelNameList.Emplace(
+            URRConversionUtils::StdToFString(modelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME)));
 
         // Model's pose info
         bResult &= LoadPoseInfo(modelElement, outRobotModelData);
@@ -131,7 +132,7 @@ bool FRRSDFParser::LoadChildModelsData(const sdf::ElementPtr& InParentElement, F
     sdf::ElementPtr childModelElement = InParentElement->FindElement(SDF_ELEMENT_MODEL);
     while (childModelElement)
     {
-        const FString modelName = URRCoreUtils::StdToFString(childModelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        const FString modelName = URRConversionUtils::StdToFString(childModelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
 
         // To make sure each of [ModelNameList] is unique
         FString modelFullName = FString::Printf(TEXT("%s%s"), *OutRobotModelData.WorldName, *modelName);
@@ -168,7 +169,8 @@ bool FRRSDFParser::LoadPoseInfo(const sdf::ElementPtr& InElement, FRREntityModel
     const auto poseElement = InElement->FindElement(SDF_ELEMENT_POSE);
     if (poseElement)
     {
-        OutRobotModelData.ParentFrameName = URRCoreUtils::StdToFString(poseElement->Get<std::string>(SDF_ELEMENT_ATTR_RELATIVE_TO));
+        OutRobotModelData.ParentFrameName =
+            URRConversionUtils::StdToFString(poseElement->Get<std::string>(SDF_ELEMENT_ATTR_RELATIVE_TO));
 
         const auto poseOffset = poseElement->Get<ignition::math::Pose3d>();
         OutRobotModelData.RelativeTransform.SetLocation(GetLocationFromIgnitionPose(poseOffset));
@@ -191,7 +193,8 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
     while (componentElement)
     {
         const int8 componentTypeVal = URRTypeUtils::GetEnumValueFromString(
-            TEXT("ERRUEComponentType"), URRCoreUtils::StdToFString(componentElement->Get<std::string>(SDF_ELEMENT_ATTR_TYPE)));
+            TEXT("ERRUEComponentType"),
+            URRConversionUtils::StdToFString(componentElement->Get<std::string>(SDF_ELEMENT_ATTR_TYPE)));
         if (componentTypeVal != INDEX_NONE)
         {
             OutRobotModelData.SetUEComponentEnabled(componentTypeVal);
@@ -203,7 +206,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
     // 2- Base link name
     if (auto baseLinkElement = ueElement->FindElement(SDF_ELEMENT_BASE_LINK))
     {
-        OutRobotModelData.BaseLinkName = URRCoreUtils::StdToFString(baseLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        OutRobotModelData.BaseLinkName = URRConversionUtils::StdToFString(baseLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
     }
 
     // 3- Articulated links, which uses OutRobotModelData.UEComponentTypeFlags
@@ -221,7 +224,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         sdf::ElementPtr articulatedElement = ueElement->FindElement(SDF_ELEMENT_ARTICULATED_LINK);
         while (articulatedElement)
         {
-            FString arLinkName = URRCoreUtils::StdToFString(articulatedElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+            FString arLinkName = URRConversionUtils::StdToFString(articulatedElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
             if (false == arLinkName.IsEmpty())
             {
                 OutRobotModelData.ArticulatedLinksNames.Emplace(MoveTemp(arLinkName));
@@ -246,7 +249,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         sdf::ElementPtr wheelElement = ueElement->FindElement(SDF_ELEMENT_WHEEL);
         while (wheelElement)
         {
-            FString wheelName = URRCoreUtils::StdToFString(wheelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+            FString wheelName = URRConversionUtils::StdToFString(wheelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
             if (false == wheelName.IsEmpty())
             {
                 OutRobotModelData.WheelPropList.Emplace(FRRRobotWheelProperty(MoveTemp(wheelName)));
@@ -260,7 +263,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
     sdf::ElementPtr endEffectorElement = ueElement->FindElement(SDF_ELEMENT_END_EFFECTOR);
     while (endEffectorElement)
     {
-        FString eeName = URRCoreUtils::StdToFString(endEffectorElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        FString eeName = URRConversionUtils::StdToFString(endEffectorElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
         if (false == eeName.IsEmpty())
         {
             OutRobotModelData.EndEffectorNames.Emplace(MoveTemp(eeName));
@@ -274,7 +277,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
     if (staticMeshElement)
     {
         OutRobotModelData.WholeBodyStaticMeshName =
-            URRCoreUtils::StdToFString(staticMeshElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+            URRConversionUtils::StdToFString(staticMeshElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
     }
 
     // 7- WholeBody's material
@@ -286,7 +289,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         while (albedoElement)
         {
             materialInfo.AlbedoTextureNameList.Emplace(
-                URRCoreUtils::StdToFString(albedoElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME)));
+                URRConversionUtils::StdToFString(albedoElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME)));
             if (auto albedoColorElement = albedoElement->FindElement(SDF_ELEMENT_LINK_MATERIAL_TEXTURE_ALBEDO_COLOR))
             {
                 const auto albedoColor = albedoColorElement->Get<ignition::math::Color>();
@@ -297,15 +300,16 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
         }
         if (auto maskElement = materialElement->FindElement(SDF_ELEMENT_LINK_MATERIAL_TEXTURE_MASK))
         {
-            materialInfo.MaskTextureName = URRCoreUtils::StdToFString(maskElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+            materialInfo.MaskTextureName = URRConversionUtils::StdToFString(maskElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
         }
         if (auto ormElement = materialElement->FindElement(SDF_ELEMENT_LINK_MATERIAL_TEXTURE_ORM))
         {
-            materialInfo.ORMTextureName = URRCoreUtils::StdToFString(ormElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+            materialInfo.ORMTextureName = URRConversionUtils::StdToFString(ormElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
         }
         if (auto normalElement = materialElement->FindElement(SDF_ELEMENT_LINK_MATERIAL_TEXTURE_NORMAL))
         {
-            materialInfo.NormalTextureName = URRCoreUtils::StdToFString(normalElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+            materialInfo.NormalTextureName =
+                URRConversionUtils::StdToFString(normalElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
         }
     }
 
@@ -329,7 +333,7 @@ bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRR
     sdf::ElementPtr linkElement = InModelElement->FindElement(SDF_ELEMENT_LINK);
     while (linkElement)
     {
-        const FString linkName = URRCoreUtils::StdToFString(linkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        const FString linkName = URRConversionUtils::StdToFString(linkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
         if (linkName.IsEmpty())
         {
             UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Missing name in link element."));
@@ -353,7 +357,7 @@ bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRR
         if (sdf::ElementPtr linkPoseElement = linkElement->FindElement(SDF_ELEMENT_POSE))
         {
             newLinkProp.ParentFrameName =
-                URRCoreUtils::StdToFString(linkPoseElement->Get<std::string>(SDF_ELEMENT_ATTR_RELATIVE_TO));
+                URRConversionUtils::StdToFString(linkPoseElement->Get<std::string>(SDF_ELEMENT_ATTR_RELATIVE_TO));
 
             const auto linkPose = linkPoseElement->Get<ignition::math::Pose3d>();
             newLinkProp.Location = GetLocationFromIgnitionPose(linkPose);
@@ -365,6 +369,22 @@ bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRR
             linkElement, ERREntityGeometryType::VISUAL, newLinkProp.Location, newLinkProp.Rotation, newLinkProp.VisualList);
         ParseGeometryInfo(
             linkElement, ERREntityGeometryType::COLLISION, newLinkProp.Location, newLinkProp.Rotation, newLinkProp.CollisionList);
+
+        // Auto let collision take after visual if not explicitly specified
+        if (newLinkProp.VisualList.Num() > 0)
+        {
+            const auto& visualInfo = newLinkProp.VisualList.Last();
+            if (newLinkProp.CollisionList.Num() == 0)
+            {
+                FRREntityGeometryInfo collisionInfo;
+                collisionInfo.Name = FString::Printf(TEXT("collision_%s"), *newLinkProp.Name);
+                collisionInfo.LinkType = visualInfo.LinkType;
+                collisionInfo.MeshName = visualInfo.MeshName;
+                collisionInfo.Size = visualInfo.Size;
+                collisionInfo.WorldScale = visualInfo.WorldScale;
+                newLinkProp.CollisionList.Emplace(MoveTemp(collisionInfo));
+            }
+        }
 
         // Link's inertia --
         if (sdf::ElementPtr inertialElement = linkElement->FindElement(SDF_ELEMENT_LINK_INERTIAL))
@@ -416,20 +436,21 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
                                      const FQuat& InRotationBase,
                                      TArray<FRREntityGeometryInfo>& OutGeometryInfoList)
 {
-    const FString linkName = URRCoreUtils::StdToFString(InLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+    const FString linkName = URRConversionUtils::StdToFString(InLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
     const char* visualCollisionElementName = (ERREntityGeometryType::VISUAL == InGeometryType)      ? SDF_ELEMENT_LINK_VISUAL
                                              : (ERREntityGeometryType::COLLISION == InGeometryType) ? SDF_ELEMENT_LINK_COLLISION
                                                                                                     : nullptr;
     check(visualCollisionElementName);
     sdf::ElementPtr visualCollisionElement = InLinkElement->FindElement(visualCollisionElementName);
 
+    bool bNewVisualCollision = false;
     while (visualCollisionElement)
     {
         FRREntityGeometryInfo geometryInfo;
         geometryInfo.LinkName = linkName;
 
         // Name
-        geometryInfo.Name = URRCoreUtils::StdToFString(visualCollisionElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        geometryInfo.Name = URRConversionUtils::StdToFString(visualCollisionElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
 
         // Pose
         sdf::ElementPtr poseElement = visualCollisionElement->FindElement(SDF_ELEMENT_POSE);
@@ -455,7 +476,7 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
             if (meshElement)
             {
                 geometryInfo.LinkType = ERRShapeType::MESH;
-                const auto meshURI = URRCoreUtils::StdToFString(meshElement->Get<std::string>(SDF_ELEMENT_LINK_URI));
+                const auto meshURI = URRConversionUtils::StdToFString(meshElement->Get<std::string>(SDF_ELEMENT_LINK_URI));
                 geometryInfo.MeshName = meshURI;
                 if (meshElement->HasElement(SDF_ELEMENT_LINK_SCALE))
                 {
@@ -515,7 +536,7 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
             {
                 if (auto scriptNameElement = scriptElement->FindElement(SDF_ELEMENT_ATTR_NAME))
                 {
-                    materialInfo.Name = URRCoreUtils::StdToFString(scriptNameElement->Get<std::string>());
+                    materialInfo.Name = URRConversionUtils::StdToFString(scriptNameElement->Get<std::string>());
                 }
             }
 
@@ -526,7 +547,7 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
             while (albedoElement)
             {
                 materialInfo.AlbedoTextureNameList.Emplace(
-                    URRCoreUtils::StdToFString(albedoElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME)));
+                    URRConversionUtils::StdToFString(albedoElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME)));
                 if (auto albedoColorElement = albedoElement->FindElement(SDF_ELEMENT_LINK_MATERIAL_TEXTURE_ALBEDO_COLOR))
                 {
                     const auto albedoColor = albedoColorElement->Get<ignition::math::Color>();
@@ -537,15 +558,17 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
             }
             if (auto maskElement = materialElement->FindElement(SDF_ELEMENT_LINK_MATERIAL_TEXTURE_MASK))
             {
-                materialInfo.MaskTextureName = URRCoreUtils::StdToFString(maskElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+                materialInfo.MaskTextureName =
+                    URRConversionUtils::StdToFString(maskElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
             }
             if (auto ormElement = materialElement->FindElement(SDF_ELEMENT_LINK_MATERIAL_TEXTURE_ORM))
             {
-                materialInfo.ORMTextureName = URRCoreUtils::StdToFString(ormElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+                materialInfo.ORMTextureName = URRConversionUtils::StdToFString(ormElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
             }
             if (auto normalElement = materialElement->FindElement(SDF_ELEMENT_LINK_MATERIAL_TEXTURE_NORMAL))
             {
-                materialInfo.NormalTextureName = URRCoreUtils::StdToFString(normalElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+                materialInfo.NormalTextureName =
+                    URRConversionUtils::StdToFString(normalElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
             }
         }
 
@@ -561,16 +584,17 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
         }
         // Add new geometry info prop to the list
         OutGeometryInfoList.Emplace(MoveTemp(geometryInfo));
+        bNewVisualCollision = true;
 
         visualCollisionElement = visualCollisionElement->GetNextElement(visualCollisionElementName);
     }
 
-    return true;
+    return bNewVisualCollision;
 }
 
 bool FRRSDFParser::ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TArray<FRRSensorProperty>& OutSensorPropList)
 {
-    const FString linkName = URRCoreUtils::StdToFString(InLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+    const FString linkName = URRConversionUtils::StdToFString(InLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
     sdf::ElementPtr sensorElement = InLinkElement->FindElement(SDF_ELEMENT_LINK_SENSOR);
     while (sensorElement)
     {
@@ -578,8 +602,8 @@ bool FRRSDFParser::ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TA
         sensorProp.LinkName = linkName;
 
         // Sensor's name & type
-        sensorProp.SensorName = URRCoreUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
-        const FString sensorTypeName = URRCoreUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_ATTR_TYPE));
+        sensorProp.SensorName = URRConversionUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        const FString sensorTypeName = URRConversionUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_ATTR_TYPE));
         const int8 sensorTypeVal = URRTypeUtils::GetEnumValueFromString(TEXT("ERRSensorType"), sensorTypeName);
         sensorProp.SensorType = (INDEX_NONE == sensorTypeVal) ? ERRSensorType::NONE : static_cast<ERRSensorType>(sensorTypeVal);
 
@@ -588,9 +612,9 @@ bool FRRSDFParser::ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TA
         {
             auto& lidarInfo = sensorProp.LidarInfo;
 
-            lidarInfo.TopicName = URRCoreUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_SENSOR_TOPIC));
+            lidarInfo.TopicName = URRConversionUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_SENSOR_TOPIC));
             ensure(false == lidarInfo.TopicName.IsEmpty());
-            lidarInfo.FrameId = URRCoreUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_SENSOR_FRAME_ID));
+            lidarInfo.FrameId = URRConversionUtils::StdToFString(sensorElement->Get<std::string>(SDF_ELEMENT_SENSOR_FRAME_ID));
             lidarInfo.PublicationFrequencyHz = sensorElement->Get<float>(SDF_ELEMENT_SENSOR_UPDATE_RATE);
 
             // Make sure <lidar>/<ray> exists
@@ -639,7 +663,7 @@ bool FRRSDFParser::ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TA
             if (noiseElement)
             {
                 lidarInfo.NoiseTypeName =
-                    URRCoreUtils::StdToFString(noiseElement->Get<std::string>(SDF_ELEMENT_SENSOR_LIDAR_NOISE_TYPE));
+                    URRConversionUtils::StdToFString(noiseElement->Get<std::string>(SDF_ELEMENT_SENSOR_LIDAR_NOISE_TYPE));
 
                 lidarInfo.NoiseMean = noiseElement->Get<double>(SDF_ELEMENT_SENSOR_LIDAR_NOISE_MEAN);
                 lidarInfo.NoiseStdDev = noiseElement->Get<double>(SDF_ELEMENT_SENSOR_LIDAR_NOISE_STDDEV);
@@ -659,7 +683,7 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
     sdf::ElementPtr jointElement = InModelElement->FindElement(SDF_ELEMENT_JOINT);
     while (jointElement)
     {
-        const FString parentLinkName = URRCoreUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_JOINT_PARENT));
+        const FString parentLinkName = URRConversionUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_JOINT_PARENT));
         verify(false == parentLinkName.IsEmpty());
 
         if (parentLinkName.Equals(TEXT("world"), ESearchCase::IgnoreCase))
@@ -672,10 +696,10 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
             continue;
         }
 
-        const FString jointName = URRCoreUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
-        const FString jointTypeName = URRCoreUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_ATTR_TYPE));
+        const FString jointName = URRConversionUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
+        const FString jointTypeName = URRConversionUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_ATTR_TYPE));
 
-        const FString childLinkName = URRCoreUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_JOINT_CHILD));
+        const FString childLinkName = URRConversionUtils::StdToFString(jointElement->Get<std::string>(SDF_ELEMENT_JOINT_CHILD));
         verify(false == childLinkName.IsEmpty());
 #if RAPYUTA_SDF_PARSER_DEBUG
         UE_LOG_WITH_INFO(
@@ -692,7 +716,7 @@ bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FR
         {
             // Typically this would be the same as parent link name
             const FString parentBodyName =
-                URRCoreUtils::StdToFString(jointPoseElement->Get<std::string>(SDF_ELEMENT_ATTR_RELATIVE_TO));
+                URRConversionUtils::StdToFString(jointPoseElement->Get<std::string>(SDF_ELEMENT_ATTR_RELATIVE_TO));
             if (false == parentLinkName.Equals(parentBodyName))
             {
                 UE_LOG_WITH_INFO(LogRapyutaCore,

@@ -92,6 +92,7 @@ enum class ERRRobotJointType : uint8
     FIXED,
     FLOATING,
     PRISMATIC,
+    CYLINDRICAL,
     REVOLUTE,
     BALL,
     PLANAR,
@@ -323,6 +324,7 @@ public:
                 return LCM_Locked;
 
             case ERRRobotJointType::PRISMATIC:
+            case ERRRobotJointType::CYLINDRICAL:
                 return LCM_Limited;
 
             case ERRRobotJointType::PLANAR:
@@ -343,6 +345,7 @@ public:
                 return ACM_Locked;
 
             case ERRRobotJointType::REVOLUTE:
+            case ERRRobotJointType::CYLINDRICAL:
             {
                 return (UpperLimit > UE_TWO_PI) ? ACM_Free : ACM_Limited;
             }
@@ -1051,6 +1054,9 @@ public:
 
     UPROPERTY()
     bool bHasWorldJoint = false;
+
+    UPROPERTY()
+    bool bGroundModel = false;
 
     //! World model: [ModelNameList] >= 1
     //! Pure model:  [ModelNameList] == 1 if Single else > 1

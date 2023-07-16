@@ -28,6 +28,16 @@ class URRConversionUtils : public UBlueprintFunctionLibrary
     GENERATED_BODY()
 
 public:
+    FORCEINLINE static FString StdToFString(const std::string& InStdString)
+    {
+        return FString(InStdString.c_str());
+    }
+
+    FORCEINLINE static std::string FToStdString(const FString& InUEString)
+    {
+        return std::string(TCHAR_TO_UTF8(*InUEString));
+    }
+
     UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FVector ConvertHandedness(const FVector& InLocation)
     {
