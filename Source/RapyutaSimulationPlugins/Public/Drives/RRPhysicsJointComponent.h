@@ -120,7 +120,7 @@ public:
 
     //! Angular Velocity Gain used with #bSmoothing = false. 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float Kva = 10.0;
+    float Kva = 10.f;
 
     //! Position Integral Gain used with #bSmoothing = false
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
