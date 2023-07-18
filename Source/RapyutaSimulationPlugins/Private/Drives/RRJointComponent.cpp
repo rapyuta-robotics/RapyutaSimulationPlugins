@@ -33,16 +33,8 @@ void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const
 
 bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, const float InAngularTolerance)
 {
-    float linearTolerance = InLinearTolerance;
-    if (linearTolerance < 0)
-    {
-        linearTolerance = LinearVelocityTolerance;
-    }
-    float angularTolerance = InAngularTolerance;
-    if (angularTolerance < 0)
-    {
-        angularTolerance = AngularVelocityTolerance;
-    }
+    const float linearTolerance = (InLinearTolerance >= 0.f) ? InLinearTolerance : LinearVelocityTolerance;
+    const float angularTolerance = (InAngularTolerance >= 0.f) ? InAngularTolerance : AngularVelocityTolerance;
     
     return LinearVelocityTarget.Equals(LinearVelocity, linearTolerance) && AngularVelocityTarget.Equals(AngularVelocity, angularTolerance);
 };
