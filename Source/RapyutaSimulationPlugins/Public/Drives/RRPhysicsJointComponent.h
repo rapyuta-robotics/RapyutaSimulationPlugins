@@ -124,7 +124,7 @@ public:
 
     //! Position Integral Gain used with #bSmoothing = false
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float Kip = 0.0;
+    float Kip = 0.f;
 
     //! Angular Integral Gain used with #bSmoothing = false
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
