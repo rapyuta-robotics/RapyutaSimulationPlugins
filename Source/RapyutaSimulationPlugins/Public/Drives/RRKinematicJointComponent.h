@@ -75,4 +75,13 @@ public:
      * @sa[K2_SetWorldTransform](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/Components/USceneComponent/K2_SetWorldTransform/)
      */
     virtual void UpdatePose();
+
+    /**
+     * @brief Teleport robot to given pose. Just call #SetPose.
+     * @param InPosition 
+     * @param InOrientation 
+     */
+    virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation) override;
+
+    virtual void MoveToInitPose();
 };

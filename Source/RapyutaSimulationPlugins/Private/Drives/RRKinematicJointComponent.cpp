@@ -118,3 +118,16 @@ void URRKinematicJointComponent::UpdatePose()
                          false    // bTeleport
     );
 }
+
+void URRKinematicJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)
+{
+    Super::Teleport(InPosition, InOrientation);
+    SetPose(InPosition, InOrientation);
+};
+
+
+void URRKinematicJointComponent::MoveToInitPose()
+{
+    Teleport(InitialPosition, InitialOrientation);
+    SetPoseTarget(InitialPosition, InitialOrientation);
+}

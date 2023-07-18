@@ -85,6 +85,7 @@ void URRPhysicsJointComponent::SetJoint()
     Constraint->SetAngularSwing2Limit(angleEnabled[2] ? EAngularConstraintMotion::ACM_Free : EAngularConstraintMotion::ACM_Locked,
                                       0);
     Constraint->SetAngularDriveParams(AngularSpring, AngularDamper, AngularForceLimit);
+    Constraint->SetDisableCollision(true);
 }
 
 void URRPhysicsJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
@@ -154,24 +155,18 @@ void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FR
         FVector orientationDiff = OrientationTargetEuler - OrientationEuler;
         for (i = 0; i < 3; i++)
         {
-            LinearVelocityTarget[i] = FMath::IsNearlyZero(poseDiff[i], PositionTolerance) ? 0
-                                      : poseDiff[i] < 0                                   ? -LinearVelMax[i]
-                                                                                          : LinearVelMax[i];
+            LinearVelocityTarget[i] = FMath::Clamp(Kvp * poseDiff[i], -LinearVelMax[i], LinearVelMax[i]);
         }
         for (i = 0; i < 3; i++)
         {
             float diff = FRotator::NormalizeAxis(orientationDiff[i]);
-            AngularVelocityTarget[i] = FMath::IsNearlyZero(diff, OrientationTolerance) ? 0
-                                       : diff < 0                                      ? -AngularVelMax[i]
-                                                                                       : AngularVelMax[i];
+            AngularVelocityTarget[i] = FMath::Clamp(Kva * poseDiff[i], -AngularVelMax[i], AngularVelMax[i]);
         }
 
         Constraint->SetLinearVelocityTarget(LinearVelocityTarget);
         Constraint->SetAngularVelocityTarget(AngularVelocityTarget / 360.0);    // rev/s
-        Constraint->SetLinearPositionTarget(InPosition);
-        // not sure why this inverse conversion is required.
-        // Constraint->SetAngularOrientationTarget(InOrientation);
-        Constraint->SetAngularOrientationTarget(FRotator(-InOrientation.Pitch, -InOrientation.Yaw, -InOrientation.Roll));
+        Constraint->SetLinearPositionTarget(InPosition + PErrInt);
+        Constraint->SetAngularOrientationTarget(GetOrientationTargetFromEuler(InOrientation.Euler() + AErrInt));
     }
     else
     {
@@ -231,6 +226,7 @@ void URRPhysicsJointComponent::UpdateState(const float DeltaTime)
 
     FVector prevOrientationEuler = prevOrientation.Euler();
     FVector OrientationEuler = Orientation.Euler();
+
     for (uint8 i = 0; i < 3; i++)
     {
         LinearVelocity[i] = UKismetMathLibrary::SafeDivide(Position[i] - prevPosition[i], DeltaTime);
@@ -256,19 +252,51 @@ void URRPhysicsJointComponent::UpdateState(const float DeltaTime)
 #endif
 }
 
+void URRPhysicsJointComponent::UpdateVelocityTargetFromPose(const FVector InPositionDiff, const FVector InOrientationDiff)
+{
+    uint8 i;
+    for (i = 0; i < 3; i++)
+    {
+        LinearVelocityTarget[i] = FMath::Clamp(Kvp * InPositionDiff[i], -LinearVelMax[i], LinearVelMax[i]);
+
+        float diff = FRotator::NormalizeAxis(InOrientationDiff[i]);
+        AngularVelocityTarget[i] = FMath::Clamp(Kva * diff, -AngularVelMax[i], AngularVelMax[i]);
+    }
+}
+
+void URRPhysicsJointComponent::UpdateIntegral(const FVector& InPositionDiff,
+                                              const FVector& InOrientationDiff,
+                                              const float DeltaTime)
+{
+    uint8 i;
+    for (i = 0; i < 3; i++)
+    {
+        PErrInt[i] += Kip * DeltaTime * InPositionDiff[i];
+
+        float diff = FRotator::NormalizeAxis(InOrientationDiff[i]);
+        AErrInt[i] += Kia * DeltaTime * diff;
+    }
+}
+
+FRotator URRPhysicsJointComponent::GetOrientationTargetFromEuler(const FVector& InOrientationTarget)
+{
+    // not sure why this inverse conversion is required.
+    FRotator orientationTarget = FRotator::MakeFromEuler(InOrientationTarget);
+    return FRotator(-orientationTarget.Pitch, -orientationTarget.Yaw, -orientationTarget.Roll);
+}
+
 void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
 {
     uint8 i = 0;
     if (ControlType == ERRJointControlType::POSITION)
     {
-        FVector OrientationTargetEuler = OrientationTarget.Euler();
-        FVector MidOrientationTargetEuler = MidOrientationTarget.Euler();
         if (bSmoothing)
         {
             // input
             float t = GetWorld()->GetTimeSeconds();
 
             // output
+            FVector MidOrientationTargetEuler = MidOrientationTarget.Euler();
             bool initialized = true;
             for (i = 0; i < 3; i++)
             {
@@ -285,36 +313,24 @@ void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
                     MidAngularVelocityTarget[i] = FMath::RadiansToDegrees(resOri[1]);
                 }
             }
-            MidOrientationTarget = FRotator::MakeFromEuler(MidOrientationTargetEuler);
-
             Constraint->SetLinearVelocityTarget(MidLinearVelocityTarget);
             Constraint->SetAngularVelocityTarget(MidAngularVelocityTarget / 360.0);
             Constraint->SetLinearPositionTarget(MidPositionTarget);
-            // not sure why this inverse conversion is required.
-            Constraint->SetAngularOrientationTarget(
-                FRotator(-MidOrientationTarget.Pitch, -MidOrientationTarget.Yaw, -MidOrientationTarget.Roll));
+            Constraint->SetAngularOrientationTarget(GetOrientationTargetFromEuler(MidOrientationTargetEuler));
         }
         else
         {
-            // todo support linear update in two_points_interpolation_constant_acc.hpp
-            // Set velocity=0 if it reached or overshoot
-            // Use URRMathUtils::URRMathUtils::StepUpdate to check current value is within tolerance.
-            FVector OrientationEuler = Orientation.Euler();
-            for (i = 0; i < 3; i++)
-            {
-                double dummy = Position[i];
-                if (URRMathUtils::StepUpdate(dummy, PositionTarget[i], LinearVelocityTarget[i], PositionTolerance))
-                {
-                    LinearVelocityTarget[i] = 0.0;
-                }
-                dummy = OrientationEuler[i];
-                if (URRMathUtils::StepUpdateAngle(dummy, OrientationTargetEuler[i], AngularVelocityTarget[i], OrientationTolerance))
-                {
-                    AngularVelocityTarget[i] = 0.0;
-                }
-            }
+            FVector poseDiff = PositionTarget - Position;
+            FVector orientationEuler = Orientation.Euler();
+            FVector orientationTargetEuler = OrientationTarget.Euler();
+            FVector orientationDiff = orientationTargetEuler - orientationEuler;
+            UpdateVelocityTargetFromPose(poseDiff, orientationDiff);
+            UpdateIntegral(poseDiff, orientationDiff, DeltaTime);
+
             Constraint->SetLinearVelocityTarget(LinearVelocityTarget);
             Constraint->SetAngularVelocityTarget(AngularVelocityTarget / 360.0);    //rev/s
+            Constraint->SetLinearPositionTarget(PositionTarget + PErrInt);
+            Constraint->SetAngularOrientationTarget(GetOrientationTargetFromEuler(orientationTargetEuler + AErrInt));
         }
     }
     else if (ControlType == ERRJointControlType::VELOCITY)
@@ -368,4 +384,23 @@ void URRPhysicsJointComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
     UpdateState(DeltaTime);
     UpdateControl(DeltaTime);
+}
+
+void URRPhysicsJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)
+{
+    Super::Teleport(InPosition, InOrientation);
+
+    //! @note K2_SetWorldTransform not works with physics constraints
+    // FHitResult SweepHitResult;
+    // K2_SetWorldTransform(FTransform(Orientation, Position) *  // joint changes
+    //                      Constraint->GetComponentTransform(),             // world orogin to parent
+    //                      true,                                // bSweep
+    //                      SweepHitResult,
+    //                      false    // bTeleport
+    UE_LOG_WITH_INFO_SHORT_NAMED(LogRapyutaCore, Warning, TEXT("Teleport is not supported with Physics joint"));
+};
+
+void URRPhysicsJointComponent::MoveToInitPose()
+{
+    SetPoseTarget(InitialPosition, InitialOrientation);
 }

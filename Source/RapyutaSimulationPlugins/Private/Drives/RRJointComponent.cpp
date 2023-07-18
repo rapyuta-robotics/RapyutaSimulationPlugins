@@ -33,8 +33,10 @@ void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const
 
 bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, const float InAngularTolerance)
 {
-    return LinearVelocityTarget.Equals(LinearVelocity, InLinearTolerance) &&
-           AngularVelocityTarget.Equals(AngularVelocity, InAngularTolerance);
+    const float linearTolerance = (InLinearTolerance >= 0.f) ? InLinearTolerance : LinearVelocityTolerance;
+    const float angularTolerance = (InAngularTolerance >= 0.f) ? InAngularTolerance : AngularVelocityTolerance;
+    
+    return LinearVelocityTarget.Equals(LinearVelocity, linearTolerance) && AngularVelocityTarget.Equals(AngularVelocity, angularTolerance);
 };
 
 void URRJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
@@ -101,7 +103,9 @@ void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator&
 
 bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, const float InOrientationTolerance)
 {
-    return PositionTarget.Equals(Position, InPositionTolerance) && OrientationTarget.Equals(Orientation, InOrientationTolerance);
+    const float positionTolerance = (InPositionTolerance >= 0.f) ? InPositionTolerance : PositionTolerance;
+    const float orientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
+    return PositionTarget.Equals(Position, positionTolerance) && OrientationTarget.Equals(Orientation, orientationTolerance);
 };
 
 void URRJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
@@ -158,4 +162,12 @@ void URRJointComponent::SetPoseWithArray(const TArray<float>& InPose)
     FRotator OutOrientation;
     PoseFromArray(InPose, OutPosition, OutOrientation);
     SetPose(OutPosition, OutOrientation);
+}
+
+void URRJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)
+{
+};
+
+void URRJointComponent::MoveToInitPose()
+{
 }

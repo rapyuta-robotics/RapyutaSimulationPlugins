@@ -566,6 +566,10 @@ void ARRBaseRobot::BeginPlay()
     {
         InitUIWidget();
     }
+    if (bInitializeJoints)
+    {
+        StartJointsInitialization();
+    }
 }
 
 void ARRBaseRobot::Tick(float DeltaSeconds)
@@ -582,6 +586,11 @@ void ARRBaseRobot::Tick(float DeltaSeconds)
             staticMeshComp->WakeAllRigidBodies();
         }
     }
+
+    if (bInitializingJoints)
+    {
+        CheckJointsInitialization();
+    }
 }
 
 bool ARRBaseRobot::InitPropertiesFromJSON()
@@ -592,4 +601,69 @@ bool ARRBaseRobot::InitPropertiesFromJSON()
         return false;
     }
     return true;
+}
+
+void ARRBaseRobot::StartJointsInitialization()
+{
+    if (bInitializingJoints)
+    {
+        return;
+    }
+    bInitializingJoints = true;
+
+    // disable collision
+    // note: no collision do not work with PhysicsConstraints.
+    SetChildComponentsCollisionEnabled(false);
+
+    // move to initial pose
+    for (auto& joint : Joints)
+    {
+        if (joint.Value)
+        {
+            joint.Value->MoveToInitPose();
+        }
+    }
+}
+
+void ARRBaseRobot::CheckJointsInitialization()
+{
+    bool res = true;
+    for (auto& joint : Joints)
+    {
+        if (joint.Value)
+        {
+            res &= joint.Value->HasReachedPoseTarget();
+        }
+    }
+    bInitializingJoints = !res;
+
+    // restore collision
+    if (!bInitializingJoints)
+    {
+        SetChildComponentsCollisionEnabled(true);
+    }
+}
+
+void ARRBaseRobot::SetChildComponentsCollisionEnabled(const bool IsEnable)
+{
+    TInlineComponentArray<USceneComponent*> components(this);
+    for (auto& comp : components)
+    {
+        auto primComp = Cast<UPrimitiveComponent>(comp);
+        if (primComp)
+        {
+            if (IsEnable)
+            {
+                if (OriginalCollisionProfiles.Contains(primComp))
+                {
+                    primComp->SetCollisionProfileName(OriginalCollisionProfiles[primComp]);
+                }
+            }
+            else
+            {
+                OriginalCollisionProfiles.Emplace(primComp, primComp->GetCollisionProfileName());
+                primComp->SetCollisionProfileName(TEXT("OverlapAll"));
+            }
+        }
+    }
 }

@@ -100,7 +100,8 @@ void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdomTf);
     DOREPLIFETIME(URRRobotROS2Interface, OdomPublicationFrequencyHz);
     DOREPLIFETIME(URRRobotROS2Interface, CmdVelTopicName);
-    DOREPLIFETIME(URRRobotROS2Interface, JointsCmdTopicName);
+    DOREPLIFETIME(URRRobotROS2Interface, JointCmdTopicName);
+    DOREPLIFETIME(URRRobotROS2Interface, JointStateTopicName);
     DOREPLIFETIME(URRRobotROS2Interface, bWarnAboutMissingLink);
 }
 
@@ -133,6 +134,17 @@ bool URRRobotROS2Interface::InitPublishers()
     {
         return false;
     }
+
+    // JointState publisher
+    ROS2_CREATE_LOOP_PUBLISHER_WITH_QOS(RobotROS2Node,
+                                        this,
+                                        JointStateTopicName,
+                                        UROS2Publisher::StaticClass(),
+                                        UROS2JointStateMsg::StaticClass(),
+                                        JointStatePublicationFrequencyHz,
+                                        &URRRobotROS2Interface::UpdateJointState,
+                                        UROS2QoS::Default,
+                                        JointStatePublisher);
 
     // Additional publishers by child class or robot
     for (auto& pub : Publishers)
@@ -178,7 +190,7 @@ bool URRRobotROS2Interface::InitSubscriptions()
 
     // Subscription with callback to enqueue vehicle spawn info.
     RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(
-        JointsCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointStateCallback);
+        JointCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointCmdCallback);
 
     // Additional subscribers by child class or robot
     for (auto& sub : Subscribers)
@@ -314,7 +326,7 @@ void URRRobotROS2Interface::MovementCallback(const UROS2GenericMsg* Msg)
     }
 }
 
-void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
+void URRRobotROS2Interface::JointCmdCallback(const UROS2GenericMsg* Msg)
 {
     const UROS2JointStateMsg* jointStateMsg = Cast<UROS2JointStateMsg>(Msg);
     if (IsValid(jointStateMsg))
@@ -356,7 +368,7 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
                 if (bWarnAboutMissingLink)
                 {
                     UE_LOG_WITH_INFO_NAMED(
-                        LogRapyutaCore, Warning, TEXT("vehicle do not have joint named %s."), *jointState.Name[i]);
+                        LogRapyutaCore, Warning, TEXT("robot do not have joint named %s."), *jointState.Name[i]);
                 }
                 continue;
             }
@@ -380,11 +392,11 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
             // ROS To UE conversion
             if (Robot->Joints[jointState.Name[i]]->LinearDOF == 1)
             {
-                input[0] *= 100;    // todo add conversion to conversion util
+                input[0] = URRConversionUtils::DistanceROSToUE(input[0]);
             }
             else if (Robot->Joints[jointState.Name[i]]->RotationalDOF == 1)
             {
-                input[0] *= 180 / M_PI;    // todo add conversion to conversion util
+                input[0] = FMath::RadiansToDegrees(input[0]);
             }
             else
             {
@@ -415,6 +427,44 @@ void URRRobotROS2Interface::JointStateCallback(const UROS2GenericMsg* Msg)
                   });
     }
 }
+
+void URRRobotROS2Interface::UpdateJointState(UROS2GenericMsg* InMessage)
+{
+    if (nullptr == Robot)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Robots are not set."));
+        return;
+    }
+
+    FROSJointState msg;
+    msg.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
+
+    for (const auto& joint : Robot->Joints)
+    {
+        if(nullptr == joint.Value)
+        {
+            continue;
+        }
+
+        msg.Name.Emplace(joint.Key);
+
+        // UE to ROS conversion
+        if (joint.Value->LinearDOF == 1)
+        {
+            msg.Position.Emplace(joint.Value->Position[0]);
+            msg.Velocity.Emplace(joint.Value->LinearVelocity[0]);
+        }
+        else if (joint.Value->RotationalDOF == 1)
+        {
+            msg.Position.Emplace(FMath::DegreesToRadians(joint.Value->Orientation.Euler()[0]));
+            msg.Velocity.Emplace(FMath::DegreesToRadians(joint.Value->AngularVelocity[0]));
+        }    
+        
+        msg.Effort.Emplace(0); //effort is not supported yet.
+    }
+    CastChecked<UROS2JointStateMsg>(InMessage)->SetMsg(msg);
+}
+
 
 URRRobotROS2InterfaceComponent::URRRobotROS2InterfaceComponent()
 {

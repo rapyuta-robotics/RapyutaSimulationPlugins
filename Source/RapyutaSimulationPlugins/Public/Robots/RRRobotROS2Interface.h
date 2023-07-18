@@ -96,14 +96,9 @@ public:
      */
     void InitRobotROS2Node(ARRBaseRobot* InRobot);
 
-    /**
-     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS 2 msg.
-     * Supports only 1 DOF joints.
-     * Effort control is not supported.
-     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
-     */
-    UFUNCTION()
-    virtual void JointStateCallback(const UROS2GenericMsg* Msg);
+    //////////////////////////////
+    //Mobile
+    //////////////////////////////
 
     //! Odometry source
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
@@ -119,14 +114,48 @@ public:
     float OdomPublicationFrequencyHz = 30;
 
     //! Movement command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite, Replicated)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString CmdVelTopicName = TEXT("cmd_vel");
 
-    //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(BlueprintReadWrite, Replicated)
-    FString JointsCmdTopicName = TEXT("joint_states");
+    //////////////////////////////
+    //Joint
+    //////////////////////////////
 
-    UPROPERTY(BlueprintReadWrite, Replicated)
+    /**
+     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS 2 msg.
+     * Supports only 1 DOF joints.
+     * Effort control is not supported.
+     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
+     */
+    UFUNCTION()
+    virtual void JointCmdCallback(const UROS2GenericMsg* Msg);
+    
+    //! Joint control command topic. If empty is given, subscriber will not be initiated.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    FString JointCmdTopicName = TEXT("ue_joint_commands");
+
+    /**
+     * @brief Update Joint State msg
+     * 
+     * @param InMessage 
+     */
+    UFUNCTION()
+    void UpdateJointState(UROS2GenericMsg* InMessage);
+
+    //! JointState Publisher
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UROS2Publisher* JointStatePublisher = nullptr;
+
+    //! Joint control command topic. If empty is given, subscriber will not be initiated.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    float JointStatePublicationFrequencyHz = 30.f;
+
+    //! Joint state topic
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    FString JointStateTopicName = TEXT("ue_joint_states");
+
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bWarnAboutMissingLink = true;
 
     /**
