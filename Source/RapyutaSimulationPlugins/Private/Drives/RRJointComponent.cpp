@@ -103,16 +103,8 @@ void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator&
 
 bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, const float InOrientationTolerance)
 {
-    float positionTolerance = InPositionTolerance;
-    if (positionTolerance < 0)
-    {
-        positionTolerance = PositionTolerance;
-    }
-    float orientationTolerance = InOrientationTolerance;
-    if (orientationTolerance < 0)
-    {
-        orientationTolerance = OrientationTolerance;
-    }
+    const float positionTolerance = (InPositionTolerance >= 0.f) ? InPositionTolerance : PositionTolerance;
+    const float orientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
     return PositionTarget.Equals(Position, positionTolerance) && OrientationTarget.Equals(Orientation, orientationTolerance);
 };
 
