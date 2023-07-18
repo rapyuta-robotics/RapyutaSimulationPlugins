@@ -6,7 +6,10 @@
 #include "Core/RRConversionUtils.h"
 #include "Core/RRCoreUtils.h"
 
-static TArray<const TCHAR*> UE_ELEMENT_LIST = {TEXT("ue_sensor_ray_scan_horizontal"),
+static TArray<const TCHAR*> UE_ELEMENT_LIST = {TEXT("ue_sensor_topic"),
+                                               TEXT("ue_sensor_frame_id"),
+                                               TEXT("ue_sensor_update_rate"),
+                                               TEXT("ue_sensor_ray_scan_horizontal"),
                                                TEXT("ue_sensor_ray_scan_vertical"),
                                                TEXT("ue_sensor_ray_range"),
                                                TEXT("ue_sensor_ray_noise"),
@@ -131,7 +134,9 @@ bool FRRURDFParser::ProcessAttribute(const TCHAR* InAttributeName, const TCHAR* 
         {
             AttMap.Add(ComposeAttributeKey(elementStackTop, attName, TEXT("ue_material")), attValueString);
         }
-        else if (elementStackTop.Equals(TEXT("ray")) || elementStackTop.Equals(TEXT("lidar")))
+        else if (elementStackTop.Equals(TEXT("topic")) || elementStackTop.Equals(TEXT("frame_id")) ||
+                 elementStackTop.Equals(TEXT("update_rate")) || elementStackTop.Equals(TEXT("ray")) ||
+                 elementStackTop.Equals(TEXT("lidar")))
         {
             AttMap.Add(ComposeAttributeKey(elementStackTop, attName, TEXT("ue_sensor")), attValueString);
         }
@@ -257,6 +262,7 @@ void FRRURDFParser::ParseUELinkMaterialAndSensorInfo()
                 // Parse sensor property
                 FRRSensorProperty sensorProp;
                 ParseSensorProperty(sensorProp);
+                sensorProp.LinkName = ueRefLinkName;
                 linkProp.SensorList.Emplace(MoveTemp(sensorProp));
 
                 break;
@@ -602,6 +608,9 @@ bool FRRURDFParser::ParseSensorProperty(FRRSensorProperty& OutSensorProp)
                                                                                                        : ERRLidarSensorType::NONE;
 
             // Scan's horizontal + vertical
+            outLidarInfo.TopicName = AttMap.FindRef(TEXT("ue_sensor_topic_name"));
+            outLidarInfo.FrameId = AttMap.FindRef(TEXT("ue_sensor_frame_id_name"));
+            outLidarInfo.PublicationFrequencyHz = FCString::Atof(*AttMap.FindRef(TEXT("ue_sensor_update_rate_value")));
             outLidarInfo.NHorSamplesPerScan = FCString::Atof(*AttMap.FindRef(TEXT("ue_sensor_ray_scan_horizontal_samples")));
             outLidarInfo.HMinAngle =
                 FMath::RadiansToDegrees(FCString::Atof(*AttMap.FindRef(TEXT("ue_sensor_ray_scan_horizontal_min_angle"))));

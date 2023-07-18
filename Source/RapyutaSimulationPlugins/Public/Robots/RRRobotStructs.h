@@ -562,12 +562,46 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotGeometryInfo
 };
 
 /**
- * @brief Sensor lidar info
+ * @brief Sensor base info which includes essential base attributes such as Topic name, frame id, publication rate.
+ * Any custom sensor-type info struct (lidar, camera, imu, etc.) should inherit from this struct.
  * @sa [URDF-Sensor](http://wiki.ros.org/urdf/XML/sensor)
  * @sa [SDF-Sensor](http://sdformat.org/spec?elem=sensor)
  */
 USTRUCT(BlueprintType)
-struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo
+struct RAPYUTASIMULATIONPLUGINS_API FRRSensorBaseInfo
+{
+    GENERATED_BODY()
+
+    virtual ~FRRSensorBaseInfo()
+    {
+    }
+    //! ROS Topic name to which sensor data is published to
+    UPROPERTY(EditAnywhere)
+    FString TopicName = TEXT("sensor_data");
+
+    //! The coordinate frame in which sensor data is published under in the tf tree
+    UPROPERTY(EditAnywhere)
+    FString FrameId = TEXT("sensor_frame");
+
+    //! The publishing rate
+    UPROPERTY(EditAnywhere)
+    float PublicationFrequencyHz = 0.f;
+
+    virtual void PrintSelf() const
+    {
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- TopicName: %s"), *TopicName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- FrameId: %s"), *FrameId);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- PublicationFrequencyHz: %f"), PublicationFrequencyHz);
+    }
+};
+
+/**
+ * @brief Sensor lidar info
+ * @sa [URDF-Lidar](http://wiki.ros.org/urdf/XML/sensor#:~:text=to%20near%20clip.-,%3Cray%3E,-(optional))
+ * @sa [SDF-Lidar](http://sdformat.org/spec?elem=sensor#sensor_lidar)
+ */
+USTRUCT(BlueprintType)
+struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo : public FRRSensorBaseInfo
 {
     GENERATED_BODY()
     UPROPERTY(EditAnywhere)
@@ -618,20 +652,65 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo
     double NoiseMean = 0;
     UPROPERTY(EditAnywhere)
     double NoiseStdDev = 0;
+
+    virtual void PrintSelf() const override
+    {
+        Super::PrintSelf();
+        UE_LOG_WITH_INFO(
+            LogTemp, Display, TEXT("- LidarType: %s"), *URRTypeUtils::GetEnumValueAsString(TEXT("ERRLidarSensorType"), LidarType));
+
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Scan horizontal"));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ NHorSamplesPerScan: %d"), NHorSamplesPerScan);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ HMinAngle: %f"), HMinAngle);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ HMaxAngle: %f"), HMaxAngle);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ HResolution: %f"), HResolution);
+
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Scan vertical"));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ NVerSamplesPerScan: %d"), NVerSamplesPerScan);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ VMinAngle: %f"), VMinAngle);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ VMaxAngle: %f"), VMaxAngle);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ VResolution: %f"), VResolution);
+
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Range"));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ MinRange: %f"), MinRange);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ MinRange: %f"), MaxRange);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ Resolution: %f"), RangeResolution);
+
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Noise"));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ Type: %s"), *NoiseTypeName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ Mean: %f"), NoiseMean);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("\t+ StdDev: %f"), NoiseStdDev);
+    }
 };
 
 USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRSensorProperty
 {
     GENERATED_BODY()
+
     UPROPERTY(EditAnywhere)
     FString LinkName;
     UPROPERTY(EditAnywhere)
     FString SensorName;
     UPROPERTY(EditAnywhere)
     ERRSensorType SensorType = ERRSensorType::NONE;
+
+    //! TODO: To avoid extra memory cost, this should be actually a TUniquePtr, which is only instantiated upon SensorType as LIDAR.
+    //! However, it will become not visible/editable in Blueprint like BP data table
     UPROPERTY(EditAnywhere)
     FRRSensorLidarInfo LidarInfo;
+
+    void PrintSelf() const
+    {
+        UE_LOG_WITH_INFO(LogTemp,
+                         Warning,
+                         TEXT("Sensor: %s %s"),
+                         *URRTypeUtils::GetEnumValueAsString(TEXT("ERRSensorType"), SensorType),
+                         *SensorName);
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Link: %s"), *LinkName);
+
+        LidarInfo.PrintSelf();
+    }
 };
 
 USTRUCT(BlueprintType)
@@ -737,39 +816,7 @@ public:
         // Sensors
         for (const auto& sensor : SensorList)
         {
-            UE_LOG_WITH_INFO(LogTemp,
-                             Warning,
-                             TEXT("Sensor: %s %s"),
-                             *URRTypeUtils::GetEnumValueAsString(TEXT("ERRSensorType"), sensor.SensorType),
-                             *sensor.SensorName);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Link: %s"), *sensor.LinkName);
-
-            const auto& lidarInfo = sensor.LidarInfo;
-            UE_LOG_WITH_INFO(LogTemp,
-                             Display,
-                             TEXT("- Lidar: %s"),
-                             *URRTypeUtils::GetEnumValueAsString(TEXT("ERRLidarSensorType"), lidarInfo.LidarType));
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Scan horizontal"));
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ NHorSamplesPerScan: %d"), lidarInfo.NHorSamplesPerScan);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ HMinAngle: %f"), lidarInfo.HMinAngle);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ HMaxAngle: %f"), lidarInfo.HMaxAngle);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ HResolution: %f"), lidarInfo.HResolution);
-
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Scan vertical"));
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ NVerSamplesPerScan: %d"), lidarInfo.NVerSamplesPerScan);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ VMinAngle: %f"), lidarInfo.VMinAngle);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ VMaxAngle: %f"), lidarInfo.VMaxAngle);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ VResolution: %f"), lidarInfo.VResolution);
-
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Range"));
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ MinRange: %f"), lidarInfo.MinRange);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ MinRange: %f"), lidarInfo.MaxRange);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ Resolution: %f"), lidarInfo.RangeResolution);
-
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("- Noise"));
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ Type: %s"), *lidarInfo.NoiseTypeName);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ Mean: %f"), lidarInfo.NoiseMean);
-            UE_LOG_WITH_INFO(LogTemp, Display, TEXT("+ StdDev: %f"), lidarInfo.NoiseStdDev);
+            sensor.PrintSelf();
         }
     }
 };
