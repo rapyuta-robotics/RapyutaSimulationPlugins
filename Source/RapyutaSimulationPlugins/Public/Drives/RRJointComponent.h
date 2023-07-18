@@ -92,7 +92,7 @@ public:
      * If minus values are given or called without args, #LinearVelocityTolerance and #AngularVelocityTolerance will be used.
      */
     UFUNCTION(BlueprintCallable)
-    virtual bool HasReachedVelocityTarget(const float InLinearTolerance = -1, const float InAngularTolerance = -1);
+    virtual bool HasReachedVelocityTarget(const float InLinearTolerance = -1.f, const float InAngularTolerance = -1.f);
 
     /**
      * @brief Directly set pose.
