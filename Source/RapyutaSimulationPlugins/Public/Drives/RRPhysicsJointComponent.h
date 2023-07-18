@@ -116,7 +116,7 @@ public:
 
     //! Position Velocity Gain used with #bSmoothing = false
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float Kvp = 10.0;
+    float Kvp = 10.f;
 
     //! Angular Velocity Gain used with #bSmoothing = false. 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
