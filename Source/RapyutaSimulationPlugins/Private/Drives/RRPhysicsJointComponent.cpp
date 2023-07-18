@@ -325,7 +325,7 @@ void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
         {
             FVector poseDiff = PositionTarget - Position;
             FVector OrientationEuler = Orientation.Euler();
-            FVector OrientationTargetEuler = OrientationTarget.Euler();
+            FVector orientationTargetEuler = OrientationTarget.Euler();
             FVector orientationDiff = OrientationTargetEuler - OrientationEuler;
             UpdateVelocityTargetFromPose(poseDiff, orientationDiff);
             UpdateIntegral(poseDiff, orientationDiff, DeltaTime);
