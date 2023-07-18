@@ -148,7 +148,7 @@ public:
 
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    float JointStatePublicationFrequencyHz = 30;
+    float JointStatePublicationFrequencyHz = 30.f;
 
     //! Joint state topic
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
