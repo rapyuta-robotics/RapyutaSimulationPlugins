@@ -118,7 +118,7 @@ public:
      *
      */
     UFUNCTION(BlueprintCallable)
-    virtual bool HasReachedPoseTarget(const float InPositionTolerance = -1, const float InOrientationTolerance = -1);
+    virtual bool HasReachedPoseTarget(const float InPositionTolerance = -1.f, const float InOrientationTolerance = -1.f);
 
     /**
      * @brief Directly set pose.
