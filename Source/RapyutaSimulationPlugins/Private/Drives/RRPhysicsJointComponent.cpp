@@ -266,7 +266,7 @@ void URRPhysicsJointComponent::UpdateVelocityTargetFromPose(const FVector InPosi
     }
 }
 
-void URRPhysicsJointComponent::UpdateIntegral(const FVector InPositionDiff, const FVector InOrientationDiff, const float DeltaTime)
+void URRPhysicsJointComponent::UpdateIntegral(const FVector& InPositionDiff, const FVector& InOrientationDiff, const float DeltaTime)
 {
     uint8 i; 
     for (i = 0; i < 3; i++)
