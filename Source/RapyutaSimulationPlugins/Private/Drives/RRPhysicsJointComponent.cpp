@@ -281,7 +281,7 @@ void URRPhysicsJointComponent::UpdateIntegral(const FVector& InPositionDiff, con
 
 }
 
-FRotator URRPhysicsJointComponent::GetOrientationTargetFromEuler(const FVector InOrientationTarget)
+FRotator URRPhysicsJointComponent::GetOrientationTargetFromEuler(const FVector& InOrientationTarget)
 {
     // not sure why this inverse conversion is required.
     FRotator orientationTarget = FRotator::MakeFromEuler(InOrientationTarget);
