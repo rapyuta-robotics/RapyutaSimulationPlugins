@@ -155,7 +155,7 @@ void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FR
         FVector orientationDiff = OrientationTargetEuler - OrientationEuler;
         for (i = 0; i < 3; i++)
         {
-            LinearVelocityTarget[i] =FMath::Clamp(Kvp * poseDiff[i], -LinearVelMax[i], LinearVelMax[i]);
+            LinearVelocityTarget[i] = FMath::Clamp(Kvp * poseDiff[i], -LinearVelMax[i], LinearVelMax[i]);
         }
         for (i = 0; i < 3; i++)
         {
@@ -164,7 +164,7 @@ void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FR
         }
 
         Constraint->SetLinearVelocityTarget(LinearVelocityTarget);
-        Constraint->SetAngularVelocityTarget(AngularVelocityTarget/360.0); // rev/s
+        Constraint->SetAngularVelocityTarget(AngularVelocityTarget / 360.0);    // rev/s
         Constraint->SetLinearPositionTarget(InPosition + PErrInt);
         Constraint->SetAngularOrientationTarget(GetOrientationTargetFromEuler(InOrientation.Euler() + AErrInt));
     }
@@ -254,31 +254,28 @@ void URRPhysicsJointComponent::UpdateState(const float DeltaTime)
 
 void URRPhysicsJointComponent::UpdateVelocityTargetFromPose(const FVector InPositionDiff, const FVector InOrientationDiff)
 {
-    uint8 i; 
+    uint8 i;
     for (i = 0; i < 3; i++)
     {
-        LinearVelocityTarget[i] =FMath::Clamp(Kvp * InPositionDiff[i], -LinearVelMax[i], LinearVelMax[i]);
-    }
-    for (i = 0; i < 3; i++)
-    {
+        LinearVelocityTarget[i] = FMath::Clamp(Kvp * InPositionDiff[i], -LinearVelMax[i], LinearVelMax[i]);
+
         float diff = FRotator::NormalizeAxis(InOrientationDiff[i]);
         AngularVelocityTarget[i] = FMath::Clamp(Kva * diff, -AngularVelMax[i], AngularVelMax[i]);
     }
 }
 
-void URRPhysicsJointComponent::UpdateIntegral(const FVector& InPositionDiff, const FVector& InOrientationDiff, const float DeltaTime)
+void URRPhysicsJointComponent::UpdateIntegral(const FVector& InPositionDiff,
+                                              const FVector& InOrientationDiff,
+                                              const float DeltaTime)
 {
-    uint8 i; 
+    uint8 i;
     for (i = 0; i < 3; i++)
     {
         PErrInt[i] += Kip * DeltaTime * InPositionDiff[i];
-    }
-    for (i = 0; i < 3; i++)
-    {
-        float diff = FRotator::NormalizeAxis(InOrientationDiff[i]);
-        AErrInt[i] += Kia* DeltaTime * diff;
-    }
 
+        float diff = FRotator::NormalizeAxis(InOrientationDiff[i]);
+        AErrInt[i] += Kia * DeltaTime * diff;
+    }
 }
 
 FRotator URRPhysicsJointComponent::GetOrientationTargetFromEuler(const FVector& InOrientationTarget)
@@ -291,8 +288,8 @@ FRotator URRPhysicsJointComponent::GetOrientationTargetFromEuler(const FVector& 
 void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
 {
     uint8 i = 0;
-    if( ControlType == ERRJointControlType::POSITION )
-    {       
+    if (ControlType == ERRJointControlType::POSITION)
+    {
         if (bSmoothing)
         {
             // input
@@ -317,23 +314,23 @@ void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
                 }
             }
             Constraint->SetLinearVelocityTarget(MidLinearVelocityTarget);
-            Constraint->SetAngularVelocityTarget(MidAngularVelocityTarget/360.0); 
+            Constraint->SetAngularVelocityTarget(MidAngularVelocityTarget / 360.0);
             Constraint->SetLinearPositionTarget(MidPositionTarget);
             Constraint->SetAngularOrientationTarget(GetOrientationTargetFromEuler(MidOrientationTargetEuler));
         }
         else
         {
             FVector poseDiff = PositionTarget - Position;
-            FVector OrientationEuler = Orientation.Euler();
+            FVector orientationEuler = Orientation.Euler();
             FVector orientationTargetEuler = OrientationTarget.Euler();
-            FVector orientationDiff = OrientationTargetEuler - OrientationEuler;
+            FVector orientationDiff = orientationTargetEuler - orientationEuler;
             UpdateVelocityTargetFromPose(poseDiff, orientationDiff);
             UpdateIntegral(poseDiff, orientationDiff, DeltaTime);
 
             Constraint->SetLinearVelocityTarget(LinearVelocityTarget);
-            Constraint->SetAngularVelocityTarget(AngularVelocityTarget/360.0); //rev/s    
+            Constraint->SetAngularVelocityTarget(AngularVelocityTarget / 360.0);    //rev/s
             Constraint->SetLinearPositionTarget(PositionTarget + PErrInt);
-            Constraint->SetAngularOrientationTarget(GetOrientationTargetFromEuler(OrientationTargetEuler + AErrInt));
+            Constraint->SetAngularOrientationTarget(GetOrientationTargetFromEuler(orientationTargetEuler + AErrInt));
         }
     }
     else if (ControlType == ERRJointControlType::VELOCITY)

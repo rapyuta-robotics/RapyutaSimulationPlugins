@@ -335,7 +335,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, URRJointComponent*> Joints;
 
-
     /**
      * Initialize #Joints or not. Initial pose are set in each joint.
      */
@@ -348,8 +347,14 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void CheckJointsInitialization();
 
+    /**
+     * @brief Set the ChildComponents Collision Enabled
+     * if IsEnabled=false Set all children UPrimitiveComponents collision profile to "OverlapAll". Original profiles are saved in #OriginalCollisionProfiles.
+     * if IsEnabled=false Revert all children UPrimitiveComponents collision profile to back to original.
+     * @param IsEnable
+     */
     UFUNCTION(BlueprintCallable)
-    virtual void EnableDisableCollision(const bool IsEnable);
+    virtual void SetChildComponentsCollisionEnabled(const bool IsEnable);
 
     /**
      * @brief Initialize sensors components which are child class of #URRROS2BaseSensorComponent.
@@ -642,13 +647,18 @@ protected:
      */
     virtual void InitUIWidget();
 
-    
     /**
      * Initialize #Joints or not. Initial pose are set in each joint.
      */
     UPROPERTY(BlueprintReadWrite)
     bool bInitializingJoints = false;
 
+    /**
+     * @brief Children UPrimitives components orignal collision profiles.
+     * Retrive profiles to this variable when SetChildComponentsCollisionEnabled(false) is called
+     * and this values are used when SetChildComponentsCollisionEnabled(true) are called.
+     *
+     */
     UPROPERTY()
     TMap<UPrimitiveComponent*, FName> OriginalCollisionProfiles;
 };

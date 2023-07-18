@@ -23,7 +23,7 @@
 #include "RRPhysicsJointComponent.generated.h"
 
 /**
- * @brief Physics Joint component. 
+ * @brief Physics Joint component.
  * PhysicsConstraintsComponent needs to be defined outside of this class and passed to #Constraint in construction.
  * @sa[PhysicsConstraints](https://docs.unrealengine.com/4.26/en-US/InteractiveExperiences/Physics/Constraints/ConstraintsBlueprints/)
  */
@@ -39,15 +39,14 @@ public:
 public:
     virtual bool IsValid() override;
 
-
     /**
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
-     * 
+     *
      */
     virtual void Initialize() override;
 
     /**
-     * @brief 
+     * @brief
      *
      * @param DeltaTime
      * @param TickType
@@ -55,14 +54,12 @@ public:
      */
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-
     /**
      * @brief Do nothing since can't set velocity directly to physics joint.
      * @param InLinearVelocity
      * @param InAngularVelocity
      */
     virtual void SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity) override;
-
 
     /**
      * @brief Call SetLinearVelocityTarget and SetAngularVelocityTarget
@@ -78,7 +75,6 @@ public:
      */
     virtual void SetPose(const FVector& InPosition, const FRotator& InOrientation) override;
 
-
     /**
      * @brief Call SetLinearPositionTarget and SetAngularOrientationTarget
      * @sa[SetLinearPositionTarget](https://docs.unrealengine.com/4.26/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetLinearPositio-_1/)
@@ -89,9 +85,9 @@ public:
     /**
      * @brief Disable collision and set target pose to given pose.
      * @note temporary implementation. it should teleported target pose instantly.
-     * 
-     * @param InPosition 
-     * @param InOrientation 
+     *
+     * @param InPosition
+     * @param InOrientation
      */
     virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation) override;
 
@@ -106,7 +102,6 @@ public:
     //! Physics Constraints
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UPhysicsConstraintComponent* Constraint = nullptr;
-    
 
     //! Smoothing TargetPose to #Constraint.
     //! If this is false, step pose target are used by #SetPoseTarget
@@ -118,7 +113,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Kvp = 10.f;
 
-    //! Angular Velocity Gain used with #bSmoothing = false. 
+    //! Angular Velocity Gain used with #bSmoothing = false.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Kva = 10.f;
 
@@ -168,7 +163,6 @@ public:
     bool bManualConstraintSetting = false;
 
 protected:
-
     //! LinearVelocityTarget for smoothing
     UPROPERTY(VisibleAnywhere)
     FVector MidLinearVelocityTarget = FVector::ZeroVector;
@@ -195,37 +189,36 @@ protected:
     /**
      * @brief Update #LinearVelocityTarget from InPositionDiff and #Kvp.
      * And update #AngularVelocityTarget from InOrientationDiff and #Kva.
-     * @param InPositionDiff 
-     * @param InPositionDiff 
-     * @param InOrientationDiff 
-     * @param DeltaTime 
+     * @param InPositionDiff
+     * @param InPositionDiff
+     * @param InOrientationDiff
+     * @param DeltaTime
      */
-    virtual void UpdateIntegral(const FVector InPositionDiff, const FVector InOrientationDiff, const float DeltaTime);
+    virtual void UpdateIntegral(const FVector& InPositionDiff, const FVector& InOrientationDiff, const float DeltaTime);
 
     /**
      * @brief Update #LinearVelocityTarget from InPositionDiff and #Kvp.
      * And update #AngularVelocityTarget from InOrientationDiff and #Kva.
-     * @param InPositionDiff 
-     * @param InOrientationDiff 
+     * @param InPositionDiff
+     * @param InOrientationDiff
      */
     UFUNCTION()
     virtual void UpdateVelocityTargetFromPose(const FVector InPositionDiff, const FVector InOrientationDiff);
 
     /**
-     * @brief Get the Orientation Target to SetAngularOrientationTarget from Euler angle 
-     * 
-     * @param InOrientationTarget 
-     * @return FRotator 
+     * @brief Get the Orientation Target to SetAngularOrientationTarget from Euler angle
+     *
+     * @param InOrientationTarget
+     * @return FRotator
      */
     UFUNCTION()
-    virtual FRotator GetOrientationTargetFromEuler(const FVector InOrientationTarget);
+    virtual FRotator GetOrientationTargetFromEuler(const FVector& InOrientationTarget);
 
     //! Position Two Point Interpolation used with #bSmoothing = true
     TStaticArray<TwoPointInterpolation, 3> PositionTPI;
 
     //! Angular Two Point Interpolation used with #bSmoothing = true
     TStaticArray<TwoAngleInterpolation, 3> OrientationTPI;
-
 
     //! Position Error Integral used with #bSmoothing = false
     UPROPERTY(VisibleAnywhere)
@@ -234,5 +227,4 @@ protected:
     //! Angular Error Integral used with #bSmoothing = false
     UPROPERTY(VisibleAnywhere)
     FVector AErrInt = FVector::ZeroVector;
-
 };

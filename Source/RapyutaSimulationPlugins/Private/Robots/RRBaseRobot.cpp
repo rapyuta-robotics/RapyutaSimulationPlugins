@@ -605,7 +605,7 @@ bool ARRBaseRobot::InitPropertiesFromJSON()
 
 void ARRBaseRobot::StartJointsInitialization()
 {
-    if(bInitializingJoints)
+    if (bInitializingJoints)
     {
         return;
     }
@@ -613,12 +613,12 @@ void ARRBaseRobot::StartJointsInitialization()
 
     // disable collision
     // note: no collision do not work with PhysicsConstraints.
-    EnableDisableCollision(false);
+    SetChildComponentsCollisionEnabled(false);
 
     // move to initial pose
     for (auto& joint : Joints)
     {
-        if(joint.Value)
+        if (joint.Value)
         {
             joint.Value->MoveToInitPose();
         }
@@ -630,7 +630,7 @@ void ARRBaseRobot::CheckJointsInitialization()
     bool res = true;
     for (auto& joint : Joints)
     {
-        if(joint.Value)
+        if (joint.Value)
         {
             res &= joint.Value->HasReachedPoseTarget();
         }
@@ -640,21 +640,21 @@ void ARRBaseRobot::CheckJointsInitialization()
     // restore collision
     if (!bInitializingJoints)
     {
-        EnableDisableCollision(true);
+        SetChildComponentsCollisionEnabled(true);
     }
 }
 
-void ARRBaseRobot::EnableDisableCollision(const bool IsEnable)
+void ARRBaseRobot::SetChildComponentsCollisionEnabled(const bool IsEnable)
 {
     TInlineComponentArray<USceneComponent*> components(this);
     for (auto& comp : components)
     {
         auto primComp = Cast<UPrimitiveComponent>(comp);
-        if(primComp)
-        {   
-            if(IsEnable)
+        if (primComp)
+        {
+            if (IsEnable)
             {
-                if(OriginalCollisionProfiles.Contains(primComp))
+                if (OriginalCollisionProfiles.Contains(primComp))
                 {
                     primComp->SetCollisionProfileName(OriginalCollisionProfiles[primComp]);
                 }
