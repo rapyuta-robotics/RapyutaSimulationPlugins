@@ -127,6 +127,7 @@ void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
 
     FROSGetEntityStateRes response;
     response.State.Name = request.Name;
+    response.State.ReferenceFrame = request.ReferenceFrame;
     response.bSuccess = CheckEntity(request.Name, false) && CheckEntity(request.ReferenceFrame, true);
 
     if (response.bSuccess)

@@ -6,12 +6,7 @@ import time
 
 # rclpy
 import rclpy
-
-# other ros
-from geometry_msgs.msg import Twist
-from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-from rclpy.qos import QoSDurabilityPolicy, QoSProfile, QoSReliabilityPolicy
 
 # rr_sim_tests
 from rr_sim_tests.utils.wait_for_service import wait_for_service
@@ -21,23 +16,49 @@ from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
 from ue_msgs.msg import EntityState
 from ue_msgs.srv import SpawnEntity
 
+# other ros
+from geometry_msgs.msg import Pose
+
 SERVICE_NAME_SPAWN_ENTITY = "SpawnEntity"
 
+def wait_for_entity_moving(in_entity_name : str,
+                           in_entity_prev_pose : Pose,
+                           in_watch_rate=10.0, #Hz
+                           in_timeout=5.0):
+    entity_prev_pos = in_entity_prev_pose.position
+    start_time = time.time()
+    wait_interval = 1.0/in_watch_rate
+    while rclpy.ok() and (time.time() - start_time) < in_timeout:
+        time.sleep(wait_interval)
+        is_entity_found, entity_pose = wait_for_spawned_entity(
+            in_entity_name, in_timeout=5.0
+        )
+        assert (
+            is_entity_found
+        ), f"wait_for_entity_moving(): {in_entity_name} unavailable!"
 
-def spawn_robot(
-    in_robot_model,
-    in_robot_name,
-    in_robot_namespace,
-    in_robot_ref_frame,
-    in_robot_pose,
+        # Disregarding entity's Z change as probably just out of falling upon gravity
+        entity_new_pos = entity_pose.position
+        if entity_new_pos.x != entity_prev_pos.x or \
+            entity_new_pos.y != entity_prev_pos.y or \
+            entity_pose.orientation != in_entity_prev_pose.orientation:
+            return True
+    return False
+
+def spawn_entity(
+    in_entity_model,
+    in_entity_name,
+    in_entity_namespace,
+    in_entity_ref_frame,
+    in_entity_pose,
     in_service_namespace="",
-    in_robot_tags=None,
-    in_robot_json="",
+    in_entity_tags=None,
+    in_entity_json="",
     in_timeout=5.0,
 ):
-    assert len(in_robot_model) > 0
-    assert len(in_robot_name) > 0
-    node = rclpy.create_node(f"spawn_{in_robot_name}")
+    assert len(in_entity_model) > 0
+    assert len(in_entity_name) > 0
+    node = rclpy.create_node(f"spawn_{in_entity_name}")
     cli = wait_for_service(
         node, SpawnEntity, in_service_namespace + "/" + SERVICE_NAME_SPAWN_ENTITY
     )
@@ -46,121 +67,19 @@ def spawn_robot(
 
     # Prepare SpawnEntity request
     req = SpawnEntity.Request()
-    req.xml = in_robot_model
-    req.robot_namespace = in_robot_namespace
+    req.xml = in_entity_model
+    req.robot_namespace = in_entity_namespace
     req.state = EntityState()
-    req.state.name = in_robot_name
-    req.state.reference_frame = in_robot_ref_frame
-    req.state.pose = in_robot_pose
-    req.tags = in_robot_tags
-    req.json_parameters = in_robot_json
+    req.state.name = in_entity_name
+    req.state.reference_frame = in_entity_ref_frame
+    req.state.pose = in_entity_pose
+    req.tags = in_entity_tags
+    req.json_parameters = in_entity_json
 
     # Async invoke SpawnEntity service
     future = cli.call_async(req)
     try:
-        start = time.time()
-        while (time.time() - start) < in_timeout:
-            rclpy.spin_once(node)
-            if future.done():
-                break
-            time.sleep(0.5)
+        rclpy.spin_until_future_complete(node, future, timeout_sec=in_timeout)
     finally:
         node.destroy_node()
     return True
-
-
-TOPIC_NAME_CMD_VEL = "cmd_vel"
-PUBLISHING_NUM = 1
-PUBLISHING_FREQ = 10
-
-
-class CmdVelPublisher(Node):
-    def __init__(
-        self,
-        in_robot_namespace: str = "",
-        publishing_num=PUBLISHING_NUM,
-        publishing_freq=PUBLISHING_FREQ,
-        topic_name=TOPIC_NAME_CMD_VEL,
-        in_robot_twist: Twist = Twist(),
-    ):
-        super().__init__(node_name="cmd_vel_publisher", namespace=in_robot_namespace)
-        self._cmd_vel_topic = topic_name
-        latching_qos = QoSProfile(
-            depth=1,
-            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
-            reliability=QoSReliabilityPolicy.RELIABLE,
-        )
-        self._twist_pub = self.create_publisher(
-            Twist, self._cmd_vel_topic, qos_profile=latching_qos
-        )
-        self._twist = in_robot_twist
-
-        if publishing_num > 0 and publishing_freq > 0:
-            self._publishing_num = publishing_num
-            self._twist_pub_count = 0
-            self._is_pub_finished = False
-
-            self._executor = SingleThreadedExecutor(context=self.context)
-            self._executor.add_node(self)
-
-            self._timer = self.create_timer(1.0 / publishing_freq, self.twist_robot)
-
-            while rclpy.ok() and not self._is_pub_finished:
-                self._executor.spin_once(timeout_sec=0)
-            print(f"Finished publishing Twist to {self.get_full_topic_name()}")
-
-    def get_full_topic_name(self):
-        return f"{self.get_namespace()}/{self._cmd_vel_topic}"
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exep_type, exep_value, trace):
-        if exep_type is not None:
-            raise Exception("Exception occured, value: ", exep_value)
-        self._executor.shutdown(timeout_sec=0.5)
-        self.destroy_node()
-
-    async def twist_robot(self):
-        if self._twist_pub_count < self._publishing_num or self._publishing_num <= 0:
-            self.get_logger().info(
-                f"Publishing to {self.get_full_topic_name()}: {self._twist}"
-            )
-            self.pub(self._twist)
-            self._twist_pub_count += 1
-        else:
-            self._is_pub_finished = True
-            self._timer.cancel()
-        await asyncio.sleep(0)
-
-    def pub(self, twist=None):
-        if twist is None:
-            twist = self._twist
-        self._twist_pub.publish(twist)
-
-    def wait_for_robot_twisted(
-        self,
-        in_robot_name,
-        in_robot_prev_pose,
-        in_timeout=5.0,
-        publish_twist_on_fail=True,
-    ):
-        assert (
-            self._is_pub_finished
-        ), f"Twist has not been published to {self.get_full_topic_name()}"
-
-        start_time = time.time()
-        while (time.time() - start_time) < in_timeout:
-            time.sleep(1.0)
-            is_robot_found, robot_pose = wait_for_spawned_entity(
-                in_robot_name, in_timeout=5.0
-            )
-            assert (
-                is_robot_found
-            ), f"wait_for_robot_twisted(): {in_robot_name} unavailable!"
-            if robot_pose != in_robot_prev_pose:
-                return True
-            elif publish_twist_on_fail:
-                self.pub()
-
-        return False

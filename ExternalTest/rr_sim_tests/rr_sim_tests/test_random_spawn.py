@@ -12,8 +12,8 @@ from rclpy.parameter import Parameter
 from geometry_msgs.msg import Pose, Twist
 from tf_transformations import quaternion_from_euler
 
-from rr_sim_tests.utils.utils import CmdVelPublisher
-from rr_sim_tests.utils.utils import spawn_robot
+from rr_sim_tests.utils.cmd_vel_publisher import CmdVelPublisher
+from rr_sim_tests.utils.utils import spawn_entity
 from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
 
 # todo do we get param without node?
@@ -62,7 +62,7 @@ def SpawnRobotInArea(robot_name, x_lim, y_lim, service_namespace, robot_models):
         robot_pose.orientation.z = q[2]
         robot_pose.orientation.w = q[3]
         print('Trying to spawn robot name=' + robot_name)
-        is_srv_available = spawn_robot(robot_model, robot_name, robot_namespace, reference_frame, robot_pose, service_namespace)
+        is_srv_available = spawn_entity(robot_model, robot_name, robot_namespace, reference_frame, robot_pose, service_namespace)
         if is_srv_available:
             count = 0
             print('Checking robot entity: ' + robot_name)
@@ -103,7 +103,11 @@ def RandomSpawnAndSendCmdVel(args=None):
         robot_name = robot_name_prefix + str(i)
         res = SpawnRobotInArea(robot_name, x_lim, y_lim, service_namespace, robot_models)
         if res:
-            spawned_robots[robot_name] = CmdVelPublisher(in_robot_namespace=robot_name, publishing_freq=0, publishing_num=0, in_robot_twist=None)
+            spawned_robots[robot_name] = CmdVelPublisher(in_robot_namespace=robot_name,
+                                                         in_publish_freq=0,
+                                                         in_publish_num=0,
+                                                         in_robot_twist=None,
+                                                         in_auto_publish=False)
 
     # publish cmd_vel
     while True:
@@ -121,7 +125,7 @@ def RandomSpawnAndSendCmdVel(args=None):
         while pub_count < publishing_num:
             for i in range(start_index, start_index + robot_num):
                 robot_name = robot_name_prefix + str(i)
-                spawned_robots[robot_name].pub()
+                spawned_robots[robot_name].publish()
 
             pub_count += 1
             time.sleep(1.0 / publishing_freq)

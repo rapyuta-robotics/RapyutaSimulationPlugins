@@ -17,27 +17,27 @@ from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
 from rr_sim_tests.utils.path_publisher import PathPublisher
 
 """
-Test robot cmd_vel subscription
+Test robot path subscription
 """
-LAUNCH_ARG_ROBOT_NAMESPACE = 'robot_namespace'
-LAUNCH_ARG_ROBOT_NAME = 'robot_name'
+LAUNCH_ARG_ENTITY_NAMESPACE = 'robot_namespace'
+LAUNCH_ARG_ENTITY_NAME = 'robot_name'
 LAUNCH_ARG_ROBOT_PATH = 'robot_path'
 
 @pytest.mark.launch_test
 @launch_testing.markers.keep_alive
 def generate_test_description():
-    robot_namespace = launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ROBOT_NAMESPACE, default='')
-    robot_name= launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ROBOT_NAME, default='')
+    robot_namespace = launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ENTITY_NAMESPACE, default='')
+    robot_name= launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ENTITY_NAME, default='')
 
     robot_path = launch.substitutions.LaunchConfiguration(LAUNCH_ARG_ROBOT_PATH, default='0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0')
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
-            LAUNCH_ARG_ROBOT_NAMESPACE,
+            LAUNCH_ARG_ENTITY_NAMESPACE,
             default_value=robot_namespace,
             description='robot namespace'),
         launch.actions.DeclareLaunchArgument(
-            LAUNCH_ARG_ROBOT_NAME,
+            LAUNCH_ARG_ENTITY_NAME,
             default_value=robot_name,
             description='robot name'),
         launch.actions.DeclareLaunchArgument(
@@ -55,8 +55,8 @@ class TestRobotFollowPath(unittest.TestCase):
         argstr = lambda arg: str(test_args[arg]) if arg in test_args else ''
         
         # Query robot current pose
-        assert(arghas(LAUNCH_ARG_ROBOT_NAME))
-        robot_name = argstr(LAUNCH_ARG_ROBOT_NAME)
+        assert(arghas(LAUNCH_ARG_ENTITY_NAME))
+        robot_name = argstr(LAUNCH_ARG_ENTITY_NAME)
         is_robot_found, _ = wait_for_spawned_entity(robot_name)
         assert is_robot_found, f'Robot named {robot_name} unavailable!'
 
@@ -84,8 +84,8 @@ class TestRobotFollowPath(unittest.TestCase):
             robot_path.poses.append(pose_stamped)
         
         # Command the robot to move following path
-        with PathPublisher(in_robot_namespace=argstr(LAUNCH_ARG_ROBOT_NAMESPACE), in_topic_name='ue_ros/robot_path', in_robot_path=robot_path) as path_publisher:
+        with PathPublisher(in_robot_namespace=argstr(LAUNCH_ARG_ENTITY_NAMESPACE), in_topic_name='ue_ros/robot_path', in_robot_path=robot_path) as path_publisher:
             # Check for the robot having followed the patth if it does susbcribe to ue_ros/robot_path
-            is_path_followed = path_publisher.wait_for_robot_path_followed(robot_name, robot_path.poses[0].pose, in_timeout=20.0)
-            assert is_path_followed, f'{robot_name} failed following path published to {path_publisher.get_full_topic_name()}'
+            is_path_followed = path_publisher.wait_for_robot_waypoint_reached(robot_name, robot_path.poses[0].pose, in_timeout=20.0)
+            assert is_path_followed, f'{robot_name} failed following path published to {path_publisher.path_topic}'
         rclpy.shutdown()

@@ -313,10 +313,9 @@ public:
         }
 
         // Physics (last)--
-        const bool bIsStationary = InObjMeshUniqueName.Equals(URRGameSingleton::SHAPE_NAME_PLANE);
         // If using Custom Physics Engine, also create [PhysicsComp] here-in!
         // (NOTE) This will DETACH meshComp from its Parent in case of [bInIsPhysicsEnabled]
-        meshComp->Initialize(bIsStationary, bInIsPhysicsEnabled);
+        meshComp->Initialize(bInIsOwningActorStationary, bInIsPhysicsEnabled);
 
         return meshComp;
     }

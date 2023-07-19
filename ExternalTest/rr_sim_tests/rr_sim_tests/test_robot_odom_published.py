@@ -15,69 +15,72 @@ import rclpy
 from rclpy.node import Node
 
 from rr_sim_tests.utils.wait_for_topics import WaitForTopics
+from rr_sim_tests.utils.base_subscriber import BaseSubscriber, SUBSCRIBER_DEFAULT_QOS
 from distutils.util import strtobool
 
-class OdomSubscriber(Node):
-    def __init__(self, in_robot_namespace:str, in_tf_published:bool, in_tf_static:bool):
-        super().__init__('odom_subscriber')
-        self._is_odom_received = False
-        self._odom_topic = f'/{in_robot_namespace}/odom' if ((in_robot_namespace != None) and len(in_robot_namespace.strip()) > 0) else '/odom'
-        self.create_subscription(
+TOPIC_NAME_ODOM = 'odom'
+ODOM_SUBSCRIBER_RATE = 10.0 #Hz
+
+# TF topics are always in global namespace
+# https://github.com/ros2/geometry2/blob/iron/tf2_ros/include/tf2_ros/transform_broadcaster.h#L96
+# https://github.com/ros2/geometry2/blob/iron/tf2_ros/include/tf2_ros/static_transform_broadcaster.h#L112
+TOPIC_NAME_TF = '/tf'
+TOPIC_NAME_TF_STATIC = '/tf_static'
+TF_SUBSCRIBER_RATE = 10.0 #Hz
+
+class TFSubscriber(BaseSubscriber):
+    def __init__(self, in_robot_namespace:str,
+                 in_tf_static:bool):
+        super().__init__(in_robot_namespace, in_topic_name=(TOPIC_NAME_TF_STATIC if in_tf_static else TOPIC_NAME_TF) if in_tf_published else None,
+                         in_subscriber_rate=TF_SUBSCRIBER_RATE)
+
+        self._subscriber = self.create_subscription(
+            TFMessage,
+            self._full_topic_name,
+            self.on_tf_published,
+            SUBSCRIBER_DEFAULT_QOS)
+
+    def on_tf_published(self, msg):
+        self.get_logger().info(
+            f'Transforms published to {self._full_topic_name}:\n'
+            f'- transforms:{msg.transforms}\n'
+        )
+        self._topic_data_arrived = True
+
+class OdomSubscriber(BaseSubscriber):
+    def __init__(self, in_robot_namespace:str,
+                 in_topic_name: str=TOPIC_NAME_ODOM,
+                 in_tf_published:bool=True, in_tf_static:bool=False):
+        super().__init__(in_robot_namespace, in_topic_name, in_subscriber_rate=ODOM_SUBSCRIBER_RATE)
+        self._subscriber = self.create_subscription(
             Odometry,
-            self._odom_topic,
+            self._full_topic_name,
             self.on_odom_published,
-            10)
+            SUBSCRIBER_DEFAULT_QOS)
 
-        self._tf_topic = ('/tf_static' if in_tf_static else '/tf') if in_tf_published else None
-        self._is_tf_received = False
-        if in_tf_published:
-            self.create_subscription(
-                TFMessage,
-                self._tf_topic,
-                self.on_tf_published,
-                10)
+        self._tfSubscriber = TFSubscriber(in_robot_namespace, in_tf_static) if in_tf_published else None
 
-    @property
-    def odom_topic(self):
-        return self._odom_topic
-
-    @property
-    def is_odom_received(self):
-        return self._is_odom_received
-      
     def on_odom_published(self, msg):
         self.get_logger().info(
-            f'Odometry published to {self._odom_topic}:\n'
+            f'Odometry published to {self._full_topic_name}:\n'
             f'- timestamp:{msg.header.stamp}\n'
             f'- frame id:{msg.header.frame_id}\n'
             f'- child frame id: {msg.child_frame_id}\n'
             f'- pose: {msg.pose}\n'
             f'- twist: {msg.twist}'
         )
-        self._is_odom_received = True
+        self._topic_data_arrived = True
 
-    @property
+    @property  
     def tf_topic(self):
-        return self._tf_topic
+        return self._tfSubscriber.full_topic if self._tfSubscriber else ''
 
-    def on_tf_published(self, msg):
-        self.get_logger().info(
-            f'Transforms published to {self._tf_topic}:\n'
-            f'- transforms:{msg.transforms}\n'
-        )
-        self._is_tf_received = True
-
-    def wait_for_odom_data(self, in_timeout = 5.0):
-        start_time = time.time()
-        while (not self._is_odom_received) and ((time.time() - start_time) < in_timeout):
-            rclpy.spin_once(self, timeout_sec=0.1)
-        return self._is_odom_received
-        
     def wait_for_tf_data(self, in_timeout = 5.0):
-        start_time = time.time()
-        while (not self._is_tf_received) and ((time.time() - start_time) < in_timeout):
-            rclpy.spin_once(self, timeout_sec=0.1)
-        return self._is_tf_received
+        if self._tfSubscriber:
+            return self._tfSubscriber.wait_for_topic_data(in_timeout)
+        else:
+            assert False, "No tfSubscriber created"
+
 """
 Test if odom is being published for a given robot with [robot_namespace]
 """
@@ -112,12 +115,12 @@ class TestRobotOdomFetch(unittest.TestCase):
         rclpy.init()
         is_tf_published = bool(strtobool(test_args[LAUNCH_ARG_TF_PUBLISHED])) if LAUNCH_ARG_TF_PUBLISHED in test_args else False
         odom_subscriber = OdomSubscriber(test_args[LAUNCH_ARG_ROBOT_NAMESPACE] if LAUNCH_ARG_ROBOT_NAMESPACE in test_args else '',
-                                         is_tf_published,
-                                         bool(strtobool(test_args[LAUNCH_ARG_TF_STATIC])) if LAUNCH_ARG_TF_STATIC in test_args else False)
+                                         in_tf_published=is_tf_published,
+                                         in_tf_static=bool(strtobool(test_args[LAUNCH_ARG_TF_STATIC])) if LAUNCH_ARG_TF_STATIC in test_args else False)
 
         # Wait for odom data
-        with WaitForTopics([(odom_subscriber.odom_topic, Odometry)], in_timeout=5.0):
-            assert odom_subscriber.wait_for_odom_data(in_timeout=5.0)
+        with WaitForTopics([(odom_subscriber.full_topic, Odometry)], in_timeout=5.0):
+            assert odom_subscriber.wait_for_topic_data(in_timeout=5.0)
 
         # Wait for tf data
         if is_tf_published:

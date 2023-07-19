@@ -139,6 +139,7 @@ public:
      */
     FORCEINLINE bool IsStaticBPRobot() const
     {
+        // NOTE: (GetClass()->ClassGeneratedBy != nullptr) is also useful but WITH_EDITORONLY_DATA
         const FString className = GetClass()->GetName();
         return className.StartsWith(TEXT("BP"))             // In-Editor
                || className.StartsWith(TEXT("SKEL_BP"));    // In-Package auto prefixed [SKEL_]
