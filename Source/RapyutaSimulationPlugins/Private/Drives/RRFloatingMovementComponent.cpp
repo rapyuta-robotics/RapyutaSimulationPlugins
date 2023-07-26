@@ -8,6 +8,19 @@
 URRFloatingMovementComponent::URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer), bSweepEnabled(true), b2DMovement(false), bUseDecelerationForPaths(true)
 {
+    SetupDefault();
+}
+
+URRFloatingMovementComponent::URRFloatingMovementComponent()
+{
+    SetupDefault();
+}
+
+void URRFloatingMovementComponent::SetupDefault()
+{
+    bSweepEnabled = true;
+    bUseRVOAvoidance = false;
+    bRVOAvoidanceRecentlyUpdated = false;
 }
 
 bool URRFloatingMovementComponent::IsExceedingMaxSpeed(float InMaxSpeed) const
@@ -21,6 +34,16 @@ bool URRFloatingMovementComponent::IsExceedingMaxSpeed(float InMaxSpeed) const
     {
         return Super::IsExceedingMaxSpeed(InMaxSpeed);
     }
+}
+
+void URRFloatingMovementComponent::OnRegister()
+{
+    if (bUseRVOAvoidance && (NM_Client == GetNetMode()))
+    {
+        bUseRVOAvoidance = false;
+    }
+    RVOAvoidanceManager = GetWorld()->GetAvoidanceManager();
+    Super::OnRegister();
 }
 
 void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
@@ -134,6 +157,12 @@ void URRFloatingMovementComponent::TickComponent(float InDeltaTime,
 
     // Update [UpdatedComponent]'s Velocity by [Velocity]
     UpdateComponentVelocity();
+
+    if (bUseRVOAvoidance)
+    {
+        CalculateRVOAvoidanceVelocity(InDeltaTime);
+        UpdateDefaultAvoidance();
+    }
 }
 
 FVector URRFloatingMovementComponent::GetPenetrationAdjustment(const FHitResult& InHit) const
@@ -268,4 +297,150 @@ void URRFloatingMovementComponent::StopMovementImmediately()
 {
     AngularVelocity = FVector::ZeroVector;
     Super::StopMovementImmediately();
+}
+
+void URRFloatingMovementComponent::SetRVOAvoidanceEnabled(bool bEnabled)
+{
+    if (bUseRVOAvoidance != bEnabled)
+    {
+        bUseRVOAvoidance = bEnabled;
+        // Reset id, RegisterMovementComponent call is required to initialize update timers in avoidance manager
+        RVOAvoidanceUID = 0;
+
+        if (bEnabled && GetOwner())
+        {
+            RVOAvoidanceManager->RegisterMovementComponent(this, RVOAvoidanceWeight);
+        }
+    }
+}
+
+void URRFloatingMovementComponent::SetUpdatedComponent(USceneComponent* InNewUpdatedComponent)
+{
+    Super::SetUpdatedComponent(InNewUpdatedComponent);
+    if (bUseRVOAvoidance)
+    {
+        RVOAvoidanceManager->RegisterMovementComponent(this, RVOAvoidanceWeight);
+    }
+}
+
+void URRFloatingMovementComponent::UpdateDefaultAvoidance()
+{
+    if (!bUseRVOAvoidance)
+    {
+        return;
+    }
+
+    if (RVOAvoidanceManager && !bRVOAvoidanceRecentlyUpdated)
+    {
+        RVOAvoidanceManager->UpdateRVO(this);
+
+        //Consider this a clean move because we didn't even try to avoid.
+        SetRVOAvoidanceVelocityLock(RVOAvoidanceManager->LockTimeAfterClean);
+    }
+
+    //Reset for next frame
+    bRVOAvoidanceRecentlyUpdated = false;
+}
+
+void URRFloatingMovementComponent::SetRVOAvoidanceVelocityLock(float InDuration)
+{
+    if (RVOAvoidanceManager)
+    {
+        RVOAvoidanceManager->OverrideToMaxWeight(RVOAvoidanceUID, InDuration);
+    }
+    RVOAvoidanceLockVelocity = Velocity;
+    RVOAvoidanceLockTimeout = InDuration;
+}
+
+void URRFloatingMovementComponent::CalculateRVOAvoidanceVelocity(float InDeltaTime)
+{
+    if (RVOAvoidanceWeight >= 1.f || !RVOAvoidanceManager || !GetOwner())
+    {
+        return;
+    }
+
+    if (GetOwner()->GetLocalRole() != ROLE_Authority)
+    {
+        return;
+    }
+
+#if RAPYUTA_SIM_DEBUG
+    const bool bShowDebug = RVOAvoidanceManager->IsDebugEnabled(RVOAvoidanceUID);
+#endif
+
+    //Adjust velocity only if we're in "Walking" mode. We should also check if we're dazed, being knocked around, maybe off-navmesh, etc.
+    if (!Velocity.IsZero() && IsMovingOnGround() && UpdatedPrimitive)
+    {
+        //See if we're doing a locked avoidance move already, and if so, skip the testing and just do the move.
+        if (RVOAvoidanceLockTimeout > 0.f)
+        {
+            Velocity = RVOAvoidanceLockVelocity;
+#if RAPYUTA_SIM_DEBUG
+            if (bShowDebug)
+            {
+                DrawDebugLine(
+                    GetWorld(), GetActorFeetLocation(), GetActorFeetLocation() + Velocity, FColor::Blue, false, 0.5f, SDPG_MAX);
+            }
+#endif
+        }
+        else
+        {
+            FVector newVelocity = RVOAvoidanceManager->GetAvoidanceVelocityForComponent(this);
+            PostProcessRVOAvoidanceVelocity(newVelocity);
+
+            if (!newVelocity.Equals(Velocity))
+            {
+                //Had to divert course, lock this avoidance move in for a short time. This will make us a VO, so unlocked others will know to avoid us.
+                Velocity = newVelocity;
+                SetRVOAvoidanceVelocityLock(RVOAvoidanceManager->LockTimeAfterAvoid);
+#if RAPYUTA_SIM_DEBUG
+                if (bShowDebug)
+                {
+                    DrawDebugLine(GetWorld(),
+                                  GetActorFeetLocation(),
+                                  GetActorFeetLocation() + Velocity,
+                                  FColor::Red,
+                                  false,
+                                  0.05f,
+                                  SDPG_MAX,
+                                  10.0f);
+                }
+#endif
+            }
+            else
+            {
+                //Although we didn't divert course, our velocity for this frame is decided. We will not reciprocate anything further, so treat as a VO for the remainder of this frame.
+                SetRVOAvoidanceVelocityLock(RVOAvoidanceManager->LockTimeAfterClean);    //10 ms of lock time should be adequate.
+#if RAPYUTA_SIM_DEBUG
+                if (bShowDebug)
+                {
+                    //DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + Velocity, FColor::Green, false, 0.05f, SDPG_MAX, 10.0f);
+                }
+#endif
+            }
+        }
+        RVOAvoidanceManager->UpdateRVO(this);
+
+        bRVOAvoidanceRecentlyUpdated = true;
+    }
+#if RAPYUTA_SIM_DEBUG
+    else if (bShowDebug)
+    {
+        DrawDebugLine(
+            GetWorld(), GetActorFeetLocation(), GetActorFeetLocation() + Velocity, FColor::Yellow, false, 0.05f, SDPG_MAX);
+    }
+
+    if (bShowDebug)
+    {
+        FVector UpLine(0, 0, 500);
+        DrawDebugLine(GetWorld(),
+                      GetActorFeetLocation(),
+                      GetActorFeetLocation() + UpLine,
+                      (RVOAvoidanceLockTimeout > 0.01f) ? FColor::Red : FColor::Blue,
+                      false,
+                      0.05f,
+                      SDPG_MAX,
+                      5.0f);
+    }
+#endif
 }

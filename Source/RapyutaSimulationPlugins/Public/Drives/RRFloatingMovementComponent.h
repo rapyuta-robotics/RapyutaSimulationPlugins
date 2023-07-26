@@ -7,6 +7,7 @@
 #pragma once
 
 // UE
+#include "AI/Navigation/AvoidanceManager.h"
 #include "GameFramework/FloatingPawnMovement.h"
 
 #include "RRFloatingMovementComponent.generated.h"
@@ -25,7 +26,10 @@ class RAPYUTASIMULATIONPLUGINS_API URRFloatingMovementComponent : public UFloati
     GENERATED_BODY()
 
 public:
+    URRFloatingMovementComponent();
     URRFloatingMovementComponent(const FObjectInitializer& ObjectInitializer);
+    void SetupDefault();
+    virtual void SetUpdatedComponent(USceneComponent* InNewUpdatedComponent) override;
     void Set2DMovement(bool bEnabled)
     {
         b2DMovement = bEnabled;
@@ -66,7 +70,27 @@ public:
 
     virtual void StopMovementImmediately() override;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    int32 RVOAvoidanceUID = 0;
+    //! Whether to use RVO avoidance (instead of crowd avoidance). This only runs on the server
+    UPROPERTY(VisibleAnywhere)
+    uint8 bUseRVOAvoidance : 1;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float RVOAvoidanceWeight = 0.5f;
+    UPROPERTY(Transient)
+    uint8 bRVOAvoidanceRecentlyUpdated : 1;
+    UPROPERTY()
+    TObjectPtr<UAvoidanceManager> RVOAvoidanceManager = nullptr;
+    void SetRVOAvoidanceEnabled(bool bEnabled);
+    void SetRVOAvoidanceVelocityLock(float InDuration);
+    //! Forced avoidance velocity if AvoidanceLockTimer > 0
+    UPROPERTY()
+    FVector RVOAvoidanceLockVelocity = FVector::ZeroVector;
+    UPROPERTY()
+    float RVOAvoidanceLockTimeout = 0.f;
+
 protected:
+    virtual void OnRegister() override;
     virtual void TickComponent(float InDeltaTime, enum ELevelTick InTickType, FActorComponentTickFunction* InTickFunction) override;
     virtual bool IsExceedingMaxSpeed(float InMaxSpeed) const override;
     virtual FVector GetPenetrationAdjustment(const FHitResult& Hit) const;
@@ -75,6 +99,12 @@ protected:
                                         const FHitResult& InHit,
                                         const FQuat& InNewRotationQuat) override;
 #endif
+    void UpdateDefaultAvoidance();
+    void CalculateRVOAvoidanceVelocity(float InDeltaTime);
+    virtual void PostProcessRVOAvoidanceVelocity(FVector& InNewVelocity)
+    {
+    }
+
 private:
     UPROPERTY(EditAnywhere)
     uint8 bSweepEnabled : 1;
