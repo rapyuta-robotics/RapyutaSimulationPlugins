@@ -14,8 +14,13 @@ void URRROS2BaseSensorComponent::InitalizeWithROS2(UROS2NodeComponent* InROS2Nod
                                                    const FString& InTopicName,
                                                    const UROS2QoS InQoS)
 {
+    // NOTE: Here, [SensorPublisher] is expected to finish custom configuring before being added to [InROS2Node]'s Publishers and init.
+    // Thus [UROS2NodeComponent::CreatePublisher()] is not used.
+
+    // Create & Init [SensorPublisher]
     CreatePublisher(InPublisherName);
     PreInitializePublisher(InROS2Node, InTopicName);
+    // [SensorPublisher] is added to [InROS2Node]'s Publishers here-in
     InitializePublisher(InROS2Node, InQoS);
 
     // Start getting sensor data
@@ -62,9 +67,9 @@ void URRROS2BaseSensorComponent::InitializePublisher(UROS2NodeComponent* InROS2N
 {
     if (IsValid(SensorPublisher))
     {
-        SensorPublisher->InitializeWithROS2(InROS2Node);
         SensorPublisher->QoS = InQoS;
-        SensorPublisher->Init();
+        // [InitializeWithROS2(InROS2Node) & SensorPublisher->Init()] are triggered here-in
+        InROS2Node->AddPublisher(SensorPublisher);
     }
 }
 
