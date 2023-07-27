@@ -1,6 +1,7 @@
 // Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Sensors/RR3DLidarComponent.h"
+#include "Msgs/ROS2PointField.h"
 
 #include "rclcUtilities.h"
 
@@ -46,6 +47,9 @@ void URR3DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickTyp
 void URR3DLidarComponent::Run()
 {
     const uint64 nTotalScan = GetTotalScan();
+    
+    DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
+    DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
 
     RecordedHits.Init(FHitResult(ForceInit), nTotalScan);
 
@@ -57,8 +61,7 @@ void URR3DLidarComponent::Run()
 
 void URR3DLidarComponent::SensorUpdate()
 {
-    DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
-    DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
+
 
     // complex collisions: true
     FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("3DLaser_Trace"), true, GetOwner());
@@ -282,78 +285,211 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
     retValue.Header.Stamp = URRConversionUtils::FloatToROSStamp(TimeOfLastScan);
 
     retValue.Header.FrameId = FrameId;
+    
+    const uint32_t POINT_STEP = 22;
+    retValue.PointStep = POINT_STEP;
 
-    retValue.Height = NChannelsPerScan;
-    retValue.Width = NSamplesPerScan;
-
-    static TArray<const TCHAR*> FIELDS = {TEXT("x"), TEXT("y"), TEXT("z"), TEXT("distance"), TEXT("intensity")};
-
-    for (int32 Index = 0; Index != FIELDS.Num(); ++Index)
-    {
-        FROSPointField f;
-        f.Name = FIELDS[Index];
-        f.Offset = Index * 4;
-        f.Datatype = 7;
-        f.Count = 1;
-        retValue.Fields.Add(f);
-    }
-
+    retValue.Fields.Init(FROSPointField(), 6);
+    retValue.Fields[0].Name = "x";
+    retValue.Fields[0].Offset = 0;
+    retValue.Fields[0].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[0].Count = 1;
+    retValue.Fields[1].Name = "y";
+    retValue.Fields[1].Offset = 4;
+    retValue.Fields[1].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[1].Count = 1;
+    retValue.Fields[2].Name = "z";
+    retValue.Fields[2].Offset = 8;
+    retValue.Fields[2].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[2].Count = 1;
+    retValue.Fields[3].Name = "intensity";
+    retValue.Fields[3].Offset = 12;
+    retValue.Fields[3].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[3].Count = 1;
+    retValue.Fields[4].Name = "ring";
+    retValue.Fields[4].Offset = 16;
+    retValue.Fields[4].Datatype = FROSPointField::UINT16;
+    retValue.Fields[4].Count = 1;
+    retValue.Fields[5].Name = "time";
+    retValue.Fields[5].Offset = 18;
+    retValue.Fields[5].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[5].Count = 1;
+    
     retValue.bIsBigendian = false;
 
-    retValue.PointStep = sizeof(float) * 5;
-    retValue.RowStep = sizeof(float) * 5 * NSamplesPerScan;
+    DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
+    DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
 
-    retValue.Data.Init(0, RecordedHits.Num() * sizeof(float) * 5);
-    for (auto i = 0; i < RecordedHits.Num(); i++)
+    retValue.Data.Init(0, RecordedHits.Num() * POINT_STEP);
+    
+    // uint8_t *ptr = retValue.Data;
+    // uint8_t *data = new uint8_t[RecordedHits.Num() * POINT_STEP];
+     // uint8_t* data = retValue.Data.GetData();
+    
+    int count = 0;
+    for (auto i = 0; i < NChannelsPerScan; i++)
     {
-        float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
-        const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
-        float Intensity = 0;
-        if (RecordedHits.Last(i).PhysMaterial != nullptr)
+        for (auto j = 0; j < NSamplesPerScan; j++)
         {
-            // retroreflective material
-            if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
-            {
-                Intensity = IntensityScale * IntensityReflective;
-            }
-            // non-reflective material
-            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
-            {
-                Intensity = IntensityScale * IntensityNonReflective;
-            }
-            // reflective material
-            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
-            {
-                FVector HitSurfaceNormal = RecordedHits.Last(i).Normal;
-                FVector RayDirection = RecordedHits.Last(i).TraceEnd - RecordedHits.Last(i).TraceStart;
-                RayDirection.Normalize();
+            int index = j + i * NSamplesPerScan;
+            float Distance = (MinRange * (RecordedHits.Last(index).Distance > 0) + RecordedHits.Last(index).Distance) * .01f;
+            Distance += BWithNoise * GaussianRNGIntensity(Gen);
+            UE::Math::TVector<float> Pos = UE::Math::TVector<float>::ZeroVector;
 
-                // the dot product for this should always be between 0 and 1
-                const float UnnormalizedIntensity =
-                    FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
-                                                              FVector::DotProduct(HitSurfaceNormal, -RayDirection),
-                                 IntensityNonReflective,
-                                 IntensityReflective);
-                if ((UnnormalizedIntensity <= IntensityNonReflective) || (UnnormalizedIntensity <= IntensityReflective))
+            
+            const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
+            float Intensity = 0.0;
+            if (RecordedHits.Last(index).PhysMaterial != nullptr)
+            {
+                // retroreflective material
+                if (RecordedHits.Last(index).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
                 {
-                    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Normalized intensity is outof range. Something is wrong."));
+                    Intensity = IntensityScale * IntensityReflective;
                 }
-                Intensity = IntensityScale * UnnormalizedIntensity;
+                // non-reflective material
+                else if (RecordedHits.Last(index).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
+                {
+                    Intensity = IntensityScale * IntensityNonReflective;
+                }
+                // reflective material
+                else if (RecordedHits.Last(index).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
+                {
+                    FVector HitSurfaceNormal = RecordedHits.Last(index).Normal;
+                    FVector RayDirection = RecordedHits.Last(index).TraceEnd - RecordedHits.Last(index).TraceStart;
+                    RayDirection.Normalize();
+
+                    // the dot product for this should always be between 0 and 1
+                    const float UnnormalizedIntensity =
+                        FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
+                                                                FVector::DotProduct(HitSurfaceNormal, -RayDirection),
+                                    IntensityNonReflective,
+                                    IntensityReflective);
+                    if ((UnnormalizedIntensity <= IntensityNonReflective) || (UnnormalizedIntensity <= IntensityReflective))
+                    {
+                        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Normalized intensity is outof range. Something is wrong."));
+                    }
+                    Intensity = IntensityScale * UnnormalizedIntensity;
+                }
             }
-        }
-        else
-        {
-            Intensity = 0;    // std::numeric_limits<float>::quiet_NaN();
+            else
+            {
+                Intensity = 0;    // std::numeric_limits<float>::quiet_NaN();
+                continue;
+            }
+
+
+            // Get angles of ray to get xyz for point
+            Distance = 1;
+            Intensity = 1;
+            double yAngle;
+            double pAngle;
+            if (NSamplesPerScan > 1) {
+                yAngle = j * DHAngle + StartAngle;
+            } else {
+                yAngle = StartAngle;
+            }
+            if (NChannelsPerScan > 1) {
+                pAngle = i * DVAngle + StartVerticalAngle;
+            } else {
+                pAngle = StartVerticalAngle;
+            }
+            yAngle = FMath::DegreesToRadians(yAngle);
+            pAngle = FMath::DegreesToRadians(pAngle);
+            Pos = UE::Math::TVector<float>(
+                Distance * cos(pAngle) * cos(yAngle),
+                Distance * cos(pAngle) * sin(yAngle),
+                Distance * sin(pAngle)
+            );
+            
+            // Pos = RecordedHits.Last(index).ImpactPoint * .01f;
+            // FTransform temp(Pos);
+            // Pos = URRGeneralUtils::GetRelativeTransform(GetComponentTransform(), temp).GetTranslation();
+            // Pos =URRConversionUtils::VectorUEToROS(Pos);
+
+            float time = 0.0; //temp
+            memcpy(&retValue.Data[count * POINT_STEP], &Pos.X, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 4], &Pos.Y, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 8], &Pos.Z, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 12], &Intensity, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 16], &j, 2);
+            memcpy(&retValue.Data[count * POINT_STEP + 18], &time, 4);
+
+            // int k;
+            // uint8_t *temp1 = reinterpret_cast<uint8_t *>(&Pos.X);
+            // for (k=0; k<4; k++)
+            // {
+            //     retValue.Data[count * POINT_STEP + k] = temp1[k];
+            // }
+            // uint8_t *temp2 = reinterpret_cast<uint8_t *>(&Pos.Y);
+            // for (k=0; k<4; k++)
+            // {
+            //      retValue.Data[count * POINT_STEP + 4 + k] = temp2[k];
+            // }
+            // uint8_t *temp3 = reinterpret_cast<uint8_t *>(&Pos.Z);
+            // for (k=0; k<4; k++)
+            // {
+            //      retValue.Data[count * POINT_STEP + 8 + k] = temp3[k];
+            // }
+            // uint8_t *temp4 = reinterpret_cast<uint8_t *>(&Intensity);
+            // for (k=0; k<4; k++)
+            // {
+            //      retValue.Data[count * POINT_STEP + 12 + k] = temp4[k];
+            // }
+            // uint8_t *temp5 = reinterpret_cast<uint8_t *>(&j);
+            // for (k=0; k<2; k++)
+            // {
+            //      retValue.Data[count * POINT_STEP + 16 + k] = temp5[k];
+            // }
+            // uint8_t *temp6 = reinterpret_cast<uint8_t *>(&time);
+            // for (k=0; k<4; k++)
+            // {
+            //      retValue.Data[count * POINT_STEP + 18 + k] = temp6[k];
+            // } 
+
+            // &retValue.Data[index * POINT_STEP + 4] = reinterpret_cast<uint8_t *>(&Pos.Y);
+            // &retValue.Data[index * POINT_STEP + 8] = reinterpret_cast<uint8_t *>(&Pos.Z);
+            // &retValue.Data[index * POINT_STEP + 12] = reinterpret_cast<uint8_t *>(&Intensity);
+            // &retValue.Data[index * POINT_STEP + 16] = reinterpret_cast<uint8_t *>(&j);
+            // &retValue.Data[index * POINT_STEP + 18] = reinterpret_cast<uint8_t *>(&time);
+
+            // *((float*)(data + 0)) = Pos.X; // x
+            // *((float*)(data + 4)) = Pos.Y; // x
+            // *((float*)(data + 8)) = Pos.Z; // x
+            // *((float*)(data + 12)) = Intensity; // intensity
+            // *((uint16_t*)(data + 16)) = j; // ring
+            // *((float*)(data + 18)) = 0.0; // time
+            // data += POINT_STEP;
+
+            UE_LOG(LogRapyutaCore, Warning, TEXT("%s, %f, %f, %d, %d, %f, %f"), *Pos.ToString(), yAngle, pAngle, j, index, Distance, Intensity);
+            // UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *Pos1.ToString());
+
+            count++;
         }
 
-        FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
-        memcpy(&retValue.Data[i * 4 * 5], &Pos.X, 4);
-        memcpy(&retValue.Data[i * 4 * 5 + 4], &Pos.Y, 4);
-        memcpy(&retValue.Data[i * 4 * 5 + 8], &Pos.Z, 4);
-        memcpy(&retValue.Data[i * 4 * 5 + 12], &Distance, 4);
-        memcpy(&retValue.Data[i * 4 * 5 + 16], &Intensity, 4);
     }
+    
+    // for(int k=0; k<RecordedHits.Num() * POINT_STEP; k++)
+    // {
+        // data[k] = 0;
+        // retValue.Data[k] = data[k];
+        //  UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("t"));
+    // }
+    // FMemory::Memcpy(retValue.Data.GetData(), data, RecordedHits.Num() * POINT_STEP);
+    // delete[] data;
 
+    // retValue.Height = NChannelsPerScan;
+    // retValue.Width = NSamplesPerScan;
+    // retValue.RowStep = POINT_STEP * NSamplesPerScan;
+    // // retValue.bIsDense = false;
+    // retValue.bIsDense = true;
+    
+    retValue.Data.SetNum((count+1) * POINT_STEP, true);
+
+    retValue.Height = 1;
+    retValue.Width = count+1;//retValue.Data.Num() / POINT_STEP;
+    retValue.RowStep =  retValue.Data.Num();
+    // retValue.Width = RecordedHits.Num();
+    // retValue.RowStep =  RecordedHits.Num() * POINT_STEP;
     retValue.bIsDense = true;
 
     return retValue;
