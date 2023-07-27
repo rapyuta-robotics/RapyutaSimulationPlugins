@@ -1,8 +1,8 @@
 // Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Sensors/RR3DLidarComponent.h"
-#include "Msgs/ROS2PointField.h"
 
+#include "Msgs/ROS2PointField.h"
 #include "rclcUtilities.h"
 
 URR3DLidarComponent::URR3DLidarComponent()
@@ -47,7 +47,7 @@ void URR3DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickTyp
 void URR3DLidarComponent::Run()
 {
     const uint64 nTotalScan = GetTotalScan();
-    
+
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
     DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
 
@@ -61,8 +61,6 @@ void URR3DLidarComponent::Run()
 
 void URR3DLidarComponent::SensorUpdate()
 {
-
-
     // complex collisions: true
     FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("3DLaser_Trace"), true, GetOwner());
     TraceParams.bReturnPhysicalMaterial = true;
@@ -285,9 +283,13 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
     retValue.Header.Stamp = URRConversionUtils::FloatToROSStamp(TimeOfLastScan);
 
     retValue.Header.FrameId = FrameId;
-    
+
+    // reference
+    // https://github.com/ToyotaResearchInstitute/velodyne_simulator
     const uint32_t POINT_STEP = 22;
     retValue.PointStep = POINT_STEP;
+
+    retValue.bIsBigendian = false;
 
     retValue.Fields.Init(FROSPointField(), 6);
     retValue.Fields[0].Name = "x";
@@ -314,29 +316,19 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
     retValue.Fields[5].Offset = 18;
     retValue.Fields[5].Datatype = FROSPointField::FLOAT32;
     retValue.Fields[5].Count = 1;
-    
-    retValue.bIsBigendian = false;
-
-    DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
-    DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
 
     retValue.Data.Init(0, RecordedHits.Num() * POINT_STEP);
-    
-    // uint8_t *ptr = retValue.Data;
-    // uint8_t *data = new uint8_t[RecordedHits.Num() * POINT_STEP];
-     // uint8_t* data = retValue.Data.GetData();
-    
+
     int count = 0;
     for (auto i = 0; i < NChannelsPerScan; i++)
     {
         for (auto j = 0; j < NSamplesPerScan; j++)
         {
             int index = j + i * NSamplesPerScan;
-            float Distance = (MinRange * (RecordedHits.Last(index).Distance > 0) + RecordedHits.Last(index).Distance) * .01f;
-            Distance += BWithNoise * GaussianRNGIntensity(Gen);
+            // float Distance = (MinRange * (RecordedHits.Last(index).Distance > 0) + RecordedHits.Last(index).Distance) * .01f;
+            // Distance += BWithNoise * GaussianRNGIntensity(Gen);
             UE::Math::TVector<float> Pos = UE::Math::TVector<float>::ZeroVector;
 
-            
             const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
             float Intensity = 0.0;
             if (RecordedHits.Last(index).PhysMaterial != nullptr)
@@ -361,9 +353,9 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
                     // the dot product for this should always be between 0 and 1
                     const float UnnormalizedIntensity =
                         FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
-                                                                FVector::DotProduct(HitSurfaceNormal, -RayDirection),
-                                    IntensityNonReflective,
-                                    IntensityReflective);
+                                                                  FVector::DotProduct(HitSurfaceNormal, -RayDirection),
+                                     IntensityNonReflective,
+                                     IntensityReflective);
                     if ((UnnormalizedIntensity <= IntensityNonReflective) || (UnnormalizedIntensity <= IntensityReflective))
                     {
                         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Normalized intensity is outof range. Something is wrong."));
@@ -374,39 +366,21 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
             else
             {
                 Intensity = 0;    // std::numeric_limits<float>::quiet_NaN();
-                continue;
+                if (!bOrganizedCloud)
+                {
+                    continue;
+                }
             }
 
+            // Convert pose to local coordinate, ROS unit and double -> float
+            FVector posInDouble = RecordedHits.Last(index).ImpactPoint + BWithNoise * GaussianRNGPosition(Gen);
+            posInDouble = URRGeneralUtils::GetRelativeTransform(
+                              FTransform(GetComponentQuat(), GetComponentLocation(), FVector::OneVector), FTransform(posInDouble))
+                              .GetTranslation();
+            posInDouble = URRConversionUtils::VectorUEToROS(posInDouble);
+            Pos = UE::Math::TVector<float>(posInDouble.X, posInDouble.Y, posInDouble.Z);
 
-            // Get angles of ray to get xyz for point
-            Distance = 1;
-            Intensity = 1;
-            double yAngle;
-            double pAngle;
-            if (NSamplesPerScan > 1) {
-                yAngle = j * DHAngle + StartAngle;
-            } else {
-                yAngle = StartAngle;
-            }
-            if (NChannelsPerScan > 1) {
-                pAngle = i * DVAngle + StartVerticalAngle;
-            } else {
-                pAngle = StartVerticalAngle;
-            }
-            yAngle = FMath::DegreesToRadians(yAngle);
-            pAngle = FMath::DegreesToRadians(pAngle);
-            Pos = UE::Math::TVector<float>(
-                Distance * cos(pAngle) * cos(yAngle),
-                Distance * cos(pAngle) * sin(yAngle),
-                Distance * sin(pAngle)
-            );
-            
-            // Pos = RecordedHits.Last(index).ImpactPoint * .01f;
-            // FTransform temp(Pos);
-            // Pos = URRGeneralUtils::GetRelativeTransform(GetComponentTransform(), temp).GetTranslation();
-            // Pos =URRConversionUtils::VectorUEToROS(Pos);
-
-            float time = 0.0; //temp
+            float time = 0.0;    //temp
             memcpy(&retValue.Data[count * POINT_STEP], &Pos.X, 4);
             memcpy(&retValue.Data[count * POINT_STEP + 4], &Pos.Y, 4);
             memcpy(&retValue.Data[count * POINT_STEP + 8], &Pos.Z, 4);
@@ -414,83 +388,25 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
             memcpy(&retValue.Data[count * POINT_STEP + 16], &j, 2);
             memcpy(&retValue.Data[count * POINT_STEP + 18], &time, 4);
 
-            // int k;
-            // uint8_t *temp1 = reinterpret_cast<uint8_t *>(&Pos.X);
-            // for (k=0; k<4; k++)
-            // {
-            //     retValue.Data[count * POINT_STEP + k] = temp1[k];
-            // }
-            // uint8_t *temp2 = reinterpret_cast<uint8_t *>(&Pos.Y);
-            // for (k=0; k<4; k++)
-            // {
-            //      retValue.Data[count * POINT_STEP + 4 + k] = temp2[k];
-            // }
-            // uint8_t *temp3 = reinterpret_cast<uint8_t *>(&Pos.Z);
-            // for (k=0; k<4; k++)
-            // {
-            //      retValue.Data[count * POINT_STEP + 8 + k] = temp3[k];
-            // }
-            // uint8_t *temp4 = reinterpret_cast<uint8_t *>(&Intensity);
-            // for (k=0; k<4; k++)
-            // {
-            //      retValue.Data[count * POINT_STEP + 12 + k] = temp4[k];
-            // }
-            // uint8_t *temp5 = reinterpret_cast<uint8_t *>(&j);
-            // for (k=0; k<2; k++)
-            // {
-            //      retValue.Data[count * POINT_STEP + 16 + k] = temp5[k];
-            // }
-            // uint8_t *temp6 = reinterpret_cast<uint8_t *>(&time);
-            // for (k=0; k<4; k++)
-            // {
-            //      retValue.Data[count * POINT_STEP + 18 + k] = temp6[k];
-            // } 
-
-            // &retValue.Data[index * POINT_STEP + 4] = reinterpret_cast<uint8_t *>(&Pos.Y);
-            // &retValue.Data[index * POINT_STEP + 8] = reinterpret_cast<uint8_t *>(&Pos.Z);
-            // &retValue.Data[index * POINT_STEP + 12] = reinterpret_cast<uint8_t *>(&Intensity);
-            // &retValue.Data[index * POINT_STEP + 16] = reinterpret_cast<uint8_t *>(&j);
-            // &retValue.Data[index * POINT_STEP + 18] = reinterpret_cast<uint8_t *>(&time);
-
-            // *((float*)(data + 0)) = Pos.X; // x
-            // *((float*)(data + 4)) = Pos.Y; // x
-            // *((float*)(data + 8)) = Pos.Z; // x
-            // *((float*)(data + 12)) = Intensity; // intensity
-            // *((uint16_t*)(data + 16)) = j; // ring
-            // *((float*)(data + 18)) = 0.0; // time
-            // data += POINT_STEP;
-
-            UE_LOG(LogRapyutaCore, Warning, TEXT("%s, %f, %f, %d, %d, %f, %f"), *Pos.ToString(), yAngle, pAngle, j, index, Distance, Intensity);
-            // UE_LOG(LogRapyutaCore, Warning, TEXT("%s"), *Pos1.ToString());
-
             count++;
         }
-
     }
-    
-    // for(int k=0; k<RecordedHits.Num() * POINT_STEP; k++)
-    // {
-        // data[k] = 0;
-        // retValue.Data[k] = data[k];
-        //  UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("t"));
-    // }
-    // FMemory::Memcpy(retValue.Data.GetData(), data, RecordedHits.Num() * POINT_STEP);
-    // delete[] data;
 
-    // retValue.Height = NChannelsPerScan;
-    // retValue.Width = NSamplesPerScan;
-    // retValue.RowStep = POINT_STEP * NSamplesPerScan;
-    // // retValue.bIsDense = false;
-    // retValue.bIsDense = true;
-    
-    retValue.Data.SetNum((count+1) * POINT_STEP, true);
-
-    retValue.Height = 1;
-    retValue.Width = count+1;//retValue.Data.Num() / POINT_STEP;
-    retValue.RowStep =  retValue.Data.Num();
-    // retValue.Width = RecordedHits.Num();
-    // retValue.RowStep =  RecordedHits.Num() * POINT_STEP;
-    retValue.bIsDense = true;
+    if (bOrganizedCloud)
+    {
+        retValue.Width = NSamplesPerScan;
+        retValue.Height = NChannelsPerScan;
+        retValue.RowStep = POINT_STEP * NSamplesPerScan;
+        retValue.bIsDense = true;
+    }
+    else
+    {
+        retValue.Data.SetNum((count + 1) * POINT_STEP, true);
+        retValue.Height = 1;
+        retValue.Width = count + 1;
+        retValue.RowStep = retValue.Data.Num();
+        retValue.bIsDense = true;
+    }
 
     return retValue;
 }
