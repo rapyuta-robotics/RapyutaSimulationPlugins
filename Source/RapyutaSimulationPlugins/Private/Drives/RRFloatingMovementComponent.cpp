@@ -364,9 +364,7 @@ void URRFloatingMovementComponent::CalculateRVOAvoidanceVelocity(float InDeltaTi
         return;
     }
 
-#if RAPYUTA_SIM_DEBUG
-    const bool bShowDebug = RVOAvoidanceManager->IsDebugEnabled(RVOAvoidanceUID);
-#endif
+    const bool bRVODebugEnabled = RAPYUTA_SIM_DEBUG && RVOAvoidanceManager->IsDebugEnabled(RVOAvoidanceUID);
 
     //Adjust velocity only if we're in "Walking" mode. We should also check if we're dazed, being knocked around, maybe off-navmesh, etc.
     if (!Velocity.IsZero() && IsMovingOnGround() && UpdatedPrimitive)
@@ -375,13 +373,12 @@ void URRFloatingMovementComponent::CalculateRVOAvoidanceVelocity(float InDeltaTi
         if (RVOAvoidanceLockTimeout > 0.f)
         {
             Velocity = RVOAvoidanceLockVelocity;
-#if RAPYUTA_SIM_DEBUG
-            if (bShowDebug)
+
+            if (bRVODebugEnabled)
             {
                 DrawDebugLine(
                     GetWorld(), GetActorFeetLocation(), GetActorFeetLocation() + Velocity, FColor::Blue, false, 0.5f, SDPG_MAX);
             }
-#endif
         }
         else
         {
@@ -393,8 +390,8 @@ void URRFloatingMovementComponent::CalculateRVOAvoidanceVelocity(float InDeltaTi
                 //Had to divert course, lock this avoidance move in for a short time. This will make us a VO, so unlocked others will know to avoid us.
                 Velocity = newVelocity;
                 SetRVOAvoidanceVelocityLock(RVOAvoidanceManager->LockTimeAfterAvoid);
-#if RAPYUTA_SIM_DEBUG
-                if (bShowDebug)
+
+                if (bRVODebugEnabled)
                 {
                     DrawDebugLine(GetWorld(),
                                   GetActorFeetLocation(),
@@ -405,33 +402,28 @@ void URRFloatingMovementComponent::CalculateRVOAvoidanceVelocity(float InDeltaTi
                                   SDPG_MAX,
                                   10.0f);
                 }
-#endif
             }
             else
             {
                 //Although we didn't divert course, our velocity for this frame is decided. We will not reciprocate anything further, so treat as a VO for the remainder of this frame.
                 SetRVOAvoidanceVelocityLock(RVOAvoidanceManager->LockTimeAfterClean);    //10 ms of lock time should be adequate.
-#if RAPYUTA_SIM_DEBUG
-                if (bShowDebug)
+
+                if (bRVODebugEnabled)
                 {
                     //DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + Velocity, FColor::Green, false, 0.05f, SDPG_MAX, 10.0f);
                 }
-#endif
             }
         }
         RVOAvoidanceManager->UpdateRVO(this);
 
         bRVOAvoidanceRecentlyUpdated = true;
     }
-#if RAPYUTA_SIM_DEBUG
-    else if (bShowDebug)
+
+    else if (bRVODebugEnabled)
     {
         DrawDebugLine(
             GetWorld(), GetActorFeetLocation(), GetActorFeetLocation() + Velocity, FColor::Yellow, false, 0.05f, SDPG_MAX);
-    }
 
-    if (bShowDebug)
-    {
         FVector UpLine(0, 0, 500);
         DrawDebugLine(GetWorld(),
                       GetActorFeetLocation(),
@@ -442,5 +434,4 @@ void URRFloatingMovementComponent::CalculateRVOAvoidanceVelocity(float InDeltaTi
                       SDPG_MAX,
                       5.0f);
     }
-#endif
 }

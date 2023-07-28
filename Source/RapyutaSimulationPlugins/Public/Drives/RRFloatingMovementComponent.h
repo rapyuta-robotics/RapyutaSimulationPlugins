@@ -70,6 +70,8 @@ public:
 
     virtual void StopMovementImmediately() override;
 
+    // RVO Avoidance
+    // Ref: UCharacterMovementComponent
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     int32 RVOAvoidanceUID = 0;
     //! Whether to use RVO avoidance (instead of crowd avoidance). This only runs on the server
