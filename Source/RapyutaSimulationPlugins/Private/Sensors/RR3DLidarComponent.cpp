@@ -378,12 +378,12 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
                               FTransform(GetComponentQuat(), GetComponentLocation(), FVector::OneVector), FTransform(posInDouble))
                               .GetTranslation();
             posInDouble = URRConversionUtils::VectorUEToROS(posInDouble);
-            Pos = UE::Math::TVector<float>(posInDouble.X, posInDouble.Y, posInDouble.Z);
+            pos = FVector3f(posInDouble);
 
-            float time = 0.0;    //temp
-            memcpy(&retValue.Data[count * POINT_STEP], &Pos.X, 4);
-            memcpy(&retValue.Data[count * POINT_STEP + 4], &Pos.Y, 4);
-            memcpy(&retValue.Data[count * POINT_STEP + 8], &Pos.Z, 4);
+            float time = 0.f;    //temp
+            memcpy(&retValue.Data[count * POINT_STEP], &pos.X, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 4], &pos.Y, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 8], &pos.Z, 4);
             memcpy(&retValue.Data[count * POINT_STEP + 12], &Intensity, 4);
             memcpy(&retValue.Data[count * POINT_STEP + 16], &j, 2);
             memcpy(&retValue.Data[count * POINT_STEP + 18], &time, 4);
