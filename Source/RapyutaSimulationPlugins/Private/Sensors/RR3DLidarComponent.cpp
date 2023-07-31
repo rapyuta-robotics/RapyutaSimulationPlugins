@@ -327,7 +327,7 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
             int index = j + i * NSamplesPerScan;
             // float Distance = (MinRange * (RecordedHits.Last(index).Distance > 0) + RecordedHits.Last(index).Distance) * .01f;
             // Distance += BWithNoise * GaussianRNGIntensity(Gen);
-            UE::Math::TVector<float> Pos = UE::Math::TVector<float>::ZeroVector;
+            FVector3f pos = FVector3f::ZeroVector;
 
             const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
             float Intensity = 0.0;
