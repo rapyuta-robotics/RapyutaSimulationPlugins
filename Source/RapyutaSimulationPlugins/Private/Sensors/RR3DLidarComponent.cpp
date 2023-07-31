@@ -286,7 +286,7 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
 
     // reference
     // https://github.com/ToyotaResearchInstitute/velodyne_simulator
-    const uint32_t POINT_STEP = 22;
+    static constexpr uint32_t POINT_STEP = 22;
     retValue.PointStep = POINT_STEP;
 
     retValue.bIsBigendian = false;
