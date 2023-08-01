@@ -132,6 +132,8 @@ public:
 
 private:
     FTimerHandle OwnTimerHandle;
+    UPROPERTY()
+    float BeginTimeStampSec = 0.f;
 
     /**
      * @brief This method was scheduled to be run by BeginPlay()

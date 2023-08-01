@@ -27,9 +27,13 @@ void ATurtlebotBurger::SetupBody()
     WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
     CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
 
-    if (RootComponent)
+    // NOTE: This is critical, otherwise GetTransform() always returns one of [DefaultRoot] as initial one at spawning due to its being just a non-physics scene component
+    if ((nullptr == RootComponent) || (DefaultRoot == RootComponent))
     {
-        Base->SetupAttachment(RootComponent);
+        // NOTE: [RootComponent] must be valid for the spawning
+        RootComponent = Base;
+        // Cannot remove [DefaultRoot] in ctor thus to be done later in [PreInitializeComponents()]
+        DefaultRoot->SetupAttachment(Base);
     }
 
     LidarSensor->SetupAttachment(Base);
@@ -53,6 +57,17 @@ void ATurtlebotBurger::SetupBody()
     Base_CasterBack->SetupAttachment(CasterBack);
 
     SetupConstraintsAndPhysics();
+}
+
+void ATurtlebotBurger::PreInitializeComponents()
+{
+    Super::PreInitializeComponents();
+    if (IsDynamicRuntimeRobot() && DefaultRoot->GetAttachParent())
+    {
+        // NOTE: This requires [DefaultRoot] to have been attached to some NEW Root, by which there is no need to promote its child
+        DefaultRoot->DestroyComponent();
+    }
+    // else must keep for static child BP legacy support
 }
 
 void ATurtlebotBurger::PostInitializeComponents()

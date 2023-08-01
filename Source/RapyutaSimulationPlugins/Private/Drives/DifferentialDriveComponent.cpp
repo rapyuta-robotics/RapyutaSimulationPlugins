@@ -39,7 +39,7 @@ void UDifferentialDriveComponent::SetPerimeter()
         UE_LOG_WITH_INFO_NAMED(
             LogDifferentialDriveComponent, Warning, TEXT("Wheel radius is too small. Wheel radius is reset to 1.0"));
     }
-    WheelPerimeter = WheelRadius * 2.f * M_PI;
+    WheelPerimeter = WheelRadius * UE_TWO_PI;
 }
 void UDifferentialDriveComponent::TickComponent(float InDeltaTime,
                                                 enum ELevelTick TickType,

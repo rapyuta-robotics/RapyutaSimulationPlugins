@@ -273,11 +273,9 @@ public:
      */
     FORCEINLINE static FQuat GetRandomOrientation()
     {
-        static constexpr float C2PI = 2.f * PI;
-
         const float u1 = GetRandomBias();
-        const float u2 = GetRandomFloatInRange(0.f, C2PI);
-        const float u3 = GetRandomFloatInRange(0.f, C2PI);
+        const float u2 = GetRandomFloatInRange(0.f, UE_TWO_PI);
+        const float u3 = GetRandomFloatInRange(0.f, UE_TWO_PI);
         const float sqrt_u1 = FMath::Sqrt(u1);
         const float sqrt_1_u1 = FMath::Sqrt(1 - u1);
 
@@ -376,15 +374,15 @@ public:
         double diff = target - current;
         double absStep = FMath::Abs(step);
         double signedStep = diff > 0 ? absStep : -absStep;
-        if(FMath::Abs(diff)<=absStep || //can reach target in step
-            FMath::Abs(diff)<=FMath::Abs(tolerance) || //with in tolerance
-            (signedStep > 0 && diff < 0) || (signedStep < 0 && diff > 0) //overshoot
+        if (FMath::Abs(diff) <= absStep ||                                  //can reach target in step
+            FMath::Abs(diff) <= FMath::Abs(tolerance) ||                    //with in tolerance
+            (signedStep > 0 && diff < 0) || (signedStep < 0 && diff > 0)    //overshoot
         )
         {
             current = target;
             reached = true;
         }
-        else 
+        else
         {
             current += signedStep;
         }
@@ -405,12 +403,12 @@ public:
         bool reached = false;
         double currentNormalized = FRotator::NormalizeAxis(current);
         const double targetNormalized = FRotator::NormalizeAxis(target);
-        double diff = FRotator::NormalizeAxis(targetNormalized  - currentNormalized);
+        double diff = FRotator::NormalizeAxis(targetNormalized - currentNormalized);
         double absStep = FMath::Abs(step);
         double signedStep = diff > 0 ? absStep : -absStep;
-        if(FMath::Abs(diff)<=absStep || //can reach target in step
-            FMath::Abs(diff)<=FMath::Abs(tolerance) || //with in tolerance
-            (signedStep > 0 && diff < 0) || (signedStep < 0 && diff > 0) //overshoot
+        if (FMath::Abs(diff) <= absStep ||                                  //can reach target in step
+            FMath::Abs(diff) <= FMath::Abs(tolerance) ||                    //with in tolerance
+            (signedStep > 0 && diff < 0) || (signedStep < 0 && diff > 0)    //overshoot
         )
         {
             currentNormalized = targetNormalized;

@@ -34,6 +34,10 @@ class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 
 public:
     ARRROS2GameMode();
+    static constexpr const TCHAR* BP_TURTLEBOT3_KINEMATIC_BURGER = TEXT("BP_TurtlebotBurgerVehicle");
+    static constexpr const TCHAR* BP_TURTLEBOT3_KINEMATIC_WAFFLE = TEXT("BP_TurtlebotWaffleVehicle");
+    static constexpr const TCHAR* BP_TURTLEBOT3_PHYSICS_BURGER = TEXT("BP_TurtlebotBurger");
+    static constexpr const TCHAR* BP_TURTLEBOT3_PHYSICS_WAFFLE = TEXT("BP_TurtlebotWaffle");
 
     //! Sim's Main ROS 2 node. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadOnly)
@@ -121,6 +125,10 @@ protected:
     //! Blueprint class names to be registered as spawnable entity types
     UPROPERTY()
     TArray<FString> BPSpawnableClassNames;
+
+    //! Native classes  to be registered as spawnable entity types
+    UPROPERTY()
+    TMap<FString /*EntityModelName*/, TSubclassOf<AActor>> NativeSpawnableClasses;
 
 private:
     /**

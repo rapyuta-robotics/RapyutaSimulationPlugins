@@ -163,14 +163,13 @@ void ARRGameMode::StartSim()
     // The reason for this scheduled delegate is some essential operation, which facilitates sim startup activities like
     // asynchronous resource loading, could only run after this [ARRGameState::BeginPlay()] ends!
     URRCoreUtils::ScreenMsg(FColor::Yellow, TEXT("LOADING SIM RESOURCES.."), 10.f);
+    BeginTimeStampSec = URRCoreUtils::GetSeconds();
     GetWorld()->GetTimerManager().SetTimer(
         OwnTimerHandle, [this]() { TryStartingSim(); }, 1.f, true);
 }
 
 bool ARRGameMode::TryStartingSim()
 {
-    static FDateTime sBeginTime(FDateTime::UtcNow());
-
     // !NOTE: This method was scheduled to be run by BeginPlay()
     // 1 - WAIT FOR RESOURCE LOADING, in prep for Sim initialization
     UWorld* world = GetWorld();
@@ -186,7 +185,7 @@ bool ARRGameMode::TryStartingSim()
                 URRCoreUtils::StopRegisteredTimer(world, OwnTimerHandle);
                 UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("DYNAMIC RESOURCES LOADING TIMEOUT -> SHUTTING DOWN THE SIM..."))
             },
-            sBeginTime,
+            BeginTimeStampSec,
             ARRGameMode::SIM_START_TIMEOUT_SECS);
 
         // Either resources have yet to be fully loaded or time out!

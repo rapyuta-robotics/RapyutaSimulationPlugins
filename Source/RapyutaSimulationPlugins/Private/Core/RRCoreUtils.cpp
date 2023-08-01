@@ -280,8 +280,8 @@ bool URRCoreUtils::WaitUntilThenAct(TFunctionRef<bool()> InCond,
 }
 
 bool URRCoreUtils::CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
-                                    const TFunctionRef<void()>& InAction,
-                                    const FDateTime& InBeginTime,
+                                    const TFunctionRef<void()>& InActionUponTimeout,
+                                    float InBeginTimeInSec,
                                     float InTimeoutInSec)
 {
     if (InCondition())
@@ -289,10 +289,9 @@ bool URRCoreUtils::CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
         return true;
     }
 
-    double elapsed_time = FTimespan(FDateTime::UtcNow() - InBeginTime).GetTotalSeconds();
-    if (elapsed_time > InTimeoutInSec)
+    if (URRCoreUtils::GetElapsedTimeSecs(InBeginTimeInSec) > InTimeoutInSec)
     {
-        InAction();
+        InActionUponTimeout();
     }
     return false;
 }

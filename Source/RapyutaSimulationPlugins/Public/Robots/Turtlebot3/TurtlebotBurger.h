@@ -37,6 +37,11 @@ public:
     ATurtlebotBurger(const FObjectInitializer& ObjectInitializer);
 
 protected:
+    /**
+     * @brief Remove #DefaultRoot for dynamic-runtime robots
+     *
+     */
+    virtual void PreInitializeComponents() override;
 
     /**
      * @brief calls #SetupWheelDrives

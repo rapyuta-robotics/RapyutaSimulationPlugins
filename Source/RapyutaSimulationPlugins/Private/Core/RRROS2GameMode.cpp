@@ -11,12 +11,25 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRNetworkGameMode.h"
+#include "Core/RRTypeUtils.h"
+#include "Robots/Turtlebot3/TurtlebotBurger.h"
+#include "Robots/Turtlebot3/TurtlebotBurgerVehicle.h"
 #include "Tools/RRGhostPlayerPawn.h"
 #include "Tools/RRROS2ClockPublisher.h"
 
 ARRROS2GameMode::ARRROS2GameMode()
 {
     DefaultPawnClass = ARRGhostPlayerPawn::StaticClass();
+
+    // Static spawnable classes
+    BPSpawnableClassNames.Append({BP_TURTLEBOT3_KINEMATIC_BURGER,
+                                  BP_TURTLEBOT3_KINEMATIC_WAFFLE,
+                                  BP_TURTLEBOT3_PHYSICS_BURGER,
+                                  BP_TURTLEBOT3_PHYSICS_WAFFLE});
+
+    NativeSpawnableClasses.Append(
+        decltype(NativeSpawnableClasses)({{TEXT("TurtlebotBurger"), ATurtlebotBurger::StaticClass()},
+                                          {TEXT("TurtlebotBurgerVehicle"), ATurtlebotBurgerVehicle::StaticClass()}}));
 }
 
 void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOptions, FString& OutErrorMessage)
@@ -42,6 +55,7 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
     MainSimState = GetWorld()->SpawnActor<ASimulationState>();
     // 1.1- Register BP spawnable classes
     MainSimState->RegisterSpawnableBPEntities(BPSpawnableClassNames);
+    MainSimState->AddSpawnableEntityTypes(NativeSpawnableClasses);
     // 1.2- Fetch Entities in the map first regardless of ROS2
     MainSimState->InitEntities();
 }
@@ -113,6 +127,7 @@ void ARRROS2GameMode::SetFixedTimeStep(const float InStepSize)
     }
     FApp::SetUseFixedTimeStep(true);
     FApp::SetFixedDeltaTime(InStepSize);
+    UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Display, TEXT("FIXED TIMESTEP UPDATED: %f"), InStepSize);
 }
 
 float ARRROS2GameMode::GetFixedTimeStep() const
@@ -126,6 +141,7 @@ void ARRROS2GameMode::SetTargetRTF(const float InTargetRTF)
     if (ct)
     {
         ct->SetTargetRTF(InTargetRTF);
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Display, TEXT("CUSTOM RTF UPDATED: %f"), InTargetRTF);
     }
     else
     {
