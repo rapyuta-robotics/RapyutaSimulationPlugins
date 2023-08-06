@@ -127,7 +127,7 @@ void ARRROS2GameMode::SetFixedTimeStep(const float InStepSize)
     }
     FApp::SetUseFixedTimeStep(true);
     FApp::SetFixedDeltaTime(InStepSize);
-    UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Display, TEXT("FIXED TIMESTEP UPDATED: %f"), InStepSize);
+    UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Display, TEXT("Fixed Timestep Updated: %f"), InStepSize);
 }
 
 float ARRROS2GameMode::GetFixedTimeStep() const
@@ -141,7 +141,7 @@ void ARRROS2GameMode::SetTargetRTF(const float InTargetRTF)
     if (ct)
     {
         ct->SetTargetRTF(InTargetRTF);
-        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Display, TEXT("CUSTOM RTF UPDATED: %f"), InTargetRTF);
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Display, TEXT("Custom RTF Updated: %f"), InTargetRTF);
     }
     else
     {
