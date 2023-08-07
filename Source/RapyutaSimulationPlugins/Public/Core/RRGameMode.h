@@ -102,7 +102,7 @@ public:
     /**
      * @brief Print GameMode's user configs in INI
      */
-    virtual void PrintSimConfig() const;
+    virtual void PrintSimConfig() const override;
 
     /**
      * @brief Print UE global preprocessors' values

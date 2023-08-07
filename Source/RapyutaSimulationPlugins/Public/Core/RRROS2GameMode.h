@@ -34,10 +34,6 @@ class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 
 public:
     ARRROS2GameMode();
-    static constexpr const TCHAR* BP_TURTLEBOT3_KINEMATIC_BURGER = TEXT("BP_TurtlebotBurgerVehicle");
-    static constexpr const TCHAR* BP_TURTLEBOT3_KINEMATIC_WAFFLE = TEXT("BP_TurtlebotWaffleVehicle");
-    static constexpr const TCHAR* BP_TURTLEBOT3_PHYSICS_BURGER = TEXT("BP_TurtlebotBurger");
-    static constexpr const TCHAR* BP_TURTLEBOT3_PHYSICS_WAFFLE = TEXT("BP_TurtlebotWaffle");
 
     //! Sim's Main ROS 2 node. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadOnly)
@@ -99,6 +95,11 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual float GetTargetRTF() const;
 
+    /**
+     * @brief Print GameMode's user configs in INI
+     */
+    virtual void PrintSimConfig() const;
+
 protected:
     /**
      * @brief Initialize Game.
@@ -122,13 +123,15 @@ protected:
      */
     virtual void StartPlay() override;
 
-    //! Blueprint class names to be registered as spawnable entity types
+    //! Blueprint class names (also used as their entity model names) to be registered as spawnable entity types
+    //! Eg: {"BP_TurtlebotBurger", "BP_TurtlebotBurgerVehicle"}
     UPROPERTY(config)
     TArray<FString> BPSpawnableClassNames;
 
-    //! Native classes to be registered as spawnable entity types
+    //! Asset paths of classes to be registered as spawnable entity types
+    //! Eg: {{"TurtlebotBurger", "/Script/RapyutaSimulationPlugins.TurtlebotBurger"]}
     UPROPERTY(config)
-    TMap<FString /*EntityModelName*/, TSubclassOf<AActor>> NativeSpawnableClasses;
+    TMap<FString /*Entity model name*/, FString /*Class path*/> NativeSpawnableClassPaths;
 
 private:
     /**

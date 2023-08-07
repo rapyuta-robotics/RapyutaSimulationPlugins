@@ -385,6 +385,24 @@ public:
      */
     static UClass* FindBlueprintClass(const FString& InBlueprintClassName);
 
+    /* @brief Find UClass from its asset path name
+     * @param InClassPathName, eg: '/Script/RapyutaSimulationPlugins.TurtlebotBurger'
+     */
+    static UClass* FindClassFromPathName(const FString& InClassPathName)
+    {
+        const FTopLevelAssetPath classAssetPath(InClassPathName);
+        if (UClass* foundClass = FindObject<UClass>(classAssetPath))
+        {
+            return foundClass;
+        }
+        else
+        {
+            TArray<FAssetData> outAssets;
+            GetAssetRegistry().GetAssetsByClass(classAssetPath, outAssets);
+            return (outAssets.Num() > 0) ? outAssets[0].GetClass() : nullptr;
+        }
+    }
+
     /**
      * @brief Create a child blueprint class from parent UClass.
      * @param InParentClass

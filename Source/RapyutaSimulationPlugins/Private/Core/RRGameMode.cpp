@@ -41,56 +41,55 @@ void ARRGameMode::InitGameState()
 
 void ARRGameMode::PrintSimConfig() const
 {
+    Super::PrintSimConfig();
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("SIM GAME MODE CONFIG -----------------------------"));
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("- bBenchmark: %d"), bBenchmark);
+    UE_LOG(LogRapyutaCore, Display, TEXT("- bBenchmark: %d"), bBenchmark);
 }
 
 void ARRGameMode::PrintUEPreprocessors()
 {
     UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("UE PREPROCESSORS:"));
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("* [DO_CHECK] %s!"), URRCoreUtils::GetBoolPreprocessorText<DO_CHECK>());
+    UE_LOG(LogRapyutaCore, Display, TEXT("* [DO_CHECK] %s!"), URRCoreUtils::GetBoolPreprocessorText<DO_CHECK>());
 
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("* [STATS] %s!"), URRCoreUtils::GetBoolPreprocessorText<STATS>());
+    UE_LOG(LogRapyutaCore, Display, TEXT("* [STATS] %s!"), URRCoreUtils::GetBoolPreprocessorText<STATS>());
 
-    UE_LOG_WITH_INFO(LogRapyutaCore,
-                     Display,
-                     TEXT("* [CPUPROFILERTRACE_ENABLED] (for UE Insights) %s!"),
-                     URRCoreUtils::GetBoolPreprocessorText<CPUPROFILERTRACE_ENABLED>());
+    UE_LOG(LogRapyutaCore,
+           Display,
+           TEXT("* [CPUPROFILERTRACE_ENABLED] (for UE Insights) %s!"),
+           URRCoreUtils::GetBoolPreprocessorText<CPUPROFILERTRACE_ENABLED>());
 
-    UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("* [WITH_EDITOR] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_EDITOR>());
+    UE_LOG(LogRapyutaCore, Display, TEXT("* [WITH_EDITOR] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_EDITOR>());
 
-    UE_LOG_WITH_INFO(LogRapyutaCore,
-                     Display,
-                     TEXT("* [RHI_RAYTRACING] %s %d!"),
-                     URRCoreUtils::GetBoolPreprocessorText<RHI_RAYTRACING>(),
-                     IsRayTracingEnabled());
+    UE_LOG(LogRapyutaCore,
+           Display,
+           TEXT("* [RHI_RAYTRACING] %s %d!"),
+           URRCoreUtils::GetBoolPreprocessorText<RHI_RAYTRACING>(),
+           IsRayTracingEnabled());
 
-    UE_LOG_WITH_INFO(
-        LogRapyutaCore, Display, TEXT("* [WITH_UNREALPNG] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_UNREALPNG>());
+    UE_LOG(LogRapyutaCore, Display, TEXT("* [WITH_UNREALPNG] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_UNREALPNG>());
 
-    UE_LOG_WITH_INFO(
-        LogRapyutaCore, Display, TEXT("* [WITH_UNREALJPEG] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_UNREALJPEG>());
+    UE_LOG(LogRapyutaCore, Display, TEXT("* [WITH_UNREALJPEG] %s!"), URRCoreUtils::GetBoolPreprocessorText<WITH_UNREALJPEG>());
 
-    UE_LOG_WITH_INFO(LogRapyutaCore,
-                     Display,
-                     TEXT("* [USING_THREAD_SANITISER] %s!"),
-                     URRCoreUtils::GetBoolPreprocessorText<USING_THREAD_SANITISER>());
+    UE_LOG(LogRapyutaCore,
+           Display,
+           TEXT("* [USING_THREAD_SANITISER] %s!"),
+           URRCoreUtils::GetBoolPreprocessorText<USING_THREAD_SANITISER>());
 
 #if (!WITH_EDITOR)
-    UE_LOG_WITH_INFO(LogRapyutaCore,
-                     Display,
-                     TEXT("- bAsyncLoadingThreadEnabled: %d"),
-                     FAsyncLoadingThreadSettings::Get().bAsyncLoadingThreadEnabled);
+    UE_LOG(LogRapyutaCore,
+           Display,
+           TEXT("- bAsyncLoadingThreadEnabled: %d"),
+           FAsyncLoadingThreadSettings::Get().bAsyncLoadingThreadEnabled);
 #endif
 
     // Physics [Single/Multi-threaded mode]
     if (PhysSingleThreadedMode())
     {
-        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("PHYSICS RUNS IN GAME THREAD!"));
+        UE_LOG(LogTemp, Display, TEXT("PHYSICS RUNS IN GAME THREAD!"));
     }
     else
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Display, TEXT("PHYSICS RUNS IN A MULTI-THREADED MODE!"));
+        UE_LOG(LogRapyutaCore, Display, TEXT("PHYSICS RUNS IN A MULTI-THREADED MODE!"));
     }
 }
 
