@@ -27,7 +27,7 @@ DECLARE_MULTICAST_DELEGATE(FRROnROS2Initialized);
  * @sa [AGameMode](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
  * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)
  */
-UCLASS()
+UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 {
     GENERATED_BODY()
@@ -123,11 +123,11 @@ protected:
     virtual void StartPlay() override;
 
     //! Blueprint class names to be registered as spawnable entity types
-    UPROPERTY()
+    UPROPERTY(config)
     TArray<FString> BPSpawnableClassNames;
 
-    //! Native classes  to be registered as spawnable entity types
-    UPROPERTY()
+    //! Native classes to be registered as spawnable entity types
+    UPROPERTY(config)
     TMap<FString /*EntityModelName*/, TSubclassOf<AActor>> NativeSpawnableClasses;
 
 private:
