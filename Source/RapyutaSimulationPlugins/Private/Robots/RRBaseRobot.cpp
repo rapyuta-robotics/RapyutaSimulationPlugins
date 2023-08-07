@@ -203,7 +203,7 @@ void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeA
         // [BaseMeshComp] will only be promoted later AFTER removing that Root
 
         // Only possible to remove [DefaultRoot] as outside ctor
-        if (bInDestroyDefaultRoot && URRThreadUtils::IsInsideConstructor())
+        if (bInDestroyDefaultRoot && !URRThreadUtils::IsInsideConstructor())
         {
             DefaultRoot->DestroyComponent();
             DefaultRoot = nullptr;
