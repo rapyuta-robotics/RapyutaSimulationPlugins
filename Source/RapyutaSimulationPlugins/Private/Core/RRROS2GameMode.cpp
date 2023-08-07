@@ -80,7 +80,10 @@ void ARRROS2GameMode::InitGame(const FString& InMapName, const FString& InOption
                              *nativeSpawnableClassPath);
         }
     }
-    MainSimState->AddSpawnableEntityTypes(nativeSpawnableClasses);
+    if (nativeSpawnableClasses.Num() > 0)
+    {
+        MainSimState->AddSpawnableEntityTypes(MoveTemp(nativeSpawnableClasses));
+    }
 
     // 1.3- Fetch Entities in the map first regardless of ROS2
     MainSimState->InitEntities();
