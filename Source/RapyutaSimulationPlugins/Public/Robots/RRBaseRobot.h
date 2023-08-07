@@ -646,10 +646,10 @@ public:
     /**
      * @brief This method is called inside #PreInitializeComponents.
      * Custom initialization of child BP class can be done by overwritting this method.
-     *
+     * @note BlueprintImplementableEvent can't return value
      */
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-    bool BPInitPropertiesFromJSON();
+    void BPInitPropertiesFromJSON();
 
     /**
      * @brief Calls both #InitPropertiesFromJSON and #BPInitPropertiesFromJSON
@@ -680,7 +680,8 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual bool InitPropertiesFromJSONAll()
     {
-        return InitPropertiesFromJSON() && BPInitPropertiesFromJSON();
-        ;
+        bool res = InitPropertiesFromJSON();
+        BPInitPropertiesFromJSON();
+        return res;
     };
 };
