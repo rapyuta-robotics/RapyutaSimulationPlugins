@@ -38,12 +38,6 @@ public:
 
 protected:
     /**
-     * @brief Remove #DefaultRoot for dynamic-runtime robots
-     *
-     */
-    virtual void PreInitializeComponents() override;
-
-    /**
      * @brief calls #SetupWheelDrives
      * 
      */
@@ -112,12 +106,12 @@ protected:
     UFUNCTION()
     void SetupWheelDrives();
 
-    //! pass to #UDifferentialDriveComponent. 
+    //! pass to #UDifferentialDriveComponent.
     //! @todo get from static meshes.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float WheelRadius = 3.3f;
 
-    //! pass to #UDifferentialDriveComponent. 
+    //! pass to #UDifferentialDriveComponent.
     //! @todo get data from links.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float WheelSeparationHalf = 7.9f;

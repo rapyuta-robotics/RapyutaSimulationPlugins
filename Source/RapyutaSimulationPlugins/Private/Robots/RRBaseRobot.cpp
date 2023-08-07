@@ -185,6 +185,32 @@ void ARRBaseRobot::PostInitializeComponents()
     }
 }
 
+void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeAsRoot, bool bInDestroyDefaultRoot)
+{
+    ensure(InBaseMeshComp);
+    BaseMeshComp = InBaseMeshComp;
+    if (bInMakeAsRoot)
+    {
+        // NOTE: This is critical, otherwise GetTransform() always returns one of [DefaultRoot] as initial one at spawning due to its being just a non-physics scene component
+        if ((nullptr == RootComponent) || (DefaultRoot == RootComponent))
+        {
+            // NOTE: [RootComponent] must be valid for the spawning
+            SetRootComponent(InBaseMeshComp);
+            // Cannot remove [DefaultRoot] in ctor thus to be done later in [PreInitializeComponents()]
+            DefaultRoot->SetupAttachment(InBaseMeshComp);
+        }
+        // else: If Root is some other component, probably setup in Child class,
+        // [BaseMeshComp] will only be promoted later AFTER removing that Root
+
+        // Only possible to remove [DefaultRoot] as outside ctor
+        if (bInDestroyDefaultRoot && URRThreadUtils::IsInsideConstructor())
+        {
+            DefaultRoot->DestroyComponent();
+            DefaultRoot = nullptr;
+        }
+    }
+}
+
 void ARRBaseRobot::OnRep_ROS2Interface()
 {
 #if RAPYUTA_SIM_DEBUG
