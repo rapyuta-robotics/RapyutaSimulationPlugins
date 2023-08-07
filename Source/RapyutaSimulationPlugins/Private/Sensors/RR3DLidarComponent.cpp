@@ -2,6 +2,7 @@
 
 #include "Sensors/RR3DLidarComponent.h"
 
+#include "Msgs/ROS2PointField.h"
 #include "rclcUtilities.h"
 
 URR3DLidarComponent::URR3DLidarComponent()
@@ -47,6 +48,9 @@ void URR3DLidarComponent::Run()
 {
     const uint64 nTotalScan = GetTotalScan();
 
+    DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
+    DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
+
     RecordedHits.Init(FHitResult(ForceInit), nTotalScan);
 
 #if TRACE_ASYNC
@@ -57,9 +61,6 @@ void URR3DLidarComponent::Run()
 
 void URR3DLidarComponent::SensorUpdate()
 {
-    DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
-    DVAngle = FOVVertical / static_cast<float>(NChannelsPerScan);
-
     // complex collisions: true
     FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("3DLaser_Trace"), true, GetOwner());
     TraceParams.bReturnPhysicalMaterial = true;
@@ -283,78 +284,129 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
 
     retValue.Header.FrameId = FrameId;
 
-    retValue.Height = NChannelsPerScan;
-    retValue.Width = NSamplesPerScan;
-
-    static TArray<const TCHAR*> FIELDS = {TEXT("x"), TEXT("y"), TEXT("z"), TEXT("distance"), TEXT("intensity")};
-
-    for (int32 Index = 0; Index != FIELDS.Num(); ++Index)
-    {
-        FROSPointField f;
-        f.Name = FIELDS[Index];
-        f.Offset = Index * 4;
-        f.Datatype = 7;
-        f.Count = 1;
-        retValue.Fields.Add(f);
-    }
+    // reference
+    // https://github.com/ToyotaResearchInstitute/velodyne_simulator
+    static constexpr uint32_t POINT_STEP = 22;
+    retValue.PointStep = POINT_STEP;
 
     retValue.bIsBigendian = false;
 
-    retValue.PointStep = sizeof(float) * 5;
-    retValue.RowStep = sizeof(float) * 5 * NSamplesPerScan;
+    retValue.Fields.Init(FROSPointField(), 6);
+    retValue.Fields[0].Name = "x";
+    retValue.Fields[0].Offset = 0;
+    retValue.Fields[0].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[0].Count = 1;
+    retValue.Fields[1].Name = "y";
+    retValue.Fields[1].Offset = 4;
+    retValue.Fields[1].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[1].Count = 1;
+    retValue.Fields[2].Name = "z";
+    retValue.Fields[2].Offset = 8;
+    retValue.Fields[2].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[2].Count = 1;
+    retValue.Fields[3].Name = "intensity";
+    retValue.Fields[3].Offset = 12;
+    retValue.Fields[3].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[3].Count = 1;
+    retValue.Fields[4].Name = "ring";
+    retValue.Fields[4].Offset = 16;
+    retValue.Fields[4].Datatype = FROSPointField::UINT16;
+    retValue.Fields[4].Count = 1;
+    retValue.Fields[5].Name = "time";
+    retValue.Fields[5].Offset = 18;
+    retValue.Fields[5].Datatype = FROSPointField::FLOAT32;
+    retValue.Fields[5].Count = 1;
 
-    retValue.Data.Init(0, RecordedHits.Num() * sizeof(float) * 5);
-    for (auto i = 0; i < RecordedHits.Num(); i++)
+    retValue.Data.Init(0, RecordedHits.Num() * POINT_STEP);
+
+    int count = 0;
+    for (auto i = 0; i < NChannelsPerScan; i++)
     {
-        float Distance = (MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f;
-        const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
-        float Intensity = 0;
-        if (RecordedHits.Last(i).PhysMaterial != nullptr)
+        for (auto j = 0; j < NSamplesPerScan; j++)
         {
-            // retroreflective material
-            if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
-            {
-                Intensity = IntensityScale * IntensityReflective;
-            }
-            // non-reflective material
-            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
-            {
-                Intensity = IntensityScale * IntensityNonReflective;
-            }
-            // reflective material
-            else if (RecordedHits.Last(i).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
-            {
-                FVector HitSurfaceNormal = RecordedHits.Last(i).Normal;
-                FVector RayDirection = RecordedHits.Last(i).TraceEnd - RecordedHits.Last(i).TraceStart;
-                RayDirection.Normalize();
+            int index = j + i * NSamplesPerScan;
+            // float Distance = (MinRange * (RecordedHits.Last(index).Distance > 0) + RecordedHits.Last(index).Distance) * .01f;
+            // Distance += BWithNoise * GaussianRNGIntensity(Gen);
+            FVector3f pos = FVector3f::ZeroVector;
 
-                // the dot product for this should always be between 0 and 1
-                const float UnnormalizedIntensity =
-                    FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
-                                                              FVector::DotProduct(HitSurfaceNormal, -RayDirection),
-                                 IntensityNonReflective,
-                                 IntensityReflective);
-                if ((UnnormalizedIntensity <= IntensityNonReflective) || (UnnormalizedIntensity <= IntensityReflective))
+            const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
+            float Intensity = 0.0;
+            if (RecordedHits.Last(index).PhysMaterial != nullptr)
+            {
+                // retroreflective material
+                if (RecordedHits.Last(index).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1)
                 {
-                    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Normalized intensity is outof range. Something is wrong."));
+                    Intensity = IntensityScale * IntensityReflective;
                 }
-                Intensity = IntensityScale * UnnormalizedIntensity;
-            }
-        }
-        else
-        {
-            Intensity = 0;    // std::numeric_limits<float>::quiet_NaN();
-        }
+                // non-reflective material
+                else if (RecordedHits.Last(index).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType_Default)
+                {
+                    Intensity = IntensityScale * IntensityNonReflective;
+                }
+                // reflective material
+                else if (RecordedHits.Last(index).PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType2)
+                {
+                    FVector HitSurfaceNormal = RecordedHits.Last(index).Normal;
+                    FVector RayDirection = RecordedHits.Last(index).TraceEnd - RecordedHits.Last(index).TraceStart;
+                    RayDirection.Normalize();
 
-        FVector Pos = RecordedHits.Last(i).ImpactPoint * .01f;
-        memcpy(&retValue.Data[i * 4 * 5], &Pos.X, 4);
-        memcpy(&retValue.Data[i * 4 * 5 + 4], &Pos.Y, 4);
-        memcpy(&retValue.Data[i * 4 * 5 + 8], &Pos.Z, 4);
-        memcpy(&retValue.Data[i * 4 * 5 + 12], &Distance, 4);
-        memcpy(&retValue.Data[i * 4 * 5 + 16], &Intensity, 4);
+                    // the dot product for this should always be between 0 and 1
+                    const float UnnormalizedIntensity =
+                        FMath::Clamp(IntensityNonReflective + (IntensityReflective - IntensityNonReflective) *
+                                                                  FVector::DotProduct(HitSurfaceNormal, -RayDirection),
+                                     IntensityNonReflective,
+                                     IntensityReflective);
+                    if ((UnnormalizedIntensity <= IntensityNonReflective) || (UnnormalizedIntensity <= IntensityReflective))
+                    {
+                        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Normalized intensity is outof range. Something is wrong."));
+                    }
+                    Intensity = IntensityScale * UnnormalizedIntensity;
+                }
+            }
+            else
+            {
+                Intensity = 0;    // std::numeric_limits<float>::quiet_NaN();
+                if (!bOrganizedCloud)
+                {
+                    continue;
+                }
+            }
+
+            // Convert pose to local coordinate, ROS unit and double -> float
+            FVector posInDouble = RecordedHits.Last(index).ImpactPoint + BWithNoise * GaussianRNGPosition(Gen);
+            posInDouble = URRGeneralUtils::GetRelativeTransform(
+                              FTransform(GetComponentQuat(), GetComponentLocation(), FVector::OneVector), FTransform(posInDouble))
+                              .GetTranslation();
+            posInDouble = URRConversionUtils::VectorUEToROS(posInDouble);
+            pos = FVector3f(posInDouble);
+
+            float time = 0.f;    //temp
+            memcpy(&retValue.Data[count * POINT_STEP], &pos.X, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 4], &pos.Y, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 8], &pos.Z, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 12], &Intensity, 4);
+            memcpy(&retValue.Data[count * POINT_STEP + 16], &j, 2);
+            memcpy(&retValue.Data[count * POINT_STEP + 18], &time, 4);
+
+            count++;
+        }
     }
 
-    retValue.bIsDense = true;
+    if (bOrganizedCloud)
+    {
+        retValue.Width = NSamplesPerScan;
+        retValue.Height = NChannelsPerScan;
+        retValue.RowStep = POINT_STEP * NSamplesPerScan;
+        retValue.bIsDense = true;
+    }
+    else
+    {
+        retValue.Data.SetNum((count + 1) * POINT_STEP, true);
+        retValue.Height = 1;
+        retValue.Width = count + 1;
+        retValue.RowStep = retValue.Data.Num();
+        retValue.bIsDense = true;
+    }
 
     return retValue;
 }

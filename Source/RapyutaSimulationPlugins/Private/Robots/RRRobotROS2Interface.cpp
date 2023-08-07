@@ -188,9 +188,12 @@ bool URRRobotROS2Interface::InitSubscriptions()
         RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(CmdVelTopicName, UROS2TwistMsg::StaticClass(), &URRRobotROS2Interface::MovementCallback);
     }
 
-    // Subscription with callback to enqueue vehicle spawn info.
-    RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(
-        JointCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointCmdCallback);
+    if (Robot && Robot->bJointControl)
+    {
+        // Subscription with callback to enqueue vehicle spawn info.
+        RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(
+            JointCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointCmdCallback);
+    }
 
     // Additional subscribers by child class or robot
     for (auto& sub : Subscribers)
@@ -367,8 +370,7 @@ void URRRobotROS2Interface::JointCmdCallback(const UROS2GenericMsg* Msg)
             {
                 if (bWarnAboutMissingLink)
                 {
-                    UE_LOG_WITH_INFO_NAMED(
-                        LogRapyutaCore, Warning, TEXT("robot do not have joint named %s."), *jointState.Name[i]);
+                    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("robot do not have joint named %s."), *jointState.Name[i]);
                 }
                 continue;
             }
@@ -441,7 +443,7 @@ void URRRobotROS2Interface::UpdateJointState(UROS2GenericMsg* InMessage)
 
     for (const auto& joint : Robot->Joints)
     {
-        if(nullptr == joint.Value)
+        if (nullptr == joint.Value)
         {
             continue;
         }
@@ -458,13 +460,12 @@ void URRRobotROS2Interface::UpdateJointState(UROS2GenericMsg* InMessage)
         {
             msg.Position.Emplace(FMath::DegreesToRadians(joint.Value->Orientation.Euler()[0]));
             msg.Velocity.Emplace(FMath::DegreesToRadians(joint.Value->AngularVelocity[0]));
-        }    
-        
-        msg.Effort.Emplace(0); //effort is not supported yet.
+        }
+
+        msg.Effort.Emplace(0);    //effort is not supported yet.
     }
     CastChecked<UROS2JointStateMsg>(InMessage)->SetMsg(msg);
 }
-
 
 URRRobotROS2InterfaceComponent::URRRobotROS2InterfaceComponent()
 {

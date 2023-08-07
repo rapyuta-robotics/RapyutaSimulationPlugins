@@ -78,6 +78,7 @@ public:
      * This should probably be removed so that the sensor can be decoupled from the message types
      * @return FROSPointCloud2
      */
+    UFUNCTION(BlueprintCallable)
     FROSPointCloud2 GetROS2Data();
 
     /**
@@ -108,6 +109,12 @@ public:
     //! [degrees]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float FOVVertical = 90.f;
+
+    //! Data is organized or not.
+    //! false: height=1, width=data size
+    //! true:  height=#NChannelsPerScan, width=#NSamplesPerScan
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    bool bOrganizedCloud = false;
 
     //! [degrees]
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

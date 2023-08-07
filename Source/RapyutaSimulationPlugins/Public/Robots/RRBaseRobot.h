@@ -246,22 +246,10 @@ public:
 
     /**
      * @brief
-     * Actually Object's Name is also unique as noted by UE, but we just do not want to rely on it.
-     * Instead, we use [RobotUniqueName] to make the robot id control more indpendent of ue internal name handling.
-     * Reasons:
-     * + An Actor's Name could get updated as its Label is updated
-     * + In pending-kill state, GetName() goes to [None]
+     * @deprecated Please use EntityUniqueName
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Replicated)
     FString RobotUniqueName;
-
-    /**
-     * @brief Get robot unique name
-     */
-    FString GetRobotName() const
-    {
-        return RobotUniqueName;
-    }
 
     /**
      * @brief Set robot unique name
@@ -269,6 +257,7 @@ public:
     void SetRobotName(const FString& InRobotName)
     {
         RobotUniqueName = InRobotName;
+        EntityUniqueName = InRobotName;
     }
 
     //! Robot Model Name (loaded from URDF/SDF)
@@ -513,6 +502,69 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bMobileRobot = true;
 
+    //! Control Joint by ROS2 o rnot
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bJointControl = true;
+
+    // UI WIDGET --
+    UPROPERTY()
+    uint8 bUIWidgetEnabled : 1;
+    //! UI widget component
+    UPROPERTY()
+    TObjectPtr<UWidgetComponent> UIWidgetComp = nullptr;
+    //! #URRUserWidget's widget
+    UPROPERTY()
+    TObjectPtr<URRUserWidget> UIUserWidget = nullptr;
+
+    //! Relative pose of the UI widget from the owner robot
+    UPROPERTY()
+    FTransform UIWidgetOffset = FTransform(FVector(0.f, 0.f, 100.f));
+
+    /**
+     * @brief Check whether #UIUserWidget is valid
+     */
+    bool CheckUIUserWidget() const;
+
+    /**
+     * @brief Set robot's tooltip text through #UIWidgetComp's label
+     * @param InTooltip
+     */
+    void SetTooltipText(const FString& InTooltip);
+    /**
+     * @brief Toggle robot's tooltip visibility
+     * @param bInTooltipVisible
+     */
+    void SetTooltipVisible(bool bInTooltipVisible);
+
+    /**
+     * @brief Set visibility of #UIUserWidget
+     * @param bInWidgetVisible
+     */
+    void SetUIWidgetVisible(bool bInWidgetVisible);
+
+protected:
+    /**
+     * @brief Instantiate default child components
+     */
+    virtual void PreInitializeComponents() override;
+
+    /**
+     * @brief Post Initialization process of actor. Initialize #RobotVehicleMoveComponent by calling #InitMoveComponent.
+     * @sa[ActorLifecycle](https://docs.unrealengine.com/5.1/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Actors/ActorLifecycle/)
+     * @sa[PostInitializeComponents](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
+     */
+    virtual void PostInitializeComponents() override;
+
+    /**
+     * @brief Create and Initialize #MovementComponent if #VehicleMoveComponentClass != nullptr.
+     * If VehicleMoveComponentClass == nullptr, it is expected that MovementComponent is set from BP or user code.
+     *
+     * @return true #MovementComponent is created and initialized.
+     * @return false #VehicleMoveComponentClass == nullptr.
+     */
+    virtual bool InitMoveComponent();
+
+public:
     /**
      * @brief Parse Json parameters in #ROSSpawnParameters
      * This function is called in #PreInitializeComponents
@@ -578,67 +630,16 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual bool InitPropertiesFromJSON();
 
-    // UI WIDGET --
-    UPROPERTY()
-    uint8 bUIWidgetEnabled : 1;
-    //! UI widget component
-    UPROPERTY()
-    TObjectPtr<UWidgetComponent> UIWidgetComp = nullptr;
-    //! #URRUserWidget's widget
-    UPROPERTY()
-    TObjectPtr<URRUserWidget> UIUserWidget = nullptr;
-
-    //! Relative pose of the UI widget from the owner robot
-    UPROPERTY()
-    FTransform UIWidgetOffset = FTransform(FVector(0.f, 0.f, 100.f));
-
     /**
-     * @brief Check whether #UIUserWidget is valid
-     */
-    bool CheckUIUserWidget() const;
-
-    /**
-     * @brief Set robot's tooltip text through #UIWidgetComp's label
-     * @param InTooltip
-     */
-    void SetTooltipText(const FString& InTooltip);
-    /**
-     * @brief Toggle robot's tooltip visibility
-     * @param bInTooltipVisible
-     */
-    void SetTooltipVisible(bool bInTooltipVisible);
-
-    /**
-     * @brief Set visibility of #UIUserWidget
-     * @param bInWidgetVisible
-     */
-    void SetUIWidgetVisible(bool bInWidgetVisible);
-
-protected:
-    /**
-     * @brief Instantiate default child components
-     */
-    virtual void PreInitializeComponents() override;
-
-    /**
-     * @brief Post Initialization process of actor. Initialize #RobotVehicleMoveComponent by calling #InitMoveComponent.
-     * @sa[ActorLifecycle](https://docs.unrealengine.com/5.1/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Actors/ActorLifecycle/)
-     * @sa[PostInitializeComponents](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AActor/PostInitializeComponents/)
-     */
-    virtual void PostInitializeComponents() override;
-
-    /**
-     * @brief Create and Initialize #MovementComponent if #VehicleMoveComponentClass != nullptr.
-     * If VehicleMoveComponentClass == nullptr, it is expected that MovementComponent is set from BP or user code.
+     * @brief This method is called inside #PreInitializeComponents.
+     * Custom initialization of child BP class can be done by overwritting this method.
      *
-     * @return true #MovementComponent is created and initialized.
-     * @return false #VehicleMoveComponentClass == nullptr.
      */
-    virtual bool InitMoveComponent();
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    bool BPInitPropertiesFromJSON();
 
     /**
-     * @brief This method is called inside #PostInitializeComponents.
-     * Custom initialization of child class can be done by overwritting this method.
+     * @brief Calls both #InitPropertiesFromJSON and #BPInitPropertiesFromJSON
      *
      */
     virtual void ConfigureMovementComponent();
@@ -662,4 +663,11 @@ protected:
      */
     UPROPERTY()
     TMap<UPrimitiveComponent*, FName> OriginalCollisionProfiles;
+
+    UFUNCTION(BlueprintCallable)
+    virtual bool InitPropertiesFromJSONAll()
+    {
+        return InitPropertiesFromJSON() && BPInitPropertiesFromJSON();
+        ;
+    };
 };

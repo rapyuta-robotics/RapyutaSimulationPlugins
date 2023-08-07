@@ -20,7 +20,6 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
-#define TRACE_ASYNC 1
 
 /**
  * @brief Base ROS 2 Sensor Component class. Other sensors class should inherit from this class.
@@ -107,7 +106,6 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SensorUpdate()
     {
-        checkNoEntry();
     }
 
     /**
@@ -116,13 +114,12 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void SetROS2Msg(UROS2GenericMsg* InMessage)
     {
-        checkNoEntry();
     }
 
     UPROPERTY()
     TSubclassOf<UROS2Publisher> SensorPublisherClass = URRROS2BaseSensorPublisher::StaticClass();
 
-    UPROPERTY(Transient)
+    UPROPERTY(BlueprintReadWrite)
     URRROS2BaseSensorPublisher* SensorPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
