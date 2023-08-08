@@ -44,9 +44,7 @@ class BaseSubscriber(Node):
         self._topic_data_arrived = False
         self._received_data = None
 
-        # https://answers.ros.org/question/358343/rate-and-sleep-function-in-rclpy-library-for-ros2
-        # Note to call rclpy.spin_once() in any while loop following to use this rate
-        self._rate = self.create_rate(in_subscriber_rate)
+        self._time_step = 1.0 / in_subscriber_rate
 
     def __enter__(self):
         return self
@@ -73,6 +71,6 @@ class BaseSubscriber(Node):
         while (not self._topic_data_arrived) and (
             (time.time() - start_time) < in_timeout
         ):
-            # [on_path_status_received] triggered here-in upon msg coming
-            rclpy.spin_once(self, timeout_sec=1.0)
+            # [on_data_arrived] callback is triggered here-in upon msg coming
+            rclpy.spin_once(self, timeout_sec=self._time_step)
         return self._topic_data_arrived
