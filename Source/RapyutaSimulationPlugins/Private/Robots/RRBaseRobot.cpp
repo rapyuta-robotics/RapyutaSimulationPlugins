@@ -187,7 +187,11 @@ void ARRBaseRobot::PostInitializeComponents()
 
 void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeAsRoot, bool bInDestroyDefaultRoot)
 {
-    ensure(InBaseMeshComp);
+    if (!ensure(IsValid(InBaseMeshComp)))
+    {
+        UE_LOG_WITH_INFO_SHORT_NAMED(LogRapyutaCore, Error, TEXT("InBaseMeshComp null!"));
+        return;
+    }
     BaseMeshComp = InBaseMeshComp;
     if (bInMakeAsRoot)
     {
