@@ -14,6 +14,7 @@ from rclpy.qos import QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolic
 
 # rr_sim_tests
 from rr_sim_tests.utils.wait_for_topics import WaitForTopics
+from rr_sim_tests.utils.base_pub_sub_node import BasePubSubNode
 
 # Data polling rate
 SUBSCRIBER_DEFAULT_RATE = 10.0 #Hz
@@ -23,23 +24,11 @@ SUBSCRIBER_DEFAULT_QOS = QoSProfile(
     depth=10
 )
 
-class BaseSubscriber(Node):
+class BaseSubscriber(BasePubSubNode):
     def __init__(self, in_robot_namespace: str, 
                        in_topic_name: str,
                        in_subscriber_rate=SUBSCRIBER_DEFAULT_RATE):
-        super().__init__(
-            node_name=f"{in_topic_name.replace('/','_')}_subscriber", namespace=in_robot_namespace
-        )
-
-        # https://github.com/ros2/rclcpp/blob/master/rclcpp/include/rclcpp/node_impl.hpp
-        # https://github.com/ros2/rclcpp/issues/1767
-        self._full_topic_name = None
-        if in_topic_name.startswith('/') or in_topic_name.startswith('~'):
-            self._full_topic_name = in_topic_name
-        else:
-            ns = '' if in_robot_namespace == '' else self.get_namespace()
-            self._full_topic_name = f'{ns}/{in_topic_name}'
-
+        super().__init__(in_namespace=in_robot_namespace, in_topic_name=in_topic_name)
         self._subscriber = None
         self._topic_data_arrived = False
         self._received_data = None

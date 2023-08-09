@@ -34,6 +34,6 @@ class CmdVelPublisher(BasePublisher):
     ):
         super().__init__(in_robot_namespace, in_topic_name, in_publish_num, in_publish_freq, in_auto_publish)
         self._publisher = self.create_publisher(
-            Twist, self._full_topic_name, qos_profile=PUBLISHER_DEFAULT_QOS
+            Twist, in_topic_name, qos_profile=PUBLISHER_DEFAULT_QOS
         )
         self._pub_data = in_robot_twist

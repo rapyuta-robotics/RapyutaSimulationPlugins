@@ -9,8 +9,10 @@ import rclpy
 
 # other ros
 from rclpy.executors import SingleThreadedExecutor
-from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy, QoSProfile, QoSReliabilityPolicy
+
+# rr_sim_tests
+from rr_sim_tests.utils.base_pub_sub_node import BasePubSubNode
 
 # Default number of publishing times, if <=0 will keep publishing until forced to stop
 PUBLISHER_DEFAULT_PUB_NUM = 1
@@ -24,7 +26,7 @@ PUBLISHER_DEFAULT_QOS = QoSProfile(
     reliability=QoSReliabilityPolicy.RELIABLE,
 )
 
-class BasePublisher(Node):
+class BasePublisher(BasePubSubNode):
     def __init__(
         self,
         in_robot_namespace: str,
@@ -33,17 +35,7 @@ class BasePublisher(Node):
         in_publish_freq=PUBLISHER_DEFAULT_FREQ,
         in_auto_publish=True
     ):
-        super().__init__(node_name=f"{in_topic_name.replace('/','_')}_publisher", namespace=in_robot_namespace)
-
-        # https://github.com/ros2/rclcpp/blob/master/rclcpp/include/rclcpp/node_impl.hpp
-        # https://github.com/ros2/rclcpp/issues/1767
-        self._full_topic_name = None
-        if in_topic_name.startswith('/') or in_topic_name.startswith('~'):
-            self._full_topic_name = in_topic_name
-        else:
-            ns = '' if in_robot_namespace == '' else self.get_namespace()
-            self._full_topic_name = f'{ns}/{in_topic_name}'
-
+        super().__init__(in_namespace=in_robot_namespace, in_topic_name=in_topic_name)
         self._executor = None
         self._pub_thread = None
 

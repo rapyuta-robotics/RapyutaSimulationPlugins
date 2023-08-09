@@ -31,7 +31,7 @@ class PathPublisher(BasePublisher):
                  in_robot_path:Path = Path()):
         super().__init__(in_robot_namespace, in_topic_name, in_publish_num, in_publish_freq)
         self._publisher = self.create_publisher(
-            Path, self._full_topic_name, qos_profile=PUBLISHER_DEFAULT_QOS
+            Path, in_topic_name, qos_profile=PUBLISHER_DEFAULT_QOS
         )
         self._pub_data = in_robot_path
         self._pose_index = 0
