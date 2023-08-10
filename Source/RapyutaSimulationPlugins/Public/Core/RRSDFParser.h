@@ -5,34 +5,34 @@
 #include "sdf/sdf.hh"
 
 // RapyutaSimulationPlugins
+#include "Core/RREntityStructs.h"
 #include "RapyutaSimulationPlugins.h"
-#include "Robots/RRRobotStructs.h"
 
 #define RAPYUTA_SDF_PARSER_DEBUG (0)
 
 /**
- * @brief [experimental] Parse SDF file and generate FRRRobotModelInfo. Uses ignition library to parse SDF file.
+ * @brief [experimental] Parse SDF file and generate FRREntityModelInfo. Uses ignition library to parse SDF file.
  *
  */
-class RAPYUTASIMULATIONPLUGINS_API FRRSDFParser : public FRRRobotDescriptionParser
+class RAPYUTASIMULATIONPLUGINS_API FRRSDFParser : public FRREntityDescriptionParser
 {
 public:
-    FRRRobotModelInfo LoadModelInfoFromFile(const FString& InSDFPath) override;
-    bool LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRRRobotModelInfo& OutRobotModelInfo);
+    FRREntityModelInfo LoadModelInfoFromFile(const FString& InSDFPath) override;
+    bool LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRREntityModelInfo& OutRobotModelInfo);
 
 private:
-    bool ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData);
+    bool ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, FRREntityModelData& OutRobotModelData);
     bool ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
-                           const ERRRobotGeometryType InGeometryType,
+                           const ERREntityGeometryType InGeometryType,
                            const FVector& InLocationBase,
                            const FQuat& InRotationBase,
-                           TArray<FRRRobotGeometryInfo>& OutGeometryInfoList);
-    bool LoadChildModelsData(const sdf::ElementPtr& InParentElement, FRRRobotModelData& OutRobotModelData);
-    bool LoadPoseInfo(const sdf::ElementPtr& InElement, FRRRobotModelData& OutRobotModelData);
-    bool LoadLinksJointsInfo(const sdf::ElementPtr& InParentElement, FRRRobotModelData& OutRobotModelData);
-    bool ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData);
+                           TArray<FRREntityGeometryInfo>& OutGeometryInfoList);
+    bool LoadChildModelsData(const sdf::ElementPtr& InParentElement, FRREntityModelData& OutRobotModelData);
+    bool LoadPoseInfo(const sdf::ElementPtr& InElement, FRREntityModelData& OutRobotModelData);
+    bool LoadLinksJointsInfo(const sdf::ElementPtr& InParentElement, FRREntityModelData& OutRobotModelData);
+    bool ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRREntityModelData& OutRobotModelData);
     bool ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TArray<FRRSensorProperty>& OutSensorPropList);
-    bool ParseJointsProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData);
+    bool ParseJointsProperty(const sdf::ElementPtr& InModelElement, FRREntityModelData& OutRobotModelData);
 
     static constexpr const char* SDF_ELEMENT_ATTR_NAME = "name";
     static constexpr const char* SDF_ELEMENT_ATTR_TYPE = "type";

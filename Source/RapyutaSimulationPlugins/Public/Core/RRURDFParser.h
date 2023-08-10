@@ -5,8 +5,8 @@
 #include "Runtime/XmlParser/Public/FastXml.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RREntityStructs.h"
 #include "RapyutaSimulationPlugins.h"
-#include "Robots/RRRobotStructs.h"
 
 #define RAPYUTA_URDF_PARSER_DEBUG (0)
 
@@ -17,11 +17,11 @@
  * @sa https://github.com/robcog-iai/URoboSim/blob/master/Source/URoboSim/Public/RURDFParser.h
  * @sa https://github.com/cconti-rr/GeometryImporterPOC/blob/master/Plugins/URDFImporter/Source/URDFImporter/Public/URDFParser.h
  */
-class RAPYUTASIMULATIONPLUGINS_API FRRURDFParser : public FRRRobotDescriptionParser, private IFastXmlCallback
+class RAPYUTASIMULATIONPLUGINS_API FRRURDFParser : public FRREntityDescriptionParser, private IFastXmlCallback
 {
 public:
-    FRRRobotModelInfo LoadModelInfoFromFile(const FString& InURDFPath) override;
-    bool LoadModelInfoFromXML(const FString& InUrdfXml, FRRRobotModelInfo& OutRobotModelInfo) override;
+    FRREntityModelInfo LoadModelInfoFromFile(const FString& InURDFPath) override;
+    bool LoadModelInfoFromXML(const FString& InUrdfXml, FRREntityModelInfo& OutRobotModelInfo) override;
 
 private:
     static constexpr const TCHAR* GEOMETRY_TYPE_PREFIX_VISUAL = TEXT("visual");
@@ -90,8 +90,8 @@ private:
     FTransform ParsePose(const FString& InElementName);
     FVector ParseCylinderSize(const FString& InRadiusElementName, const FString& InLengthElementName);
     bool ParseGeometryInfo(const FString& InLinkName,
-                           const ERRRobotGeometryType InGeometryType,
-                           FRRRobotGeometryInfo& OutGeometryInfo);
+                           const ERREntityGeometryType InGeometryType,
+                           FRREntityGeometryInfo& OutGeometryInfo);
     bool ParseJointProperty();
     bool ParseLinkProperty();
     bool ParseSensorProperty(FRRSensorProperty& OutSensorProp);

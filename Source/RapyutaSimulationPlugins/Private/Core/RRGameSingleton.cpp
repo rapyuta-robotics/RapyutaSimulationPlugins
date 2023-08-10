@@ -97,16 +97,23 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
         ResourceMap.Add(dataType, FRRResourceInfo(dataType));
     }
 
+    // Initialize PakLoader (only available in packaged Sim)
+#if WITH_EDITOR
+    bPakLoaderInitialized = false;
+#else
+    PakLoader = URRUObjectUtils::CreateSelfSubobject<URRPakLoader>(this, TEXT("RRPakLoader"));
+    // Already logged here-in
+    bPakLoaderInitialized = PakLoader->Initialize();
+#endif
+
+    // Start request resource loading if required
     bool bResult = true;
     if (bInRequestResourceLoading)
     {
         // READ ALL SIM DYNAMIC RESOURCES (UASSETS) INFO FROM DESGINATED [~CONTENT] FOLDERS
         // & REGISTER THEM TO BE ASYNC LOADED INTO [ResourceMap]
-#if (!WITH_EDITOR)
         // [PAK] --
-        // NOTE: PakLoader is only available in packaged Sim
-        PakLoader = URRUObjectUtils::CreateSelfSubobject<URRPakLoader>(this, TEXT("RRPakLoader"));
-        if (PakLoader->Initialize())
+        if (bPakLoaderInitialized)
         {
             // Load pak files
             for (const auto& paksBasePath : GetDynamicAssetsBasePathList(ERRResourceDataType::UE_PAK))
@@ -126,7 +133,6 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
                 }
             }
         }
-#endif
         GetSimResourceInfo(ERRResourceDataType::UE_PAK).bHasBeenAllLoaded = true;
 
         // [STATIC MESH] --
@@ -160,14 +166,72 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
     }
     else
     {
-        // NOTE: NO dynamic resources required -> considered to have been all loaded
-        for (auto& [_, resourceInfo] : ResourceMap)
+        // NOTE: NO initial resources loading required
+        // -> Considered to have been all loaded
+        for (auto& [dataType, resourceInfo] : ResourceMap)
         {
-            resourceInfo.bHasBeenAllLoaded = true;
+            resourceInfo.bHasBeenAllLoaded = (dataType != ERRResourceDataType::UE_DATA_TABLE);
+            // -> LoadObject<>() is expected to be called on [resourceInfo.GetAssetPath()] on-the-fly during Sim run
+            // -> Refer to [GetSimResource()]
         }
+        // Except [UE_DATA_TABLE], which should be always loaded initially
+        bResult &= RequestResourcesLoading<ERRResourceDataType::UE_DATA_TABLE>();
+
+        // -> Only collate assets' metadata without loading
+        CollateAssetsInfo();
+
+        // NOTE: Due to on-the-fly resource loading is only possible if running in Game-thread
+        // -> Preload global statically defined resources, in case they are referenced in non-game thread
+        // -> Could only load after collating assets info above
+        // StaticMeshes
+        GetStaticMesh(SHAPE_NAME_PLANE);
+        GetStaticMesh(SHAPE_NAME_CUBE);
+        GetStaticMesh(SHAPE_NAME_CYLINDER);
+        GetStaticMesh(SHAPE_NAME_SPHERE);
+        GetStaticMesh(SHAPE_NAME_CAPSULE);
+
+        // Materials
+        GetMaterial(MATERIAL_NAME_PROP_MASTER);
+
+        // Textures
+        GetTexture(TEXTURE_NAME_WHITE_MASK);
+        GetTexture(TEXTURE_NAME_BLACK_MASK);
     }
 
     return bResult;
+}
+
+bool URRGameSingleton::CollateEntityAssetsInfoFromPAK(const TArray<FString>& InEntityModelNameList)
+{
+    if (bPakLoaderInitialized)
+    {
+        // Load pak files of [InEntityModelNameList]
+        for (const auto& paksBasePath : GetDynamicAssetsBasePathList(ERRResourceDataType::UE_PAK))
+        {
+            FString paksBaseFolderPath;
+            if (FPackageName::TryConvertLongPackageNameToFilename(paksBasePath, paksBaseFolderPath))
+            {
+                const FString paksFolderPath = paksBaseFolderPath / GetAssetsFolderName(ERRResourceDataType::UE_PAK);
+                if (FPaths::DirectoryExists(paksFolderPath) &&
+                    PakLoader->LoadEntitiesPAKFiles(paksFolderPath, InEntityModelNameList))
+                {
+                    // Collate assets info after mounting PAK files, so they can be loaded on-the-fly
+                    CollateAssetsInfo();
+                    return true;
+                }
+            }
+            else
+            {
+                UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("Failed converting [%s] to local disk path"), *paksBasePath);
+            }
+        }
+        return true;
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("PakLoader has not been initialized"));
+        return false;
+    }
 }
 
 void URRGameSingleton::FinalizeResources()

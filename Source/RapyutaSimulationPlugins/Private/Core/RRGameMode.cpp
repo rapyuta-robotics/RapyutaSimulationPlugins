@@ -9,6 +9,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRCoreUtils.h"
+#include "Core/RREntityCommon.h"
 #include "Core/RRGameInstance.h"
 #include "Core/RRGameSingleton.h"
 #include "Core/RRGameState.h"
@@ -207,6 +208,12 @@ bool ARRGameMode::TryStartingSim()
     if (gameState)
     {
         gameState->StartSim();
+
+        UE_LOG(LogRapyutaCore, Log, TEXT("ENTITY MODELS FOLDER PATHS:"));
+        for (const auto& modelsFolderPath : URREntityCommon::EntityModelsFolderPathList)
+        {    // NOTE: This should contain existing-only folders
+            UE_LOG(LogRapyutaCore, Log, TEXT("- %s"), *FPaths::ConvertRelativePathToFull(modelsFolderPath));
+        }
         UE_LOG(LogRapyutaCore, Log, TEXT("SIM STARTED, GLOBAL ACTORS ARE ACCESSIBLE NOW! ========================"));
     }
     else

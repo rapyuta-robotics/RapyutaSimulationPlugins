@@ -23,6 +23,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRCoreUtils.h"
+#include "Core/RREntityStructs.h"
 #include "RapyutaSimulationPlugins.h"
 
 #include "RRMeshData.generated.h"
@@ -62,6 +63,53 @@ public:
     UPROPERTY(VisibleAnywhere)
     float Mass = 0.f;
 
+    FRRRobotLinkProperty ConvertToLinkProperty() const
+    {
+        FRRRobotLinkProperty linkProp;
+        linkProp.Name = Name;
+        linkProp.LinkIndex = Index;
+        linkProp.ParentLinkIndex = ParentIndex;
+        linkProp.Location = RelTransform.GetLocation();
+        linkProp.Rotation = RelTransform.GetRotation();
+        linkProp.Inertia.Mass = Mass;
+        FRREntityGeometryInfo visualInfo;
+        visualInfo.Size = MeshSize;
+        visualInfo.WorldScale = MeshScale3D;
+        FRREntityGeometryInfo collisionInfo = visualInfo;
+        linkProp.VisualList.Emplace(MoveTemp(visualInfo));
+        linkProp.CollisionList.Emplace(MoveTemp(collisionInfo));
+        return linkProp;
+    }
+
+    FRRRobotJointProperty GetDefaultJointProperty(const FString& InParentLinkName) const
+    {
+        FRRRobotJointProperty jointProp;
+        jointProp.Name = Name;
+        jointProp.Type = ERRRobotJointType::FIXED;
+        jointProp.ChildLinkName = Name;
+        jointProp.ParentLinkName = InParentLinkName;
+        jointProp.Location = RelTransform.GetLocation();
+        jointProp.Rotation = RelTransform.GetRotation();
+        return jointProp;
+    }
+
+    static void GenerateLinkJointPropListFromBoneProps(const TArray<FRRBoneProperty>& InBonePropList,
+                                                       FRREntityModelData& OutEntityModelData)
+    {
+        auto& linkPropList = OutEntityModelData.LinkPropList;
+        auto& jointPropList = OutEntityModelData.JointPropList;
+        for (const auto& boneProp : InBonePropList)
+        {
+            linkPropList.Add(boneProp.ConvertToLinkProperty());
+        }
+        for (const auto& boneProp : InBonePropList)
+        {
+            if (linkPropList.IsValidIndex(boneProp.ParentIndex))
+            {
+                jointPropList.Add(boneProp.GetDefaultJointProperty(linkPropList[boneProp.ParentIndex].Name));
+            }
+        }
+    }
     void PrintSelf() const;
 };
 

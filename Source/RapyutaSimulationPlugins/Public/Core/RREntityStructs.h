@@ -1,4 +1,8 @@
-// Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+/**
+ * @file RREntityStructs.h
+ * @brief Contains various commonly used struct definitions for robot & object entities
+ * @copyright Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
+ */
 #pragma once
 // UE
 #include "ChaosVehicleWheel.h"
@@ -11,10 +15,8 @@
 #include "Core/RRMathUtils.h"
 #include "Core/RRTypeUtils.h"
 
-#include "RRRobotStructs.generated.h"
+#include "RREntityStructs.generated.h"
 // (NOTE) To avoid cyclic inclusion, except for utils, please DO NOT include any other component header files here!
-
-class ARRSkeletalRobot;
 
 UENUM(meta = (Bitflags))
 enum class ERRUEComponentType : uint8
@@ -27,7 +29,7 @@ enum class ERRUEComponentType : uint8
 ENUM_CLASS_FLAGS(ERRUEComponentType);
 
 UENUM()
-enum class ERRRobotDescriptionType : uint8
+enum class ERREntityDescriptionType : uint8
 {
     NONE,
     URDF,             //! [URDF](https://wiki.ros.org/urdf)
@@ -54,14 +56,14 @@ enum class ERRRobotStatus : uint8
 };
 
 UENUM(meta = (Bitflags))
-enum class ERRRobotGeometryType : uint8
+enum class ERREntityGeometryType : uint8
 {
     NONE = 0x00,
     VISUAL = 0x01,
     COLLISION = 0x02,
     INERTIA = 0x04
 };
-ENUM_CLASS_FLAGS(ERRRobotGeometryType);
+ENUM_CLASS_FLAGS(ERREntityGeometryType);
 
 UENUM()
 enum class ERRSensorType : uint8
@@ -107,23 +109,23 @@ enum class ERRRobotJointStatus : uint8
 };
 
 UENUM()
-enum class ERRRobotMeshComponentType : uint8
-{
-    NONE,
-    STATIC_MESH,
-    SKELETAL_MESH,
-    PROCEDURAL_MESH,
-    RUNTIME_MESH,
-    TOTAL
-};
-
-UENUM()
 enum class ERRJointAxisRotation : uint8
 {
     NONE = 0x00,
     X = 0x01,
     Y = 0x02,
     Z = 0x04
+};
+
+UENUM()
+enum class ERREntityMeshComponentType : uint8
+{
+    NONE,
+    STATIC_MESH,
+    SKELETAL_MESH,
+    PROCEDURAL_MESH,
+    DYNAMIC_MESH,
+    TOTAL
 };
 
 // -----------------------------------------------------------------------------------------------
@@ -527,7 +529,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotLinkInertia
 };
 
 USTRUCT(BlueprintType)
-struct RAPYUTASIMULATIONPLUGINS_API FRRRobotGeometryInfo
+struct RAPYUTASIMULATIONPLUGINS_API FRREntityGeometryInfo
 {
     GENERATED_BODY()
     UPROPERTY(EditAnywhere)
@@ -755,7 +757,7 @@ public:
     //! In URDF: <visual>�s <origin xyz= "" rpy="">
     //! In SDF : <link> -> <pose> 6 values (xyz + rpy)
     UPROPERTY(EditAnywhere)
-    TArray<FRRRobotGeometryInfo> VisualList;
+    TArray<FRREntityGeometryInfo> VisualList;
     FTransform GetVisualOffset(int32 InVisualIndex = 0) const
     {
         return VisualList.IsValidIndex(InVisualIndex) ? VisualList[InVisualIndex].GetTransformOffset() : FTransform::Identity;
@@ -765,7 +767,7 @@ public:
         return GetRelativeTransformToParent() * GetVisualOffset(InVisualIndex);
     }
     UPROPERTY(EditAnywhere)
-    TArray<FRRRobotGeometryInfo> CollisionList;
+    TArray<FRREntityGeometryInfo> CollisionList;
     bool operator==(const FRRRobotLinkProperty& LinkProp)
     {
         return Name.Equals(LinkProp.Name);
@@ -997,46 +999,51 @@ public:
     FRRRobotJointProperty JointProp;
 };
 
-// [ROBOT MODEL] --
+// [ENTITY MODEL] --
 /**
- * @brief Core UE struct housing robot model data, wrapped by #FRRRobotModelInfo & #FRRRobotModelTableRow
+ * @brief Core UE struct housing entity (robot, object) model data, wrapped by #FRREntityModelInfo & #FRREntityModelTableRow
  */
 USTRUCT(BlueprintType)
-struct FRRRobotModelData
+struct FRREntityModelData
 {
     GENERATED_BODY()
 public:
-    FRRRobotModelData(const TArray<FString>& InModelNameList) : ModelNameList(InModelNameList)
+    FRREntityModelData(const TArray<FString>& InModelNameList) : ModelNameList(InModelNameList)
     {
     }
-    FRRRobotModelData(TArray<FString>&& InModelNameList) : ModelNameList(MoveTemp(InModelNameList))
+    FRREntityModelData(TArray<FString>&& InModelNameList) : ModelNameList(MoveTemp(InModelNameList))
     {
     }
-    FRRRobotModelData()
+    FRREntityModelData()
     {
     }
 
     //! Robot Model Description Type (URDF/SDF)
     UPROPERTY(EditAnywhere)
-    ERRRobotDescriptionType ModelDescType = ERRRobotDescriptionType::NONE;
+    ERREntityDescriptionType ModelDescType = ERREntityDescriptionType::NONE;
     bool IsURDF() const
     {
-        return (ERRRobotDescriptionType::URDF == ModelDescType);
+        return (ERREntityDescriptionType::URDF == ModelDescType);
     }
     bool IsSDF() const
     {
-        return (ERRRobotDescriptionType::SDF == ModelDescType);
+        return (ERREntityDescriptionType::SDF == ModelDescType);
     }
     bool IsUEDataTable() const
     {
-        return (ERRRobotDescriptionType::UE_DATA_TABLE == ModelDescType);
+        return (ERREntityDescriptionType::UE_DATA_TABLE == ModelDescType);
     }
     bool IsSingleCAD() const
     {
-        return (ERRRobotDescriptionType::SINGLE_CAD == ModelDescType);
+        return (ERREntityDescriptionType::SINGLE_CAD == ModelDescType);
     }
     UPROPERTY(EditAnywhere)
     FString WorldName;
+    bool IsWorldModel() const
+    {
+        return (false == WorldName.IsEmpty());
+    }
+
     UPROPERTY()
     bool bHasWorldJoint = false;
 
@@ -1046,7 +1053,7 @@ public:
     TArray<FString> ModelNameList;
     FString GetModelName() const
     {
-        return (ModelNameList.Num() > 0) ? ModelNameList[0] : EMPTY_STR;
+        return IsWorldModel() ? WorldName : ((ModelNameList.Num() > 0) ? ModelNameList[0] : EMPTY_STR);
     }
 
     //! Meshes are async loaded, & so their sizes
@@ -1133,7 +1140,7 @@ public:
 
     //! Struct recursion is NOT yet supported for UPROPERTY
     // UPROPERTY(EditAnywhere)
-    TArray<FRRRobotModelData> ChildModelsData;
+    TArray<FRREntityModelData> ChildModelsData;
 
     /**
      * @brief
@@ -1436,10 +1443,10 @@ public:
     /**
      * @brief Get model visual info
      */
-    FRRRobotGeometryInfo GetVisualInfo() const
+    FRREntityGeometryInfo GetVisualInfo() const
     {
         return ((LinkPropList.Num() > 0) && (LinkPropList[0].VisualList.Num() > 0)) ? LinkPropList[0].VisualList[0]
-                                                                                    : FRRRobotGeometryInfo();
+                                                                                    : FRREntityGeometryInfo();
     }
 
     // UE-StaticMesh
@@ -1482,7 +1489,7 @@ public:
         return false;
     }
 
-    bool operator==(const FRRRobotModelData& OtherModelData)
+    bool operator==(const FRREntityModelData& OtherModelData)
     {
         return (ModelDescType == OtherModelData.ModelDescType) && (ModelNameList == OtherModelData.ModelNameList) &&
                DescriptionFilePath.Equals(OtherModelData.DescriptionFilePath, ESearchCase::CaseSensitive);
@@ -1491,7 +1498,7 @@ public:
     {
         // NOTE: Joints num could be zero for a single-link object
         const ERRFileType fileType = URRCoreUtils::GetFileType(DescriptionFilePath);
-        if (ERRRobotDescriptionType::NONE == ModelDescType)
+        if (ERREntityDescriptionType::NONE == ModelDescType)
         {
             if (bIsLogged)
             {
@@ -1525,7 +1532,7 @@ public:
             }
             return false;
         }
-        else if ((false == IsSingleCAD()) && WorldName.IsEmpty() && (0 == LinkPropList.Num()))
+        else if ((false == IsSingleCAD()) && (false == IsWorldModel()) && (0 == LinkPropList.Num()))
         {
             if (bIsLogged)
             {
@@ -1685,48 +1692,48 @@ public:
             modelInfo.PrintSelf();
         }
     }
-};    // END FRRRobotModelData
+};    // END FRREntityModelData
 
 /**
  * @brief Struct, inheriting from #FTableRowBase, storing entry data for #UDataTable
  * @sa [Ref](https://docs.unrealengine.com/5.2/en-US/API/Runtime/Engine/Engine/FTableRowBase)
  */
 USTRUCT(BlueprintType)
-struct RAPYUTASIMULATIONPLUGINS_API FRRRobotModelTableRow : public FTableRowBase
+struct RAPYUTASIMULATIONPLUGINS_API FRREntityModelTableRow : public FTableRowBase
 {
     GENERATED_BODY()
 public:
-    FRRRobotModelTableRow(const FRRRobotModelData& InRobotModelData) : Data(InRobotModelData)
+    FRREntityModelTableRow(const FRREntityModelData& InEntityModelData) : Data(InEntityModelData)
     {
     }
-    FRRRobotModelTableRow(FRRRobotModelData&& InRobotModelData) : Data(MoveTemp(InRobotModelData))
+    FRREntityModelTableRow(FRREntityModelData&& InEntityModelData) : Data(MoveTemp(InEntityModelData))
     {
     }
-    FRRRobotModelTableRow()
+    FRREntityModelTableRow()
     {
     }
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FRRRobotModelData Data;
+    FRREntityModelData Data;
 };
 
 /**
- * @brief Plain struct wrapping robot model data (#FRRRobotModelData), being thread-safe accessible through TSharedRef if created with TSharedPtr
+ * @brief Plain struct wrapping robot model data (#FRREntityModelData), being thread-safe accessible through TSharedRef if created with TSharedPtr
  */
-struct RAPYUTASIMULATIONPLUGINS_API FRRRobotModelInfo : public TSharedFromThis<FRRRobotModelInfo, ESPMode::ThreadSafe>
+struct RAPYUTASIMULATIONPLUGINS_API FRREntityModelInfo : public TSharedFromThis<FRREntityModelInfo, ESPMode::ThreadSafe>
 {
 public:
-    FRRRobotModelInfo(const FRRRobotModelData& InRobotModelData) : Data(InRobotModelData)
+    FRREntityModelInfo(const FRREntityModelData& InEntityModelData) : Data(InEntityModelData)
     {
     }
-    FRRRobotModelInfo(FRRRobotModelData&& InRobotModelData) : Data(MoveTemp(InRobotModelData))
+    FRREntityModelInfo(FRREntityModelData&& InEntityModelData) : Data(MoveTemp(InEntityModelData))
     {
     }
-    FRRRobotModelInfo()
+    FRREntityModelInfo()
     {
     }
 
     //! Robot model data
-    FRRRobotModelData Data;
+    FRREntityModelData Data;
 
     FORCEINLINE const FString& GetDescriptionFilePath() const
     {
@@ -1808,7 +1815,7 @@ public:
     {
         return Data.JointPropList;
     }
-    FORCEINLINE const TArray<FRRRobotModelData>& GetChildModelsData() const
+    FORCEINLINE const TArray<FRREntityModelData>& GetChildModelsData() const
     {
         return Data.ChildModelsData;
     }
@@ -1873,7 +1880,7 @@ public:
         return Data.GetLinkVisualOffsetToBase(InLinkIndex);
     }
 
-    FORCEINLINE FRRRobotGeometryInfo GetVisualInfo() const
+    FORCEINLINE FRREntityGeometryInfo GetVisualInfo() const
     {
         return Data.GetVisualInfo();
     }
@@ -1911,7 +1918,7 @@ public:
         return Data.HasWheel(InWheelName);
     }
 
-    FORCEINLINE bool operator==(const FRRRobotModelInfo& OtherModelInfo)
+    FORCEINLINE bool operator==(const FRREntityModelInfo& OtherModelInfo)
     {
         return (Data == OtherModelInfo.Data);
     }
@@ -1929,11 +1936,11 @@ public:
  * @brief  This class will co-parent with [IFastXmlCallback], which is not a USTRUCT.
  *
  */
-class RAPYUTASIMULATIONPLUGINS_API FRRRobotDescriptionParser
+class RAPYUTASIMULATIONPLUGINS_API FRREntityDescriptionParser
 {
 public:
     static constexpr const int8 ELEMENT_INDEX_NONE = -1;
-    virtual ~FRRRobotDescriptionParser()
+    virtual ~FRREntityDescriptionParser()
     {
     }
     static FString GetRealPathFromMeshName(const FString& InMeshName, const FString& InRobotModelsFolderFullPath)
@@ -1951,13 +1958,13 @@ public:
             return InMeshName;
         }
     }
-    virtual bool LoadModelInfoFromXML(const FString& InXMLString, FRRRobotModelInfo& OutRobotModelInfo)
+    virtual bool LoadModelInfoFromXML(const FString& InXMLString, FRREntityModelInfo& OutRobotModelInfo)
     {
         return true;
     }
-    virtual FRRRobotModelInfo LoadModelInfoFromFile(const FString& Path)
+    virtual FRREntityModelInfo LoadModelInfoFromFile(const FString& Path)
     {
-        return FRRRobotModelInfo();
+        return FRREntityModelInfo();
     }
     virtual void ClearData()
     {

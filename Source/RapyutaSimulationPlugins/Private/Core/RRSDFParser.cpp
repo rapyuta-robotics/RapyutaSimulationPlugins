@@ -27,7 +27,7 @@ static inline FQuat GetRotationFromIgnitionPose(const ignition::math::Pose3d& In
     return URRConversionUtils::QuatROSToUE(FQuat(rot.X(), rot.Y(), rot.Z(), rot.W()));
 }
 
-FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
+FRREntityModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
 {
     // Specify path to the model file uri in <include>
     // InModelName: <model://ModelPath>
@@ -36,7 +36,7 @@ FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
         {
             return URRCoreUtils::FToStdString(FString::Printf(
                 TEXT("%s%s"),
-                *FRRRobotDescriptionParser::GetRealPathFromMeshName(FString(InModelName.c_str()), FPaths::GetPath(InSDFPath)),
+                *FRREntityDescriptionParser::GetRealPathFromMeshName(FString(InModelName.c_str()), FPaths::GetPath(InSDFPath)),
                 URRCoreUtils::GetSimFileExt(ERRFileType::SDF)));
         });
     sdf::Errors outErrors;
@@ -52,15 +52,15 @@ FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
                              static_cast<uint8>(error.Code()),
                              *URRCoreUtils::StdToFString(error.Message()));
         }
-        return FRRRobotModelInfo();
+        return FRREntityModelInfo();
     }
 
 #if RAPYUTA_SDF_PARSER_DEBUG
     UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PARSE SDF CONTENT FROM FILE %s"), *InSDFPath);
 #endif
-    FRRRobotModelInfo robotModelInfo;
+    FRREntityModelInfo robotModelInfo;
     auto& robotModelData = robotModelInfo.Data;
-    robotModelData.ModelDescType = ERRRobotDescriptionType::SDF;
+    robotModelData.ModelDescType = ERREntityDescriptionType::SDF;
     robotModelData.DescriptionFilePath = InSDFPath;
     if (LoadModelInfoFromSDF(outSDFContent, robotModelInfo))
     {
@@ -77,7 +77,7 @@ FRRRobotModelInfo FRRSDFParser::LoadModelInfoFromFile(const FString& InSDFPath)
     return robotModelInfo;
 }
 
-bool FRRSDFParser::LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRRRobotModelInfo& OutRobotModelInfo)
+bool FRRSDFParser::LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRREntityModelInfo& OutRobotModelInfo)
 {
     const sdf::ElementPtr rootElement = InSDFContent->Root();
     const sdf::ElementPtr worldElement = rootElement->FindElement(SDF_ELEMENT_WORLD);
@@ -89,7 +89,7 @@ bool FRRSDFParser::LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRRRobo
     }
 
     bool bResult = true;
-    FRRRobotModelData& outRobotModelData = OutRobotModelInfo.Data;
+    FRREntityModelData& outRobotModelData = OutRobotModelInfo.Data;
 
     const sdf::ElementPtr topElement = rootElement->GetFirstElement();
     // World
@@ -124,7 +124,7 @@ bool FRRSDFParser::LoadModelInfoFromSDF(const sdf::SDFPtr& InSDFContent, FRRRobo
     return bResult;
 }
 
-bool FRRSDFParser::LoadChildModelsData(const sdf::ElementPtr& InParentElement, FRRRobotModelData& OutRobotModelData)
+bool FRRSDFParser::LoadChildModelsData(const sdf::ElementPtr& InParentElement, FRREntityModelData& OutRobotModelData)
 {
     bool bResult = true;
     // Read <model> tags
@@ -140,8 +140,8 @@ bool FRRSDFParser::LoadChildModelsData(const sdf::ElementPtr& InParentElement, F
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Model %s"), *modelName);
 #endif
 
-        FRRRobotModelData modelData({modelFullName});
-        modelData.ModelDescType = ERRRobotDescriptionType::SDF;
+        FRREntityModelData modelData({modelFullName});
+        modelData.ModelDescType = ERREntityDescriptionType::SDF;
 
         // 1- ChildModel's pose info
         bResult &= LoadPoseInfo(childModelElement, modelData);
@@ -162,7 +162,7 @@ bool FRRSDFParser::LoadChildModelsData(const sdf::ElementPtr& InParentElement, F
     return true;
 }
 
-bool FRRSDFParser::LoadPoseInfo(const sdf::ElementPtr& InElement, FRRRobotModelData& OutRobotModelData)
+bool FRRSDFParser::LoadPoseInfo(const sdf::ElementPtr& InElement, FRREntityModelData& OutRobotModelData)
 {
     const auto poseElement = InElement->FindElement(SDF_ELEMENT_POSE);
     if (poseElement)
@@ -176,7 +176,7 @@ bool FRRSDFParser::LoadPoseInfo(const sdf::ElementPtr& InElement, FRRRobotModelD
     return true;
 }
 
-bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData)
+bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, FRREntityModelData& OutRobotModelData)
 {
     sdf::ElementPtr ueElement = InModelElement->FindElement(SDF_ELEMENT_UE);
     if (nullptr == ueElement)
@@ -311,7 +311,7 @@ bool FRRSDFParser::ParseModelUESpecifics(const sdf::ElementPtr& InModelElement, 
     return true;
 }
 
-bool FRRSDFParser::LoadLinksJointsInfo(const sdf::ElementPtr& InParentElement, FRRRobotModelData& OutRobotModelData)
+bool FRRSDFParser::LoadLinksJointsInfo(const sdf::ElementPtr& InParentElement, FRREntityModelData& OutRobotModelData)
 {
     // Link elements
     bool bResult = ParseLinksProperty(InParentElement, OutRobotModelData);
@@ -323,7 +323,7 @@ bool FRRSDFParser::LoadLinksJointsInfo(const sdf::ElementPtr& InParentElement, F
     return bResult;
 }
 
-bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData)
+bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRREntityModelData& OutRobotModelData)
 {
     sdf::ElementPtr linkElement = InModelElement->FindElement(SDF_ELEMENT_LINK);
     while (linkElement)
@@ -361,9 +361,9 @@ bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRR
 
         // Link's visual/collision --
         ParseGeometryInfo(
-            linkElement, ERRRobotGeometryType::VISUAL, newLinkProp.Location, newLinkProp.Rotation, newLinkProp.VisualList);
+            linkElement, ERREntityGeometryType::VISUAL, newLinkProp.Location, newLinkProp.Rotation, newLinkProp.VisualList);
         ParseGeometryInfo(
-            linkElement, ERRRobotGeometryType::COLLISION, newLinkProp.Location, newLinkProp.Rotation, newLinkProp.CollisionList);
+            linkElement, ERREntityGeometryType::COLLISION, newLinkProp.Location, newLinkProp.Rotation, newLinkProp.CollisionList);
 
         // Link's inertia --
         if (sdf::ElementPtr inertialElement = linkElement->FindElement(SDF_ELEMENT_LINK_INERTIAL))
@@ -410,21 +410,21 @@ bool FRRSDFParser::ParseLinksProperty(const sdf::ElementPtr& InModelElement, FRR
 }
 
 bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
-                                     const ERRRobotGeometryType InGeometryType,
+                                     const ERREntityGeometryType InGeometryType,
                                      const FVector& InLocationBase,
                                      const FQuat& InRotationBase,
-                                     TArray<FRRRobotGeometryInfo>& OutGeometryInfoList)
+                                     TArray<FRREntityGeometryInfo>& OutGeometryInfoList)
 {
     const FString linkName = URRCoreUtils::StdToFString(InLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
-    const char* visualCollisionElementName = (ERRRobotGeometryType::VISUAL == InGeometryType)      ? SDF_ELEMENT_LINK_VISUAL
-                                             : (ERRRobotGeometryType::COLLISION == InGeometryType) ? SDF_ELEMENT_LINK_COLLISION
+    const char* visualCollisionElementName = (ERREntityGeometryType::VISUAL == InGeometryType)      ? SDF_ELEMENT_LINK_VISUAL
+                                             : (ERREntityGeometryType::COLLISION == InGeometryType) ? SDF_ELEMENT_LINK_COLLISION
                                                                                                    : nullptr;
     check(visualCollisionElementName);
     sdf::ElementPtr visualCollisionElement = InLinkElement->FindElement(visualCollisionElementName);
 
     while (visualCollisionElement)
     {
-        FRRRobotGeometryInfo geometryInfo;
+        FRREntityGeometryInfo geometryInfo;
         geometryInfo.LinkName = linkName;
 
         // Name
@@ -549,7 +549,7 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
         }
 
         // Auto assign a link's empty-mesh name -> ["box"]
-        if ((ERRRobotGeometryType::VISUAL == InGeometryType) && geometryInfo.MeshName.IsEmpty())
+        if ((ERREntityGeometryType::VISUAL == InGeometryType) && geometryInfo.MeshName.IsEmpty())
         {
             geometryInfo.MeshName = TEXT("box");
             geometryInfo.LinkType = ERRShapeType::BOX;
@@ -653,7 +653,7 @@ bool FRRSDFParser::ParseSensorsProperty(const sdf::ElementPtr& InLinkElement, TA
     return true;
 }
 
-bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FRRRobotModelData& OutRobotModelData)
+bool FRRSDFParser::ParseJointsProperty(const sdf::ElementPtr& InModelElement, FRREntityModelData& OutRobotModelData)
 {
     sdf::ElementPtr jointElement = InModelElement->FindElement(SDF_ELEMENT_JOINT);
     while (jointElement)

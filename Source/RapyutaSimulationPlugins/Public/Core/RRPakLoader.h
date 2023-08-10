@@ -35,9 +35,16 @@ public:
     /**
      * @brief Load PAK files
      * @param InPakFolderPath
+     * @return true/false
      */
-    UFUNCTION()
     bool LoadPAKFiles(const FString& InPakFolderPath);
+
+    /**
+     * @brief Load PAK files of a specific set of entity models
+     * @param InEntityModelsNameList
+     * @return true/false
+     */
+    bool LoadEntitiesPAKFiles(const FString& InPakFolderPath, const TArray<FString>& InEntityModelsNameList);
 
 private:
     //! Pak file manager, responsible for loading & mounting paks
@@ -50,6 +57,5 @@ private:
      * @brief Mount PAK paths to files on disk
      * @param InPAKPaths
      */
-    UFUNCTION()
     void MountPAKFiles(const TArray<FString>& InPAKPaths);
 };

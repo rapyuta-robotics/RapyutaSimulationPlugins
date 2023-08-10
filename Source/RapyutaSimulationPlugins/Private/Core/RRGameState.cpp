@@ -12,6 +12,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRCoreUtils.h"
+#include "Core/RREntityCommon.h"
 #include "Core/RRMathUtils.h"
 #include "Core/RRMeshActor.h"
 #include "Core/RRPlayerController.h"
@@ -22,6 +23,7 @@
 ARRGameState::ARRGameState()
 {
     URRUObjectUtils::SetupActorTick(this, true);
+    EntityCommonClass = URREntityCommon::StaticClass();
     SceneInstanceClass = URRSceneInstance::StaticClass();
 }
 
@@ -67,6 +69,15 @@ void ARRGameState::StartSim()
             maxSplitscreenPlayers);
         SCENE_INSTANCES_NUM = maxSplitscreenPlayers;
     }
+
+    // Create the single EntityCommon housing all entity models data, thus shared among scene instances
+    EntityCommon =
+        CastChecked<URREntityCommon>(URRUObjectUtils::CreateSelfSubobject(this, EntityCommonClass, EntityCommonClass->GetName()));
+    EntityCommon->PrintSimConfig();
+    // Project's ExternalData
+    URREntityCommon::ConfigureEntityModelsFolderPathList(EntityCommon);
+    // Plugin's ExternalData
+    URREntityCommon::ConfigureEntityModelsFolderPathList(EntityCommon, RAPYUTA_SIMULATION_PLUGINS_MODULE_FOLDER_NAME);
 
     // 0- Stream level & Fetch static-env actors
     SetupEnvironment();

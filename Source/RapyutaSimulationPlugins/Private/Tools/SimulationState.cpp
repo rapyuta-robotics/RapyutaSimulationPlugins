@@ -20,6 +20,7 @@
 #include "Core/RRActorCommon.h"
 #include "Core/RRAssetUtils.h"
 #include "Core/RRConversionUtils.h"
+#include "Core/RREntityCommon.h"
 #include "Core/RRUObjectUtils.h"
 #include "Net/UnrealNetwork.h"
 #include "Robots/RRBaseRobot.h"
@@ -343,6 +344,13 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
         return nullptr;
     }
 
+    // Load entity model data (only if not yet registered, already checked & logged here-in)
+    const FString& entityModelName = InROSSpawnRequest.Xml;
+    if (false == URREntityCommon::LoadEntityModelsAllData({entityModelName}))
+    {
+        return nullptr;
+    }
+
     // SpawnActorDeferred to set parameters beforehand
     // Using AdjustIfPossibleButAlwaysSpawn, the actual entity's transform could be different from one specified in SpawnEntity,
     // thus we may need to inform ros side to get synchronized with it
@@ -446,11 +454,11 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InRequest,
                 // todo: need pass response to SimulationStateClient
                 // response.bSuccess = false;
                 // response.StatusMessage =
-                //     FString::Printf(TEXT("[%s] Failed to spawn entity named %s, probably out collision!"), *GetName(),
+                //     FString::Printf(TEXT("[%s] Failed to spawn entity named %s, probably out of collision!"), *GetName(),
                 //     *entityName);
                 UE_LOG_WITH_INFO(LogRapyutaCore,
                                  Error,
-                                 TEXT("[ASimulationState] Failed to spawn entity named %s, probably out collision!"),
+                                 TEXT("[ASimulationState] Failed to spawn entity named %s, probably out of collision!"),
                                  *entityName);
             }
         }

@@ -10,6 +10,6 @@
 UTexture* FRRTextureData::GetRandomTexture() const
 {
     return (ImageTextureList.Num() > 0) ? URRMathUtils::GetRandomElement(ImageTextureList)
-         : (TextureNames.Num() > 0)     ? URRGameSingleton::Get()->GetTexture(URRMathUtils::GetRandomElement(TextureNames))
+           : (TextureNames.Num() > 0)   ? URRGameSingleton::Get()->GetTexture(URRMathUtils::GetRandomElement(TextureNames), false)
                                         : nullptr;
 }

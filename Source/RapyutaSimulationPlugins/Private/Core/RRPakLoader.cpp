@@ -44,6 +44,12 @@ bool URRPakLoader::Initialize()
 
 void URRPakLoader::MountPAKFiles(const TArray<FString>& InPAKPaths)
 {
+    if (InPAKPaths.IsEmpty())
+    {
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Warning, TEXT("InPAKPaths is empty"));
+        return;
+    }
+
     for (const FString& sourcePakPath : InPAKPaths)
     {
         UE_LOG(LogRapyutaCore, Log, TEXT("Mount PAK path [%s]"), *sourcePakPath);
@@ -73,7 +79,8 @@ void URRPakLoader::MountPAKFiles(const TArray<FString>& InPAKPaths)
         pakFile.SetMountPoint(*newMountPoint);
         if (!PakManager->Mount(*sourcePakPath, 0, *newMountPoint))
         {
-            UE_LOG(LogRapyutaCore, Error, TEXT("Failed to mount package [%s] on [%s]"), *sourcePakPath, *newMountPoint);
+            UE_LOG_WITH_INFO_SHORT(
+                LogRapyutaCore, Error, TEXT("Failed to mount package [%s] on [%s]"), *sourcePakPath, *newMountPoint);
             continue;
         }
 #if RAPYUTA_SIM_DEBUG
@@ -129,10 +136,42 @@ bool URRPakLoader::LoadPAKFiles(const FString& InPakFolderPath)
     TArray<FString> pakPaths;
     if (URRCoreUtils::LoadFullFilePaths(InPakFolderPath, pakPaths, {ERRFileType::PAK}))
     {
-        UE_LOG(LogRapyutaCore, Log, TEXT("Found %d paks in folder [%s]"), pakPaths.Num(), *InPakFolderPath);
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Log, TEXT("Found %d paks in folder [%s]"), pakPaths.Num(), *InPakFolderPath);
 
         // MOUNT [pakPaths]
         MountPAKFiles(pakPaths);
     }
     return true;
+}
+
+bool URRPakLoader::LoadEntitiesPAKFiles(const FString& InPakFolderPath, const TArray<FString>& InEntityModelsNameList)
+{
+    if (!ensure(PakManager))
+    {
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("PakManager seems not yet initialized"));
+        return false;
+    }
+
+    TArray<FString> entityPakPathList;
+    TArray<FString> pakPaths;
+    if (URRCoreUtils::LoadFullFilePaths(InPakFolderPath, pakPaths, {ERRFileType::PAK}))
+    {
+        for (const auto& entityModelName : InEntityModelsNameList)
+        {
+            for (const auto& entityPakPath : pakPaths)
+            {
+                if (FPaths::GetBaseFilename(entityPakPath) == entityModelName)
+                {
+                    UE_LOG_WITH_INFO_SHORT(
+                        LogRapyutaCore, Log, TEXT("[%s] Found pak file: [%s]"), *entityModelName, *entityPakPath);
+                    entityPakPathList.Add(entityPakPath);
+                    break;
+                }
+            }
+        }
+
+        // MOUNT [entityPakPathList]
+        MountPAKFiles(entityPakPathList);
+    }
+    return (entityPakPathList.Num() > 0);
 }

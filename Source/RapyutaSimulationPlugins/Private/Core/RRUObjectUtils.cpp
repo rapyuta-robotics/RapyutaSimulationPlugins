@@ -222,9 +222,13 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
                                              const ESpawnActorCollisionHandlingMethod InCollisionHandlingType,
                                              const FRRActorSpawnInfo& InActorSpawnInfo)
 {
+    // Load entity model data (only if not yet registered, already checked & logged here-in)
+    // NOTE: [SpawnSimActor()] spawns a generic actor that does not necessarily has entity model info (eg camera, light, etc.), thus not return upon loading failed here
+    URREntityCommon::LoadEntityModelsAllData({InEntityModelName});
+
     // This is needed for any actor that is spawned after Sim initialization, when its BeginPlay() is invoked later
     ARRBaseActor::SSceneInstanceId = InSceneInstanceId;
-
+    // Spawn info
     FActorSpawnParameters spawnInfo;
     if (InWorld->IsNetMode(NM_Standalone))
     {
@@ -477,7 +481,7 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
         {
             InMaterial->SetTextureParameterValue(
                 FRRMaterialProperty::PROP_NAME_ALBEDO,
-                gameSingleton->GetTexture(URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoTextureNameList)));
+                gameSingleton->GetTexture(URRMathUtils::GetRandomElement(InMaterialInfo.AlbedoTextureNameList), false));
         }
         // Albedo color
         InMaterial->SetVectorParameterValue(FRRMaterialProperty::PROP_NAME_COLOR_ALBEDO,
@@ -501,14 +505,14 @@ void URRUObjectUtils::ApplyMaterialProps(UMaterialInstanceDynamic* InMaterial,
     if (false == InMaterialInfo.ORMTextureName.IsEmpty())
     {
         InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_ORM,
-                                             gameSingleton->GetTexture(InMaterialInfo.ORMTextureName));
+                                             gameSingleton->GetTexture(InMaterialInfo.ORMTextureName, false));
     }
 
     // Normal Texture
     if (false == InMaterialInfo.NormalTextureName.IsEmpty())
     {
         InMaterial->SetTextureParameterValue(FRRMaterialProperty::PROP_NAME_NORMAL,
-                                             gameSingleton->GetTexture(InMaterialInfo.NormalTextureName));
+                                             gameSingleton->GetTexture(InMaterialInfo.NormalTextureName, false));
     }
 }
 

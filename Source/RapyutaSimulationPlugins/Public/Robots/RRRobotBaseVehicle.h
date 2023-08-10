@@ -5,6 +5,10 @@
  */
 
 #pragma once
+
+// RapyutasimulationPlugins
+#include "Robots/RRBaseRobot.h"
+
 #include "RRRobotBaseVehicle.generated.h"
 
 /**
