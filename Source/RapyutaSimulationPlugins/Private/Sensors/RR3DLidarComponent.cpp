@@ -165,7 +165,7 @@ void URR3DLidarComponent::SensorUpdate()
                         LineBatcher->DrawPoint(h.ImpactPoint,
                                                InterpColorFromIntensity(GetIntensityFromDist(IntensityReflective, Distance)),
                                                5,
-                                               10,
+                                               DrawPointDepthIntensity,
                                                Dt);
                     }
                     // non reflective material
@@ -176,7 +176,7 @@ void URR3DLidarComponent::SensorUpdate()
                         LineBatcher->DrawPoint(h.ImpactPoint,
                                                InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)),
                                                5,
-                                               10,
+                                               DrawPointDepthIntensity,
                                                Dt);
                     }
                     // reflective material
@@ -202,7 +202,7 @@ void URR3DLidarComponent::SensorUpdate()
                                 NormalAlignment * (IntensityReflective - IntensityNonReflective) + IntensityNonReflective,
                                 Distance)),
                             5,
-                            10,
+                            DrawPointDepthIntensity,
                             Dt);
                     }
                 }
@@ -210,14 +210,17 @@ void URR3DLidarComponent::SensorUpdate()
                 {
                     // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("no physics material"));
                     // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
-                    LineBatcher->DrawPoint(
-                        h.ImpactPoint, InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)), 5, 10, Dt);
+                    LineBatcher->DrawPoint(h.ImpactPoint,
+                                           InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)),
+                                           5,
+                                           DrawPointDepthIntensity,
+                                           Dt);
                 }
             }
             else if (ShowLidarRayMisses)
             {
                 // LineBatcher->DrawLine(h.TraceStart, h.TraceEnd, ColorMiss, 10, .25, dt);
-                LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, 10, Dt);
+                LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, DrawPointDepthIntensity, Dt);
             }
         }
     }
