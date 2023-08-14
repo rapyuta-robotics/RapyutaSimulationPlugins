@@ -2,6 +2,7 @@
 # Copyright 2020-2021 Rapyuta Robotics Co., Ltd.
 
 import unittest
+import logging
 
 import launch
 import launch_testing.actions
@@ -27,4 +28,4 @@ def generate_test_description():
 class TestClockPublication(unittest.TestCase):
     def test_check_if_clock_published(self, proc_output):
         with WaitForTopics([(TOPIC_NAME_CLOCK, Clock)], in_timeout=5.0):
-            print('Clock being published!')
+            logging.info('Clock being published!')

@@ -2,6 +2,7 @@
 # Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
 
 import unittest
+import logging
 
 import launch
 import launch_testing.actions
@@ -61,8 +62,8 @@ class TestRobotFollowPath(unittest.TestCase):
         assert is_robot_found, f'Robot named {robot_name} unavailable!'
 
         # Prepare robot path data
-        print(robot_name)
         node = rclpy.create_node(f'{robot_name}_path')
+        node.get_logger().info(f'[{robot_name}] Preparing robot path data..')
         robot_path = Path()
         robot_path.header.frame_id = "map_origin"
         robot_path.header.stamp = node.get_clock().now().to_msg()
@@ -70,8 +71,8 @@ class TestRobotFollowPath(unittest.TestCase):
         path_poses = argstr(LAUNCH_ARG_ROBOT_PATH).split(',')
 
         poses_num = int(len(path_poses) / 7)
-        print(f'path_poses: {path_poses}')
-        print(f'target poses num: {poses_num}')
+        node.get_logger().info(f'path_poses: {path_poses}')
+        node.get_logger().info(f'target poses num: {poses_num}')
         for i in range(poses_num):
             pose_stamped = PoseStamped()
             pose_stamped.pose.position.x = float(path_poses[0*i])
