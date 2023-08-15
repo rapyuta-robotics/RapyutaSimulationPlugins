@@ -27,7 +27,7 @@ DECLARE_MULTICAST_DELEGATE(FRROnROS2Initialized);
  * @sa [AGameMode](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/AGameMode/)
  * @sa [GameMode and GameState](https://docs.unrealengine.com/5.1/en-US/game-mode-and-game-state-in-unreal-engine/)
  */
-UCLASS()
+UCLASS(Config = RapyutaSimSettings)
 class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 {
     GENERATED_BODY()
@@ -95,6 +95,11 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual float GetTargetRTF() const;
 
+    /**
+     * @brief Print GameMode's user configs in INI
+     */
+    virtual void PrintSimConfig() const;
+
 protected:
     /**
      * @brief Initialize Game.
@@ -118,9 +123,15 @@ protected:
      */
     virtual void StartPlay() override;
 
-    //! Blueprint class names to be registered as spawnable entity types
-    UPROPERTY()
+    //! Blueprint class names (also used as their entity model names) to be registered as spawnable entity types
+    //! Eg: {"BP_TurtlebotBurger", "BP_TurtlebotBurgerVehicle"}
+    UPROPERTY(config)
     TArray<FString> BPSpawnableClassNames;
+
+    //! Asset paths of classes to be registered as spawnable entity types
+    //! Eg: {{"TurtlebotBurger", "/Script/RapyutaSimulationPlugins.TurtlebotBurger"]}
+    UPROPERTY(config)
+    TMap<FString /*Entity model name*/, FString /*Class path*/> NativeSpawnableClassPaths;
 
 private:
     /**

@@ -74,7 +74,7 @@ public:
 
     //! Base mesh comp, normally also as the root comp
     UPROPERTY(VisibleAnywhere)
-    UMeshComponent* BaseMeshComp = nullptr;
+    TObjectPtr<UMeshComponent> BaseMeshComp = nullptr;
 
     /**
      * @brief Get #BaseMeshComp's material

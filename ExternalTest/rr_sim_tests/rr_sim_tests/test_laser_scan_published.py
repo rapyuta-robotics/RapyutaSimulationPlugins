@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import unittest
+import logging
 
 import launch
 import launch_testing.actions
@@ -31,4 +32,4 @@ def generate_test_description():
 class TestLaserScanPublication(unittest.TestCase):
     def test_check_if_laser_scan_published(self, proc_output, test_args):
         with WaitForTopics([(str(scan_topic).strip(), LaserScan) for scan_topic in test_args[LAUNCH_ARG_SCAN_TOPICS].split(',')], in_timeout=5.0):
-            print('Laser scan is being published!')
+            logging.info('Laser scan is being published!')

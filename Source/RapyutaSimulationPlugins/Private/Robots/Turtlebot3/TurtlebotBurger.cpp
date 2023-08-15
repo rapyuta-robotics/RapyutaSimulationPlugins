@@ -21,16 +21,13 @@ void ATurtlebotBurger::SetupBody()
     }
 
     Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
+    SetBaseMeshComp(Base, true, false);
+
     LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
     LidarComponent = CreateDefaultSubobject<URR2DLidarComponent>(TEXT("LidarComp"));
     WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));
     WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
     CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
-
-    if (RootComponent)
-    {
-        Base->SetupAttachment(RootComponent);
-    }
 
     LidarSensor->SetupAttachment(Base);
     LidarComponent->SetupAttachment(LidarSensor);

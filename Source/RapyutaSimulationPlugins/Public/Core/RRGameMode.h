@@ -102,7 +102,7 @@ public:
     /**
      * @brief Print GameMode's user configs in INI
      */
-    virtual void PrintSimConfig() const;
+    virtual void PrintSimConfig() const override;
 
     /**
      * @brief Print UE global preprocessors' values
@@ -132,6 +132,8 @@ public:
 
 private:
     FTimerHandle OwnTimerHandle;
+    UPROPERTY()
+    float BeginTimeStampSec = 0.f;
 
     /**
      * @brief This method was scheduled to be run by BeginPlay()

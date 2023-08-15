@@ -551,15 +551,15 @@ public:
      * @brief
      *
      * @param InCondition
-     * @param InAction
-     * @param InBeginTime
+     * @param InActionUponTimeout
+     * @param InBeginTimeInSec
      * @param InTimeoutInSec
      * @return true
      * @return false
      */
     static bool CheckWithTimeOut(const TFunctionRef<bool()>& InCondition,
-                                 const TFunctionRef<void()>& InAction,
-                                 const FDateTime& InBeginTime,
+                                 const TFunctionRef<void()>& InActionUponTimeout,
+                                 float InBeginTimeInSec,
                                  float InTimeoutInSec);
 
     static void StopRegisteredTimer(UWorld* InWorld, FTimerHandle& InTimerHandle)

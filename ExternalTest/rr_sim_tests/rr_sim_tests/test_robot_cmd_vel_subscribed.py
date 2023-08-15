@@ -13,13 +13,14 @@ from geometry_msgs.msg import Twist
 import pytest
 
 from rr_sim_tests.utils.wait_for_spawned_entity import wait_for_spawned_entity
-from rr_sim_tests.utils.utils import CmdVelPublisher
+from rr_sim_tests.utils.cmd_vel_publisher import CmdVelPublisher
+from rr_sim_tests.utils.utils import wait_for_entity_moving
 
 """
 Test robot cmd_vel subscription
 """
 LAUNCH_ARG_ROBOT_NAMESPACE = 'robot_namespace'
-LAUNCH_ARG_ROBOT_NAME =  'robot_name'
+LAUNCH_ARG_ROBOT_NAME = 'robot_name'
 LAUNCH_ARG_ROBOT_TWIST_LINEAR = 'twist_linear'
 LAUNCH_ARG_ROBOT_TWIST_ANGULAR = 'twist_angular'
 
@@ -58,7 +59,7 @@ class TestRobotTwist(unittest.TestCase):
 
         arghas = lambda arg: arg in test_args
         argstr = lambda arg: str(test_args[arg]) if arg in test_args else ''
-        
+
         # Query robot current pose
         assert(arghas(LAUNCH_ARG_ROBOT_NAME))
         robot_name = argstr(LAUNCH_ARG_ROBOT_NAME)
@@ -72,16 +73,16 @@ class TestRobotTwist(unittest.TestCase):
         robot_twist.linear.x = float(pos[0])
         robot_twist.linear.y = float(pos[1])
         robot_twist.linear.z = float(pos[2])
-        
+
         assert(arghas(LAUNCH_ARG_ROBOT_TWIST_ANGULAR))
         rot = argstr(LAUNCH_ARG_ROBOT_TWIST_ANGULAR).split(',')
         robot_twist.angular.x = float(rot[0])
         robot_twist.angular.y = float(rot[1])
         robot_twist.angular.z = float(rot[2])
-        
+
         # Command the robot to move with twist data
-        with CmdVelPublisher(in_robot_namespace=argstr(LAUNCH_ARG_ROBOT_NAMESPACE), in_robot_twist=robot_twist) as cmd_vel_publisher:
+        with CmdVelPublisher(in_robot_namespace=argstr(LAUNCH_ARG_ROBOT_NAMESPACE), in_robot_twist=robot_twist):
             # Check for the robot having been twisted if it does susbcribe to /cmd_vel
-            is_twisted = cmd_vel_publisher.wait_for_robot_twisted(robot_name, robot_current_pose, in_timeout=5.0)
+            is_twisted = wait_for_entity_moving(in_entity_name=robot_name, in_entity_prev_pose=robot_current_pose, in_watch_rate=1, in_timeout=10.0)
             assert is_twisted, f'{robot_name} failed being twisted by cmd_vel'
         rclpy.shutdown()

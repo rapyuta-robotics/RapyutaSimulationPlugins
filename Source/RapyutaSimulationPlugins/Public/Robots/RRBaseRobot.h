@@ -112,6 +112,7 @@ public:
 
     UPROPERTY(VisibleAnywhere, Replicated)
     USceneComponent* DefaultRoot = nullptr;
+
     /**
      * @brief Set the root offset for #RobotVehicleMoveComponent
      * This will be added to the odometry data published in ros topic /odom
@@ -139,6 +140,7 @@ public:
      */
     FORCEINLINE bool IsStaticBPRobot() const
     {
+        // NOTE: (GetClass()->ClassGeneratedBy != nullptr) is also useful but WITH_EDITORONLY_DATA
         const FString className = GetClass()->GetName();
         return className.StartsWith(TEXT("BP"))             // In-Editor
                || className.StartsWith(TEXT("SKEL_BP"));    // In-Package auto prefixed [SKEL_]
@@ -316,6 +318,18 @@ public:
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, UStaticMeshComponent*> Links;
+
+    //! Base mesh comp, normally also as the root comp
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TObjectPtr<UMeshComponent> BaseMeshComp = nullptr;
+
+    /**
+     * @brief Set #BaseMeshComp, optionally making it the new Root, replacing #DefaultRoot
+     * @param InBaseMeshComp
+     * @param bInMakeAsRoot
+     * @param bInDestroyDefaultRoot Whether or not destroying #DefaultRoot upon (bInMakeAsRoot == true), in which case if kept it is only to support compatibility in users' child-BP class
+     */
+    void SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeAsRoot = true, bool bInDestroyDefaultRoot = true);
 
     /**
      * Robot Joints
