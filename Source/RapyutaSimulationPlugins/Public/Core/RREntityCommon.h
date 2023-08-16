@@ -68,12 +68,14 @@ public:
      * @brief Load all entity models from #EntityModelsFolderPathList to #SEntityModelsInfo
      * 1. Use FRREntityDescriptionParser to parse urdf/sdf to FRREntityModelInfo for each model.
      * 2. Try loading entity models info from [DataTable]
-     * @param OutEntityModelNameList Loaded entity models name list
+     * @param InDescFileTypes Model description file types
      * @param bInForceReload Whether or not overwriting existing info
-     * @return true
-     * @return false
+     * @param OutEntityModelNameList Loaded entity models name list
+     * @return true/false
      */
-    static bool LoadAllEntityModelsInfo(bool bInForceReload = false, TArray<FString>* OutEntityModelNameList = nullptr);
+    static bool LoadAllEntityModelsInfo(const TArray<ERRFileType>& InDescFileTypes = {ERRFileType::URDF, ERRFileType::SDF},
+                                        bool bInForceReload = false,
+                                        TArray<FString>* OutEntityModelNameList = nullptr);
 
     /**
      * @brief Load a specific set of entity models from #EntityModelsFolderPathList to #SEntityModelsInfo

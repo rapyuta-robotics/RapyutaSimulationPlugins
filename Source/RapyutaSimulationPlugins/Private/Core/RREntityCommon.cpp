@@ -172,7 +172,9 @@ FRRMaterialProperty URREntityCommon::GetEntityModelMaterialInfo(ARRMeshActor* In
     return GetEntityModelMaterialInfo(InEntity->EntityModelName);
 }
 
-bool URREntityCommon::LoadAllEntityModelsInfo(bool bInForceReload, TArray<FString>* OutEntityModelNameList)
+bool URREntityCommon::LoadAllEntityModelsInfo(const TArray<ERRFileType>& InDescFileTypes,
+                                              bool bInForceReload,
+                                              TArray<FString>* OutEntityModelNameList)
 {
     if (!ensure(EntityModelsFolderPathList.Num() > 0))
     {
@@ -192,8 +194,7 @@ bool URREntityCommon::LoadAllEntityModelsInfo(bool bInForceReload, TArray<FStrin
             // 1.1- Load all urdf/sdf files recursively
             TArray<FString> modelDescFilePathList;
             // Already logged here-in
-            if ((bValidModels = URRCoreUtils::LoadFullFilePaths(
-                     modelsFolderPath, modelDescFilePathList, {ERRFileType::URDF, ERRFileType::SDF})))
+            if ((bValidModels = URRCoreUtils::LoadFullFilePaths(modelsFolderPath, modelDescFilePathList, InDescFileTypes)))
             {
                 // Read [URDF/SDF Models] info -> [SEntityModelsInfo]
                 // EACH [URDF/SDF Model Info] -> represents ONE [URDF/SDF Model]
