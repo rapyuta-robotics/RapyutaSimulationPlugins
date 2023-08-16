@@ -42,7 +42,19 @@ bool URRPakLoader::Initialize()
 #endif
 }
 
-void URRPakLoader::MountPAKFiles(const TArray<FString>& InPAKPaths)
+bool URRPakLoader::IsPAKFileAlreadyMounted(const FString& InPAKPath)
+{
+    if (nullptr == PakManager)
+    {
+        return false;
+    }
+
+    TArray<FString> mountedPakPathList;
+    PakManager->GetMountedPakFilenames(mountedPakPathList);
+    return mountedPakPathList.Contains(InPAKPath);
+}
+
+void URRPakLoader::MountPAKFiles(const TArray<FString>& InPAKPaths, bool bInForceRemount)
 {
     if (InPAKPaths.IsEmpty())
     {
@@ -52,9 +64,22 @@ void URRPakLoader::MountPAKFiles(const TArray<FString>& InPAKPaths)
 
     for (const FString& sourcePakPath : InPAKPaths)
     {
+        // 0.1- UNMOUNT existing to make sure the later mounting is from the latest PAK
+        if (IsPAKFileAlreadyMounted(sourcePakPath))
+        {
+            if (bInForceRemount)
+            {
+                PakManager->Unmount(*sourcePakPath);
+                UE_LOG(LogRapyutaCore, Log, TEXT("Unmount existing PAK path [%s]"), *sourcePakPath);
+            }
+            else
+            {
+                continue;
+            }
+        }
         UE_LOG(LogRapyutaCore, Log, TEXT("Mount PAK path [%s]"), *sourcePakPath);
 
-        // 0- CREATE a PAK file and check its contents
+        // 0.2- CREATE a PAK file and check its contents
         TRefCountPtr<FPakFile> pakFilePtr = new FPakFile(PakManager->GetLowerLevel(), *sourcePakPath, false);
         FPakFile& pakFile = *pakFilePtr;
 
@@ -124,7 +149,7 @@ void URRPakLoader::MountPAKFiles(const TArray<FString>& InPAKPaths)
 #endif
 }
 
-bool URRPakLoader::LoadPAKFiles(const FString& InPakFolderPath)
+bool URRPakLoader::LoadPAKFiles(const FString& InPakFolderPath, bool bInForceReload)
 {
     if (!ensure(PakManager))
     {
@@ -139,12 +164,14 @@ bool URRPakLoader::LoadPAKFiles(const FString& InPakFolderPath)
         UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Log, TEXT("Found %d paks in folder [%s]"), pakPaths.Num(), *InPakFolderPath);
 
         // MOUNT [pakPaths]
-        MountPAKFiles(pakPaths);
+        MountPAKFiles(pakPaths, bInForceReload);
     }
     return true;
 }
 
-bool URRPakLoader::LoadEntitiesPAKFiles(const FString& InPakFolderPath, const TArray<FString>& InEntityModelsNameList)
+bool URRPakLoader::LoadEntitiesPAKFiles(const FString& InPakFolderPath,
+                                        const TArray<FString>& InEntityModelsNameList,
+                                        bool bInForceReload)
 {
     if (!ensure(PakManager))
     {
@@ -171,7 +198,7 @@ bool URRPakLoader::LoadEntitiesPAKFiles(const FString& InPakFolderPath, const TA
         }
 
         // MOUNT [entityPakPathList]
-        MountPAKFiles(entityPakPathList);
+        MountPAKFiles(entityPakPathList, bInForceReload);
     }
     return (entityPakPathList.Num() > 0);
 }
