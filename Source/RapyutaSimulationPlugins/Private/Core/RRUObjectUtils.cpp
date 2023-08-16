@@ -222,10 +222,6 @@ ARRBaseActor* URRUObjectUtils::SpawnSimActor(UWorld* InWorld,
                                              const ESpawnActorCollisionHandlingMethod InCollisionHandlingType,
                                              const FRRActorSpawnInfo& InActorSpawnInfo)
 {
-    // Load entity model data (only if not yet registered, already checked & logged here-in)
-    // NOTE: [SpawnSimActor()] spawns a generic actor that does not necessarily has entity model info (eg camera, light, etc.), thus not return upon loading failed here
-    URREntityCommon::LoadEntityModelsAllData({InEntityModelName});
-
     // This is needed for any actor that is spawned after Sim initialization, when its BeginPlay() is invoked later
     ARRBaseActor::SSceneInstanceId = InSceneInstanceId;
     // Spawn info

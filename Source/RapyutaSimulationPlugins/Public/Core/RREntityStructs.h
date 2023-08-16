@@ -1037,6 +1037,11 @@ public:
     {
         return (ERREntityDescriptionType::SINGLE_CAD == ModelDescType);
     }
+    FString GetModelDescTypeName() const
+    {
+        return URRTypeUtils::GetEnumValueAsString(TEXT("ERREntityDescriptionType"), ModelDescType);
+    }
+
     UPROPERTY(EditAnywhere)
     FString WorldName;
     bool IsWorldModel() const

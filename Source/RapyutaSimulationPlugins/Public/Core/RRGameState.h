@@ -14,7 +14,6 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Core/RRConversionUtils.h"
-#include "Core/RREntityCommon.h"
 
 #include "RRGameState.generated.h"
 
@@ -44,9 +43,6 @@ public:
 
     UPROPERTY()
     TObjectPtr<ARRGameMode> GameMode = nullptr;
-
-    UPROPERTY()
-    TObjectPtr<URREntityCommon> EntityCommon = nullptr;
 
     UPROPERTY(config)
     int8 SCENE_INSTANCES_NUM = 1;
@@ -252,9 +248,6 @@ protected:
 protected:
     UPROPERTY()
     TSubclassOf<URRSceneInstance> SceneInstanceClass;
-
-    UPROPERTY()
-    TSubclassOf<URREntityCommon> EntityCommonClass;
 
     //! Pool of all entities having been spawned
     UPROPERTY()

@@ -20,7 +20,6 @@
 #include "Core/RRActorCommon.h"
 #include "Core/RRAssetUtils.h"
 #include "Core/RRConversionUtils.h"
-#include "Core/RREntityCommon.h"
 #include "Core/RRUObjectUtils.h"
 #include "Net/UnrealNetwork.h"
 #include "Robots/RRBaseRobot.h"
@@ -340,13 +339,6 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
                                             const int32& InNetworkPlayerId)
 {
     if (false == VerifyIsServerCall(TEXT("ServerSpawnEntity")))
-    {
-        return nullptr;
-    }
-
-    // Load entity model data (only if not yet registered, already checked & logged here-in)
-    const FString& entityModelName = InROSSpawnRequest.Xml;
-    if (false == URREntityCommon::LoadEntityModelsAllData({entityModelName}))
     {
         return nullptr;
     }
