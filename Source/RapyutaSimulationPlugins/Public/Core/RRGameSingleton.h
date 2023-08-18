@@ -87,9 +87,11 @@ public:
     /**
      * @brief Read all sim dynamic resouces(Uassets) info from designated folders
      * @param bInRequestResourceLoading
+     * - True: Load all dynamic-contents-designated resources
+     * - False: Only collate resources metadata, LoadObject<>() will be invoked on-the-fly during Sim run in [GetSimResource()]
      * @return true if inited successfully
      */
-    bool InitializeResources(bool bInRequestResourceLoading = true);
+    bool InitializeResources(bool bInRequestResourceLoading = false);
 
     /**
      * @brief Finalize #ResourceMap by calling #FRRResourceInfo::Finalize
@@ -102,6 +104,15 @@ public:
     FString FOLDER_PATH_ASSET_PAKS = TEXT("Paks");
     UPROPERTY()
     TObjectPtr<URRPakLoader> PakLoader = nullptr;
+    //! Whether PakLoader has been initialized, which is only true as in packaged game
+    UPROPERTY()
+    bool bPakLoaderInitialized = false;
+    /**
+     * @brief Load PAK files of a specific set of entity models, mounting then then collate their content assets info
+     * @param InEntityModelName
+     * @return true/false
+     */
+    bool CollateEntityAssetsInfoFromPAK(const TArray<FString>& InEntityModelNameList);
 
     // ASSETS --
     //! This list specifically hosts names of which module houses the UE assets based on their data type
@@ -266,7 +277,19 @@ public:
     }
 
     /**
-     * @brief Finalize #ResourceMap by calling #FRRResourceInfo::Finalize
+     * @brief Collate assets info for #ResourceMap
+     * @tparam InDataType
+     * @param InAssetRelativeFolderPath
+     * @return Num of assets
+     */
+    template<ERRResourceDataType InDataType>
+    int32 CollateAssetsInfo()
+    {
+        return CollateAssetsInfo<URRAssetObject<InDataType>>(InDataType, GetAssetsFolderName(InDataType));
+    }
+
+    /**
+     * @brief Collate assets info for #ResourceMap
      * @tparam TResource
      * @param InDataType
      * @param InAssetRelativeFolderPath
@@ -299,6 +322,19 @@ public:
             outResourceInfo.AddResource(asset.AssetName.ToString(), asset.ToSoftObjectPath().ToString(), nullptr);
         }
         return totalAssetDataList.Num();
+    }
+
+    /**
+     * @brief Collate assets info
+     */
+    void CollateAssetsInfo()
+    {
+        CollateAssetsInfo<ERRResourceDataType::UE_STATIC_MESH>();
+        CollateAssetsInfo<ERRResourceDataType::UE_SKELETAL_MESH>();
+        CollateAssetsInfo<ERRResourceDataType::UE_SKELETON>();
+        CollateAssetsInfo<ERRResourceDataType::UE_PHYSICS_ASSET>();
+        CollateAssetsInfo<ERRResourceDataType::UE_MATERIAL>();
+        CollateAssetsInfo<ERRResourceDataType::UE_TEXTURE>();
     }
 
     //  RESOURCE STORE --
@@ -513,7 +549,7 @@ public:
     }
 
     /**
-     * @brief Get the Sim Resource object
+     * @brief Get the Sim Resource object, loading if required + updating resource store
      *
      * @tparam TResource
      * @param InDataType
@@ -524,31 +560,88 @@ public:
     template<typename TResource>
     TResource* GetSimResource(const ERRResourceDataType InDataType,
                               const FString& InResourceUniqueName,
-                              bool bIsStaticResource = true) const
+                              bool bIsStaticResource = true)
     {
-        TResource* resourceAsset = Cast<TResource>(GetSimResourceInfo(InDataType).Data.FindRef(InResourceUniqueName).AssetData);
+        FRRResource resourceInfo = GetSimResourceInfo(InDataType).Data.FindRef(InResourceUniqueName);
+        const FString resourceAssetPath = resourceInfo.GetAssetPath();
+        auto& resourceAssetData = resourceInfo.AssetData;
 
-        if (bIsStaticResource && (!resourceAsset))
+        bool bNewlyLoaded = false;
+        // NOTE: Null [resourceAssetData] either means it is a not-yet-created dynamic resource Or a not-yet-loaded-from-disk static resource (uasset)
+        if (nullptr == resourceAssetData)
         {
-            // For some reason, [LogRapyutaCore] could not be used here due to a linking error as being invoked from project
-            // sources.
-            UE_LOG_WITH_INFO(LogTemp,
-                             Fatal,
-                             TEXT("[%s] [Unique Name: %s] INVALID STATIC RESOURCE %d!"),
-                             *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-                             *InResourceUniqueName,
-                             resourceAsset)
-            return nullptr;
+            if (IsInGameThread())
+            {
+                // NOTE: Empty [resourceAssetPath] should only mean a dynamic resource. Otherwise, the static resource asset path must not have been properly collated!
+                resourceAssetData = resourceAssetPath.IsEmpty()
+                                        ? nullptr
+                                        : URRAssetUtils::LoadObjFromAssetPath<TResource>((UObject*)this, resourceAssetPath);
+                if (resourceAssetData)
+                {
+                    bNewlyLoaded = true;
+                }
+                else
+                {
+                    // NOTE: For dynamically-created resources, 1st time querying (due to empty [resourceAssetPath]) always yields null [resourceAssetData] due to no [resourceAssetPath] determined yet,
+                    // in which case no error log should be printed
+                    if (bIsStaticResource)
+                    {
+#if WITH_EDITOR
+                        UE_LOG_WITH_INFO_SHORT(LogTemp,
+                                               Error,
+                                               TEXT("[%s] [Unique Name: %s] INVALID STATIC RESOURCE PATH [%s]!"),
+                                               *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                                               *InResourceUniqueName,
+                                               *resourceAssetPath);
+#else
+                        UE_LOG_WITH_INFO_SHORT(LogTemp,
+                                               Error,
+                                               TEXT("[%s] [Unique Name: %s] INVALID STATIC RESOURCE PATH [%s]!\n"
+                                                    "Please consider adding its containing folder asset path (Eg: "
+                                                    "'/RapyutaSimulationPlugins/DynamicContents') to "
+                                                    "[DirectoriesToAlwaysCook] in DefaultGame.ini"),
+                                               *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                                               *InResourceUniqueName,
+                                               *resourceAssetPath);
+#endif
+                    }
+                    return nullptr;
+                }
+            }
+            else
+            {
+                UE_LOG_WITH_INFO_SHORT(LogTemp,
+                                       Error,
+                                       TEXT("[%s] [Unique Name: %s] RESOURCE SHOULD HAVE BEEN LOADED EARLIER IN GAMETHREAD [%s]!"),
+                                       *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                                       *InResourceUniqueName,
+                                       *resourceAssetPath);
+                return nullptr;
+            }
         }
-        else if (resourceAsset && !resourceAsset->IsValidLowLevelFast())
+
+        // Verify resource asset's in-memory validity
+        TResource* resourceAsset = Cast<TResource>(resourceAssetData);
+        if (resourceAsset)
         {
-            UE_LOG_WITH_INFO(LogTemp,
-                             Error,
-                             TEXT("[%s] [Unique Name: %s] INVALID-AT-LOW-LEVEL RESOURCE %d!"),
-                             *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
-                             *InResourceUniqueName,
-                             resourceAsset)
-            return nullptr;
+            if (resourceAsset->IsValidLowLevelFast())
+            {
+                // Add into resource store if newly loaded above
+                if (bNewlyLoaded)
+                {
+                    AddDynamicResource<TResource>(InDataType, resourceAsset, InResourceUniqueName, resourceAssetPath);
+                }
+            }
+            else
+            {
+                UE_LOG_WITH_INFO_SHORT(LogTemp,
+                                       Error,
+                                       TEXT("[%s] [Unique Name: %s] INVALID-AT-LOW-LEVEL RESOURCE %u!"),
+                                       *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                                       *InResourceUniqueName,
+                                       resourceAsset)
+                return nullptr;
+            }
         }
         return resourceAsset;
     }
@@ -650,14 +743,14 @@ public:
     }
 
     /**
-     * @brief Call #GetSimResource with #ERRResourceDataType::UE_STATIC_MESH
+     * @brief Get or load static mesh, #GetSimResource with #ERRResourceDataType::UE_STATIC_MESH
      * (NOTE) StaticMesh could be dynamically created
      *
      * @param InStaticMeshName
      * @param bIsStaticResource
      * @return FORCEINLINE*
      */
-    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName, bool bIsStaticResource = true) const
+    FORCEINLINE UStaticMesh* GetStaticMesh(const FString& InStaticMeshName, bool bIsStaticResource = true)
     {
         return GetSimResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, InStaticMeshName, bIsStaticResource);
     }
@@ -670,7 +763,7 @@ public:
     UPROPERTY(config)
     FString FOLDER_PATH_PHYSICS_ASSETS = TEXT("PhysicsAssets");
     /**
-     * @brief Call #GetSimResource with #ERRResourceDataType::UE_SKELETAL_MESH
+     * @brief Get or load skeletal mesh, #GetSimResource with #ERRResourceDataType::UE_SKELETAL_MESH
      *
      * @param InSkeletalMeshName
      * @param bIsStaticResource
@@ -682,7 +775,7 @@ public:
     }
 
     /**
-     * @brief Call #GetSimResource with #ERRResourceDataType::UE_SKELETON
+     * @brief Get or load physics skeleton, #GetSimResource with #ERRResourceDataType::UE_SKELETON
      *
      * @param InSkeletonName
      * @param bIsStaticResource
@@ -694,7 +787,7 @@ public:
     }
 
     /**
-     * @brief Call #GetSimResource with #ERRResourceDataType::UE_PHYSICS_ASSET
+     * @brief Get or load physics asset, #GetSimResource with #ERRResourceDataType::UE_PHYSICS_ASSET
      *
      * @param InPhysicsAssetName
      * @param bIsStaticResource
@@ -717,18 +810,18 @@ public:
     static constexpr const TCHAR* MATERIAL_NAME_TRANSLUCENCE_MASTER = TEXT("M_RapyutaTranslucenceMaster");
 
     /**
-     * @brief Call #GetSimResource with #ERRResourceDataType::UE_MATERIAL
+     * @brief Get or load material, calling #GetSimResource with #ERRResourceDataType::UE_MATERIAL
      *
      * @param InMaterialName
      * @return FORCEINLINE*
      */
-    FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName) const
+    FORCEINLINE UMaterialInterface* GetMaterial(const FString& InMaterialName)
     {
         return GetSimResource<UMaterialInterface>(ERRResourceDataType::UE_MATERIAL, InMaterialName);
     }
 
     /**
-     * @brief Call #GetSimResource with #ERRResourceDataType::UE_MATERIAL
+     * @brief Get or load physical material, calling #GetSimResource with #ERRResourceDataType::UE_MATERIAL
      *
      * @param InPhysicalMaterialName
      * @return FORCEINLINE*
@@ -747,12 +840,12 @@ public:
     static constexpr const TCHAR* TEXTURE_NAME_BLACK_MASK = TEXT("T_BlackMask");
 
     /**
-     * @brief Call #GetSimResource with #ERRResourceDataType::UE_TEXTURE
+     * @brief Get or load texture, calling #GetSimResource with #ERRResourceDataType::UE_TEXTURE
      * @param InTextureName
      * @param bIsStaticResource
      * @return FORCEINLINE*
      */
-    FORCEINLINE UTexture* GetTexture(const FString& InTextureName, bool bIsStaticResource = true) const
+    FORCEINLINE UTexture* GetTexture(const FString& InTextureName, bool bIsStaticResource = true)
     {
         return GetSimResource<UTexture>(ERRResourceDataType::UE_TEXTURE, InTextureName, bIsStaticResource);
     }
@@ -763,24 +856,23 @@ public:
     FString FOLDER_PATH_ASSET_DATA_TABLES = TEXT("DataTables");
 
     /**
-     * @brief Call #GetSimResource with #ERRResourceDataType::UE_DATA_TABLE
+     * @brief Get or load Data table, calling #GetSimResource with #ERRResourceDataType::UE_DATA_TABLE
      * @param InDataTableName
      * @param bIsStaticResource
      * @return FORCEINLINE*
      */
-    FORCEINLINE UDataTable* GetDataTable(const FString& InDataTableName, bool bIsStaticResource = true) const
+    FORCEINLINE UDataTable* GetDataTable(const FString& InDataTableName, bool bIsStaticResource = true)
     {
         return GetSimResource<UDataTable>(ERRResourceDataType::UE_DATA_TABLE, InDataTableName, bIsStaticResource);
     }
 
     // BODY SETUPS --
     /**
-     * @brief Call #GetSimResource with #ERRResourceDataType::UE_BODY_SETUP
-     *
+     * @brief Get or load BodySetup, calling #GetSimResource with #ERRResourceDataType::UE_BODY_SETUP
      * @param InBodySetupName
      * @return FORCEINLINE*
      */
-    FORCEINLINE UBodySetup* GetBodySetup(const FString& InBodySetupName) const
+    FORCEINLINE UBodySetup* GetBodySetup(const FString& InBodySetupName)
     {
         // Body setups are dynamically created, thus not static resources
         return GetSimResource<UBodySetup>(ERRResourceDataType::UE_BODY_SETUP, InBodySetupName, false);

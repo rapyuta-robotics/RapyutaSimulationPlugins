@@ -523,9 +523,9 @@ bool FRRURDFParser::ParseLinkProperty()
     newLinkProp.Inertia.Izz = FCString::Atof(*AttMap.FindRef(TEXT("inertial_inertia_izz")));
 
     // [VISUAL/COLLISION]
-    FRRRobotGeometryInfo visualGeometryInfo;
+    FRREntityGeometryInfo visualGeometryInfo;
 
-    if (ParseGeometryInfo(linkName, ERRRobotGeometryType::VISUAL, visualGeometryInfo))
+    if (ParseGeometryInfo(linkName, ERREntityGeometryType::VISUAL, visualGeometryInfo))
     {
         const FString& visualMeshName = visualGeometryInfo.MeshName;
         // [Visual's Geometry] --
@@ -537,7 +537,7 @@ bool FRRURDFParser::ParseLinkProperty()
 #endif
 
         // !NOTE: newLinkProp.Location & newLinkProp.Rotation would be read from the joint that has NewLink as child link
-        // --> Refer to FRRRobotModelInfo::UpdateLinksTransformInfoFromJoints()
+        // --> Refer to FRREntityModelInfo::UpdateLinksTransformInfoFromJoints()
         // Visual Color element
         if (AttMap.Contains(TEXT("visual_color_rgba")))
         {
@@ -561,8 +561,8 @@ bool FRRURDFParser::ParseLinkProperty()
         newLinkProp.VisualList.Emplace(MoveTemp(visualGeometryInfo));
     }
 
-    FRRRobotGeometryInfo collisionGeometryInfo;
-    bool isCollisionParsed = ParseGeometryInfo(linkName, ERRRobotGeometryType::COLLISION, collisionGeometryInfo);
+    FRREntityGeometryInfo collisionGeometryInfo;
+    bool isCollisionParsed = ParseGeometryInfo(linkName, ERREntityGeometryType::COLLISION, collisionGeometryInfo);
     const FString& collisionMeshName = collisionGeometryInfo.MeshName;
 
     // [Collision's Geometry] --
@@ -741,15 +741,15 @@ FVector FRRURDFParser::ParseCylinderSize(const FString& InRadiusElementName, con
 }
 
 bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
-                                      const ERRRobotGeometryType InGeometryType,
-                                      FRRRobotGeometryInfo& OutGeometryInfo)
+                                      const ERREntityGeometryType InGeometryType,
+                                      FRREntityGeometryInfo& OutGeometryInfo)
 {
     bool parsed = true;
     OutGeometryInfo.LinkName = InLinkName;
     OutGeometryInfo.Name = InLinkName;
 
-    const TCHAR* geometryTypePrefix = (ERRRobotGeometryType::VISUAL == InGeometryType)      ? GEOMETRY_TYPE_PREFIX_VISUAL
-                                      : (ERRRobotGeometryType::COLLISION == InGeometryType) ? GEOMETRY_TYPE_PREFIX_COLLISION
+    const TCHAR* geometryTypePrefix = (ERREntityGeometryType::VISUAL == InGeometryType)      ? GEOMETRY_TYPE_PREFIX_VISUAL
+                                      : (ERREntityGeometryType::COLLISION == InGeometryType) ? GEOMETRY_TYPE_PREFIX_COLLISION
                                                                                             : nullptr;
     check(geometryTypePrefix);
 
@@ -808,22 +808,22 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
     return parsed;
 }
 
-FRRRobotModelInfo FRRURDFParser::LoadModelInfoFromFile(const FString& InURDFPath)
+FRREntityModelInfo FRRURDFParser::LoadModelInfoFromFile(const FString& InURDFPath)
 {
     FString outXMLContent;
     if (!FFileHelper::LoadFileToString(outXMLContent, *InURDFPath, FFileHelper::EHashOptions::None))
     {
         UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Failed reading URDF file [%s]"), *InURDFPath);
-        return FRRRobotModelInfo();
+        return FRREntityModelInfo();
     }
     outXMLContent = URRCoreUtils::GetSanitizedXMLString(outXMLContent);
 
 #if RAPYUTA_URDF_PARSER_DEBUG
     UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PARSE URDF CONTENT FROM FILE %s"), *InURDFPath);
 #endif
-    FRRRobotModelInfo robotModelInfo;
+    FRREntityModelInfo robotModelInfo;
     auto& robotModelData = robotModelInfo.Data;
-    robotModelData.ModelDescType = ERRRobotDescriptionType::URDF;
+    robotModelData.ModelDescType = ERREntityDescriptionType::URDF;
     robotModelData.DescriptionFilePath = InURDFPath;
     if (LoadModelInfoFromXML(outXMLContent, robotModelInfo))
     {
@@ -832,7 +832,7 @@ FRRRobotModelInfo FRRURDFParser::LoadModelInfoFromFile(const FString& InURDFPath
     return robotModelInfo;
 }
 
-bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRRRobotModelInfo& OutRobotModelInfo)
+bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRREntityModelInfo& OutRobotModelInfo)
 {
     if (InUrdfXml.IsEmpty())
     {
@@ -856,7 +856,7 @@ bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRRRobotModel
 #if RAPYUTA_URDF_PARSER_DEBUG
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PARSING URDF SUCCEEDED[%s]!"), *ModelName);
 #endif
-        FRRRobotModelData& outRobotModelData = OutRobotModelInfo.Data;
+        FRREntityModelData& outRobotModelData = OutRobotModelInfo.Data;
         outRobotModelData.ModelNameList.Emplace(MoveTemp(ModelName));
         outRobotModelData.bHasWorldJoint = bHasWorldJoint;
         outRobotModelData.UEComponentTypeFlags = UEComponentTypeFlags;

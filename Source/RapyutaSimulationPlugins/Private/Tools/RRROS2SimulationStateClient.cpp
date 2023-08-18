@@ -216,7 +216,8 @@ FROSSpawnEntityRes URRROS2SimulationStateClient::SpawnEntityImpl(FROSSpawnEntity
         if (entityName.IsEmpty())
         {
             response.bSuccess = false;
-            response.StatusMessage = FString::Printf(TEXT("[%s] Failed to spawn entity. Entity Name is empty"), *GetName());
+            response.StatusMessage = FString::Printf(
+                TEXT("[%s] Failed to spawn entity of model [%s]. Entity Name is empty"), *GetName(), *entityModelName);
         }
         else if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
@@ -231,7 +232,7 @@ FROSSpawnEntityRes URRROS2SimulationStateClient::SpawnEntityImpl(FROSSpawnEntity
             // {
             //     response.bSuccess = false;
             //     response.StatusMessage =
-            //         FString::Printf(TEXT("[%s] Failed to spawn entity named %s, probably out collision!"), *GetName(),
+            //         FString::Printf(TEXT("[%s] Failed to spawn entity named %s, probably out of collision!"), *GetName(),
             //         *entityName);
             // }
             // else

@@ -225,7 +225,10 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRResourceInfo
         {
             for (auto& [_, resource] : Data)
             {
-                resource.AssetData->MarkAsGarbage();
+                if (resource.AssetData)
+                {
+                    resource.AssetData->MarkAsGarbage();
+                }
             }
         }
         Data.Reset();

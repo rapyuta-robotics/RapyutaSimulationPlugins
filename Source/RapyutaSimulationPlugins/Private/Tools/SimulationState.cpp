@@ -446,11 +446,11 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InRequest,
                 // todo: need pass response to SimulationStateClient
                 // response.bSuccess = false;
                 // response.StatusMessage =
-                //     FString::Printf(TEXT("[%s] Failed to spawn entity named %s, probably out collision!"), *GetName(),
+                //     FString::Printf(TEXT("[%s] Failed to spawn entity named %s, probably out of collision!"), *GetName(),
                 //     *entityName);
                 UE_LOG_WITH_INFO(LogRapyutaCore,
                                  Error,
-                                 TEXT("[ASimulationState] Failed to spawn entity named %s, probably out collision!"),
+                                 TEXT("[ASimulationState] Failed to spawn entity named %s, probably out of collision!"),
                                  *entityName);
             }
         }

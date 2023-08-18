@@ -35,9 +35,20 @@ public:
     /**
      * @brief Load PAK files
      * @param InPakFolderPath
+     * @param bInForceReload
+     * @return true/false
      */
-    UFUNCTION()
-    bool LoadPAKFiles(const FString& InPakFolderPath);
+    bool LoadPAKFiles(const FString& InPakFolderPath, bool bInForceReload = false);
+
+    /**
+     * @brief Load PAK files of a specific set of entity models
+     * @param InEntityModelsNameList
+     * @param bInForceReload
+     * @return true/false
+     */
+    bool LoadEntitiesPAKFiles(const FString& InPakFolderPath,
+                              const TArray<FString>& InEntityModelsNameList,
+                              bool bInForceReload = false);
 
 private:
     //! Pak file manager, responsible for loading & mounting paks
@@ -49,7 +60,14 @@ private:
     /**
      * @brief Mount PAK paths to files on disk
      * @param InPAKPaths
+     * @param bInForceRemount If true, unmount already-mounted PAK before mounting it again, otherwise skip
      */
-    UFUNCTION()
-    void MountPAKFiles(const TArray<FString>& InPAKPaths);
+    void MountPAKFiles(const TArray<FString>& InPAKPaths, bool bInForceRemount = false);
+
+    /**
+     * @brief Check if a PAK path is already mounted
+     * @param InPAKPath
+     * @return true/false
+     */
+    bool IsPAKFileAlreadyMounted(const FString& InPAKPath);
 };

@@ -41,14 +41,14 @@ public:
      */
     virtual void StartSim();
 
+    UPROPERTY()
+    TObjectPtr<ARRGameMode> GameMode = nullptr;
+
     UPROPERTY(config)
     int8 SCENE_INSTANCES_NUM = 1;
 
     UPROPERTY(config)
     int32 OPERATION_BATCHES_NUM = 5;
-
-    UPROPERTY()
-    ARRGameMode* GameMode = nullptr;
 
     UPROPERTY(config)
     float SCENE_INSTANCES_DISTANCE_INTERVAL = 5000.f;
