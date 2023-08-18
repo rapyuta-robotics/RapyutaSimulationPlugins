@@ -586,12 +586,24 @@ public:
                     // in which case no error log should be printed
                     if (bIsStaticResource)
                     {
+#if WITH_EDITOR
                         UE_LOG_WITH_INFO_SHORT(LogTemp,
                                                Error,
                                                TEXT("[%s] [Unique Name: %s] INVALID STATIC RESOURCE PATH [%s]!"),
                                                *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
                                                *InResourceUniqueName,
                                                *resourceAssetPath);
+#else
+                        UE_LOG_WITH_INFO_SHORT(LogTemp,
+                                               Error,
+                                               TEXT("[%s] [Unique Name: %s] INVALID STATIC RESOURCE PATH [%s]!\n"
+                                                    "Please consider adding its containing folder asset path (Eg: "
+                                                    "'/RapyutaSimulationPlugins/DynamicContents') to "
+                                                    "[DirectoriesToAlwaysCook] in DefaultGame.ini"),
+                                               *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType),
+                                               *InResourceUniqueName,
+                                               *resourceAssetPath);
+#endif
                     }
                     return nullptr;
                 }
