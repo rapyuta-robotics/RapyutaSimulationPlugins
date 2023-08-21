@@ -83,8 +83,11 @@ void URRRobotROS2Interface::DeInitialize()
         return;
     }
 
-    Robot->ROS2Interface = nullptr;
-    Robot = nullptr;
+    if (nullptr != Robot)
+    {
+        Robot->ROS2Interface = nullptr;
+        Robot = nullptr;
+    }
 
     StopPublishers();
 }
