@@ -1082,6 +1082,10 @@ public:
         return meshesNum;
     }
 
+    //! Path to the base package folder, from which meshes' CAD file paths are defined as relative to
+    UPROPERTY(VisibleAnywhere)
+    FString BaseFolderPath;
+
     //! Robot Model Description File (URDF/SDF)
     UPROPERTY(VisibleAnywhere)
     FString DescriptionFilePath;
@@ -1502,7 +1506,6 @@ public:
     bool IsValid(bool bIsLogged = false) const
     {
         // NOTE: Joints num could be zero for a single-link object
-        const ERRFileType fileType = URRCoreUtils::GetFileType(DescriptionFilePath);
         if (ERREntityDescriptionType::NONE == ModelDescType)
         {
             if (bIsLogged)
@@ -1534,6 +1537,15 @@ public:
             if (bIsLogged)
             {
                 UE_LOG_WITH_INFO(LogTemp, Log, TEXT("%s DescriptionFilePath EMPTY!"), *FString::Join(ModelNameList, TEXT(",")));
+            }
+            return false;
+        }
+        else if (((ERREntityDescriptionType::URDF == ModelDescType) || (ERREntityDescriptionType::SDF == ModelDescType)) &&
+                 BaseFolderPath.IsEmpty())
+        {
+            if (bIsLogged)
+            {
+                UE_LOG_WITH_INFO(LogTemp, Log, TEXT("%s BaseFolderPath EMPTY!"), *FString::Join(ModelNameList, TEXT(",")));
             }
             return false;
         }
@@ -1669,6 +1681,7 @@ public:
         UE_LOG_WITH_INFO(LogTemp, Display, TEXT("UEComponentTypeFlags: %d"), UEComponentTypeFlags);
         UE_LOG_WITH_INFO(LogTemp, Display, TEXT("bHasWorldJoint: %d"), bHasWorldJoint);
         UE_LOG_WITH_INFO(LogTemp, Display, TEXT("ModelNameList: %s"), *FString::Join(ModelNameList, TEXT(",")));
+        UE_LOG_WITH_INFO(LogTemp, Display, TEXT("BaseFolderPath: %s"), *FPaths::ConvertRelativePathToFull(BaseFolderPath));
         UE_LOG_WITH_INFO(
             LogTemp, Display, TEXT("DescriptionFilePath: %s"), *FPaths::ConvertRelativePathToFull(DescriptionFilePath));
         UE_LOG_WITH_INFO(LogTemp, Display, TEXT("ParentFrameName: %s"), *ParentFrameName);
@@ -1740,9 +1753,19 @@ public:
     //! Robot model data
     FRREntityModelData Data;
 
+    FORCEINLINE const FString& GetBaseFolderPath() const
+    {
+        return Data.BaseFolderPath;
+    }
+
     FORCEINLINE const FString& GetDescriptionFilePath() const
     {
         return Data.DescriptionFilePath;
+    }
+
+    FORCEINLINE const FString GetModelName() const
+    {
+        return Data.GetModelName();
     }
 
     FORCEINLINE const FString& GetWorldName() const

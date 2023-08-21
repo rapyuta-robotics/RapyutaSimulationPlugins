@@ -142,6 +142,7 @@ bool FRRSDFParser::LoadChildModelsData(const sdf::ElementPtr& InParentElement, F
 
         FRREntityModelData modelData({modelFullName});
         modelData.ModelDescType = ERREntityDescriptionType::SDF;
+        modelData.BaseFolderPath = OutRobotModelData.BaseFolderPath;
 
         // 1- ChildModel's pose info
         bResult &= LoadPoseInfo(childModelElement, modelData);
@@ -418,7 +419,7 @@ bool FRRSDFParser::ParseGeometryInfo(const sdf::ElementPtr& InLinkElement,
     const FString linkName = URRCoreUtils::StdToFString(InLinkElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
     const char* visualCollisionElementName = (ERREntityGeometryType::VISUAL == InGeometryType)      ? SDF_ELEMENT_LINK_VISUAL
                                              : (ERREntityGeometryType::COLLISION == InGeometryType) ? SDF_ELEMENT_LINK_COLLISION
-                                                                                                   : nullptr;
+                                                                                                    : nullptr;
     check(visualCollisionElementName);
     sdf::ElementPtr visualCollisionElement = InLinkElement->FindElement(visualCollisionElementName);
 
