@@ -115,7 +115,7 @@ void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
     {
         FActorSpawnParameters spawnParams;
         spawnParams.Name = FName(*nodeName);
-        RobotROS2Node = NewObject<UROS2NodeComponent>(this);
+        RobotROS2Node = NewObject<UROS2NodeComponent>(InRobot);
     }
     RobotROS2Node->Name = nodeName;
 
@@ -437,12 +437,12 @@ void URRRobotROS2Interface::UpdateJointState(UROS2GenericMsg* InMessage)
 {
     if (nullptr == Robot)
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Robots are not set."));
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Robot is not set."));
         return;
     }
 
     FROSJointState msg;
-    msg.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
+    msg.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(Robot->GetWorld()));
 
     for (const auto& joint : Robot->Joints)
     {
