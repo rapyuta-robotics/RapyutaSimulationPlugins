@@ -277,7 +277,12 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
         UE_LOG(LogTemp, Display, TEXT("- NormalTextureName: %s"), *NormalTextureName);
     }
 
-    bool HasTexture(const FString& InTextureName)
+    bool IsValid() const
+    {
+        return !Name.IsEmpty();
+    }
+
+    bool HasTexture(const FString& InTextureName) const
     {
         return AlbedoTextureNameList.Contains(InTextureName) || (InTextureName == MaskTextureName) ||
                (InTextureName == ORMTextureName) || (InTextureName == NormalTextureName);
