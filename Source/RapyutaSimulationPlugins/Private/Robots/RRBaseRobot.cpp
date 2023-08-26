@@ -200,8 +200,6 @@ void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeA
         {
             // NOTE: [RootComponent] must be valid for the spawning
             SetRootComponent(InBaseMeshComp);
-            // Cannot remove [DefaultRoot] in ctor thus to be done later in [PreInitializeComponents()]
-            DefaultRoot->SetupAttachment(InBaseMeshComp);
         }
         // else: If Root is some other component, probably setup in Child class,
         // [BaseMeshComp] will only be promoted later AFTER removing that Root
@@ -211,6 +209,11 @@ void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeA
         {
             DefaultRoot->DestroyComponent();
             DefaultRoot = nullptr;
+        }
+        else
+        {
+            // Cannot remove [DefaultRoot] in ctor thus to be done later in [PreInitializeComponents()]
+            DefaultRoot->AttachToComponent(InBaseMeshComp, FAttachmentTransformRules::KeepRelativeTransform);
         }
     }
 }
