@@ -568,13 +568,22 @@ public:
                               const FString& InResourceUniqueName,
                               bool bIsStaticResource = true)
     {
+        if (false == ResourceMap.Contains(InDataType))
+        {
+            UE_LOG_WITH_INFO_SHORT(LogTemp,
+                                   Error,
+                                   TEXT("It seems [ResourceMap][%s] has not yet been fully initialized! Make sure GameMode class "
+                                        "is child of RRGameMode."),
+                                   *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
+            return nullptr;
+        }
         FRRResource resourceInfo = GetSimResourceInfo(InDataType).Data.FindRef(InResourceUniqueName);
         const FString resourceAssetPath = resourceInfo.GetAssetPath();
         auto& resourceAssetData = resourceInfo.AssetData;
 
         bool bNewlyLoaded = false;
         // NOTE: Null [resourceAssetData] either means it is a not-yet-created dynamic resource Or a not-yet-loaded-from-disk static resource (uasset)
-        if (nullptr == resourceAssetData)
+        if (false == IsValid(resourceAssetData))
         {
             if (IsInGameThread())
             {
