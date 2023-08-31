@@ -235,6 +235,7 @@ public:
                                   bool bHasBPAsset = false,
                                   bool bIsFullLoad = false)
     {
+        // NOTE: [objectLibrary] is only needed to fill [OutAssetDataList], loaded objects (if [bIsFullLoad]) should be stored explicitly by callers
         UObjectLibrary* objectLibrary = UObjectLibrary::CreateLibrary(T::StaticClass(), bHasBPAsset, GIsEditor);
         if (GIsEditor)
         {

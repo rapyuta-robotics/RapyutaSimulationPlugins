@@ -891,5 +891,5 @@ private:
 
     //! We need this to escape UObject-based resource Garbage Collection
     UPROPERTY()
-    TArray<UObject*> ResourceStore;
+    TArray<TObjectPtr<UObject>> ResourceStore;
 };

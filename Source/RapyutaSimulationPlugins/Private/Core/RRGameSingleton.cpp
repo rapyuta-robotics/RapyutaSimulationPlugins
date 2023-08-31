@@ -240,12 +240,15 @@ bool URRGameSingleton::CollateEntityAssetsInfoFromPAK(const TArray<FString>& InE
 
 void URRGameSingleton::FinalizeResources()
 {
+#if !WITH_EDITOR
     for (uint8 i = (static_cast<uint8>(ERRResourceDataType::NONE) + 1); i < static_cast<uint8>(ERRResourceDataType::TOTAL); ++i)
     {
         ResourceMap[static_cast<ERRResourceDataType>(i)].Finalize();
     }
 
     ResourceStore.Empty();
+#endif
+    // ELSE: All resources must be kept otherwise the next PIE could not load them by LoadObject<>
 }
 
 bool URRGameSingleton::HaveAllResourcesBeenLoaded(bool bIsLogged) const
