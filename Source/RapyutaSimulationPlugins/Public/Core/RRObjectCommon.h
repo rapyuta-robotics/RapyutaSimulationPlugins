@@ -29,6 +29,7 @@ enum class ERRFileType : uint8
     PAK,
     INI,
     YAML,
+    ZIP,
 
     // Image
     IMAGE_JPG,
