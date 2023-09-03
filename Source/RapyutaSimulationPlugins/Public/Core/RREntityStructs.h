@@ -1186,6 +1186,40 @@ public:
     }
 
     /**
+     * @brief Assign index & parent index for all link props
+     */
+    void AssignLinksIndexes()
+    {
+        int32 linkIndex = 0;
+        // 1- All links' index first
+        for (auto& linkProp : LinkPropList)
+        {
+            linkProp.LinkIndex = linkIndex++;
+        }
+
+        // 2- Link's parent index based on [JointProp's ParentLinkName] & [LinkIndex] above
+        for (auto& linkProp : LinkPropList)
+        {
+            linkProp.ParentLinkIndex = INDEX_NONE;
+            for (const auto& jointProp : JointPropList)
+            {
+                if (jointProp.ChildLinkName == linkProp.Name)
+                {
+                    for (const auto& parentLinkProp : LinkPropList)
+                    {
+                        if (jointProp.ParentLinkName == parentLinkProp.Name)
+                        {
+                            linkProp.ParentLinkIndex = parentLinkProp.LinkIndex;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
      * @brief Remove all link properties of InLinkName and its corresponding joint properties having their #ParentLinkName as InLinkName
      * @param InLinkName
      */
