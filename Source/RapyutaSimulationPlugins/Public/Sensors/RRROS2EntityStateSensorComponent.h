@@ -52,10 +52,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     AActor* ReferenceActor = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FTransform OffsetTransform = FTransform(FRotator::ZeroRotator, FVector::ZeroVector, FVector::OneVector);
-
     FOnNewReferenceActorDetected OnNewReferenceActorDetected;
 
     UFUNCTION(BlueprintCallable)
