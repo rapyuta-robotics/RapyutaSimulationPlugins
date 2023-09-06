@@ -130,6 +130,7 @@ public:
         TEXT(".pak"),       // ERRFileType::PAK
         TEXT(".ini"),       // ERRFileType::INI
         TEXT(".yaml"),      // ERRFileType::YAML
+        TEXT(".zip"),       // ERRFileType::ZIP
 
         // Image
         TEXT(".jpg"),    // ERRFileType::IMAGE_JPG
@@ -174,17 +175,15 @@ public:
 
     FORCEINLINE static ERRFileType GetFileType(const FString& InFilePath)
     {
-        ERRFileType imageFileType = ERRFileType::NONE;
-
         for (uint8 i = 0; i < static_cast<uint8>(ERRFileType::TOTAL); ++i)
         {
             const ERRFileType& fileType = static_cast<ERRFileType>(i);
             if (InFilePath.EndsWith(URRCoreUtils::GetSimFileExt(fileType)))
             {
-                imageFileType = fileType;
+                return fileType;
             }
         }
-        return imageFileType;
+        return ERRFileType::NONE;
     }
 
     FORCEINLINE static bool IsFileType(const FString& InFilePath, const TArray<ERRFileType>& InFileTypes)

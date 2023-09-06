@@ -329,6 +329,7 @@ public:
      * @param bInMakeAsRoot
      * @param bInDestroyDefaultRoot Whether or not destroying #DefaultRoot upon (bInMakeAsRoot == true), in which case if kept it is only to support compatibility in users' child-BP class
      */
+    UFUNCTION(BlueprintCallable)
     void SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeAsRoot = true, bool bInDestroyDefaultRoot = true);
 
     /**
