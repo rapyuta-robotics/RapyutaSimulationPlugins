@@ -100,6 +100,14 @@ public:
      */
     virtual void PrintSimConfig() const;
 
+    /**
+     * @brief Get corresponding class path of a native entity model from #NativeSpawnableClassPaths
+     */
+    FString GetSpawnableNativeEntityClassPath(const FString& InEntityModelName) const
+    {
+        return NativeSpawnableClassPaths.FindRef(InEntityModelName);
+    }
+
 protected:
     /**
      * @brief Initialize Game.
