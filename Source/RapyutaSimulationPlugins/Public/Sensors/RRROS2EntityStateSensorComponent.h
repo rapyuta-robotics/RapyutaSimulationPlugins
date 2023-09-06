@@ -54,7 +54,7 @@ public:
     AActor* ReferenceActor = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FTransform OffsetTransform = FTransform(FRotator::ZeroRotator, FVector::ZeroVector, FVector::OneVector);
+    FTransform OffsetTransform = FTransform::Identity;
 
     FOnNewReferenceActorDetected OnNewReferenceActorDetected;
 
