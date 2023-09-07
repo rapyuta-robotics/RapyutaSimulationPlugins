@@ -413,7 +413,7 @@ bool FRRURDFParser::ParseJointProperty()
     newJointProp.MimicOffset = mimicOffset;
 
     newJointProp.Axis = jointAxis;
-    newJointProp.AxisInParentFrame = jointRotation.RotateVector(jointAxis);
+    newJointProp.AxisInParentFrame = jointRotation.Inverse().RotateVector(jointAxis);
     newJointProp.LowerLimit = limitLower;
     newJointProp.UpperLimit = limitUpper;
 
@@ -750,7 +750,7 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
 
     const TCHAR* geometryTypePrefix = (ERREntityGeometryType::VISUAL == InGeometryType)      ? GEOMETRY_TYPE_PREFIX_VISUAL
                                       : (ERREntityGeometryType::COLLISION == InGeometryType) ? GEOMETRY_TYPE_PREFIX_COLLISION
-                                                                                            : nullptr;
+                                                                                             : nullptr;
     check(geometryTypePrefix);
 
     // [BOX] --
