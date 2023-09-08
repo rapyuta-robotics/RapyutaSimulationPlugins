@@ -154,7 +154,7 @@ void ARRGameMode::StartSim()
     if (gameSingleton)
     {
         gameSingleton->PrintSimConfig();
-        gameSingleton->InitializeResources();
+        gameSingleton->InitializeResources(true);
     }
 
     // 3- START SIM ONCE RESOURCES ARE LOADED --
