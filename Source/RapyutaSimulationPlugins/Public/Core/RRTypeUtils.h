@@ -43,7 +43,7 @@ struct TIsCharPointer
 {
     enum
     {
-        Value = TAnd<TIsPointer<T>, TIsCharType<typename TRemoveCV<typename TRemovePointer<T>::Type>::Type>>::Value
+        Value = TAnd<TIsPointer<T>, TIsCharType<std::remove_cv_t<typename TRemovePointer<T>::Type>>>::Value
     };
 };
 

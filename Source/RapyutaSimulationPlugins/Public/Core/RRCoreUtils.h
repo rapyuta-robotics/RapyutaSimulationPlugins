@@ -12,6 +12,7 @@
 
 // UE
 #if WITH_EDITOR
+#include "Editor.h"
 #include "Subsystems/UnrealEditorSubsystem.h"
 #include "UnrealEd.h"
 #endif
