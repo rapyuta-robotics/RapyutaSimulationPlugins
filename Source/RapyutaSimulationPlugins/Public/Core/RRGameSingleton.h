@@ -125,6 +125,9 @@ public:
     static constexpr const TCHAR* ASSETS_PROJECT_BASE_MODULE_NAME = TEXT("Game");
     static constexpr const TCHAR* ASSETS_PROJECT_MODULE_NAME = TEXT("Game/RapyutaContents");
 
+    UPROPERTY(config)
+    FIntPoint ASSETS_THUMBNAIL_SIZE = {512, 512};
+
     //! Base path whereby runtime-created blueprint classes are saved, ideally in Project, so it could reference all plugins' assets.
     UPROPERTY(Config)
     FString ASSETS_RUNTIME_BP_SAVE_BASE_PATH = TEXT("/Game/RapyutaContents/Blueprints");
