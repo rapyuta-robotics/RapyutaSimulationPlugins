@@ -113,9 +113,10 @@ public:
     /**
      * @brief Load PAK files of a specific set of entity models, mounting then then collate their content assets info
      * @param InEntityModelName
+     * @param bInForceReload
      * @return true/false
      */
-    bool CollateEntityAssetsInfoFromPAK(const TArray<FString>& InEntityModelNameList);
+    bool CollateEntityAssetsInfoFromPAK(const TArray<FString>& InEntityModelNameList, bool bInForceReload = false);
 
     // ASSETS --
     //! This list specifically hosts names of which module houses the UE assets based on their data type

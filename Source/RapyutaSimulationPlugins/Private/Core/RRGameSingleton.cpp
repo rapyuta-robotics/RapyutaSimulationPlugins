@@ -205,7 +205,7 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
     return bResult;
 }
 
-bool URRGameSingleton::CollateEntityAssetsInfoFromPAK(const TArray<FString>& InEntityModelNameList)
+bool URRGameSingleton::CollateEntityAssetsInfoFromPAK(const TArray<FString>& InEntityModelNameList, bool bInForceReload)
 {
     if (bPakLoaderInitialized)
     {
@@ -217,7 +217,7 @@ bool URRGameSingleton::CollateEntityAssetsInfoFromPAK(const TArray<FString>& InE
             {
                 const FString paksFolderPath = paksBaseFolderPath / GetAssetsFolderName(ERRResourceDataType::UE_PAK);
                 if (FPaths::DirectoryExists(paksFolderPath) &&
-                    PakLoader->LoadEntitiesPAKFiles(paksFolderPath, InEntityModelNameList))
+                    PakLoader->LoadEntitiesPAKFiles(paksFolderPath, InEntityModelNameList, bInForceReload))
                 {
                     // Collate assets info after mounting PAK files, so they can be loaded on-the-fly
                     CollateAssetsInfo();
