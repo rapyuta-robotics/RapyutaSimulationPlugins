@@ -601,6 +601,16 @@ bool URRCoreUtils::RenderThumbnail(UObject* InObject,
 
 bool URRCoreUtils::GenerateThumbnail(UObject* InObject, uint32 InImageWidth, uint32 InImageHeight, const FString& InSaveImagePath)
 {
+    if (IsRunningCommandlet() && !IsAllowCommandletRendering())
+    {
+        UE_LOG_WITH_INFO_SHORT(
+            LogRapyutaCore,
+            Warning,
+            TEXT("[%s] is running without [-AllowCommandletRendering], thus unable to generate [%s]'s thumbnail!"),
+            *GetRunningCommandletClass()->GetName(),
+            *InObject->GetName());
+        return false;
+    }
 #if WITH_EDITOR
     FObjectThumbnail thumbnail;
     // Already logged here-in
