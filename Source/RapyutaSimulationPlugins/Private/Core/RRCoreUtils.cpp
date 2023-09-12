@@ -484,13 +484,13 @@ bool URRCoreUtils::LoadIESProfilesFromFolder(const FString& InFolderPath,
 // -------------------------------------------------------------------------------------------------------------------------
 // GRAPHICS UTILS --
 //
+#if WITH_EDITOR
 bool URRCoreUtils::RenderThumbnail(UObject* InObject,
                                    uint32 InImageWidth,
                                    uint32 InImageHeight,
                                    const ThumbnailTools::EThumbnailTextureFlushMode::Type InFlushMode,
                                    FObjectThumbnail* OutThumbnail)
 {
-#if WITH_EDITOR
     // Renderer must be initialized before generating thumbnails
     if (!ensure(FApp::CanEverRender()))
     {
@@ -596,11 +596,8 @@ bool URRCoreUtils::RenderThumbnail(UObject* InObject,
         }
     }
     return true;
-#else
-    UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("Editor-only API"));
-    return false;
-#endif
 }
+#endif
 
 bool URRCoreUtils::GenerateThumbnail(UObject* InObject, uint32 InImageWidth, uint32 InImageHeight, const FString& InSaveImagePath)
 {

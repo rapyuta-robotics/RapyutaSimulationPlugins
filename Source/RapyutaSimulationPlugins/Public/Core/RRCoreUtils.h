@@ -738,6 +738,7 @@ public:
     // -------------------------------------------------------------------------------------------------------------------------
     // GRAPHICS UTILS --
     //
+#if WITH_EDITOR
     /**
      * @brief Util to render thumbnail live for an object (eg skeletal/static mesh, texture)
      * @ref ThumbnailTools::RenderThumbnail(), due to relying on GUnrealEd/GEditor, only works literally in the Editor
@@ -752,6 +753,7 @@ public:
                                 uint32 InImageHeight,
                                 const ThumbnailTools::EThumbnailTextureFlushMode::Type InFlushMode,
                                 FObjectThumbnail* OutThumbnail);
+#endif
     /**
      * @brief Generate a thumbnail for an object (eg skeletal/static mesh, texture) & save to an image file on disk
      * @param InObject
