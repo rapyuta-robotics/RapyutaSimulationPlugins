@@ -747,4 +747,26 @@ public:
         }
         return false;
     }
+
+    /**
+     * @brief Print message
+     * @param InMessage
+     * @param bInError
+     * @param InTimeOnScreen (secs)
+     */
+    FORCEINLINE static void PrintMessage(const FString& InMessage, bool bInError = false, float InTimeOnScreen = 100.f)
+    {
+        if (bInError)
+        {
+            UE_LOG(LogTemp, Error, TEXT("%s"), *InMessage);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Log, TEXT("%s"), *InMessage);
+        }
+        ScreenMsg(bInError ? FColor::Red : FColor::Yellow, InMessage, InTimeOnScreen);
+#if RAPYUTA_SIM_DEBUG
+        FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, *InMessage, bInError ? TEXT("Error") : TEXT("Info"));
+#endif
+    }
 };
