@@ -538,7 +538,7 @@ bool URRCoreUtils::RenderThumbnail(UObject* InObject,
         renderTarget->RenderTargetFormat = RTF_RGBA8;
         return renderTarget;
     }();
-    sThumbnailRenderTarget->InitCustomFormat(InImageWidth, InImageHeight, PF_B8G8R8A8, false);
+    sThumbnailRenderTarget->InitAutoFormat(InImageWidth, InImageHeight);
     auto* renderTargetResource = sThumbnailRenderTarget->GameThread_GetRenderTargetResource();
 
     // Create a canvas for the render target and clear it to black
