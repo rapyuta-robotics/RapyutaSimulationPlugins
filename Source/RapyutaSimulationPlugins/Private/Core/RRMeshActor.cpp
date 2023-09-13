@@ -170,7 +170,28 @@ void ARRMeshActor::OnBodyComponentMeshCreationDone(bool bInCreationResult, UObje
     bLastMeshCreationResult = (0 == CreatedMeshesNum) ? bInCreationResult : (bLastMeshCreationResult && bInCreationResult);
     if (ToBeCreatedMeshesNum == (++CreatedMeshesNum))
     {
+        // NOTE: Custom appearance may be setup in child class here-in
         DeclareFullCreation(bLastMeshCreationResult);
+
+#if WITH_EDITOR
+        // Gen whole body's thumbnail only after full creation
+        // NOTE: For now, only single-mesh actor is supported
+        if (CreatedMeshesNum == 1)
+        {
+            if (auto* baseStaticMeshComp = Cast<URRStaticMeshComponent>(BaseMeshComp);
+                baseStaticMeshComp && baseStaticMeshComp->bMeshRuntimeCreated)
+            {
+                URRCoreUtils::GenerateThumbnail(
+                    baseStaticMeshComp->GetStaticMesh(),
+                    ThumbnailTools::DefaultThumbnailSize,
+                    ThumbnailTools::DefaultThumbnailSize,
+                    FPackageName::LongPackageNameToFilename(
+                        RRGameSingleton->GetDynamicAssetsBasePath(RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME) /
+                            RRGameSingleton->GetAssetsFolderName(ERRResourceDataType::UE_STATIC_MESH) / EntityModelName,
+                        URRCoreUtils::GetSimFileExt(ERRFileType::IMAGE_JPG)));
+            }
+        }
+#endif
     }
 }
 

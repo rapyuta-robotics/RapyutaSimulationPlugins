@@ -12,6 +12,7 @@
 
 // UE
 #if WITH_EDITOR
+#include "ObjectTools.h"
 #include "Subsystems/UnrealEditorSubsystem.h"
 #include "UnrealEd.h"
 #endif
@@ -737,6 +738,31 @@ public:
     // -------------------------------------------------------------------------------------------------------------------------
     // GRAPHICS UTILS --
     //
+#if WITH_EDITOR
+    /**
+     * @brief Util to render thumbnail live for an object (eg skeletal/static mesh, texture)
+     * @ref ThumbnailTools::RenderThumbnail(), due to relying on GUnrealEd/GEditor, only works literally in the Editor
+     * @param InObject If this is an UClass, only ones having default-child UPrimitiveComponent objects (created in ctor or BP) are supported. Refer to #UClassThumbnailRenderer
+     * @param InImageWidth
+     * @param InImageHeight
+     * @param InFlushMode If AlwaysFulush, wait for all shaders/textures to finish compiling
+     * @param  OutThumbnail
+     */
+    static bool RenderThumbnail(UObject* InObject,
+                                uint32 InImageWidth,
+                                uint32 InImageHeight,
+                                const ThumbnailTools::EThumbnailTextureFlushMode::Type InFlushMode,
+                                FObjectThumbnail* OutThumbnail);
+#endif
+    /**
+     * @brief Generate a thumbnail for an object (eg skeletal/static mesh, texture) & save to an image file on disk
+     * @param InObject
+     * @param InImageWidth
+     * @param InImageHeight
+     * @param InSaveImagePath
+     */
+    static bool GenerateThumbnail(UObject* InObject, uint32 InImageWidth, uint32 InImageHeight, const FString& InSaveImagePath);
+
     FORCEINLINE static bool ScreenMsg(const FColor& InColor, const FString& InMessage, float InTimeToDisplay = 50000.f)
     {
         if (GEngine)

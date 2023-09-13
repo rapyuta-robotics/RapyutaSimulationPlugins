@@ -67,6 +67,10 @@ public:
 
     UPROPERTY()
     FString MeshUniqueName;
+
+    UPROPERTY()
+    bool bMeshRuntimeCreated = false;
+
     /**
      * @brief Create a Mesh Body object
      * @note This function could be invoked from an async task running in GameThread
