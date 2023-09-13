@@ -742,7 +742,7 @@ public:
     /**
      * @brief Util to render thumbnail live for an object (eg skeletal/static mesh, texture)
      * @ref ThumbnailTools::RenderThumbnail(), due to relying on GUnrealEd/GEditor, only works literally in the Editor
-     * @param InObject
+     * @param InObject If this is an UClass, only ones having default-child UPrimitiveComponent objects (created in ctor or BP) are supported. Refer to #UClassThumbnailRenderer
      * @param InImageWidth
      * @param InImageHeight
      * @param InFlushMode If AlwaysFulush, wait for all shaders/textures to finish compiling

@@ -335,17 +335,6 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
     auto* gameSingleton = URRGameSingleton::Get();
     gameSingleton->AddDynamicResource<UStaticMesh>(ERRResourceDataType::UE_STATIC_MESH, visualMesh, MeshUniqueName);
 
-#if WITH_EDITOR
-    // Gen [visualMesh]'s thumbnail
-    const FString visualMeshAssetPath = URRGameSingleton::Get()->GetDynamicAssetPath(
-        ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME);
-    URRCoreUtils::GenerateThumbnail(
-        visualMesh,
-        ThumbnailTools::DefaultThumbnailSize,
-        ThumbnailTools::DefaultThumbnailSize,
-        FPackageName::LongPackageNameToFilename(visualMeshAssetPath, URRCoreUtils::GetSimFileExt(ERRFileType::IMAGE_JPG)));
-#endif
-
     // Auto-save [visualMesh] to uasset on disk, to be used directly in future Sim runs
 #if RAPYUTA_SIM_VERBOSE
     UE_LOG(LogRapyutaCore, Warning, TEXT("[%s] Source models num %d"), *visualMesh->GetName(), visualMesh->GetNumSourceModels());
@@ -355,6 +344,7 @@ UStaticMesh* URRStaticMeshComponent::CreateMeshBody(const FRRMeshData& InMeshDat
     {
         if (visualMesh->GetSourceModel(0).IsMeshDescriptionValid())
         {
+            bMeshRuntimeCreated = true;
             URRAssetUtils::SaveObjectToAssetInModule(
                 visualMesh, ERRResourceDataType::UE_STATIC_MESH, MeshUniqueName, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME);
         }
