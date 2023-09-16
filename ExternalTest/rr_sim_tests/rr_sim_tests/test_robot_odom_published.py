@@ -31,7 +31,7 @@ TF_SUBSCRIBER_RATE = 10.0 #Hz
 class TFSubscriber(BaseSubscriber):
     def __init__(self, in_robot_namespace:str,
                  in_tf_static:bool):
-        super().__init__(in_robot_namespace, in_topic_name=(TOPIC_NAME_TF_STATIC if in_tf_static else TOPIC_NAME_TF) if in_tf_published else None,
+        super().__init__(in_robot_namespace, in_topic_name=TOPIC_NAME_TF_STATIC if in_tf_static else TOPIC_NAME_TF,
                          in_subscriber_rate=TF_SUBSCRIBER_RATE)
 
         self._subscriber = self.create_subscription(

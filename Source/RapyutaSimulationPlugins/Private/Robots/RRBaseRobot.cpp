@@ -255,7 +255,11 @@ void ARRBaseRobot::SetRootOffset(const FTransform& InRootOffset)
 
 void ARRBaseRobot::CreateROS2Interface()
 {
-    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Display, TEXT("IsNetMode: %d"), IsNetMode(NM_Client));
+    UE_LOG_WITH_INFO_SHORT_NAMED(LogRapyutaCore,
+                                 Log,
+                                 TEXT("ROS2InterfaceClass: [%s] - IsNetMode: %d"),
+                                 *ROS2InterfaceClass->GetName(),
+                                 IsNetMode(NM_Client));
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;
