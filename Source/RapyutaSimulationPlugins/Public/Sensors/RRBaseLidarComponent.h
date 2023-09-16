@@ -83,6 +83,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxRange = 350.f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<ECollisionChannel> TraceCollisionChannel = ECC_Visibility;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bIgnoreSelf = false;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
     FLinearColor ColorMiss = FColor(255, 127, 0, 255);
 
