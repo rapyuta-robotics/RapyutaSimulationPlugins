@@ -20,6 +20,8 @@ void URRKinematicJointComponent::Initialize()
     {
         UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("JointComponent must have ChildLink and ParentLink."));
     }
+
+    Super::Initialize();
 }
 
 // Called every frame
@@ -72,6 +74,8 @@ void URRKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
         SetPose(Position, Orientation);
     }
+
+    UpdateTF();
 }
 
 void URRKinematicJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
@@ -124,7 +128,6 @@ void URRKinematicJointComponent::Teleport(const FVector& InPosition, const FRota
     Super::Teleport(InPosition, InOrientation);
     SetPose(InPosition, InOrientation);
 };
-
 
 void URRKinematicJointComponent::MoveToInitPose()
 {

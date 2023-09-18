@@ -414,12 +414,18 @@ public:
 
     UFUNCTION(BlueprintCallable)
     static FTransform GetPhysicsConstraintTransform(const UPhysicsConstraintComponent* InConstraint,
-                                                    FTransform InitialJointToChildLink)
+                                                    const FTransform InitialJointToChildLink,
+                                                    UPrimitiveComponent* InChildLink = nullptr)
     {
         FTransform OutTF = FTransform::Identity;
         if (InConstraint != nullptr)
         {
-            UPrimitiveComponent* ChildLink = GetPhysicsConstraintComponent(InConstraint, EConstraintFrame::Frame2);
+            UPrimitiveComponent* ChildLink = InChildLink;
+            if (ChildLink == nullptr)
+            {
+                ChildLink = GetPhysicsConstraintComponent(InConstraint, EConstraintFrame::Frame2);
+            }
+
             if (ChildLink != nullptr)
             {
                 FTransform relativeTrans = URRGeneralUtils::GetRelativeTransform(InConstraint->GetComponentTransform(),
@@ -443,5 +449,16 @@ public:
         }
 
         return OutTF;
+    }
+
+    static void GetPhysicsConstraintTransform(const UPhysicsConstraintComponent* InConstraint,
+                                              const FTransform InitialJointToChildLink,
+                                              FVector& OutPosition,
+                                              FRotator& OutOrientation,
+                                              UPrimitiveComponent* InChildLink = nullptr)
+    {
+        FTransform tf = GetPhysicsConstraintTransform(InConstraint, InitialJointToChildLink, InChildLink);
+        OutPosition = tf.GetLocation();
+        OutOrientation = tf.GetRotation().Rotator();
     }
 };

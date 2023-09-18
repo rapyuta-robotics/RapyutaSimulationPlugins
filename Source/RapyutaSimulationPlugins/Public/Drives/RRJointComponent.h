@@ -6,9 +6,13 @@
 
 #pragma once
 
+// UE
 #include "Components/ActorComponent.h"
-#include "Core/RRStaticMeshComponent.h"
 #include "CoreMinimal.h"
+
+// RapyutaSimulationPlugins
+#include "Core/RRStaticMeshComponent.h"
+#include "Tools/RRROS2JointTFPublisher.h"
 
 #include "RRJointComponent.generated.h"
 
@@ -47,7 +51,7 @@ public:
 
     /**
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
-     * 
+     *
      */
     virtual void Initialize();
 
@@ -140,13 +144,19 @@ public:
 
     /**
      * @brief Teleport robot to given pose. Implementation is in child class.
-     * 
+     *
      */
     UFUNCTION(BlueprintCallable)
     virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation);
 
     UFUNCTION(BlueprintCallable)
     virtual void MoveToInitPose();
+
+    UFUNCTION(BlueprintCallable)
+    virtual void InitTF();
+
+    UFUNCTION(BlueprintCallable)
+    virtual void UpdateTF();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector LinearVelocity = FVector::ZeroVector;
@@ -183,7 +193,7 @@ public:
     //! [cm/s] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float LinearVelocityTolerance = 10.f;
-    
+
     //! [degree/s] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float AngularVelocityTolerance = 10.f;
@@ -246,11 +256,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRotator InitialOrientation = FRotator::ZeroRotator;
 
-protected:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bPublishTF = false;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URRROS2JointTFPublisher* TFPublisher = nullptr;
+
+protected:
     UPROPERTY()
     FTransform JointToChildLink = FTransform::Identity;
     UPROPERTY()
     FTransform ParentLinkToJoint = FTransform::Identity;
-
 };

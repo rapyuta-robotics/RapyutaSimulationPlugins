@@ -21,6 +21,7 @@ bool URRJointComponent::IsValid()
 
 void URRJointComponent::Initialize()
 {
+    InitTF();
 }
 
 // velocity
@@ -35,8 +36,9 @@ bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, 
 {
     const float linearTolerance = (InLinearTolerance >= 0.f) ? InLinearTolerance : LinearVelocityTolerance;
     const float angularTolerance = (InAngularTolerance >= 0.f) ? InAngularTolerance : AngularVelocityTolerance;
-    
-    return LinearVelocityTarget.Equals(LinearVelocity, linearTolerance) && AngularVelocityTarget.Equals(AngularVelocity, angularTolerance);
+
+    return LinearVelocityTarget.Equals(LinearVelocity, linearTolerance) &&
+           AngularVelocityTarget.Equals(AngularVelocity, angularTolerance);
 };
 
 void URRJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
@@ -166,8 +168,26 @@ void URRJointComponent::SetPoseWithArray(const TArray<float>& InPose)
 
 void URRJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)
 {
-};
+}
 
 void URRJointComponent::MoveToInitPose()
 {
+}
+
+void URRJointComponent::InitTF()
+{
+    if (bPublishTF)
+    {
+        TFPublisher = NewObject<URRROS2JointTFPublisher>(this);
+        TFPublisher->JointToChildLink = JointToChildLink;
+        TFPublisher->ParentLinkToJoint = ParentLinkToJoint;
+    }
+}
+
+void URRJointComponent::UpdateTF()
+{
+    if (bPublishTF)
+    {
+        TFPublisher->JointTF = FTransform(Orientation, Position, FVector::OneVector);
+    }
 }

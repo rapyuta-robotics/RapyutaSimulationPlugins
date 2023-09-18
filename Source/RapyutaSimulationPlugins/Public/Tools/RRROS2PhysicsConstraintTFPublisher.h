@@ -26,7 +26,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2PhysicsConstraintTFPublisher : public 
 {
     GENERATED_BODY()
 
-protected:
+public:
     /**
      * @brief Initialize Transforms from #Constraint
      *

@@ -26,7 +26,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2JointTFPublisher : public URRROS2TFPub
 {
     GENERATED_BODY()
 
-protected:
+public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform ParentLinkToJoint = FTransform::Identity;
 
