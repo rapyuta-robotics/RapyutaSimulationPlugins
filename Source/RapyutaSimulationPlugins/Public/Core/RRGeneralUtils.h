@@ -10,6 +10,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Json.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "TimerManager.h"
 
 #include "RRGeneralUtils.generated.h"
@@ -325,5 +326,122 @@ public:
         }
         OutValue = InDefaultValue;
         return false;
+    }
+
+    UFUNCTION(BlueprintCallable)
+    static UPrimitiveComponent* GetComponentOfActorFromName(const AActor* Actor, FName ComponentName)
+    {
+        UPrimitiveComponent* PrimComp = NULL;
+
+        if (Actor != NULL)
+        {
+            // No name specified, use the root component
+            if (ComponentName == NAME_None)
+            {
+                PrimComp = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+            }
+            // Name specified, see if we can find that component..
+            else
+            {
+                for (UActorComponent* Comp : Actor->GetComponents())
+                {
+                    if (Comp->GetFName() == ComponentName)
+                    {
+                        if (UChildActorComponent* ChildActorComp = Cast<UChildActorComponent>(Comp))
+                        {
+                            if (AActor* ChildActor = ChildActorComp->GetChildActor())
+                            {
+                                PrimComp = Cast<UPrimitiveComponent>(ChildActor->GetRootComponent());
+                            }
+                        }
+                        else
+                        {
+                            PrimComp = Cast<UPrimitiveComponent>(Comp);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return PrimComp;
+    }
+
+    UFUNCTION(BlueprintCallable)
+    static UPrimitiveComponent* GetPhysicsConstraintComponent(const UPhysicsConstraintComponent* InConstraint,
+                                                              EConstraintFrame::Type Frame)
+    {
+        if (InConstraint != nullptr)
+        {
+            UPrimitiveComponent* PrimComp = NULL;
+
+            FName ComponentName = NAME_None;
+            AActor* Actor = NULL;
+
+            // Frame 1
+            if (Frame == EConstraintFrame::Frame1)
+            {
+                // Use override component if specified
+                if (InConstraint->OverrideComponent1.IsValid())
+                {
+                    return InConstraint->OverrideComponent1.Get();
+                }
+
+                ComponentName = InConstraint->ComponentName1.ComponentName;
+                Actor = InConstraint->ConstraintActor1;
+            }
+            // Frame 2
+            else
+            {
+                // Use override component if specified
+                if (InConstraint->OverrideComponent2.IsValid())
+                {
+                    return InConstraint->OverrideComponent2.Get();
+                }
+
+                ComponentName = InConstraint->ComponentName2.ComponentName;
+                Actor = InConstraint->ConstraintActor2;
+            }
+
+            return GetComponentOfActorFromName(Actor, ComponentName);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[GetPhysicsConstraintComponent]Physics Constraint is not valid."));
+            return nullptr;
+        }
+    }
+
+    UFUNCTION(BlueprintCallable)
+    static FTransform GetPhysicsConstraintTransform(const UPhysicsConstraintComponent* InConstraint,
+                                                    FTransform InitialJointToChildLink)
+    {
+        FTransform OutTF = FTransform::Identity;
+        if (InConstraint != nullptr)
+        {
+            UPrimitiveComponent* ChildLink = GetPhysicsConstraintComponent(InConstraint, EConstraintFrame::Frame2);
+            if (ChildLink != nullptr)
+            {
+                FTransform relativeTrans = URRGeneralUtils::GetRelativeTransform(InConstraint->GetComponentTransform(),
+                                                                                 ChildLink->GetComponentTransform());
+
+                FVector Position = relativeTrans.GetLocation() - InitialJointToChildLink.GetLocation();
+                FRotator Orientation = (relativeTrans.GetRotation() * InitialJointToChildLink.GetRotation().Inverse()).Rotator();
+
+                OutTF.SetLocation(Position);
+                OutTF.SetRotation(Orientation.Quaternion());
+            }
+            else
+            {
+                OutTF = FTransform::Identity;
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[GetPhysicsConstraintTransform]Physics Constraint is not valid."));
+            OutTF = FTransform::Identity;
+        }
+
+        return OutTF;
     }
 };

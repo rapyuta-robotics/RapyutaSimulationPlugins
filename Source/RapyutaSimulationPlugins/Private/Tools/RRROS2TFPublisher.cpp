@@ -8,7 +8,7 @@
 
 URRROS2TFPublisher::URRROS2TFPublisher()
 {
-    PublicationFrequencyHz = 50;
+    PublicationFrequencyHz = 10;
     MsgClass = UROS2TFMsgMsg::StaticClass();
     SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
