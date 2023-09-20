@@ -14,6 +14,8 @@ TMap<ERRResourceDataType, TArray<const TCHAR*>> URRGameSingleton::SASSET_OWNING_
     {ERRResourceDataType::UE_SKELETON, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_PHYSICS_ASSET, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_MATERIAL, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
+    {ERRResourceDataType::UE_PHYSICAL_MATERIAL,
+     {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_TEXTURE, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
     {ERRResourceDataType::UE_DATA_TABLE, {URRGameSingleton::ASSETS_PROJECT_MODULE_NAME, RAPYUTA_SIMULATION_PLUGINS_MODULE_NAME}},
 };
@@ -149,6 +151,7 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
 
         // [MATERIAL] --
         bResult &= RequestResourcesLoading<ERRResourceDataType::UE_MATERIAL>();
+        bResult &= RequestResourcesLoading<ERRResourceDataType::UE_PHYSICAL_MATERIAL>();
 
         // [TEXTURE] --
         bResult &= RequestResourcesLoading<ERRResourceDataType::UE_TEXTURE>();
@@ -192,6 +195,7 @@ bool URRGameSingleton::InitializeResources(bool bInRequestResourceLoading)
 
         // Materials
         GetMaterial(MATERIAL_NAME_PROP_MASTER);
+        GetPhysicalMaterial(MATERIAL_NAME_PHYSICS_WHEEL);
 
         // Textures
         GetTexture(TEXTURE_NAME_WHITE_MASK);
@@ -236,12 +240,15 @@ bool URRGameSingleton::CollateEntityAssetsInfoFromPAK(const TArray<FString>& InE
 
 void URRGameSingleton::FinalizeResources()
 {
+#if !WITH_EDITOR
     for (uint8 i = (static_cast<uint8>(ERRResourceDataType::NONE) + 1); i < static_cast<uint8>(ERRResourceDataType::TOTAL); ++i)
     {
         ResourceMap[static_cast<ERRResourceDataType>(i)].Finalize();
     }
 
     ResourceStore.Empty();
+#endif
+    // ELSE: All resources must be kept otherwise the next PIE could not load them by LoadObject<>
 }
 
 bool URRGameSingleton::HaveAllResourcesBeenLoaded(bool bIsLogged) const

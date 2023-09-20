@@ -200,8 +200,6 @@ void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeA
         {
             // NOTE: [RootComponent] must be valid for the spawning
             SetRootComponent(InBaseMeshComp);
-            // Cannot remove [DefaultRoot] in ctor thus to be done later in [PreInitializeComponents()]
-            DefaultRoot->SetupAttachment(InBaseMeshComp);
         }
         // else: If Root is some other component, probably setup in Child class,
         // [BaseMeshComp] will only be promoted later AFTER removing that Root
@@ -211,6 +209,11 @@ void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeA
         {
             DefaultRoot->DestroyComponent();
             DefaultRoot = nullptr;
+        }
+        else
+        {
+            // Cannot remove [DefaultRoot] in ctor thus to be done later in [PreInitializeComponents()]
+            DefaultRoot->AttachToComponent(InBaseMeshComp, FAttachmentTransformRules::KeepRelativeTransform);
         }
     }
 }
@@ -252,7 +255,11 @@ void ARRBaseRobot::SetRootOffset(const FTransform& InRootOffset)
 
 void ARRBaseRobot::CreateROS2Interface()
 {
-    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Display, TEXT("IsNetMode: %d"), IsNetMode(NM_Client));
+    UE_LOG_WITH_INFO_SHORT_NAMED(LogRapyutaCore,
+                                 Log,
+                                 TEXT("ROS2InterfaceClass: [%s] - IsNetMode: %d"),
+                                 *ROS2InterfaceClass->GetName(),
+                                 IsNetMode(NM_Client));
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
     ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;

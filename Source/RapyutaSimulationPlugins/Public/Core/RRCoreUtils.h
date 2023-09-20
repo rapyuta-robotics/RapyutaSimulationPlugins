@@ -281,6 +281,15 @@ public:
         return editorWorld;
     }
 
+    static bool IsPIE()
+    {
+#if WITH_EDITOR
+        return GEditor && (GEditor->PlayWorld || GIsPlayInEditorWorld);
+#else
+        return false;
+#endif
+    }
+
     template<typename T>
     static T* GetGameMode(const UObject* InContextObject = nullptr)
     {

@@ -322,8 +322,15 @@ UTexture2D* URRCoreUtils::LoadImageToTexture(const FString& InFullFilePath, cons
     }
     else
     {
+        // Check if already created before by [InTextureName]
+        UTexture2D* texture = FindObjectFast<UTexture2D>(GetTransientPackage(), FName(*InTextureName));
+        if (texture)
+        {
+            return texture;
+        }
+
         // NOTE: This use [UTexture2D::CreateTransient()], which is ineligible for saving to asset
-        UTexture2D* texture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
+        texture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
         if (texture)
         {
             texture->Rename(*InTextureName);

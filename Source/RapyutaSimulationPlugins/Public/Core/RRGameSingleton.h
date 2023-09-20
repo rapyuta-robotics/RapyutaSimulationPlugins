@@ -47,13 +47,16 @@ using URRAssetObject = typename TChooseClass<
                     (ERRResourceDataType::UE_MATERIAL == InDataType),
                     UMaterialInterface,
                     typename TChooseClass<
-                        (ERRResourceDataType::UE_TEXTURE == InDataType),
-                        UTexture,
+                        (ERRResourceDataType::UE_PHYSICAL_MATERIAL == InDataType),
+                        UPhysicalMaterial,
                         typename TChooseClass<
-                            (ERRResourceDataType::UE_DATA_TABLE == InDataType),
-                            UDataTable,
-                            typename TChooseClass<(ERRResourceDataType::UE_BODY_SETUP == InDataType), UBodySetup, UObject>::
-                                Result>::Result>::Result>::Result>::Result>::Result>::Result>::Result;
+                            (ERRResourceDataType::UE_TEXTURE == InDataType),
+                            UTexture,
+                            typename TChooseClass<
+                                (ERRResourceDataType::UE_DATA_TABLE == InDataType),
+                                UDataTable,
+                                typename TChooseClass<(ERRResourceDataType::UE_BODY_SETUP == InDataType), UBodySetup, UObject>::
+                                    Result>::Result>::Result>::Result>::Result>::Result>::Result>::Result>::Result;
 
 /**
  * @brief GameSingleton class which handles asset loading.
@@ -167,6 +170,8 @@ public:
 
             case ERRResourceDataType::UE_MATERIAL:
                 return TEXT("M_");
+            case ERRResourceDataType::UE_PHYSICAL_MATERIAL:
+                return TEXT("PM_");
 
             case ERRResourceDataType::UE_TEXTURE:
                 return TEXT("T_");
@@ -220,6 +225,7 @@ public:
                 return FOLDER_PATH_PHYSICS_ASSETS;
 
             case ERRResourceDataType::UE_MATERIAL:
+            case ERRResourceDataType::UE_PHYSICAL_MATERIAL:
                 return FOLDER_PATH_ASSET_MATERIALS;
 
             case ERRResourceDataType::UE_TEXTURE:
@@ -338,6 +344,7 @@ public:
         CollateAssetsInfo<ERRResourceDataType::UE_SKELETON>();
         CollateAssetsInfo<ERRResourceDataType::UE_PHYSICS_ASSET>();
         CollateAssetsInfo<ERRResourceDataType::UE_MATERIAL>();
+        CollateAssetsInfo<ERRResourceDataType::UE_PHYSICAL_MATERIAL>();
         CollateAssetsInfo<ERRResourceDataType::UE_TEXTURE>();
     }
 
@@ -438,12 +445,11 @@ public:
                 break;
 
             case ERRResourceDataType::UE_MATERIAL:
-                // Either [UMaterialInterface] or [UPhysicalMaterial] type that is resolved into a non-null resource will be
-                // processed
-                if (!ProcessAsyncLoadedResource<UMaterialInterface>(InDataType, InResourcePath, InResourceUniqueName))
-                {
-                    ProcessAsyncLoadedResource<UPhysicalMaterial>(InDataType, InResourcePath, InResourceUniqueName);
-                }
+                ProcessAsyncLoadedResource<UMaterialInterface>(InDataType, InResourcePath, InResourceUniqueName);
+                break;
+
+            case ERRResourceDataType::UE_PHYSICAL_MATERIAL:
+                ProcessAsyncLoadedResource<UPhysicalMaterial>(InDataType, InResourcePath, InResourceUniqueName);
                 break;
 
             case ERRResourceDataType::UE_TEXTURE:
@@ -566,13 +572,22 @@ public:
                               const FString& InResourceUniqueName,
                               bool bIsStaticResource = true)
     {
+        if (false == ResourceMap.Contains(InDataType))
+        {
+            UE_LOG_WITH_INFO_SHORT(LogTemp,
+                                   Error,
+                                   TEXT("It seems [ResourceMap][%s] has not yet been fully initialized! Make sure GameMode class "
+                                        "is child of RRGameMode."),
+                                   *URRTypeUtils::GetERRResourceDataTypeAsString(InDataType));
+            return nullptr;
+        }
         FRRResource resourceInfo = GetSimResourceInfo(InDataType).Data.FindRef(InResourceUniqueName);
         const FString resourceAssetPath = resourceInfo.GetAssetPath();
         auto& resourceAssetData = resourceInfo.AssetData;
 
         bool bNewlyLoaded = false;
         // NOTE: Null [resourceAssetData] either means it is a not-yet-created dynamic resource Or a not-yet-loaded-from-disk static resource (uasset)
-        if (nullptr == resourceAssetData)
+        if (false == IsValid(resourceAssetData))
         {
             if (IsInGameThread())
             {
@@ -825,14 +840,14 @@ public:
     }
 
     /**
-     * @brief Get or load physical material, calling #GetSimResource with #ERRResourceDataType::UE_MATERIAL
+     * @brief Get or load physical material, calling #GetSimResource with #ERRResourceDataType::UE_PHYSICAL_MATERIAL
      *
      * @param InPhysicalMaterialName
      * @return FORCEINLINE*
      */
     FORCEINLINE UPhysicalMaterial* GetPhysicalMaterial(const FString& InPhysicalMaterialName)
     {
-        return GetSimResource<UPhysicalMaterial>(ERRResourceDataType::UE_MATERIAL, InPhysicalMaterialName);
+        return GetSimResource<UPhysicalMaterial>(ERRResourceDataType::UE_PHYSICAL_MATERIAL, InPhysicalMaterialName);
     }
 
     // TEXTURES --
@@ -889,5 +904,5 @@ private:
 
     //! We need this to escape UObject-based resource Garbage Collection
     UPROPERTY()
-    TArray<UObject*> ResourceStore;
+    TArray<TObjectPtr<UObject>> ResourceStore;
 };
