@@ -135,7 +135,7 @@ bool FRRSDFParser::LoadChildModelsData(const sdf::ElementPtr& InParentElement, F
         const FString modelName = URRConversionUtils::StdToFString(childModelElement->Get<std::string>(SDF_ELEMENT_ATTR_NAME));
 
         // To make sure each of [ModelNameList] is unique
-        FString modelFullName = FString::Printf(TEXT("%s%s"), *OutRobotModelData.WorldName, *modelName);
+        FString modelFullName = FString::Printf(TEXT("%s_%s"), *OutRobotModelData.WorldName, *modelName);
         ensure(false == OutRobotModelData.ModelNameList.Contains(modelName));
 #if RAPYUTA_SDF_PARSER_DEBUG
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Model %s"), *modelName);
