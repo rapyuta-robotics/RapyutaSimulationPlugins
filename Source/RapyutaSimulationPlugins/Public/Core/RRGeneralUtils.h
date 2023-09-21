@@ -27,6 +27,28 @@ class RAPYUTASIMULATIONPLUGINS_API URRGeneralUtils : public UBlueprintFunctionLi
     GENERATED_BODY()
 public:
     /**
+     * @brief Get full component name as [EntityName_ComponentName]
+     * @param InEntityName
+     * @param InComponentName
+     * @return FString
+     */
+    static FString GetFullEntityComponentName(const FString& InEntityName, const FString& InComponentName)
+    {
+        return InComponentName.IsEmpty() ? InEntityName : FString::Printf(TEXT("%s_%s"), *InEntityName, *InComponentName);
+    }
+
+    /**
+     * @brief Get full component name as [ActorName_ComponentName]
+     * @param InEntityName
+     * @param InComponentName
+     * @return FString
+     */
+    static FString GetFullEntityComponentName(AActor* InActor, const FString& InComponentName)
+    {
+        return GetFullEntityComponentName(InActor->GetName(), *InComponentName);
+    }
+
+    /**
      * @brief Get the Ref Transform.
      * If RefActor==nullptr, return false.
      * @param RefActorName  If this is empty, OutTranf become FTransform::Identity, i.e. reference become world origin.

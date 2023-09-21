@@ -759,7 +759,7 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
 
     bool parsed = true;
     OutGeometryInfo.LinkName = InLinkName;
-    OutGeometryInfo.Name = FString::Printf(TEXT("%s_%s"), geometryTypePrefix, *InLinkName);
+    OutGeometryInfo.Name = URRGeneralUtils::GetFullEntityComponentName(geometryTypePrefix, InLinkName);
 
     // [BOX] --
     const FString boxSizeElementName = FString::Printf(TEXT("%s_box_size"), geometryTypePrefix);

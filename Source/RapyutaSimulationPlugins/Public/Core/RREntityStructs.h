@@ -1057,6 +1057,18 @@ public:
 
     UPROPERTY()
     bool bGroundModel = false;
+    bool IsGroundModel() const
+    {
+        if (bGroundModel)
+        {
+            return true;
+        }
+        else
+        {
+            const FString modelName = GetModelName();
+            return modelName.Contains(TEXT("ground")) || modelName.Contains(TEXT("plane")) || modelName.Contains(TEXT("floor"));
+        }
+    }
 
     //! World model: [ModelNameList] >= 1
     //! Pure model:  [ModelNameList] == 1 if Single else > 1
