@@ -72,6 +72,11 @@ void URR3DLidarComponent::SensorUpdate()
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnFaceIndex = true;
 
+    if (bIgnoreSelf)
+    {
+        TraceParams.AddIgnoredActor(GetOwner());
+    }
+
     FVector lidarPos = GetComponentLocation();
     FRotator lidarRot = GetComponentRotation();
 
@@ -98,7 +103,7 @@ void URR3DLidarComponent::SensorUpdate()
             TraceHandles[i] = world->AsyncLineTraceByChannel(EAsyncTraceType::Single,
                                                              startPos,
                                                              endPos,
-                                                             ECC_Visibility,
+                                                             TraceCollisionChannel,
                                                              TraceParams,
                                                              FCollisionResponseParams::DefaultResponseParam,
                                                              nullptr);
@@ -121,8 +126,12 @@ void URR3DLidarComponent::SensorUpdate()
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
             // + WithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
-            GetWorld()->LineTraceSingleByChannel(
-                RecordedHits[Index], startPos, endPos, ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
+            GetWorld()->LineTraceSingleByChannel(RecordedHits[Index],
+                                                 startPos,
+                                                 endPos,
+                                                 TraceCollisionChannel,
+                                                 TraceParams,
+                                                 FCollisionResponseParams::DefaultResponseParam);
         },
         false);
 #endif
@@ -244,6 +253,11 @@ bool URR3DLidarComponent::Visible(AActor* TargetActor)
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnFaceIndex = true;
 
+    if (bIgnoreSelf)
+    {
+        TraceParams.AddIgnoredActor(GetOwner());
+    }
+
     FVector lidarPos = GetComponentLocation();
     FRotator lidarRot = GetComponentRotation();
 
@@ -265,7 +279,7 @@ bool URR3DLidarComponent::Visible(AActor* TargetActor)
             GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index],
                                                  startPos,
                                                  endPos,
-                                                 ECC_Visibility,
+                                                 TraceCollisionChannel,
                                                  TraceParams,
                                                  FCollisionResponseParams::DefaultResponseParam);
         },

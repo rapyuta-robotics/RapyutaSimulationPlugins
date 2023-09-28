@@ -65,12 +65,17 @@ void URR2DLidarComponent::SensorUpdate()
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
     // complex collisions: true
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true, GetOwner());
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true);
     TraceParams.bReturnPhysicalMaterial = true;
 
     // TraceParams.bIgnoreTouches = true;
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnFaceIndex = true;
+
+    if (bIgnoreSelf)
+    {
+        TraceParams.AddIgnoredActor(GetOwner());
+    }
 
     FVector lidarPos = GetComponentLocation();
     FRotator lidarRot = GetComponentRotation();
@@ -95,7 +100,7 @@ void URR2DLidarComponent::SensorUpdate()
             TraceHandles[i] = world->AsyncLineTraceByChannel(EAsyncTraceType::Single,
                                                              startPos,
                                                              endPos,
-                                                             ECC_Visibility,
+                                                             TraceCollisionChannel,
                                                              TraceParams,
                                                              FCollisionResponseParams::DefaultResponseParam,
                                                              nullptr);
@@ -115,8 +120,12 @@ void URR2DLidarComponent::SensorUpdate()
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
             // + WithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
-            GetWorld()->LineTraceSingleByChannel(
-                RecordedHits[Index], startPos, endPos, ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
+            GetWorld()->LineTraceSingleByChannel(RecordedHits[Index],
+                                                 startPos,
+                                                 endPos,
+                                                 TraceCollisionChannel,
+                                                 TraceParams,
+                                                 FCollisionResponseParams::DefaultResponseParam);
         },
         false);
 #endif
@@ -232,11 +241,16 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
     // complex collisions: true
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true, GetOwner());
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true);
     TraceParams.bReturnPhysicalMaterial = true;
     // TraceParams.bIgnoreTouches = true;
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnFaceIndex = true;
+
+    if (bIgnoreSelf)
+    {
+        TraceParams.AddIgnoredActor(GetOwner());
+    }
 
     FVector lidarPos = GetComponentLocation();
     FRotator lidarRot = GetComponentRotation();
@@ -257,7 +271,7 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
             GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index],
                                                  startPos,
                                                  endPos,
-                                                 ECC_Visibility,
+                                                 TraceCollisionChannel,
                                                  TraceParams,
                                                  FCollisionResponseParams::DefaultResponseParam);
         },
