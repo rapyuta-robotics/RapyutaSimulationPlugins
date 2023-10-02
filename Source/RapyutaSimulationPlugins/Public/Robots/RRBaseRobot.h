@@ -319,6 +319,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, UStaticMeshComponent*> Links;
 
+    UFUNCTION(BlueprintCallable)
+    bool AddLink(FString LinkName, UStaticMeshComponent* InMesh);
+
     //! Base mesh comp, normally also as the root comp
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UMeshComponent> BaseMeshComp = nullptr;
@@ -338,6 +341,9 @@ public:
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, URRJointComponent*> Joints;
+
+    UFUNCTION(BlueprintCallable)
+    bool AddJoint(FString InParentLinkName, FString InChildLinkName, FString InJointName, URRJointComponent* InJoint);
 
     /**
      * Initialize #Joints or not. Initial pose are set in each joint.

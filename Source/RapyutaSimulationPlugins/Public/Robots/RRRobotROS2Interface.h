@@ -13,6 +13,7 @@
 #include "ROS2NodeComponent.h"
 #include "ROS2ServiceClient.h"
 #include "Tools/ROS2Spawnable.h"
+#include "Tools/RRROS2JointTFPublisher.h"
 #include "Tools/RRROS2OdomPublisher.h"
 
 // RapyutaSimulationPlugins
@@ -129,15 +130,15 @@ public:
      */
     UFUNCTION()
     virtual void JointCmdCallback(const UROS2GenericMsg* Msg);
-    
+
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString JointCmdTopicName = TEXT("ue_joint_commands");
 
     /**
      * @brief Update Joint State msg
-     * 
-     * @param InMessage 
+     *
+     * @param InMessage
      */
     UFUNCTION()
     void UpdateJointState(UROS2GenericMsg* InMessage);
@@ -154,9 +155,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString JointStateTopicName = TEXT("ue_joint_states");
 
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bWarnAboutMissingLink = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    URRROS2JointsTFPublisher* JointsTFPublisher = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    bool bPublishJointTf = false;
 
     /**
      * @brief Setup ROS Params, overridable by child classes to config custom ROS 2 Interface's params

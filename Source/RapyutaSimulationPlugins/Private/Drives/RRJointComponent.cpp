@@ -21,7 +21,6 @@ bool URRJointComponent::IsValid()
 
 void URRJointComponent::Initialize()
 {
-    InitTF();
 }
 
 // velocity
@@ -174,20 +173,10 @@ void URRJointComponent::MoveToInitPose()
 {
 }
 
-void URRJointComponent::InitTF()
-{
-    if (bPublishTF)
-    {
-        TFPublisher = NewObject<URRROS2JointTFPublisher>(this);
-        TFPublisher->JointToChildLink = JointToChildLink;
-        TFPublisher->ParentLinkToJoint = ParentLinkToJoint;
-    }
-}
-
-void URRJointComponent::UpdateTF()
-{
-    if (bPublishTF)
-    {
-        TFPublisher->JointTF = FTransform(Orientation, Position, FVector::OneVector);
-    }
-}
+// void URRJointComponent::UpdateTF()
+// {
+//     if (bPublishTF)
+//     {
+//         TFPublisher->JointTF = FTransform(Orientation, Position, FVector::OneVector);
+//     }
+// }

@@ -2,9 +2,24 @@
 
 #include "Tools/RRROS2JointTFPublisher.h"
 
-void URRROS2JointTFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
+FTransform URRROS2JointTFComponentBase::GetTF()
 {
-    TF = JointToChildLink * JointTF * ParentLinkToJoint;
+    return JointToChildLink * TF * ParentLinkToJoint;
+}
 
-    Super::UpdateMessage(InMessage);
+FTransform URRROS2JointTFComponent::GetTF()
+{
+    if (Joint != nullptr)
+    {
+        TF.SetTranslation(Joint->Position);
+        TF.SetRotation(Joint->Orientation.Quaternion());
+    }
+    return Super::GetTF();
+}
+
+void URRROS2JointsTFPublisher::AddJoint(URRJointComponent* InJoint, FString InFrameId, FString InChildFrameId)
+{
+    // JointTFComponents.Emplace(InJoint->GetJointToChildLink(), InJoint->GetParentLinkToJoint());
+    URRROS2JointTFComponent jointTF(InFrameId, InChildFrameId, InJoint->GetJointToChildLink(), InJoint->GetParentLinkToJoint());
+    TFComponents.Add(&jointTF);
 }

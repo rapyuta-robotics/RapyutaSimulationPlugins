@@ -139,15 +139,29 @@ bool URRRobotROS2Interface::InitPublishers()
     }
 
     // JointState publisher
-    ROS2_CREATE_LOOP_PUBLISHER_WITH_QOS(RobotROS2Node,
-                                        this,
-                                        JointStateTopicName,
-                                        UROS2Publisher::StaticClass(),
-                                        UROS2JointStateMsg::StaticClass(),
-                                        JointStatePublicationFrequencyHz,
-                                        &URRRobotROS2Interface::UpdateJointState,
-                                        UROS2QoS::Default,
-                                        JointStatePublisher);
+    if (Robot && Robot->bJointControl)
+    {
+        ROS2_CREATE_LOOP_PUBLISHER_WITH_QOS(RobotROS2Node,
+                                            this,
+                                            JointStateTopicName,
+                                            UROS2Publisher::StaticClass(),
+                                            UROS2JointStateMsg::StaticClass(),
+                                            JointStatePublicationFrequencyHz,
+                                            &URRRobotROS2Interface::UpdateJointState,
+                                            UROS2QoS::Default,
+                                            JointStatePublisher);
+    }
+
+    if (Robot && bPublishJointTf)
+    {
+        JointsTFPublisher = CastChecked<URRROS2JointsTFPublisher>(
+            RobotROS2Node->CreateLoopPublisherWithClass(TEXT("tf"), URRROS2JointsTFPublisher::StaticClass(), 1.f));
+        for (const auto& joint : Robot->Joints)
+        {
+            // Robot->Links
+            // JointsTFPublisher->AddJoint(, , joint.Value);
+        }
+    }
 
     // Additional publishers by child class or robot
     for (auto& pub : Publishers)

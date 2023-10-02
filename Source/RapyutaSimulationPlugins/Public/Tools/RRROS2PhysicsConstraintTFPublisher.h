@@ -21,7 +21,7 @@
  * Provides ROS2Service to start/stop publishing tf.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRROS2PhysicsConstraintTFPublisher : public URRROS2JointTFPublisher
+class RAPYUTASIMULATIONPLUGINS_API URRROS2PhysicsConstraintTFPublisher : public URRROS2JointTFComponent
 
 {
     GENERATED_BODY()
@@ -32,7 +32,7 @@ public:
      *
      * @param InROS2Node
      */
-    virtual bool InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
+    // virtual bool InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
 
     //! Physics Constraints
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -40,5 +40,5 @@ public:
 
     FTransform InitialJointTF = FTransform::Identity;
 
-    virtual void UpdateMessage(UROS2GenericMsg* InMessage) override;
+    // virtual void UpdateMessage(UROS2GenericMsg* InMessage) override;
 };

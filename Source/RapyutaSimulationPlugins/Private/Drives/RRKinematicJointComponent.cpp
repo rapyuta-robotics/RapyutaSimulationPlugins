@@ -74,8 +74,6 @@ void URRKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
         SetPose(Position, Orientation);
     }
-
-    UpdateTF();
 }
 
 void URRKinematicJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity)

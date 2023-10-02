@@ -248,8 +248,6 @@ void URRPhysicsJointComponent::UpdateState(const float DeltaTime)
         UE_LOG(LogRapyutaCore, Error, TEXT("Status: %s | %s"), *LinearVelocity.ToString(), *Position.ToString());
     }
 #endif
-
-    UpdateTF();
 }
 
 void URRPhysicsJointComponent::UpdateVelocityTargetFromPose(const FVector InPositionDiff, const FVector InOrientationDiff)

@@ -15,26 +15,58 @@
 
 #include "RRROS2JointTFPublisher.generated.h"
 
-/**
- * @brief Publish TF of Actor relative to the reference actor.
- * If reference actor name is empty, publishes TF from world origin.
- * Provides ROS2Service to start/stop publishing tf.
- */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRROS2JointTFPublisher : public URRROS2TFPublisher
-
+class RAPYUTASIMULATIONPLUGINS_API URRROS2JointTFComponentBase : public URRROS2TFComponent
 {
     GENERATED_BODY()
 
 public:
+    URRROS2JointTFComponentBase(){};
+
+    URRROS2JointTFComponentBase(FString InFrameId,
+                                FString InChildFrameId,
+                                FTransform InParentLinkToJoint,
+                                FTransform InJointToChildLink)
+        : URRROS2TFComponent(InFrameId, InChildFrameId),
+          ParentLinkToJoint(InParentLinkToJoint),
+          JointToChildLink(InJointToChildLink){};
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform ParentLinkToJoint = FTransform::Identity;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform JointToChildLink = FTransform::Identity;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FTransform JointTF = FTransform::Identity;
+    virtual FTransform GetTF() override;
+};
 
-    virtual void UpdateMessage(UROS2GenericMsg* InMessage) override;
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRROS2JointTFComponent : public URRROS2JointTFComponentBase
+{
+    GENERATED_BODY()
+
+public:
+    URRROS2JointTFComponent(){};
+
+    URRROS2JointTFComponent(FString InFrameId,
+                            FString InChildFrameId,
+                            FTransform InParentLinkToJoint,
+                            FTransform InJointToChildLink)
+        : URRROS2JointTFComponentBase(InFrameId, InChildFrameId, InParentLinkToJoint, InJointToChildLink){};
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URRJointComponent* Joint;
+
+    virtual FTransform GetTF() override;
+};
+
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRROS2JointsTFPublisher : public URRROS2TFsPublisher
+
+{
+    GENERATED_BODY()
+
+public:
+    UFUNCTION(BlueprintCallable)
+    virtual void AddJoint(URRJointComponent* InJoint, FString InFrameId, FString InChildFrameId);
 };

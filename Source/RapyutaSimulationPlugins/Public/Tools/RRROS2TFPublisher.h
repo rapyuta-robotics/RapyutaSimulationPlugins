@@ -18,12 +18,8 @@
 
 #include "RRROS2TFPublisher.generated.h"
 
-/**
- * @brief TF Publisher class. Please check #URRROS2OdomPublisher as example.
- * @sa [UROS2Publisher](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dd4/class_u_r_o_s2_publisher.html)
- */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRROS2TFPublisher : public UROS2Publisher
+class RAPYUTASIMULATIONPLUGINS_API URRROS2TFPublisherBase : public UROS2Publisher
 {
     GENERATED_BODY()
 
@@ -32,21 +28,11 @@ public:
     * @brief Construct a new URRROS2TFPublisher object
     *
     */
-    URRROS2TFPublisher();
+    URRROS2TFPublisherBase();
 
     //! Publish static tf or not. @sa https://docs.ros.org/en/rolling/Tutorials/Tf2/Writing-A-Tf2-Static-Broadcaster-Cpp.html?highlight=static%20tf
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool IsStatic = false;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString FrameId;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString ChildFrameId;
-
-    //! @sa https://docs.unrealengine.com/5.1/en-US/API/Runtime/Core/Math/FTransform/
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FTransform TF = FTransform::Identity;
 
     /**
      * @brief Initialize publisher with QoS
@@ -54,6 +40,38 @@ public:
      * @param InROS2Node
      */
     bool InitializeWithROS2(UROS2NodeComponent* InROS2Node) override;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void AddTFtoMsg(FROSTFMsg& tf, const FString InFrameId, const FString InChildFrameId, const FTransform& InTF);
+
+    virtual void GetROS2Msg(FROSTFMsg& tf){};
+
+    /**
+     * @brief Update message frorm #TF.
+     *
+     * @param InMessage
+     */
+    virtual void UpdateMessage(UROS2GenericMsg* InMessage) override;
+};
+
+/**
+ * @brief TF Publisher class. Please check #URRROS2OdomPublisher as example.
+ * @sa [UROS2Publisher](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d6/dd4/class_u_r_o_s2_publisher.html)
+ */
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRROS2TFPublisher : public URRROS2TFPublisherBase
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString FrameId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString ChildFrameId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FTransform TF = FTransform::Identity;
 
     /**
      * @brief Set value to #TF.
@@ -64,10 +82,44 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetTransform(const FVector& Translation, const FQuat& Rotation);
 
-    /**
-     * @brief Update message frorm #TF.
-     *
-     * @param InMessage
-     */
-    void UpdateMessage(UROS2GenericMsg* InMessage) override;
+    virtual void GetROS2Msg(FROSTFMsg& tf) override;
+};
+
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRROS2TFComponent : public UObject
+{
+    GENERATED_BODY()
+
+public:
+    URRROS2TFComponent(){};
+
+    URRROS2TFComponent(FString InFrameId, FString InChildFrameId) : FrameId(InFrameId), ChildFrameId(InChildFrameId){};
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FTransform TF = FTransform::Identity;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString FrameId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString ChildFrameId;
+
+    UFUNCTION(BlueprintCallable)
+    virtual FTransform GetTF()
+    {
+        return TF;
+    };
+};
+
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRROS2TFsPublisher : public URRROS2TFPublisherBase
+
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<URRROS2TFComponent*> TFComponents;
+
+    virtual void GetROS2Msg(FROSTFMsg& tf) override;
 };

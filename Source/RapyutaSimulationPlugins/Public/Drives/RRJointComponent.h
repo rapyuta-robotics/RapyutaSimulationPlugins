@@ -152,12 +152,6 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void MoveToInitPose();
 
-    UFUNCTION(BlueprintCallable)
-    virtual void InitTF();
-
-    UFUNCTION(BlueprintCallable)
-    virtual void UpdateTF();
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector LinearVelocity = FVector::ZeroVector;
 
@@ -260,7 +254,19 @@ public:
     bool bPublishTF = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    URRROS2JointTFPublisher* TFPublisher = nullptr;
+    URRROS2JointsTFPublisher* TFPublisher = nullptr;
+
+    UFUNCTION(BlueprintCallable)
+    FTransform GetJointToChildLink()
+    {
+        return JointToChildLink;
+    }
+
+    UFUNCTION(BlueprintCallable)
+    FTransform GetParentLinkToJoint()
+    {
+        return ParentLinkToJoint;
+    }
 
 protected:
     UPROPERTY()
