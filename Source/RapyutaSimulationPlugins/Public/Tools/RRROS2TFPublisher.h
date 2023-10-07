@@ -93,7 +93,11 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2TFComponent : public UObject
 public:
     URRROS2TFComponent(){};
 
-    URRROS2TFComponent(FString InFrameId, FString InChildFrameId) : FrameId(InFrameId), ChildFrameId(InChildFrameId){};
+    void Init(FString InFrameId, FString InChildFrameId)
+    {
+        FrameId = InFrameId;
+        ChildFrameId = InChildFrameId;
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform TF = FTransform::Identity;

@@ -156,10 +156,13 @@ bool URRRobotROS2Interface::InitPublishers()
     {
         JointsTFPublisher = CastChecked<URRROS2JointsTFPublisher>(
             RobotROS2Node->CreateLoopPublisherWithClass(TEXT("tf"), URRROS2JointsTFPublisher::StaticClass(), 1.f));
+
         for (const auto& joint : Robot->Joints)
         {
-            // Robot->Links
-            // JointsTFPublisher->AddJoint(, , joint.Value);
+            JointsTFPublisher->AddJoint(
+                joint.Value,
+                URRGeneralUtils::FindKeyFromValue<FString, UStaticMeshComponent*>(Robot->Links, joint.Value->ParentLink),
+                URRGeneralUtils::FindKeyFromValue<FString, UStaticMeshComponent*>(Robot->Links, joint.Value->ChildLink));
         }
     }
 

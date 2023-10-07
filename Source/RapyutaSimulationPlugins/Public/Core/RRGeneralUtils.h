@@ -461,4 +461,17 @@ public:
         OutPosition = tf.GetLocation();
         OutOrientation = tf.GetRotation().Rotator();
     }
+
+    template<typename K, typename V>
+    static K FindKeyFromValue(TMap<K, V> InMap, V InValue)
+    {
+        for (const auto& elem : InMap)
+        {
+            if (InValue == elem.Value)
+            {
+                return elem.Key;
+            }
+        }
+        return K();
+    }
 };

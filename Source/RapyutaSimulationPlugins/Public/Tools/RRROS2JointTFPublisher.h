@@ -21,15 +21,12 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2JointTFComponentBase : public URRROS2T
     GENERATED_BODY()
 
 public:
-    URRROS2JointTFComponentBase(){};
-
-    URRROS2JointTFComponentBase(FString InFrameId,
-                                FString InChildFrameId,
-                                FTransform InParentLinkToJoint,
-                                FTransform InJointToChildLink)
-        : URRROS2TFComponent(InFrameId, InChildFrameId),
-          ParentLinkToJoint(InParentLinkToJoint),
-          JointToChildLink(InJointToChildLink){};
+    void Init(FString InFrameId, FString InChildFrameId, FTransform InParentLinkToJoint, FTransform InJointToChildLink)
+    {
+        Super::Init(InFrameId, InChildFrameId);
+        ParentLinkToJoint = InParentLinkToJoint;
+        JointToChildLink = InJointToChildLink;
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform ParentLinkToJoint = FTransform::Identity;
@@ -46,13 +43,15 @@ class RAPYUTASIMULATIONPLUGINS_API URRROS2JointTFComponent : public URRROS2Joint
     GENERATED_BODY()
 
 public:
-    URRROS2JointTFComponent(){};
-
-    URRROS2JointTFComponent(FString InFrameId,
-                            FString InChildFrameId,
-                            FTransform InParentLinkToJoint,
-                            FTransform InJointToChildLink)
-        : URRROS2JointTFComponentBase(InFrameId, InChildFrameId, InParentLinkToJoint, InJointToChildLink){};
+    void Init(FString InFrameId,
+              FString InChildFrameId,
+              FTransform InParentLinkToJoint,
+              FTransform InJointToChildLink,
+              URRJointComponent* InJoint)
+    {
+        Super::Init(InFrameId, InChildFrameId, InParentLinkToJoint, InJointToChildLink);
+        Joint = InJoint;
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URRJointComponent* Joint;

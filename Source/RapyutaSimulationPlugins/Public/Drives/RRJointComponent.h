@@ -42,7 +42,6 @@ public:
     URRJointComponent();
 
 protected:
-    virtual void BeginPlay() override;
     virtual void PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation);
     virtual void VelocityFromArray(const TArray<float>& InVelocity, FVector& OutLinearVelocity, FVector& OutAngularVelocity);
 
@@ -53,7 +52,7 @@ public:
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
      *
      */
-    virtual void Initialize();
+    virtual void InitializeComponent() override;
 
     /**
      * @brief Directly set velocity.

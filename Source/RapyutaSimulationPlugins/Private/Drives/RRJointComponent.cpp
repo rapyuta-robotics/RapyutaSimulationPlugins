@@ -6,12 +6,7 @@
 URRJointComponent::URRJointComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
-}
-
-void URRJointComponent::BeginPlay()
-{
-    Initialize();
-    Super::BeginPlay();
+    bWantsInitializeComponent = true;
 }
 
 bool URRJointComponent::IsValid()
@@ -19,8 +14,9 @@ bool URRJointComponent::IsValid()
     return ChildLink && ParentLink;
 }
 
-void URRJointComponent::Initialize()
+void URRJointComponent::InitializeComponent()
 {
+    UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("%s"), *ParentLinkToJoint.ToString());
 }
 
 // velocity

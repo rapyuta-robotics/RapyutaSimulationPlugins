@@ -15,7 +15,7 @@ bool URRPhysicsJointComponent::IsValid()
     return Super::IsValid() && Constraint;
 }
 
-void URRPhysicsJointComponent::Initialize()
+void URRPhysicsJointComponent::InitializeComponent()
 {
     if (IsValid())
     {
@@ -35,7 +35,7 @@ void URRPhysicsJointComponent::Initialize()
         UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("JointComponent must have Physics Constraints"));
     }
 
-    Super::Initialize();
+    Super::InitializeComponent();
 }
 
 void URRPhysicsJointComponent::SetJoint()

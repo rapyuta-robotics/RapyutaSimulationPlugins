@@ -43,7 +43,7 @@ public:
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
      *
      */
-    virtual void Initialize() override;
+    virtual void InitializeComponent() override;
 
     /**
      * @brief

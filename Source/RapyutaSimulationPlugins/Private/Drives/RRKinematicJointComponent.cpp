@@ -8,20 +8,24 @@ URRKinematicJointComponent::URRKinematicJointComponent()
     // todo add initialization
 }
 
-void URRKinematicJointComponent::Initialize()
+void URRKinematicJointComponent::InitializeComponent()
 {
+    UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("%s"), *ParentLinkToJoint.ToString());
     if (IsValid())
     {
+        UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("%s"), *ParentLinkToJoint.ToString());
         // set joints relations and save initial parent to joint transformation.
-        JointToChildLink = ChildLink->GetRelativeTransform();
-        ParentLinkToJoint = GetRelativeTransform();
+        // JointToChildLink = ChildLink->GetRelativeTransform();
+        // ParentLinkToJoint = GetRelativeTransform();
+        JointToChildLink = URRGeneralUtils::GetRelativeTransform(GetComponentTransform(), ChildLink->GetComponentTransform());
+        ParentLinkToJoint = URRGeneralUtils::GetRelativeTransform(ParentLink->GetComponentTransform(), GetComponentTransform());
     }
     else
     {
         UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("JointComponent must have ChildLink and ParentLink."));
     }
 
-    Super::Initialize();
+    Super::InitializeComponent();
 }
 
 // Called every frame
