@@ -16,7 +16,6 @@ bool URRJointComponent::IsValid()
 
 void URRJointComponent::InitializeComponent()
 {
-    UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("%s"), *ParentLinkToJoint.ToString());
 }
 
 // velocity

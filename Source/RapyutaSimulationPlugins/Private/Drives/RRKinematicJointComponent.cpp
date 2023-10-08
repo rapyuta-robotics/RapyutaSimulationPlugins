@@ -10,15 +10,14 @@ URRKinematicJointComponent::URRKinematicJointComponent()
 
 void URRKinematicJointComponent::InitializeComponent()
 {
-    UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("%s"), *ParentLinkToJoint.ToString());
     if (IsValid())
     {
-        UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("%s"), *ParentLinkToJoint.ToString());
         // set joints relations and save initial parent to joint transformation.
         // JointToChildLink = ChildLink->GetRelativeTransform();
         // ParentLinkToJoint = GetRelativeTransform();
         JointToChildLink = URRGeneralUtils::GetRelativeTransform(GetComponentTransform(), ChildLink->GetComponentTransform());
         ParentLinkToJoint = URRGeneralUtils::GetRelativeTransform(ParentLink->GetComponentTransform(), GetComponentTransform());
+        UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("%s %s"), *ParentLinkToJoint.ToString(), *JointToChildLink.ToString());
     }
     else
     {

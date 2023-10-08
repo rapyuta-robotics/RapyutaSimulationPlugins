@@ -159,10 +159,20 @@ bool URRRobotROS2Interface::InitPublishers()
 
         for (const auto& joint : Robot->Joints)
         {
-            JointsTFPublisher->AddJoint(
-                joint.Value,
-                URRGeneralUtils::FindKeyFromValue<FString, UStaticMeshComponent*>(Robot->Links, joint.Value->ParentLink),
-                URRGeneralUtils::FindKeyFromValue<FString, UStaticMeshComponent*>(Robot->Links, joint.Value->ChildLink));
+            if (joint.Value == nullptr)
+            {
+                continue;
+            }
+
+            FString parentLinkName;
+            FString childLinkName;
+            if (URRGeneralUtils::FindKeyFromValue<FString, UStaticMeshComponent*>(
+                    Robot->Links, joint.Value->ParentLink, parentLinkName) &&
+                URRGeneralUtils::FindKeyFromValue<FString, UStaticMeshComponent*>(
+                    Robot->Links, joint.Value->ChildLink, childLinkName))
+            {
+                JointsTFPublisher->AddJoint(joint.Value, parentLinkName, childLinkName);
+            }
         }
     }
 

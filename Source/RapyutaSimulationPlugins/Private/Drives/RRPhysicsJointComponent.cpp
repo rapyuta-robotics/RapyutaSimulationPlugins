@@ -380,8 +380,11 @@ void URRPhysicsJointComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    UpdateState(DeltaTime);
-    UpdateControl(DeltaTime);
+    if (IsValid())
+    {
+        UpdateState(DeltaTime);
+        UpdateControl(DeltaTime);
+    }
 }
 
 void URRPhysicsJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)

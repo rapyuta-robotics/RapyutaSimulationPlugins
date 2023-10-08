@@ -463,15 +463,16 @@ public:
     }
 
     template<typename K, typename V>
-    static K FindKeyFromValue(TMap<K, V> InMap, V InValue)
+    static bool FindKeyFromValue(TMap<K, V> InMap, V InValue, K& OutKey)
     {
         for (const auto& elem : InMap)
         {
             if (InValue == elem.Value)
             {
-                return elem.Key;
+                OutKey = elem.Key;
+                return true;
             }
         }
-        return K();
+        return false;
     }
 };
