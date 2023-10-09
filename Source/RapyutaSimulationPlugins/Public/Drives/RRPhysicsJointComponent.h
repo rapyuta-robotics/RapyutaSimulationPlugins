@@ -40,7 +40,7 @@ public:
     virtual bool IsValid() override;
 
     /**
-     * @brief Initialize #JointToChildLink and #ParentLinkToJoint
+     * @brief Initialize #Constraint #JointToChildLink and #ParentLinkToJoint
      *
      */
     virtual void InitializeComponent() override;

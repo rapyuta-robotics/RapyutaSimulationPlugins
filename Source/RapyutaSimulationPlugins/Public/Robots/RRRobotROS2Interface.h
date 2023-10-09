@@ -13,8 +13,8 @@
 #include "ROS2NodeComponent.h"
 #include "ROS2ServiceClient.h"
 #include "Tools/ROS2Spawnable.h"
-#include "Tools/RRROS2JointTFPublisher.h"
 #include "Tools/RRROS2OdomPublisher.h"
+#include "Tools/RRROS2TFPublisher.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
@@ -159,10 +159,13 @@ public:
     bool bWarnAboutMissingLink = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    URRROS2JointsTFPublisher* JointsTFPublisher = nullptr;
+    URRROS2TFsPublisher* JointsTFPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishJointTf = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    float JointTfPublicationFrequencyHz = 1.f;
 
     /**
      * @brief Setup ROS Params, overridable by child classes to config custom ROS 2 Interface's params

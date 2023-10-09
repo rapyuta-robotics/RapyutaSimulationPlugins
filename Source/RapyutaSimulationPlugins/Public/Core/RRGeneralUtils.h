@@ -328,6 +328,13 @@ public:
         return false;
     }
 
+    /**
+     * @brief Get the component of actor from component name
+     *
+     * @param Actor
+     * @param ComponentName
+     * @return UPrimitiveComponent*
+     */
     UFUNCTION(BlueprintCallable)
     static UPrimitiveComponent* GetComponentOfActorFromName(const AActor* Actor, FName ComponentName)
     {
@@ -367,6 +374,14 @@ public:
         return PrimComp;
     }
 
+    /**
+     * @brief Get the Physics Constraint Component.
+     * @sa [EConstraintFrame](https://docs.unrealengine.com/5.0/en-US/API/Runtime/PhysicsCore/Chaos/EConstraintFrame__Type/)
+     *
+     * @param InConstraint
+     * @param Frame
+     * @return UPrimitiveComponent*
+     */
     UFUNCTION(BlueprintCallable)
     static UPrimitiveComponent* GetPhysicsConstraintComponent(const UPhysicsConstraintComponent* InConstraint,
                                                               EConstraintFrame::Type Frame)
@@ -412,12 +427,20 @@ public:
         }
     }
 
+    /**
+     * @brief Get the Physics Constraint Transform changes from initial joint transform, i.e. child link transfrom relative to joint.
+     *
+     * @param InConstraint
+     * @param InitialJointToChildLink
+     * @param InChildLink
+     * @return FTransform
+     */
     UFUNCTION(BlueprintCallable)
     static FTransform GetPhysicsConstraintTransform(const UPhysicsConstraintComponent* InConstraint,
                                                     const FTransform InitialJointToChildLink,
                                                     UPrimitiveComponent* InChildLink = nullptr)
     {
-        FTransform OutTF = FTransform::Identity;
+        FTransform outTF = FTransform::Identity;
         if (InConstraint != nullptr)
         {
             UPrimitiveComponent* ChildLink = InChildLink;
@@ -431,26 +454,35 @@ public:
                 FTransform relativeTrans = URRGeneralUtils::GetRelativeTransform(InConstraint->GetComponentTransform(),
                                                                                  ChildLink->GetComponentTransform());
 
-                FVector Position = relativeTrans.GetLocation() - InitialJointToChildLink.GetLocation();
-                FRotator Orientation = (relativeTrans.GetRotation() * InitialJointToChildLink.GetRotation().Inverse()).Rotator();
+                FVector position = relativeTrans.GetLocation() - InitialJointToChildLink.GetLocation();
+                FRotator orientation = (relativeTrans.GetRotation() * InitialJointToChildLink.GetRotation().Inverse()).Rotator();
 
-                OutTF.SetLocation(Position);
-                OutTF.SetRotation(Orientation.Quaternion());
+                outTF.SetLocation(position);
+                outTF.SetRotation(orientation.Quaternion());
             }
             else
             {
-                OutTF = FTransform::Identity;
+                outTF = FTransform::Identity;
             }
         }
         else
         {
             UE_LOG(LogTemp, Error, TEXT("[GetPhysicsConstraintTransform]Physics Constraint is not valid."));
-            OutTF = FTransform::Identity;
+            outTF = FTransform::Identity;
         }
 
-        return OutTF;
+        return outTF;
     }
 
+    /**
+     * @brief Get the Physics Constraint Transform
+     *
+     * @param InConstraint
+     * @param InitialJointToChildLink
+     * @param OutPosition
+     * @param OutOrientation
+     * @param InChildLink
+     */
     static void GetPhysicsConstraintTransform(const UPhysicsConstraintComponent* InConstraint,
                                               const FTransform InitialJointToChildLink,
                                               FVector& OutPosition,
@@ -462,6 +494,17 @@ public:
         OutOrientation = tf.GetRotation().Rotator();
     }
 
+    /**
+     * @brief Find Key from Value. Return false if no value found
+     *
+     * @tparam K
+     * @tparam V
+     * @param InMap
+     * @param InValue
+     * @param OutKey
+     * @return true
+     * @return false
+     */
     template<typename K, typename V>
     static bool FindKeyFromValue(TMap<K, V> InMap, V InValue, K& OutKey)
     {

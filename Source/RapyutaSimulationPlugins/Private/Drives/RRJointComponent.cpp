@@ -167,11 +167,3 @@ void URRJointComponent::Teleport(const FVector& InPosition, const FRotator& InOr
 void URRJointComponent::MoveToInitPose()
 {
 }
-
-// void URRJointComponent::UpdateTF()
-// {
-//     if (bPublishTF)
-//     {
-//         TFPublisher->JointTF = FTransform(Orientation, Position, FVector::OneVector);
-//     }
-// }

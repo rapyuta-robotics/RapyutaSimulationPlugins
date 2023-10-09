@@ -154,8 +154,8 @@ bool URRRobotROS2Interface::InitPublishers()
 
     if (Robot && bPublishJointTf)
     {
-        JointsTFPublisher = CastChecked<URRROS2JointsTFPublisher>(
-            RobotROS2Node->CreateLoopPublisherWithClass(TEXT("tf"), URRROS2JointsTFPublisher::StaticClass(), 1.f));
+        JointsTFPublisher = CastChecked<URRROS2TFsPublisher>(RobotROS2Node->CreateLoopPublisherWithClass(
+            TEXT("tf"), URRROS2TFsPublisher::StaticClass(), JointTfPublicationFrequencyHz));
 
         for (const auto& joint : Robot->Joints)
         {
@@ -171,7 +171,8 @@ bool URRRobotROS2Interface::InitPublishers()
                 URRGeneralUtils::FindKeyFromValue<FString, UStaticMeshComponent*>(
                     Robot->Links, joint.Value->ChildLink, childLinkName))
             {
-                JointsTFPublisher->AddJoint(joint.Value, parentLinkName, childLinkName);
+                URRROS2JointTFComponent::AddJoint(joint.Value, parentLinkName, childLinkName, JointsTFPublisher);
+                // JointsTFPublisher->AddJoint(joint.Value, parentLinkName, childLinkName);
             }
         }
     }

@@ -12,7 +12,7 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRStaticMeshComponent.h"
-#include "Tools/RRROS2JointTFPublisher.h"
+#include "Tools/RRROS2TFPublisher.h"
 
 #include "RRJointComponent.generated.h"
 
@@ -248,12 +248,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRotator InitialOrientation = FRotator::ZeroRotator;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bPublishTF = false;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    URRROS2JointsTFPublisher* TFPublisher = nullptr;
 
     UFUNCTION(BlueprintCallable)
     FTransform GetJointToChildLink()
