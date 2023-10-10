@@ -30,8 +30,8 @@ bool URRROS2TFPublisherBase::InitializeWithROS2(UROS2NodeComponent* InROS2Node)
 }
 
 void URRROS2TFPublisherBase::AddTFtoMsg(FROSTFMsg& OutROSTf,
-                                        const FString InFrameId,
-                                        const FString InChildFrameId,
+                                        const FString& InFrameId,
+                                        const FString& InChildFrameId,
                                         const FTransform& InTf)
 {
     FROSTFStamped tfData;
@@ -92,8 +92,8 @@ FTransform URRROS2LinksTFComponent::GetTF()
 
 void URRROS2LinksTFComponent::AddLinks(UPrimitiveComponent* InParentLink,
                                        UPrimitiveComponent* InChildLink,
-                                       FString InFrameId,
-                                       FString InChildFrameId,
+                                       const FString& InFrameId,
+                                       const FString& InChildFrameId,
                                        URRROS2TFsPublisher* OutTFsPublisher)
 {
     URRROS2LinksTFComponent* linksTF = NewObject<URRROS2LinksTFComponent>(OutTFsPublisher);
@@ -102,8 +102,8 @@ void URRROS2LinksTFComponent::AddLinks(UPrimitiveComponent* InParentLink,
 }
 
 void URRROS2PhysicsConstraintTFComponent::AddConstraint(UPhysicsConstraintComponent* InConstraint,
-                                                        FString InFrameId,
-                                                        FString InChildFrameId,
+                                                        const FString& InFrameId,
+                                                        const FString& InChildFrameId,
                                                         URRROS2TFsPublisher* OutTFsPublisher)
 {
     URRROS2PhysicsConstraintTFComponent* constraintTF = NewObject<URRROS2PhysicsConstraintTFComponent>(OutTFsPublisher);
@@ -123,8 +123,8 @@ FTransform URRROS2JointTFComponent::GetTF()
 }
 
 void URRROS2JointTFComponent::AddJoint(URRJointComponent* InJoint,
-                                       FString InFrameId,
-                                       FString InChildFrameId,
+                                       const FString& InFrameId,
+                                       const FString& InChildFrameId,
                                        URRROS2TFsPublisher* OutTFsPublisher)
 {
     URRROS2JointTFComponent* jointTF = NewObject<URRROS2JointTFComponent>(OutTFsPublisher);

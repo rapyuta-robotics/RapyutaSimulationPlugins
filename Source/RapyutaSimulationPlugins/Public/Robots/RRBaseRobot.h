@@ -329,7 +329,7 @@ public:
      * @return false
      */
     UFUNCTION(BlueprintCallable)
-    virtual bool AddLink(FString InLinkName, UStaticMeshComponent* InMesh);
+    virtual bool AddLink(const FString& InLinkName, UStaticMeshComponent* InMesh);
 
     //! Base mesh comp, normally also as the root comp
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -364,7 +364,10 @@ public:
      * @return false
      */
     UFUNCTION(BlueprintCallable)
-    virtual bool AddJoint(FString InParentLinkName, FString InChildLinkName, FString InJointName, URRJointComponent* InJoint);
+    virtual bool AddJoint(const FString& InParentLinkName,
+                          const FString& InChildLinkName,
+                          const FString& InJointName,
+                          URRJointComponent* InJoint);
 
     /**
      * Initialize #Joints or not. Initial pose are set in each joint.

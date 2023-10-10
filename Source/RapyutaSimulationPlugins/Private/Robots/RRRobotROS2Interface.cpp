@@ -164,15 +164,11 @@ bool URRRobotROS2Interface::InitPublishers()
                 continue;
             }
 
-            FString parentLinkName;
-            FString childLinkName;
-            if (URRGeneralUtils::FindKeyFromValue<FString, UStaticMeshComponent*>(
-                    Robot->Links, joint.Value->ParentLink, parentLinkName) &&
-                URRGeneralUtils::FindKeyFromValue<FString, UStaticMeshComponent*>(
-                    Robot->Links, joint.Value->ChildLink, childLinkName))
+            const FString* parentLinkName = Robot->Links.FindKey(joint.Value->ParentLink);
+            const FString* childLinkName = Robot->Links.FindKey(joint.Value->ChildLink);
+            if (!parentLinkName->IsEmpty() && !childLinkName->IsEmpty())
             {
-                URRROS2JointTFComponent::AddJoint(joint.Value, parentLinkName, childLinkName, JointsTFPublisher);
-                // JointsTFPublisher->AddJoint(joint.Value, parentLinkName, childLinkName);
+                URRROS2JointTFComponent::AddJoint(joint.Value, *parentLinkName, *childLinkName, JointsTFPublisher);
             }
         }
     }

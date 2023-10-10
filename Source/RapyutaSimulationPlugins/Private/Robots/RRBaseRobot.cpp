@@ -698,7 +698,7 @@ void ARRBaseRobot::SetChildComponentsCollisionEnabled(const bool IsEnable)
     }
 }
 
-bool ARRBaseRobot::AddLink(FString InLinkName, UStaticMeshComponent* InMesh)
+bool ARRBaseRobot::AddLink(const FString& InLinkName, UStaticMeshComponent* InMesh)
 {
     if (InLinkName.IsEmpty() || InMesh == nullptr)
     {
@@ -710,7 +710,10 @@ bool ARRBaseRobot::AddLink(FString InLinkName, UStaticMeshComponent* InMesh)
     return true;
 }
 
-bool ARRBaseRobot::AddJoint(FString InParentLinkName, FString InChildLinkName, FString InJointName, URRJointComponent* InJoint)
+bool ARRBaseRobot::AddJoint(const FString& InParentLinkName,
+                            const FString& InChildLinkName,
+                            const FString& InJointName,
+                            URRJointComponent* InJoint)
 {
     if (!Links.Contains(InParentLinkName) || !Links.Contains(InChildLinkName))
     {

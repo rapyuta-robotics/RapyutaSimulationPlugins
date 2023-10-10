@@ -62,7 +62,7 @@ protected:
      * @param InChildFrameId
      * @param InTf
      */
-    virtual void AddTFtoMsg(FROSTFMsg& OutROSTf, const FString InFrameId, const FString InChildFrameId, const FTransform& InTf);
+    virtual void AddTFtoMsg(FROSTFMsg& OutROSTf, const FString& InFrameId, const FString& InChildFrameId, const FTransform& InTf);
 
     /**
      * @brief Add tf data to OutROSTf from URRROS2TFComponent
@@ -202,7 +202,10 @@ public:
      * @param InParentLink
      * @param InChildLink
      */
-    void Init(FString InFrameId, FString InChildFrameId, UPrimitiveComponent* InParentLink, UPrimitiveComponent* InChildLink)
+    void Init(const FString& InFrameId,
+              const FString& InChildFrameId,
+              UPrimitiveComponent* InParentLink,
+              UPrimitiveComponent* InChildLink)
     {
         Super::Init(InFrameId, InChildFrameId);
         ParentLink = InParentLink;
@@ -234,8 +237,8 @@ public:
     UFUNCTION(BlueprintCallable)
     static void AddLinks(UPrimitiveComponent* InParentLink,
                          UPrimitiveComponent* InChildLink,
-                         FString InFrameId,
-                         FString InChildFrameId,
+                         const FString& InFrameId,
+                         const FString& InChildFrameId,
                          URRROS2TFsPublisher* OutTFsPublisher);
 };
 
@@ -256,7 +259,7 @@ public:
      * @param InChildFrameId
      * @param InConstraint
      */
-    void Init(FString InFrameId, FString InChildFrameId, UPhysicsConstraintComponent* InConstraint)
+    void Init(const FString InFrameId, const FString InChildFrameId, UPhysicsConstraintComponent* InConstraint)
     {
         Super::Init(InFrameId,
                     InChildFrameId,
@@ -274,8 +277,8 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     static void AddConstraint(UPhysicsConstraintComponent* InConstraint,
-                              FString InFrameId,
-                              FString InChildFrameId,
+                              const FString& InFrameId,
+                              const FString& InChildFrameId,
                               URRROS2TFsPublisher* OutTFsPublisher);
 };
 
@@ -298,7 +301,7 @@ public:
      * @param InJointToChildLink
      * @param InJoint
      */
-    void Init(FString InFrameId, FString InChildFrameId, URRJointComponent* InJoint)
+    void Init(const FString& InFrameId, const FString& InChildFrameId, URRJointComponent* InJoint)
     {
         Super::Init(InFrameId, InChildFrameId);
         Joint = InJoint;
@@ -319,7 +322,7 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     static void AddJoint(URRJointComponent* InJoint,
-                         FString InFrameId,
-                         FString InChildFrameId,
+                         const FString& InFrameId,
+                         const FString& InChildFrameId,
                          URRROS2TFsPublisher* OutTFsPublisher);
 };

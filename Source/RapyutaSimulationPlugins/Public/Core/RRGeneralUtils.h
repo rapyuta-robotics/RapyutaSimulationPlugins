@@ -493,29 +493,4 @@ public:
         OutPosition = tf.GetLocation();
         OutOrientation = tf.GetRotation().Rotator();
     }
-
-    /**
-     * @brief Find Key from Value. Return false if no value found
-     *
-     * @tparam K
-     * @tparam V
-     * @param InMap
-     * @param InValue
-     * @param OutKey
-     * @return true
-     * @return false
-     */
-    template<typename K, typename V>
-    static bool FindKeyFromValue(TMap<K, V> InMap, V InValue, K& OutKey)
-    {
-        for (const auto& elem : InMap)
-        {
-            if (InValue == elem.Value)
-            {
-                OutKey = elem.Key;
-                return true;
-            }
-        }
-        return false;
-    }
 };
