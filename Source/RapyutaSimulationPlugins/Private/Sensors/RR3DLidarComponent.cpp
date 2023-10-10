@@ -65,7 +65,7 @@ void URR3DLidarComponent::Run()
 void URR3DLidarComponent::SensorUpdate()
 {
     // complex collisions: true
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("3DLaser_Trace"), true, GetOwner());
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("3DLaser_Trace"), true);
     TraceParams.bReturnPhysicalMaterial = true;
 
     // TraceParams.bIgnoreTouches = true;
