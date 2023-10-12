@@ -32,12 +32,12 @@ class RAPYUTASIMULATIONPLUGINS_API URRKinematicJointComponent : public URRJointC
 public:
     // Sets default values for this component's properties
     URRKinematicJointComponent();
-    
+
     /**
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
-     * 
+     *
      */
-    virtual void Initialize() override;
+    virtual void InitializeComponent() override;
 
 public:
     /**
@@ -78,8 +78,8 @@ public:
 
     /**
      * @brief Teleport robot to given pose. Just call #SetPose.
-     * @param InPosition 
-     * @param InOrientation 
+     * @param InPosition
+     * @param InOrientation
      */
     virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation) override;
 

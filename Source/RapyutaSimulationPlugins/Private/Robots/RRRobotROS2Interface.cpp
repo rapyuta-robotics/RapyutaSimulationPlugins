@@ -139,15 +139,39 @@ bool URRRobotROS2Interface::InitPublishers()
     }
 
     // JointState publisher
-    ROS2_CREATE_LOOP_PUBLISHER_WITH_QOS(RobotROS2Node,
-                                        this,
-                                        JointStateTopicName,
-                                        UROS2Publisher::StaticClass(),
-                                        UROS2JointStateMsg::StaticClass(),
-                                        JointStatePublicationFrequencyHz,
-                                        &URRRobotROS2Interface::UpdateJointState,
-                                        UROS2QoS::Default,
-                                        JointStatePublisher);
+    if (Robot && Robot->bJointControl)
+    {
+        ROS2_CREATE_LOOP_PUBLISHER_WITH_QOS(RobotROS2Node,
+                                            this,
+                                            JointStateTopicName,
+                                            UROS2Publisher::StaticClass(),
+                                            UROS2JointStateMsg::StaticClass(),
+                                            JointStatePublicationFrequencyHz,
+                                            &URRRobotROS2Interface::UpdateJointState,
+                                            UROS2QoS::Default,
+                                            JointStatePublisher);
+    }
+
+    if (Robot && bPublishJointTf)
+    {
+        JointsTFPublisher = CastChecked<URRROS2TFsPublisher>(RobotROS2Node->CreateLoopPublisherWithClass(
+            TEXT("tf"), URRROS2TFsPublisher::StaticClass(), JointTfPublicationFrequencyHz));
+
+        for (const auto& joint : Robot->Joints)
+        {
+            if (joint.Value == nullptr)
+            {
+                continue;
+            }
+
+            const FString* parentLinkName = Robot->Links.FindKey(joint.Value->ParentLink);
+            const FString* childLinkName = Robot->Links.FindKey(joint.Value->ChildLink);
+            if (!parentLinkName->IsEmpty() && !childLinkName->IsEmpty())
+            {
+                URRROS2JointTFComponent::AddJoint(joint.Value, *parentLinkName, *childLinkName, JointsTFPublisher);
+            }
+        }
+    }
 
     // Additional publishers by child class or robot
     for (auto& pub : Publishers)

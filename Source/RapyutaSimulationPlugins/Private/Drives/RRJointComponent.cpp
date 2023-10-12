@@ -6,12 +6,7 @@
 URRJointComponent::URRJointComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
-}
-
-void URRJointComponent::BeginPlay()
-{
-    Initialize();
-    Super::BeginPlay();
+    bWantsInitializeComponent = true;
 }
 
 bool URRJointComponent::IsValid()
@@ -19,7 +14,7 @@ bool URRJointComponent::IsValid()
     return ChildLink && ParentLink;
 }
 
-void URRJointComponent::Initialize()
+void URRJointComponent::InitializeComponent()
 {
 }
 
@@ -35,8 +30,9 @@ bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, 
 {
     const float linearTolerance = (InLinearTolerance >= 0.f) ? InLinearTolerance : LinearVelocityTolerance;
     const float angularTolerance = (InAngularTolerance >= 0.f) ? InAngularTolerance : AngularVelocityTolerance;
-    
-    return LinearVelocityTarget.Equals(LinearVelocity, linearTolerance) && AngularVelocityTarget.Equals(AngularVelocity, angularTolerance);
+
+    return LinearVelocityTarget.Equals(LinearVelocity, linearTolerance) &&
+           AngularVelocityTarget.Equals(AngularVelocity, angularTolerance);
 };
 
 void URRJointComponent::SetVelocity(const FVector& InLinearVelocity, const FVector& InAngularVelocity)
@@ -166,7 +162,7 @@ void URRJointComponent::SetPoseWithArray(const TArray<float>& InPose)
 
 void URRJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)
 {
-};
+}
 
 void URRJointComponent::MoveToInitPose()
 {
