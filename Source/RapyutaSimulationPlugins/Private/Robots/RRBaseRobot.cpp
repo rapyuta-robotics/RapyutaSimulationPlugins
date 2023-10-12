@@ -704,3 +704,33 @@ void ARRBaseRobot::SetChildComponentsCollisionEnabled(const bool IsEnable)
         }
     }
 }
+
+bool ARRBaseRobot::AddLink(const FString& InLinkName, UStaticMeshComponent* InMesh)
+{
+    if (InLinkName.IsEmpty() || InMesh == nullptr)
+    {
+        UE_LOG_WITH_INFO_SHORT_NAMED(LogRapyutaCore, Error, TEXT("Mesh must not be nullptr and LinkName smust not be empty."));
+        return false;
+    }
+
+    Links.Add(InLinkName, InMesh);
+    return true;
+}
+
+bool ARRBaseRobot::AddJoint(const FString& InParentLinkName,
+                            const FString& InChildLinkName,
+                            const FString& InJointName,
+                            URRJointComponent* InJoint)
+{
+    if (!Links.Contains(InParentLinkName) || !Links.Contains(InChildLinkName))
+    {
+        UE_LOG_WITH_INFO_SHORT_NAMED(
+            LogRapyutaCore, Error, TEXT("Links don\'t have %s and/or %s."), *InParentLinkName, *InChildLinkName);
+        return false;
+    }
+
+    InJoint->ParentLink = Links[InParentLinkName];
+    InJoint->ChildLink = Links[InChildLinkName];
+    Joints.Add(InJointName, InJoint);
+    return true;
+}

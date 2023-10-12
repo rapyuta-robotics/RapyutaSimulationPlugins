@@ -319,6 +319,18 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, UStaticMeshComponent*> Links;
 
+    /**
+     * @brief Add UStaticMeshComponent to #Links
+     * InLinkName is used for frame name of tf.
+     *
+     * @param InLinkName
+     * @param InMesh
+     * @return true
+     * @return false
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual bool AddLink(const FString& InLinkName, UStaticMeshComponent* InMesh);
+
     //! Base mesh comp, normally also as the root comp
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UMeshComponent> BaseMeshComp = nullptr;
@@ -338,6 +350,24 @@ public:
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, URRJointComponent*> Joints;
+
+    /**
+     * @brief Add URRJointComponent to #Joints and set Joint's parent and child link from name in #Links
+     * InParentLinkName and InChildLinkName need to be in #Links beforehand.
+     * InJointName is used for joint name of joint_states topic
+     *
+     * @param InParentLinkName
+     * @param InChildLinkName
+     * @param InJointName
+     * @param InJoint
+     * @return true
+     * @return false
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual bool AddJoint(const FString& InParentLinkName,
+                          const FString& InChildLinkName,
+                          const FString& InJointName,
+                          URRJointComponent* InJoint);
 
     /**
      * Initialize #Joints or not. Initial pose are set in each joint.
