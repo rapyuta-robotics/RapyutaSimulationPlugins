@@ -29,6 +29,7 @@ enum class ERRFileType : uint8
     PAK,
     INI,
     YAML,
+    ZIP,
 
     // Image
     IMAGE_JPG,
@@ -89,6 +90,7 @@ enum class ERRResourceDataType : uint8
     UE_SKELETON,
     UE_PHYSICS_ASSET,
     UE_MATERIAL,
+    UE_PHYSICAL_MATERIAL,
     UE_TEXTURE,
     UE_DATA_TABLE,
 

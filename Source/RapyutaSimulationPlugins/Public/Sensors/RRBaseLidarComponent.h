@@ -83,6 +83,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxRange = 350.f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<ECollisionChannel> TraceCollisionChannel = ECC_Visibility;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bIgnoreSelf = false;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
     FLinearColor ColorMiss = FColor(255, 127, 0, 255);
 
@@ -129,6 +135,11 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool ShowLidarRayMisses = false;
+
+    //! DepthIntesity of DrawPoint
+    //! @sa https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/ULineBatchComponent/DrawPoint/
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    uint8 DrawPointDepthIntensity = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Intensity")
     float IntensityNonReflective = 1000.f;

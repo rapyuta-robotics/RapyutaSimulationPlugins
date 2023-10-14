@@ -15,7 +15,7 @@ bool URRPhysicsJointComponent::IsValid()
     return Super::IsValid() && Constraint;
 }
 
-void URRPhysicsJointComponent::Initialize()
+void URRPhysicsJointComponent::InitializeComponent()
 {
     if (IsValid())
     {
@@ -34,6 +34,8 @@ void URRPhysicsJointComponent::Initialize()
     {
         UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("JointComponent must have Physics Constraints"));
     }
+
+    Super::InitializeComponent();
 }
 
 void URRPhysicsJointComponent::SetJoint()
@@ -218,11 +220,7 @@ void URRPhysicsJointComponent::UpdateState(const float DeltaTime)
     FVector prevPosition = Position;
     FRotator prevOrientation = Orientation;
 
-    FTransform relativeTrans =
-        URRGeneralUtils::GetRelativeTransform(Constraint->GetComponentTransform(), ChildLink->GetComponentTransform());
-
-    Position = relativeTrans.GetLocation() - JointToChildLink.GetLocation();
-    Orientation = (relativeTrans.GetRotation() * JointToChildLink.GetRotation().Inverse()).Rotator();
+    URRGeneralUtils::GetPhysicsConstraintTransform(Constraint, JointToChildLink, Position, Orientation, ChildLink);
 
     FVector prevOrientationEuler = prevOrientation.Euler();
     FVector OrientationEuler = Orientation.Euler();
@@ -382,8 +380,11 @@ void URRPhysicsJointComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    UpdateState(DeltaTime);
-    UpdateControl(DeltaTime);
+    if (IsValid())
+    {
+        UpdateState(DeltaTime);
+        UpdateControl(DeltaTime);
+    }
 }
 
 void URRPhysicsJointComponent::Teleport(const FVector& InPosition, const FRotator& InOrientation)

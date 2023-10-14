@@ -131,6 +131,7 @@ public:
         TEXT(".pak"),       // ERRFileType::PAK
         TEXT(".ini"),       // ERRFileType::INI
         TEXT(".yaml"),      // ERRFileType::YAML
+        TEXT(".zip"),       // ERRFileType::ZIP
 
         // Image
         TEXT(".jpg"),    // ERRFileType::IMAGE_JPG
@@ -175,17 +176,15 @@ public:
 
     FORCEINLINE static ERRFileType GetFileType(const FString& InFilePath)
     {
-        ERRFileType imageFileType = ERRFileType::NONE;
-
         for (uint8 i = 0; i < static_cast<uint8>(ERRFileType::TOTAL); ++i)
         {
             const ERRFileType& fileType = static_cast<ERRFileType>(i);
             if (InFilePath.EndsWith(URRCoreUtils::GetSimFileExt(fileType)))
             {
-                imageFileType = fileType;
+                return fileType;
             }
         }
-        return imageFileType;
+        return ERRFileType::NONE;
     }
 
     FORCEINLINE static bool IsFileType(const FString& InFilePath, const TArray<ERRFileType>& InFileTypes)
@@ -280,6 +279,15 @@ public:
         }
 #endif
         return editorWorld;
+    }
+
+    static bool IsPIE()
+    {
+#if WITH_EDITOR
+        return GEditor && (GEditor->PlayWorld || GIsPlayInEditorWorld);
+#else
+        return false;
+#endif
     }
 
     template<typename T>
@@ -747,5 +755,27 @@ public:
             return true;
         }
         return false;
+    }
+
+    /**
+     * @brief Print message
+     * @param InMessage
+     * @param bInError
+     * @param InTimeOnScreen (secs)
+     */
+    FORCEINLINE static void PrintMessage(const FString& InMessage, bool bInError = false, float InTimeOnScreen = 100.f)
+    {
+        if (bInError)
+        {
+            UE_LOG(LogTemp, Error, TEXT("%s"), *InMessage);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Log, TEXT("%s"), *InMessage);
+        }
+        ScreenMsg(bInError ? FColor::Red : FColor::Yellow, InMessage, InTimeOnScreen);
+#if RAPYUTA_SIM_DEBUG
+        FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, *InMessage, bInError ? TEXT("Error") : TEXT("Info"));
+#endif
     }
 };
