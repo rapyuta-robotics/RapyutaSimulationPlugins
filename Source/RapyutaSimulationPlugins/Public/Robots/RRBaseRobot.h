@@ -111,7 +111,7 @@ public:
     void SetupDefault();
 
     UPROPERTY(VisibleAnywhere, Replicated)
-    USceneComponent* DefaultRoot = nullptr;
+    TObjectPtr<USceneComponent> DefaultRoot = nullptr;
 
     /**
      * @brief Set the root offset for #RobotVehicleMoveComponent
@@ -165,14 +165,14 @@ public:
 
     //! Default class to use when ROS 2 Interface is setup for robot
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS 2 Interface Class"), Replicated)
-    TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass;
+    TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass = nullptr;
 
     /**
      * Robot's ROS 2 Interface.
      * With the client-server setup, this is created in the server and replicated to the client and initialized only in the client.
      */
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
-    URRRobotROS2Interface* ROS2Interface = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
+    TObjectPtr<URRRobotROS2Interface> ROS2Interface = nullptr;
 
     /**
      * @brief Function called with #ROS2Interface replication. Start ROS2Interface if bStartStopROS2Interface=true.
@@ -203,14 +203,14 @@ public:
     //! You can change paramter in BP for manually placed robot but
     //! Paramerter will be overwirten if you spawn from /SpawnEntity srv.
     UPROPERTY(BlueprintReadWrite, Replicated)
-    UROS2Spawnable* ROSSpawnParameters = nullptr;
+    TObjectPtr<UROS2Spawnable> ROSSpawnParameters = nullptr;
 
     /**
      * @brief Pointer to the robot's server-owned version
      * @note Owner can't be used since non-player pawn don't have that.
      */
     UPROPERTY(VisibleAnywhere, Replicated)
-    ARRBaseRobot* ServerRobot = nullptr;
+    TObjectPtr<ARRBaseRobot> ServerRobot = nullptr;
 
     /**
      * @brief Instantiate ROS 2 Interface without initializing yet
@@ -448,14 +448,15 @@ public:
 
     //! Main robot movement component (kinematics/diff-drive or wheels-drive comp)
     //! #MovementComponent and #RobotVehicleMoveComponent should point to same pointer.
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    UMovementComponent* MovementComponent = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced)
+    TObjectPtr<UMovementComponent> MovementComponent = nullptr;
 
     //! Movecomponent casted to #URobotVehicleMovementComponent for utility.
     //! This should be pointing same thing as #MovementComponent
     //! This should be set from #SetMoveComponent
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
-    URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
+    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Replicated)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Replicated)
+    TObjectPtr<URobotVehicleMovementComponent> RobotVehicleMoveComponent;
 
     //! Class of the main robot movement component, configurable in child class
     //! If VehicleMoveComponentClass == nullptr, it is expected that MovementComponent is set from BP or user code.
