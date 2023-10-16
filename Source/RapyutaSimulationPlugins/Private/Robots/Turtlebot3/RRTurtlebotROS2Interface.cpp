@@ -7,4 +7,6 @@ void URRTurtlebotROS2Interface::SetupROSParams()
 {
     bPublishOdom = true;
     bPublishOdomTf = true;
+    bPublishJointTf = true;
+    JointTfPublicationFrequencyHz = 30;
 }
