@@ -7,13 +7,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Drives/DifferentialDriveComponentBase.h"
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 #include <random>
 
-#include "DifferentialDriveComponent.generated.h"
+#include "DifferentialDriveComponentBase.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogDifferentialDriveComponent, Log, All);
 
 /**
  * @brief Differential Drive component class.
@@ -27,11 +28,23 @@
  * @todo Calculate odom from wheel rotation.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponent : public UDifferentialDriveComponentBase
+class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponentBase : public URobotVehicleMovementComponent
 {
     GENERATED_BODY()
 
 public:
+    /**
+     * @brief Call #UpdateOdom in addition to update movement
+     *
+     * @param DeltaTime
+     * @param TickType
+     * @param ThisTickFunction
+     *
+     * @sa
+     * [UpdateComponentVelocity](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdateComponentVelocity/)
+     */
+    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
     /**
      * @brief Calculate wheel velocity from Velocity(member of UMovementComponent) and #AngularVelocity, and set by calling SetAngularVelocityTarget
      * SetAngularDriveParams as well.
@@ -43,17 +56,51 @@ public:
     virtual void UpdateMovement(float DeltaTime) override;
 
     /**
-     * @brief Set left and right wheels.
+     * @brief Calculate odometry from Velocity and #AngularVelocity.
      *
-     * @param InWheelLeft
-     * @param InWheelRight
+     * @param DeltaTime
+     *
+     * @todo Calculate odom from wheel rotation.
+     */
+    virtual void UpdateOdom(float DeltaTime);
+
+    /**
+     * @brief Call Super::Initialize() and #SetPerimeter.
+     *
+     */
+    virtual void Initialize() override;
+
+    /**
+     * @brief SetPerimeter from #WheelRadius * 2.f * M_PI
+     *
      */
     UFUNCTION(BlueprintCallable)
-    void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);
+    void SetPerimeter();
 
+    //! [cm]
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* WheelLeft = nullptr;
+    float WheelRadius = 1.f;
 
+    //! [cm] @todo get data from links
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* WheelRight = nullptr;
+    float WheelSeparationHalf = 1.f;
+
+    //! @todo get data from physics constraints
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float MaxForce = 1000.f;
+
+protected:
+    //! [cm]
+    UPROPERTY()
+    float WheelPerimeter = 6.28f;
+
+    //! [cm]
+    UPROPERTY()
+    float PoseEncoderX = 0.f;
+    //! [cm]
+    UPROPERTY()
+    float PoseEncoderY = 0.f;
+    //! [rad]
+    UPROPERTY()
+    float PoseEncoderThetaRad = 0.f;
 };
