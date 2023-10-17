@@ -8,11 +8,11 @@
 
 #include "CoreMinimal.h"
 #include "Drives/DifferentialDriveComponentBase.h"
-#include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "Drives/RRPhysicsJointComponent.h"
 
 #include <random>
 
-#include "DifferentialDriveComponent.generated.h"
+#include "RRDifferentialDriveComponent.generated.h"
 
 /**
  * @brief Differential Drive component class.
@@ -26,7 +26,7 @@
  * @todo Calculate odom from wheel rotation.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API UDifferentialDriveComponent : public UDifferentialDriveComponentBase
+class RAPYUTASIMULATIONPLUGINS_API URRDifferentialDriveComponent : public UDifferentialDriveComponentBase
 {
     GENERATED_BODY()
 
@@ -48,11 +48,11 @@ public:
      * @param InWheelRight
      */
     UFUNCTION(BlueprintCallable)
-    void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);
+    void SetWheels(URRPhysicsJointComponent* InWheelLeft, URRPhysicsJointComponent* InWheelRight);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* WheelLeft = nullptr;
+    URRPhysicsJointComponent* WheelLeft = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* WheelRight = nullptr;
+    URRPhysicsJointComponent* WheelRight = nullptr;
 };
