@@ -37,10 +37,8 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
         float velL = Velocity.X + angularVelRad * WheelSeparationHalf;
         float velR = Velocity.X - angularVelRad * WheelSeparationHalf;
 
-        WheelLeft->SetAngularVelocityTarget(FVector(-velL / WheelPerimeter, 0, 0));
+        WheelLeft->SetAngularVelocityTarget(FVector(velL / WheelPerimeter, 0, 0));
         WheelRight->SetAngularVelocityTarget(FVector(-velR / WheelPerimeter, 0, 0));
-        WheelLeft->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
-        WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
     }
     else
     {

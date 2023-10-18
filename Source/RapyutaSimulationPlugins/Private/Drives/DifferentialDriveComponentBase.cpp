@@ -64,8 +64,8 @@ void UDifferentialDriveComponentBase::UpdateOdom(float DeltaTime)
     // but as this is not a performance bottleneck, for the moment we leave the full general formulation,
     // at least until the odom for the physics version of the agent is implemented, so that we have a reference
     const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
-    float vl = Velocity.X + angularVelRad * WheelSeparationHalf;
-    float vr = Velocity.X - angularVelRad * WheelSeparationHalf;
+    float vl = Velocity.X + angularVelRad * WheelSeparationHalf;    //cm
+    float vr = Velocity.X - angularVelRad * WheelSeparationHalf;    //cm
 
     // noise added as a component of vl, vr
     // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
@@ -85,7 +85,7 @@ void UDifferentialDriveComponentBase::UpdateOdom(float DeltaTime)
     PoseEncoderThetaRad += dtheta;
 
     float w = dtheta / DeltaTime;
-    float v = sqrt(dx * dx + dy * dy) / DeltaTime;
+    float v = ssum * .5f / DeltaTime;
 
     odomData.Pose.Pose.Position.X = PoseEncoderX;
     odomData.Pose.Pose.Position.Y = PoseEncoderY;
@@ -93,7 +93,7 @@ void UDifferentialDriveComponentBase::UpdateOdom(float DeltaTime)
 
     odomData.Pose.Pose.Orientation = FQuat(FVector::ZAxisVector, PoseEncoderThetaRad);
 
-    odomData.Twist.Twist.Angular.Z = w;
+    odomData.Twist.Twist.Angular.Z = FMath::RadiansToDegrees(w);
     odomData.Twist.Twist.Linear.X = v;
     odomData.Twist.Twist.Linear.Y = 0;
     odomData.Twist.Twist.Linear.Z = 0;

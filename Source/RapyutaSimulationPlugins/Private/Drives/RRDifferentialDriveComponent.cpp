@@ -15,15 +15,9 @@ void URRDifferentialDriveComponent::SetWheels(URRPhysicsJointComponent* InWheelL
         if (IsValid(NewWheel))
         {
             CurWheel = NewWheel;
-            // CurWheel->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
-            // CurWheel->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
-            // CurWheel->SetAngularVelocityDriveTwistAndSwing(true, false);
-
             CurWheel->AngularSpring = MaxForce;
             CurWheel->AngularDamper = MaxForce;
             CurWheel->AngularForceLimit = MaxForce;
-
-            // CurWheel->Constraint->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
         }
         else
         {
@@ -33,17 +27,6 @@ void URRDifferentialDriveComponent::SetWheels(URRPhysicsJointComponent* InWheelL
 
     fSetWheel(WheelLeft, InWheelLeft);
     fSetWheel(WheelRight, InWheelRight);
-
-    // WheelLeft = InWheelLeft;
-    // WheelLeft->AngularSpring = 0;
-    // WheelLeft->AngularDamper = 0;
-    // WheelLeft->AngularForceLimit = MaxForce;
-    // WheelRight = InWheelRight;
-    // WheelRight->AngularSpring = 0;
-    // WheelRight->AngularDamper = 0;
-    // WheelRight->AngularForceLimit = MaxForce;
-
-    // WheelRight->Constraint->SetAngularDriveParams(0, 0, MaxForce);
 }
 
 void URRDifferentialDriveComponent::UpdateMovement(float DeltaTime)
@@ -53,8 +36,8 @@ void URRDifferentialDriveComponent::UpdateMovement(float DeltaTime)
         const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
         float velL = Velocity.X + angularVelRad * WheelSeparationHalf;
         float velR = Velocity.X - angularVelRad * WheelSeparationHalf;
-        WheelLeft->SetVelocityTarget(FVector::ZeroVector, FVector(-velL / WheelPerimeter, 0, 0));
-        WheelRight->SetVelocityTarget(FVector::ZeroVector, FVector(-velR / WheelPerimeter, 0, 0));
+        WheelLeft->SetVelocityTarget(FVector::ZeroVector, FVector(FMath::RadiansToDegrees(velL / WheelRadius), 0, 0));
+        WheelRight->SetVelocityTarget(FVector::ZeroVector, FVector(FMath::RadiansToDegrees(-velR / WheelRadius), 0, 0));
     }
     else
     {
