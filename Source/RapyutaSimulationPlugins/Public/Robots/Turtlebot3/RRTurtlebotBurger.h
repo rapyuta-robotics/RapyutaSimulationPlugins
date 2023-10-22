@@ -8,12 +8,12 @@
 
 // UE
 #include "CoreMinimal.h"
-#include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 // RapyutaSimulationPlugins
+#include "Drives/RRPhysicsJointComponent.h"
 #include "Robots/Turtlebot3/TurtlebotBurgerBase.h"
 
-#include "TurtlebotBurger.generated.h"
+#include "RRTurtlebotBurger.generated.h"
 
 /**
  * @brief Example of child class of #ARRBaseRobot
@@ -21,24 +21,24 @@
  * This class is designed to be inheritted from Blueprint class to be assigned UStaticMeshComponent.
  */
 UCLASS()
-class RAPYUTASIMULATIONPLUGINS_API ATurtlebotBurger : public ATurtlebotBurgerBase
+class RAPYUTASIMULATIONPLUGINS_API ARRTurtlebotBurger : public ATurtlebotBurgerBase
 {
     GENERATED_BODY()
 
 public:
     /**
-    * @brief Construct a new ATurtlebotBurger object. Calls #SetupBody
+    * @brief Construct a new ARRTurtlebotBurger object. Calls #SetupBody
     *
     * @param ObjectInitializer
     */
-    ATurtlebotBurger(const FObjectInitializer& ObjectInitializer);
+    ARRTurtlebotBurger(const FObjectInitializer& ObjectInitializer);
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* Base_WheelLeft = nullptr;
+    URRPhysicsJointComponent* Base_WheelLeft = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UPhysicsConstraintComponent* Base_WheelRight = nullptr;
+    URRPhysicsJointComponent* Base_WheelRight = nullptr;
 
     /**
      * @brief Create UStaticMeshComponent, create UPhysicsConstraintComponent.
