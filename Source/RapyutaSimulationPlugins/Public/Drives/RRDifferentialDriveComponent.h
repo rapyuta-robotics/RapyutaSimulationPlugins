@@ -35,9 +35,6 @@ public:
      * @brief Calculate wheel velocity from Velocity(member of UMovementComponent) and #AngularVelocity, and set by calling SetAngularVelocityTarget
      * SetAngularDriveParams as well.
      * @param DeltaTime
-     * @sa [UPhysicsConstraintComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/)
-     * @sa [SetAngularVelocityTarget](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVeloci-_3/)
-     * @sa [SetAngularDriveParams](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularDriveP-/)
      */
     virtual void UpdateMovement(float DeltaTime) override;
 
@@ -49,6 +46,13 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     void SetWheels(URRPhysicsJointComponent* InWheelLeft, URRPhysicsJointComponent* InWheelRight);
+
+    /**
+     * @brief Get the Wheel Velocity [cm/s]
+     *
+     * @param index index of wheels
+     */
+    virtual float GetWheelVelocity(const int index) override;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URRPhysicsJointComponent* WheelLeft = nullptr;

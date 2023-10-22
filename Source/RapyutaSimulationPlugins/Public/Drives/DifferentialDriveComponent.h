@@ -50,6 +50,13 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);
 
+    /**
+     * @brief Get the Wheel Velocity [cm/s]
+     *
+     * @param index index of wheels
+     */
+    virtual float GetWheelVelocity(const int index) override;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UPhysicsConstraintComponent* WheelLeft = nullptr;
 

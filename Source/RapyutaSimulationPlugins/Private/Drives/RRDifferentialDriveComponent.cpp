@@ -15,8 +15,7 @@ void URRDifferentialDriveComponent::SetWheels(URRPhysicsJointComponent* InWheelL
         if (IsValid(NewWheel))
         {
             CurWheel = NewWheel;
-            CurWheel->AngularSpring = MaxForce;
-            CurWheel->AngularDamper = MaxForce;
+            CurWheel->AngularSpring = 0;
             CurWheel->AngularForceLimit = MaxForce;
         }
         else
@@ -43,4 +42,21 @@ void URRDifferentialDriveComponent::UpdateMovement(float DeltaTime)
     {
         UE_LOG_WITH_INFO_NAMED(LogDifferentialDriveComponent, Error, TEXT("Wheel Joints are not set"));
     }
+}
+
+float URRDifferentialDriveComponent::GetWheelVelocity(const int index)
+{
+    float out = 0;
+    if (index == 0)
+    {
+        // left wheel
+        out = WheelLeft->AngularVelocity[0];
+    }
+    else if (index == 1)
+    {
+        // right wheel
+        out = -WheelRight->AngularVelocity[0];
+    }
+
+    return FMath::DegreesToRadians(out) * WheelRadius;
 }

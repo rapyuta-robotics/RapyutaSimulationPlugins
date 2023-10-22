@@ -65,6 +65,14 @@ public:
     virtual void UpdateOdom(float DeltaTime);
 
     /**
+     * @brief Get the Wheel Velocity [cm/s]
+     *
+     * @param index index of wheels
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual float GetWheelVelocity(const int index);
+
+    /**
      * @brief Call Super::Initialize() and #SetPerimeter.
      *
      */
