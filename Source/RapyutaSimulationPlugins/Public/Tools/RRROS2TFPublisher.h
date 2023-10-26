@@ -16,6 +16,9 @@
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Publisher.h"
 
+// RapyutaSimulationPlugins
+#include "Core/RRGeneralUtils.h"
+
 #include "RRROS2TFPublisher.generated.h"
 
 /**
