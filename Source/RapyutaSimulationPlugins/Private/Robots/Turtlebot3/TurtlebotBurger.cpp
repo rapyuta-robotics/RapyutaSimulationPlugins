@@ -19,10 +19,8 @@ bool ATurtlebotBurger::SetupBody()
 
     // Constraints
     Base_WheelLeft = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelLeft"));
-    Base_WheelLeft->SetupAttachment(Base);
 
     Base_WheelRight = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelRight"));
-    Base_WheelRight->SetupAttachment(Base);
 
     bBodyComponentsCreated = true;
 
@@ -45,16 +43,6 @@ bool ATurtlebotBurger::SetupConstraintsAndPhysics()
 {
     if (bBodyComponentsCreated)
     {
-        // Since attaching to PhysicsConstraintComponent does not work, set each link pose here.
-        WheelLeft->SetupAttachment(Base);
-        WheelLeft->SetRelativeLocation(FVector(3.2, -8, 2.3));
-        WheelLeft->SetRelativeRotation(FRotator(0, 0, 0));
-        WheelRight->SetupAttachment(Base);
-        WheelRight->SetRelativeLocation(FVector(3.2, 8, 2.3));
-        WheelRight->SetRelativeRotation(FRotator(0, 180, 0));
-        // WheelLeft->SetupAttachment(Base_WheelLeft);
-        // WheelRight->SetupAttachment(Base_WheelRight);
-
         Base_WheelLeft->ComponentName1.ComponentName = TEXT("Base");
         Base_WheelLeft->ComponentName2.ComponentName = TEXT("WheelLeft");
         Base_WheelLeft->SetDisableCollision(true);
@@ -82,6 +70,15 @@ bool ATurtlebotBurger::SetupConstraintsAndPhysics()
         Base_WheelRight->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 0);
         Base_WheelRight->SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0);
         Base_WheelRight->SetLinearZLimit(ELinearConstraintMotion::LCM_Locked, 0);
+
+        // need to attach child to physics constraint first before attaching physics constraint to parent.
+        WheelLeft->SetupAttachment(Base_WheelLeft);
+        WheelLeft->SetRelativeRotation(FRotator(0, -90, 0));
+        WheelRight->SetupAttachment(Base_WheelRight);
+        WheelRight->SetRelativeRotation(FRotator(0, 90, 0));
+
+        Base_WheelRight->SetupAttachment(Base);
+        Base_WheelLeft->SetupAttachment(Base);
 
         return true;
     }

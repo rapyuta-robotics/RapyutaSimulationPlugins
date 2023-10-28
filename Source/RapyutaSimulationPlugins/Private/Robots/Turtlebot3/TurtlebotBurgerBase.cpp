@@ -31,21 +31,14 @@ bool ATurtlebotBurgerBase::SetupBody()
     WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
     CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
 
-    // Since attaching to PhysicsConstraintComponent does not work, set each link pose here.
-    LidarSensor->SetupAttachment(Base);
-    LidarSensor->SetRelativeLocation(FVector(0, 0, 17.2));
     LidarComponent->SetupAttachment(LidarSensor);
-    CasterBack->SetupAttachment(Base);
-    CasterBack->SetRelativeLocation(FVector(-4.9, 0, -0.5));
 
     bBodyComponentsCreated = true;
 
     // Constraints
     Base_LidarSensor = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_LidarSensor"));
-    Base_LidarSensor->SetupAttachment(Base);
 
     Base_CasterBack = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_CasterBack"));
-    Base_CasterBack->SetupAttachment(Base);
 
     return true;
 }
@@ -71,7 +64,6 @@ bool ATurtlebotBurgerBase::SetupConstraintsAndPhysics()
         WheelRight->SetSimulatePhysics(true);
         CasterBack->SetSimulatePhysics(true);
 
-        // LidarSensor->SetupAttachment(Base_LidarSensor); // Attach to PhysicsConstraintComponent does not work.
         Base_LidarSensor->ComponentName1.ComponentName = TEXT("Base");
         Base_LidarSensor->ComponentName2.ComponentName = TEXT("LidarSensor");
         Base_LidarSensor->SetRelativeLocation(FVector(0, 0, 17.2));
@@ -83,7 +75,6 @@ bool ATurtlebotBurgerBase::SetupConstraintsAndPhysics()
         Base_LidarSensor->SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0);
         Base_LidarSensor->SetLinearZLimit(ELinearConstraintMotion::LCM_Locked, 0);
 
-        // CasterBack->SetupAttachment(Base_CasterBack); // Attach to PhysicsConstraintComponent does not work.
         Base_CasterBack->ComponentName1.ComponentName = TEXT("Base");
         Base_CasterBack->ComponentName2.ComponentName = TEXT("CasterBack");
         Base_CasterBack->SetRelativeLocation(FVector(-4.9, 0, -0.5));
@@ -91,6 +82,13 @@ bool ATurtlebotBurgerBase::SetupConstraintsAndPhysics()
         Base_CasterBack->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 0);
         Base_CasterBack->SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0);
         Base_CasterBack->SetLinearZLimit(ELinearConstraintMotion::LCM_Locked, 0);
+
+        // need to attach child to physics constraint first before attaching physics constraint to parent.
+        LidarSensor->SetupAttachment(Base_LidarSensor);
+        CasterBack->SetupAttachment(Base_CasterBack);
+
+        Base_LidarSensor->SetupAttachment(Base);
+        Base_CasterBack->SetupAttachment(Base);
 
         return true;
     }
