@@ -6,6 +6,15 @@
 URRPhysicsJointComponent::URRPhysicsJointComponent()
 {
     // todo initializing physicsconstaints here does not work somehow.
+
+    // Todo: Following attempt crash with
+    //  Ensure condition failed: false [File:./Runtime/Engine/Private/Components/SceneComponent.cpp] [Line: 2004]
+    //  Template Mismatch during attachment. Attaching instanced component to template component. Parent 'Base_WheelRight' (Owner 'Default__BP_RRTurtlebotBurger_C') Self 'Base_WheelRightPhysicsConstraint' (Owner 'BP_RRTurtlebotBurger_C_1').
+    // FName temp = FName(*FString::Printf(TEXT("%sPhysicsConstraint"), *GetName()));
+    // FName temp2 = MakeUniqueObjectName(GetOwner(), UPhysicsConstraintComponent::StaticClass(), TEXT("PhysicsConstraint"));
+    // Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(FName(*FString::Printf(TEXT("%sPhysicsConstraint"), *GetName())));
+
+    // This work but component name become %sPhysicsConstraint.
     Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("%sPhysicsConstraint"), *GetName());
     Constraint->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 }
