@@ -1,5 +1,5 @@
 /**
- * @file TurtlebotBurger.h
+ * @file RRTurtlebotBurger.h
  * @brief Example of child class of #ARRBaseRobot
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -17,7 +17,7 @@
 
 /**
  * @brief Example of child class of #ARRBaseRobot
- * Uses #UDifferentialDriveComponent and has #URR2DLidarComponent.
+ * Uses #URRDifferentialDriveComponent.
  * This class is designed to be inheritted from Blueprint class to be assigned UStaticMeshComponent.
  */
 UCLASS()
@@ -41,19 +41,19 @@ protected:
     URRPhysicsJointComponent* Base_WheelRight = nullptr;
 
     /**
-     * @brief Create UStaticMeshComponent, create UPhysicsConstraintComponent.
+     * @brief Create UStaticMeshComponent, create URRPhysicsJointComponent.
      *
      */
     bool SetupBody() override;
 
     /**
-     * @brief Setup material, relative location, anugular/linear limits, drive params.
+     * @brief Setup URRPhysicsJointComponent.
      *
      */
     bool SetupConstraintsAndPhysics() override;
 
     /**
-     * @brief Setup #UDifferentialDriveComponent
+     * @brief Setup #URRDifferentialDriveComponent
      *
      */
     void SetupWheelDrives() override;

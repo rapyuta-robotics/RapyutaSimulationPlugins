@@ -1,6 +1,6 @@
 /**
- * @file DifferentialDriveComponent.h
- * @brief Differential Drive component class.
+ * @file RRDifferentialDriveComponent.h
+ * @brief RRDifferential Drive component class.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
 
@@ -16,14 +16,9 @@
 
 /**
  * @brief Differential Drive component class.
- * Simulate differential drive by using 2 UPhysicsConstraintComponent.
+ * Simulate differential drive by using 2 #URRPhysicsJointComponent.
  * Calculate wheel rotation from given Velocity(member of UMovementComponent) and #AngularVelocity and set by calling SetAngularVelocityTarget
- * Publish odometry from Velocity and #AngularVelocity.
- *
- * @sa [UPhysicsConstraintComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/)
- * @sa [SetAngularVelocityTarget](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/PhysicsEngine/UPhysicsConstraintComponent/SetAngularVeloci-_3/)
- *
- * @todo Calculate odom from wheel rotation.
+ * Publish odometry from wheel rotation.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRDifferentialDriveComponent : public UDifferentialDriveComponentBase
@@ -33,7 +28,6 @@ class RAPYUTASIMULATIONPLUGINS_API URRDifferentialDriveComponent : public UDiffe
 public:
     /**
      * @brief Calculate wheel velocity from Velocity(member of UMovementComponent) and #AngularVelocity, and set by calling SetAngularVelocityTarget
-     * SetAngularDriveParams as well.
      * @param DeltaTime
      */
     virtual void UpdateMovement(float DeltaTime) override;

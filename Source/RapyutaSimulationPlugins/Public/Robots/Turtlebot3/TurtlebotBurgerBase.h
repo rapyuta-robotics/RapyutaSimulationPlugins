@@ -86,7 +86,7 @@ protected:
     uint8 bBodyComponentsCreated : 1;
 
     /**
-     * @brief Setup material, relative location, anugular/linear limits, drive params.
+     * @brief Setup UPhysicsConstraintComponent.
      *
      */
     UFUNCTION()

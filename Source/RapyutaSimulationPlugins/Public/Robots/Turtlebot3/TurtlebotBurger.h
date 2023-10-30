@@ -17,7 +17,7 @@
 
 /**
  * @brief Example of child class of #ARRBaseRobot
- * Uses #UDifferentialDriveComponent and has #URR2DLidarComponent.
+ * Uses #UDifferentialDriveComponent
  * This class is designed to be inheritted from Blueprint class to be assigned UStaticMeshComponent.
  */
 UCLASS()
