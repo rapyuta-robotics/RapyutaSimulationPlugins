@@ -44,15 +44,15 @@ void URRDifferentialDriveComponent::UpdateMovement(float DeltaTime)
     }
 }
 
-float URRDifferentialDriveComponent::GetWheelVelocity(const int index)
+float URRDifferentialDriveComponent::GetWheelVelocity(const EDiffDriveWheel WheelIndex)
 {
     float out = 0;
-    if (index == 0)
+    if (WheelIndex == EDiffDriveWheel::LEFT)
     {
         // left wheel
         out = WheelLeft->AngularVelocity[0];
     }
-    else if (index == 1)
+    else if (WheelIndex == EDiffDriveWheel::RIGHT)
     {
         // right wheel
         out = -WheelRight->AngularVelocity[0];

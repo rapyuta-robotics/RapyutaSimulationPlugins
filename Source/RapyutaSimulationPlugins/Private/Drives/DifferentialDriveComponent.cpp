@@ -33,8 +33,9 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 {
     if (IsValid(WheelLeft) && IsValid(WheelRight))
     {
-        float velL = GetWheelVelocity(0);
-        float velR = GetWheelVelocity(1);
+        const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
+        float velL = Velocity.X + angularVelRad * WheelSeparationHalf;
+        float velR = Velocity.X - angularVelRad * WheelSeparationHalf;
 
         WheelLeft->SetAngularVelocityTarget(FVector(velL / WheelPerimeter, 0, 0));
         WheelRight->SetAngularVelocityTarget(FVector(-velR / WheelPerimeter, 0, 0));
@@ -45,16 +46,17 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
     }
 }
 
-float UDifferentialDriveComponent::GetWheelVelocity(const int index)
+float UDifferentialDriveComponent::GetWheelVelocity(const EDiffDriveWheel WheelIndex)
 {
+    // todo calculate from wheel pose
     const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
     float out = 0;
-    if (index == 0)
+    if (WheelIndex == EDiffDriveWheel::LEFT)
     {
         // left wheel
         out = Velocity.X + angularVelRad * WheelSeparationHalf;    //cm
     }
-    else if (index == 1)
+    else if (WheelIndex == EDiffDriveWheel::RIGHT)
     {
         // right wheel
         out = Velocity.X - angularVelRad * WheelSeparationHalf;    //cm

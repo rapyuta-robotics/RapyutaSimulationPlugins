@@ -17,6 +17,16 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogDifferentialDriveComponent, Log, All);
 
 /**
+ * @brief Wheel type of differential drive
+ */
+UENUM(BlueprintType)
+enum class EDiffDriveWheel : uint8
+{
+    RIGHT UMETA(DisplayName = "RIGHT"),
+    LEFT UMETA(DisplayName = "LEFT")
+};
+
+/**
  * @brief Differential Drive component class.
  * Simulate differential drive by using 2 UPhysicsConstraintComponent.
  * Calculate wheel rotation from given Velocity(member of UMovementComponent) and #AngularVelocity and set by calling SetAngularVelocityTarget
@@ -70,7 +80,7 @@ public:
      * @param index index of wheels
      */
     UFUNCTION(BlueprintCallable)
-    virtual float GetWheelVelocity(const int index);
+    virtual float GetWheelVelocity(const EDiffDriveWheel WheelIndex);
 
     /**
      * @brief Call Super::Initialize() and #SetPerimeter.

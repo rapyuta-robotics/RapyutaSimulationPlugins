@@ -36,7 +36,7 @@ void UDifferentialDriveComponentBase::UpdateMovement(float DeltaTime)
     UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("This method should be implemented in child class."));
 }
 
-float UDifferentialDriveComponentBase::GetWheelVelocity(const int index)
+float UDifferentialDriveComponentBase::GetWheelVelocity(const EDiffDriveWheel WheelIndex)
 {
     UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("This method should be implemented in child class."));
     return 0;
@@ -70,8 +70,8 @@ void UDifferentialDriveComponentBase::UpdateOdom(float DeltaTime)
     // in the kinematics case, (dx,dy,dtheta) can be simplified considerably
     // but as this is not a performance bottleneck, for the moment we leave the full general formulation,
     // at least until the odom for the physics version of the agent is implemented, so that we have a reference
-    float vl = GetWheelVelocity(0);
-    float vr = GetWheelVelocity(1);
+    float vl = GetWheelVelocity(EDiffDriveWheel::LEFT);
+    float vr = GetWheelVelocity(EDiffDriveWheel::RIGHT);
 
     // noise added as a component of vl, vr
     // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
