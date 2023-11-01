@@ -1,6 +1,6 @@
 // Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
-#include "Drives/DifferentialDriveComponent.h"
+#include "Drives/RRDifferentialDriveComponent.h"
 
 // rclUE
 #include "rclcUtilities.h"
@@ -8,16 +8,15 @@
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
 
-void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight)
+void URRDifferentialDriveComponent::SetWheels(URRPhysicsJointComponent* InWheelLeft, URRPhysicsJointComponent* InWheelRight)
 {
-    auto fSetWheel = [this](UPhysicsConstraintComponent*& CurWheel, UPhysicsConstraintComponent* NewWheel)
+    auto fSetWheel = [this](URRPhysicsJointComponent*& CurWheel, URRPhysicsJointComponent* NewWheel)
     {
         if (IsValid(NewWheel))
         {
             CurWheel = NewWheel;
-            CurWheel->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
-            CurWheel->SetAngularDriveParams(0, MaxForce, MaxForce);
-            CurWheel->SetAngularVelocityDriveTwistAndSwing(true, false);
+            CurWheel->AngularSpring = 0;
+            CurWheel->AngularForceLimit = MaxForce;
         }
         else
         {
@@ -29,16 +28,15 @@ void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheel
     fSetWheel(WheelRight, InWheelRight);
 }
 
-void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
+void URRDifferentialDriveComponent::UpdateMovement(float DeltaTime)
 {
     if (IsValid(WheelLeft) && IsValid(WheelRight))
     {
         const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
         float velL = Velocity.X + angularVelRad * WheelSeparationHalf;
         float velR = Velocity.X - angularVelRad * WheelSeparationHalf;
-
-        WheelLeft->SetAngularVelocityTarget(FVector(velL / WheelPerimeter, 0, 0));
-        WheelRight->SetAngularVelocityTarget(FVector(-velR / WheelPerimeter, 0, 0));
+        WheelLeft->SetVelocityTarget(FVector::ZeroVector, FVector(FMath::RadiansToDegrees(velL / WheelRadius), 0, 0));
+        WheelRight->SetVelocityTarget(FVector::ZeroVector, FVector(FMath::RadiansToDegrees(-velR / WheelRadius), 0, 0));
     }
     else
     {
@@ -46,21 +44,19 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
     }
 }
 
-float UDifferentialDriveComponent::GetWheelVelocity(const EDiffDriveWheel WheelIndex)
+float URRDifferentialDriveComponent::GetWheelVelocity(const EDiffDriveWheel WheelIndex)
 {
-    // todo calculate from wheel pose
-    const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
     float out = 0;
     if (WheelIndex == EDiffDriveWheel::LEFT)
     {
         // left wheel
-        out = Velocity.X + angularVelRad * WheelSeparationHalf;    //cm
+        out = WheelLeft->AngularVelocity[0];
     }
     else if (WheelIndex == EDiffDriveWheel::RIGHT)
     {
         // right wheel
-        out = Velocity.X - angularVelRad * WheelSeparationHalf;    //cm
+        out = -WheelRight->AngularVelocity[0];
     }
 
-    return out;
+    return FMath::DegreesToRadians(out) * WheelRadius;
 }
