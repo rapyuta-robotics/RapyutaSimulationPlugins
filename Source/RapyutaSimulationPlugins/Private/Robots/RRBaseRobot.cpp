@@ -171,6 +171,8 @@ void ARRBaseRobot::PreInitializeComponents()
                                     "probably later in child BP class!"));
     }
 
+    BPPreInitializeComponents();
+
     // Super::, for EAutoPossessAI::PlacedInWorldOrSpawned, spawn APawn's default controller,
     // which does the possessing, thus must be called afterwards
     Super::PreInitializeComponents();
@@ -183,6 +185,8 @@ void ARRBaseRobot::PostInitializeComponents()
     {
         InitMoveComponent();
     }
+
+    BPPostInitializeComponents();
 }
 
 void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeAsRoot, bool bInDestroyDefaultRoot)
