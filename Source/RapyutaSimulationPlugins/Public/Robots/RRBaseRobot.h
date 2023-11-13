@@ -607,6 +607,22 @@ protected:
      */
     virtual bool InitMoveComponent();
 
+    /**
+     * @brief This method is called inside #PreInitializeComponents.
+     * Custom initialization of child BP class can be done by overwritting this method.
+     * @note BlueprintImplementableEvent can't return value
+     */
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPPreInitializeComponents();
+
+    /**
+     * @brief This method is called inside #PreInitializeComponents.
+     * Custom initialization of child BP class can be done by overwritting this method.
+     * @note BlueprintImplementableEvent can't return value
+     */
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPPostInitializeComponents();
+
 public:
     /**
      * @brief Parse Json parameters in #ROSSpawnParameters
