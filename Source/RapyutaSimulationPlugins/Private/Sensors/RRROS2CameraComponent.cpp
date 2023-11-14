@@ -20,6 +20,8 @@ void URRROS2CameraComponent::PreInitializePublisher(UROS2NodeComponent* InROS2No
     SceneCaptureComponent->FOVAngle = CameraComponent->FieldOfView;
     SceneCaptureComponent->OrthoWidth = CameraComponent->OrthoWidth;
 
+    SceneCaptureComponent->PostProcessSettings = CameraComponent->PostProcessSettings;
+
     RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
     RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_B8G8R8A8, true);
     SceneCaptureComponent->TextureTarget = RenderTarget;
