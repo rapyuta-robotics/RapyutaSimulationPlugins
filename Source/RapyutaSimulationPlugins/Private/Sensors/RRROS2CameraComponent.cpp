@@ -2,6 +2,8 @@
 
 #include "Sensors/RRROS2CameraComponent.h"
 
+#include "BufferVisualizationData.h"
+
 URRROS2CameraComponent::URRROS2CameraComponent()
 {
     // component initialization
@@ -20,6 +22,9 @@ void URRROS2CameraComponent::PreInitializePublisher(UROS2NodeComponent* InROS2No
     SceneCaptureComponent->FOVAngle = CameraComponent->FieldOfView;
     SceneCaptureComponent->OrthoWidth = CameraComponent->OrthoWidth;
 
+    FBufferVisualizationData data = GetBufferVisualizationData();
+    FWeightedBlendable blendable(1.0f, data.GetMaterial(TEXT("SceneDepth")));
+    CameraComponent->PostProcessSettings.WeightedBlendables.Array.Add(blendable);
     SceneCaptureComponent->PostProcessSettings = CameraComponent->PostProcessSettings;
 
     RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
