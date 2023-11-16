@@ -22,10 +22,13 @@ void URRROS2CameraComponent::PreInitializePublisher(UROS2NodeComponent* InROS2No
     SceneCaptureComponent->FOVAngle = CameraComponent->FieldOfView;
     SceneCaptureComponent->OrthoWidth = CameraComponent->OrthoWidth;
 
-    FBufferVisualizationData data = GetBufferVisualizationData();
-    FWeightedBlendable blendable(1.0f, data.GetMaterial(TEXT("SceneDepth")));
-    CameraComponent->PostProcessSettings.WeightedBlendables.Array.Add(blendable);
-    SceneCaptureComponent->PostProcessSettings = CameraComponent->PostProcessSettings;
+    if (CameraType == EROS2CameraType::DEPTH)
+    {
+        FWeightedBlendable blendable(1.0f, GetBufferVisualizationData().GetMaterial(TEXT("SceneDepth")));
+        CameraComponent->PostProcessSettings.WeightedBlendables.Array.Add(blendable);
+        SceneCaptureComponent->PostProcessSettings = CameraComponent->PostProcessSettings;
+        SceneCaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorHDR;
+    }
 
     RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
     RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_B8G8R8A8, true);
