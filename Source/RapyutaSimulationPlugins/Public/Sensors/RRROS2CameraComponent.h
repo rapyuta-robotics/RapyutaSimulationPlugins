@@ -32,6 +32,13 @@ struct FRenderRequest
     FRenderCommandFence RenderFence;
 };
 
+UENUM(BlueprintType)
+enum class EROS2CameraType : uint8
+{
+    RGB UMETA(DisplayName = "RGB"),
+    DEPTH UMETA(DisplayName = "Depth")
+};
+
 /**
  * @brief ROS 2 Camera component. Uses USceneCaptureComponent2D.
  *
@@ -102,6 +109,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 QueueSize = 2;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    EROS2CameraType CameraType = EROS2CameraType::RGB;
 
     // ROS
     /**
