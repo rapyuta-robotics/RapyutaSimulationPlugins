@@ -33,6 +33,8 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 
     Robot = InRobot;
     Robot->ROS2Interface = this;
+    ROSSpawnParameters = Robot->ROSSpawnParameters;
+    SetupROSParamsAll();
 
     // Instantiate a ROS 2 node for InRobot
     InitRobotROS2Node(InRobot);
@@ -494,33 +496,23 @@ void URRRobotROS2Interface::UpdateJointState(UROS2GenericMsg* InMessage)
     CastChecked<UROS2JointStateMsg>(InMessage)->SetMsg(msg);
 }
 
-URRRobotROS2InterfaceComponent::URRRobotROS2InterfaceComponent()
+void URRRobotROS2InterfaceComponent::BeginPlay()
 {
-    ROS2Interface = CastChecked<URRRobotROS2Interface>(
-        URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
+    if (ROS2Interface == nullptr)
+    {
+        ROS2Interface = CastChecked<URRRobotROS2Interface>(
+            URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
+    }
 
-    if (nullptr == Robot)
+    if (ROS2Interface->Robot == nullptr)
     {
         UE_LOG_WITH_INFO_NAMED(LogTemp,
                                Warning,
                                TEXT("Robot is nullptr. Trying to get "
-                                    "owner as robot."));
-        Robot = Cast<ARRBaseRobot>(GetOwner());
+                                    "owner as robot and initialize."));
+        ROS2Interface->Initialize(Cast<ARRBaseRobot>(GetOwner()));
     }
-
-    if (nullptr != Robot)
-    {
-        ROS2Interface->ROSSpawnParameters = Robot->ROSSpawnParameters;
-    }
-    else
-    {
-        UE_LOG_WITH_INFO_NAMED(LogTemp,
-                               Warning,
-                               TEXT("Robot is nullptr and Owner is not "
-                                    "Robot. Can't set Spawnparameter"));
-    }
-
-    ROS2Interface->SetupROSParamsAll();
+    Super::BeginPlay();
 }
 
 void URRRobotROS2InterfaceComponent::AddAllSubComponentToROSInterface()

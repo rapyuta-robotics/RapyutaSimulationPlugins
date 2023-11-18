@@ -16,6 +16,9 @@
 #include "Msgs/ROS2TFMsg.h"
 #include "ROS2Publisher.h"
 
+// RapyutaSimulationPlugins
+#include "Core/RRGeneralUtils.h"
+
 #include "RRROS2TFPublisher.generated.h"
 
 /**
@@ -133,6 +136,7 @@ public:
      * @param InFrameId
      * @param InChildFrameId
      */
+    UFUNCTION(BlueprintCallable)
     void Init(FString InFrameId, FString InChildFrameId)
     {
         FrameId = InFrameId;
@@ -202,10 +206,11 @@ public:
      * @param InParentLink
      * @param InChildLink
      */
-    void Init(const FString& InFrameId,
-              const FString& InChildFrameId,
-              UPrimitiveComponent* InParentLink,
-              UPrimitiveComponent* InChildLink)
+    UFUNCTION(BlueprintCallable)
+    void InitLinksTFComponent(const FString& InFrameId,
+                              const FString& InChildFrameId,
+                              UPrimitiveComponent* InParentLink,
+                              UPrimitiveComponent* InChildLink)
     {
         Super::Init(InFrameId, InChildFrameId);
         ParentLink = InParentLink;
@@ -224,6 +229,46 @@ public:
      * @return FTransform
      */
     virtual FTransform GetTF() override;
+
+    /**
+     * @brief Set Parent link and name
+     *
+     * @param InParentLink
+     * @param InFrameId
+     */
+    UFUNCTION(BlueprintCallable)
+    void AddParentLink(UPrimitiveComponent* InParentLink, const FString& InFrameId)
+    {
+        ParentLink = InParentLink;
+        FrameId = InFrameId;
+    }
+
+    /**
+     * @brief Set child link and name
+     *
+     * @param InChildLink
+     * @param InChildFrameId
+     */
+    UFUNCTION(BlueprintCallable)
+    void AddChildLink(UPrimitiveComponent* InChildLink, const FString& InChildFrameId)
+    {
+        ChildLink = InChildLink;
+        ChildFrameId = InChildFrameId;
+    }
+
+    /**
+     * @brief Add links from physics constraints
+     *
+     * @param InConstraint
+     * @param InFrameId
+     * @param InChildFrameId
+     */
+    UFUNCTION(BlueprintCallable)
+    void AddLinksFromConstraint(UPhysicsConstraintComponent* InConstraint, const FString& InFrameId, const FString& InChildFrameId)
+    {
+        AddParentLink(URRGeneralUtils::GetPhysicsConstraintComponent(InConstraint, EConstraintFrame::Frame1), InFrameId);
+        AddChildLink(URRGeneralUtils::GetPhysicsConstraintComponent(InConstraint, EConstraintFrame::Frame2), InChildFrameId);
+    }
 
     /**
      * @brief Add URRROS2LinksTFComponent to #OutTFsPublisher::TFComponents.
@@ -259,12 +304,12 @@ public:
      * @param InChildFrameId
      * @param InConstraint
      */
-    void Init(const FString InFrameId, const FString InChildFrameId, UPhysicsConstraintComponent* InConstraint)
+    UFUNCTION(BlueprintCallable)
+    void InitPhysicsConstraintTFComponent(const FString InFrameId,
+                                          const FString InChildFrameId,
+                                          UPhysicsConstraintComponent* InConstraint)
     {
-        Super::Init(InFrameId,
-                    InChildFrameId,
-                    URRGeneralUtils::GetPhysicsConstraintComponent(InConstraint, EConstraintFrame::Frame1),
-                    URRGeneralUtils::GetPhysicsConstraintComponent(InConstraint, EConstraintFrame::Frame2));
+        AddLinksFromConstraint(InConstraint, InFrameId, InChildFrameId);
     }
 
     /**
@@ -301,7 +346,8 @@ public:
      * @param InJointToChildLink
      * @param InJoint
      */
-    void Init(const FString& InFrameId, const FString& InChildFrameId, URRJointComponent* InJoint)
+    UFUNCTION(BlueprintCallable)
+    void InitJointTFComponent(const FString& InFrameId, const FString& InChildFrameId, URRJointComponent* InJoint)
     {
         Super::Init(InFrameId, InChildFrameId);
         Joint = InJoint;

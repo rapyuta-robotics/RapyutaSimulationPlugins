@@ -16,6 +16,7 @@
 #include <Msgs/ROS2Img.h>
 
 // RapyutaSimulationPlugins
+#include "Core/RRConversionUtils.h"
 #include "RRROS2BaseSensorComponent.h"
 
 #include "RRROS2CameraComponent.generated.h"

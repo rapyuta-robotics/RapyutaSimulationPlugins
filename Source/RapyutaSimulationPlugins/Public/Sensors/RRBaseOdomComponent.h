@@ -12,6 +12,7 @@
 // RapyutaSimulationPlugins
 #include "Core/RRActorCommon.h"
 #include "Sensors/RRROS2EntityStateSensorComponent.h"
+#include "Tools/RRROS2OdomPublisher.h"
 #include "Tools/SimulationState.h"
 
 #include "RRBaseOdomComponent.generated.h"

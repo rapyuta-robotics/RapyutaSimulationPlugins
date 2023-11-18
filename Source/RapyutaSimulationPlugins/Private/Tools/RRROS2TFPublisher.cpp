@@ -97,7 +97,7 @@ void URRROS2LinksTFComponent::AddLinks(UPrimitiveComponent* InParentLink,
                                        URRROS2TFsPublisher* OutTFsPublisher)
 {
     URRROS2LinksTFComponent* linksTF = NewObject<URRROS2LinksTFComponent>(OutTFsPublisher);
-    linksTF->Init(InFrameId, InChildFrameId, InParentLink, InChildLink);
+    linksTF->InitLinksTFComponent(InFrameId, InChildFrameId, InParentLink, InChildLink);
     OutTFsPublisher->TFComponents.Add(linksTF);
 }
 
@@ -107,7 +107,7 @@ void URRROS2PhysicsConstraintTFComponent::AddConstraint(UPhysicsConstraintCompon
                                                         URRROS2TFsPublisher* OutTFsPublisher)
 {
     URRROS2PhysicsConstraintTFComponent* constraintTF = NewObject<URRROS2PhysicsConstraintTFComponent>(OutTFsPublisher);
-    constraintTF->Init(InFrameId, InChildFrameId, InConstraint);
+    constraintTF->InitPhysicsConstraintTFComponent(InFrameId, InChildFrameId, InConstraint);
     OutTFsPublisher->TFComponents.Add(constraintTF);
 }
 
@@ -128,6 +128,6 @@ void URRROS2JointTFComponent::AddJoint(URRJointComponent* InJoint,
                                        URRROS2TFsPublisher* OutTFsPublisher)
 {
     URRROS2JointTFComponent* jointTF = NewObject<URRROS2JointTFComponent>(OutTFsPublisher);
-    jointTF->Init(InFrameId, InChildFrameId, InJoint);
+    jointTF->InitJointTFComponent(InFrameId, InChildFrameId, InJoint);
     OutTFsPublisher->TFComponents.Add(jointTF);
 }

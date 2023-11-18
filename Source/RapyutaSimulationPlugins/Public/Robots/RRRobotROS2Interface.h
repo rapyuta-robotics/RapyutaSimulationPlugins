@@ -34,7 +34,7 @@ class ARRBaseRobot;
  * Please create child class of this class to custom ROS2Interface which have your own ROS2Interfaces.
  * @todo add handling of service and action.
  */
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, EditInlineNew)
 class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
 {
     GENERATED_BODY()
@@ -45,7 +45,7 @@ class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
 public:
     //! Target robot
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    ARRBaseRobot* Robot = nullptr;
+    TObjectPtr<ARRBaseRobot> Robot = nullptr;
 
     virtual bool IsSupportedForNetworking() const override
     {
@@ -62,11 +62,11 @@ public:
 
     //! ROS 2 node of this interface created by #InitRobotROS2Node
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    UROS2NodeComponent* RobotROS2Node = nullptr;
+    TObjectPtr<UROS2NodeComponent> RobotROS2Node = nullptr;
 
     //! ROS2SpawnParameters which is created when robot is spawn from /SpawnEntity srv provided by #ASimulationState.
     UPROPERTY(VisibleAnywhere, Replicated)
-    UROS2Spawnable* ROSSpawnParameters = nullptr;
+    TObjectPtr<UROS2Spawnable> ROSSpawnParameters = nullptr;
 
     /**
      * @brief Initialize robot's ROS 2 interface by calling #InitRobotROS2Node, #InitPublishers, #InitSubscriptions and #ARRBaseRobot::InitSensors.
@@ -103,7 +103,7 @@ public:
 
     //! Odometry source
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    URRBaseOdomComponent* OdomComponent = nullptr;
+    TObjectPtr<URRBaseOdomComponent> OdomComponent = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdom = true;
@@ -145,7 +145,7 @@ public:
 
     //! JointState Publisher
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UROS2Publisher* JointStatePublisher = nullptr;
+    TObjectPtr<UROS2Publisher> JointStatePublisher = nullptr;
 
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
@@ -159,7 +159,7 @@ public:
     bool bWarnAboutMissingLink = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    URRROS2TFsPublisher* JointsTFPublisher = nullptr;
+    TObjectPtr<URRROS2TFsPublisher> JointsTFPublisher = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishJointTf = false;
@@ -191,7 +191,7 @@ public:
 
     //! Odom publisher
     UPROPERTY(Transient, BlueprintReadWrite, Replicated)
-    URRROS2OdomPublisher* OdomPublisher = nullptr;
+    TObjectPtr<URRROS2OdomPublisher> OdomPublisher = nullptr;
 
     //! You can add your publishers here to ask ROS2Interface to manage.
     //! Other option is to create child class to overwrite each method.
@@ -359,13 +359,10 @@ class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2InterfaceComponent : public UActo
 {
     GENERATED_BODY()
 public:
-    URRRobotROS2InterfaceComponent();
+    virtual void BeginPlay() override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    ARRBaseRobot* Robot = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    URRRobotROS2Interface* ROS2Interface = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced)
+    TObjectPtr<URRRobotROS2Interface> ROS2Interface = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass = URRRobotROS2Interface::StaticClass();

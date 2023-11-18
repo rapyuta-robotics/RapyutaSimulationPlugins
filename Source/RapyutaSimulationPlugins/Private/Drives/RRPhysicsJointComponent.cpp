@@ -6,6 +6,15 @@
 URRPhysicsJointComponent::URRPhysicsJointComponent()
 {
     // todo initializing physicsconstaints here does not work somehow.
+
+    // Todo: Following attempt crash with
+    //  Ensure condition failed: false [File:./Runtime/Engine/Private/Components/SceneComponent.cpp] [Line: 2004]
+    //  Template Mismatch during attachment. Attaching instanced component to template component. Parent 'Base_WheelRight' (Owner 'Default__BP_RRTurtlebotBurger_C') Self 'Base_WheelRightPhysicsConstraint' (Owner 'BP_RRTurtlebotBurger_C_1').
+    // FName temp = FName(*FString::Printf(TEXT("%sPhysicsConstraint"), *GetName()));
+    // FName temp2 = MakeUniqueObjectName(GetOwner(), UPhysicsConstraintComponent::StaticClass(), TEXT("PhysicsConstraint"));
+    // Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(FName(*FString::Printf(TEXT("%sPhysicsConstraint"), *GetName())));
+
+    // This work but component name become %sPhysicsConstraint.
     Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("%sPhysicsConstraint"), *GetName());
     Constraint->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 }
@@ -102,13 +111,14 @@ void URRPhysicsJointComponent::SetVelocityTarget(const FVector& InLinearVelocity
     Constraint->SetAngularVelocityDrive(true, true);
     Constraint->SetLinearPositionDrive(false, false, false);
     Constraint->SetAngularOrientationDrive(false, false);
+    Constraint->SetAngularDriveParams(0, AngularDamper, AngularForceLimit);
 
     // set velocity target
     Super::SetVelocityTarget(InLinearVelocity, InAngularVelocity);
     if (!bSmoothing)
     {
-        Constraint->SetLinearVelocityTarget(InLinearVelocity);
-        Constraint->SetAngularVelocityTarget(InAngularVelocity / 360.0);
+        Constraint->SetLinearVelocityTarget(LinearVelocityTarget);
+        Constraint->SetAngularVelocityTarget(AngularVelocityTarget / 360.0);
     }
     else
     {
@@ -145,6 +155,7 @@ void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FR
     // change to position control mode
     Constraint->SetLinearPositionDrive(true, true, true);
     Constraint->SetAngularOrientationDrive(true, true);
+    Constraint->SetAngularDriveParams(0, AngularDamper, AngularForceLimit);
     Super::SetPoseTarget(InPosition, InOrientation);
 
     FVector OrientationEuler = Orientation.Euler();
@@ -333,23 +344,31 @@ void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
     }
     else if (ControlType == ERRJointControlType::VELOCITY)
     {
-        // Linear update of velocity
-        for (i = 0; i < 3; i++)
+        if (bSmoothing)
         {
-            URRMathUtils::StepUpdate(MidLinearVelocityTarget[i],
-                                     LinearVelocityTarget[i],
-                                     LinearVelocitySmoothingAcc * DeltaTime,
-                                     LinearVelocityTolerance);
-            URRMathUtils::StepUpdate(MidAngularVelocityTarget[i],
-                                     AngularVelocityTarget[i],
-                                     AngularVelocitySmoothingAcc * DeltaTime,
-                                     AngularVelocityTolerance);
-        }
+            // Linear update of velocity
+            for (i = 0; i < 3; i++)
+            {
+                URRMathUtils::StepUpdate(MidLinearVelocityTarget[i],
+                                         LinearVelocityTarget[i],
+                                         LinearVelocitySmoothingAcc * DeltaTime,
+                                         LinearVelocityTolerance);
+                URRMathUtils::StepUpdate(MidAngularVelocityTarget[i],
+                                         AngularVelocityTarget[i],
+                                         AngularVelocitySmoothingAcc * DeltaTime,
+                                         AngularVelocityTolerance);
+            }
 
-        if (!HasReachedVelocityTarget(LinearVelocityTolerance, AngularVelocityTolerance) && bSmoothing)
+            if (!HasReachedVelocityTarget(LinearVelocityTolerance, AngularVelocityTolerance) && bSmoothing)
+            {
+                Constraint->SetLinearVelocityTarget(MidLinearVelocityTarget);
+                Constraint->SetAngularVelocityTarget(MidAngularVelocityTarget / 360.0);
+            }
+        }
+        else
         {
-            Constraint->SetLinearVelocityTarget(MidLinearVelocityTarget);
-            Constraint->SetAngularVelocityTarget(MidAngularVelocityTarget / 360.0);
+            Constraint->SetLinearVelocityTarget(LinearVelocityTarget);
+            Constraint->SetAngularVelocityTarget(AngularVelocityTarget / 360.0);
         }
     }
 

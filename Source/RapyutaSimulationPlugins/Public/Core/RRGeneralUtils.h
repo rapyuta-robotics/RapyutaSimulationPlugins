@@ -493,4 +493,25 @@ public:
         OutPosition = tf.GetLocation();
         OutOrientation = tf.GetRotation().Rotator();
     }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    static FString PascalToSnake(const FString& InPascalString, const bool InCheckNum = false)
+    {
+        FString output = TEXT("");
+        for (int32 i = 0; i < InPascalString.Len(); i++)
+        {
+            FString currStr = InPascalString.Mid(i, 1);
+            FString newStr = currStr;
+            if (i > 0 && (isupper(*TCHAR_TO_ANSI(*currStr)) || (InCheckNum && currStr.IsNumeric())))
+            {
+                newStr = TEXT("_") + newStr.ToLower();
+            }
+            else
+            {
+                newStr = newStr.ToLower();
+            }
+            output.Append(newStr);
+        }
+        return output;
+    }
 };

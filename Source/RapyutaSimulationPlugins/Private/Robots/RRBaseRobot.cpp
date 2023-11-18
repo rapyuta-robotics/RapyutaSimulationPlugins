@@ -155,20 +155,28 @@ void ARRBaseRobot::PreInitializeComponents()
         SetRobotName(ROSSpawnParameters->ActorName);
     }
 
-    if (ROS2InterfaceClass)
+    if (ROS2Interface == nullptr)
     {
-        // ROS2Interface is created at server and replicated to client.
-        if (!IsNetMode(NM_Client) && ROS2Interface == nullptr)
+        if (ROS2InterfaceClass)
         {
-            CreateROS2Interface();
+            // ROS2Interface is created at server and replicated to client.
+            if (!IsNetMode(NM_Client))
+            {
+                CreateROS2Interface();
+            }
+        }
+        else
+        {
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
+                                   Warning,
+                                   TEXT("ROS2InterfaceClass has not been configured, "
+                                        "probably later in child BP class!"));
         }
     }
-    else
+
+    if (bStartStopROS2Interface)
     {
-        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
-                               Warning,
-                               TEXT("ROS2InterfaceClass has not been configured, "
-                                    "probably later in child BP class!"));
+        InitROS2Interface();
     }
 
     BPPreInitializeComponents();
@@ -266,13 +274,6 @@ void ARRBaseRobot::CreateROS2Interface()
                                  IsNetMode(NM_Client));
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
-    ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;
-    ROS2Interface->SetupROSParamsAll();
-
-    if (bStartStopROS2Interface)
-    {
-        InitROS2Interface();
-    }
 
     // NOTE: NOT call ROS2Interface->Initialize(this) here since robot's ros2-based accessories might not have been fully accessible
     // yet.

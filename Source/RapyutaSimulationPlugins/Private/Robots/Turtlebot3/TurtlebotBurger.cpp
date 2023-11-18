@@ -2,60 +2,29 @@
 
 #include "Robots/Turtlebot3/TurtlebotBurger.h"
 
-DEFINE_LOG_CATEGORY(LogTurtlebotBurger);
-
 ATurtlebotBurger::ATurtlebotBurger(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-    PrimaryActorTick.bCanEverTick = true;
-    ROS2InterfaceClass = URRTurtlebotROS2Interface::StaticClass();
     VehicleMoveComponentClass = UDifferentialDriveComponent::StaticClass();
     bBodyComponentsCreated = false;
     SetupBody();
-}
-
-void ATurtlebotBurger::SetupBody()
-{
-    if (bBodyComponentsCreated)
-    {
-        return;
-    }
-
-    Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base"));
-    SetBaseMeshComp(Base, true, false);
-
-    LidarSensor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidarSensor"));
-    LidarComponent = CreateDefaultSubobject<URR2DLidarComponent>(TEXT("LidarComp"));
-    WheelLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelLeft"));
-    WheelRight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WheelRight"));
-    CasterBack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasterBack"));
-
-    LidarSensor->SetupAttachment(Base);
-    LidarComponent->SetupAttachment(LidarSensor);
-    WheelLeft->SetupAttachment(Base);
-    WheelRight->SetupAttachment(Base);
-    CasterBack->SetupAttachment(Base);
-    bBodyComponentsCreated = true;
-
-    // Constraints
-    Base_LidarSensor = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_LidarSensor"));
-    Base_LidarSensor->SetupAttachment(LidarSensor);
-
-    Base_WheelLeft = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelLeft"));
-    Base_WheelLeft->SetupAttachment(WheelLeft);
-
-    Base_WheelRight = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelRight"));
-    Base_WheelRight->SetupAttachment(WheelRight);
-
-    Base_CasterBack = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_CasterBack"));
-    Base_CasterBack->SetupAttachment(CasterBack);
-
     SetupConstraintsAndPhysics();
 }
 
-void ATurtlebotBurger::PostInitializeComponents()
+bool ATurtlebotBurger::SetupBody()
 {
-    Super::PostInitializeComponents();
-    SetupWheelDrives();
+    if (bBodyComponentsCreated)
+    {
+        return false;
+    }
+
+    // Constraints
+    Base_WheelLeft = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelLeft"));
+
+    Base_WheelRight = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Base_WheelRight"));
+
+    bBodyComponentsCreated = true;
+
+    return true;
 }
 
 void ATurtlebotBurger::SetupWheelDrives()
@@ -70,35 +39,14 @@ void ATurtlebotBurger::SetupWheelDrives()
     }
 }
 
-void ATurtlebotBurger::SetupConstraintsAndPhysics()
+bool ATurtlebotBurger::SetupConstraintsAndPhysics()
 {
     if (bBodyComponentsCreated)
     {
-        Base->SetSimulatePhysics(true);
-        LidarSensor->SetSimulatePhysics(true);
-        WheelLeft->SetSimulatePhysics(true);
-        WheelRight->SetSimulatePhysics(true);
-        CasterBack->SetSimulatePhysics(true);
-
-        LidarSensor->SetRelativeLocation(FVector(0, 0, 17.2));
-        WheelLeft->SetRelativeLocation(FVector(3.2, -8, 2.3));
-        WheelRight->SetRelativeLocation(FVector(3.2, 8, 2.3));
-        CasterBack->SetRelativeLocation(FVector(-4.9, 0, -0.5));
-
-        Base_LidarSensor->ComponentName2.ComponentName = TEXT("Base");
-        Base_LidarSensor->ComponentName1.ComponentName = TEXT("LidarSensor");
-        Base_LidarSensor->SetDisableCollision(true);
-        Base_LidarSensor->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0);
-        Base_LidarSensor->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0);
-        Base_LidarSensor->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0);
-        Base_LidarSensor->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 0);
-        Base_LidarSensor->SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0);
-        Base_LidarSensor->SetLinearZLimit(ELinearConstraintMotion::LCM_Locked, 0);
-
-        Base_WheelLeft->ComponentName2.ComponentName = TEXT("Base");
-        Base_WheelLeft->ComponentName1.ComponentName = TEXT("WheelLeft");
+        Base_WheelLeft->ComponentName1.ComponentName = TEXT("Base");
+        Base_WheelLeft->ComponentName2.ComponentName = TEXT("WheelLeft");
         Base_WheelLeft->SetDisableCollision(true);
-        // Base_WheelLeft->SetRelativeLocation(FVector(0, -8, 2.3));
+        Base_WheelLeft->SetRelativeLocation(FVector(3.2, -8, 2.3));
         Base_WheelLeft->SetRelativeRotation(FRotator(0, -90, 0));
         Base_WheelLeft->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
         Base_WheelLeft->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
@@ -109,11 +57,11 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
         Base_WheelLeft->SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0);
         Base_WheelLeft->SetLinearZLimit(ELinearConstraintMotion::LCM_Locked, 0);
 
-        Base_WheelRight->ComponentName2.ComponentName = TEXT("Base");
-        Base_WheelRight->ComponentName1.ComponentName = TEXT("WheelRight");
+        Base_WheelRight->ComponentName1.ComponentName = TEXT("Base");
+        Base_WheelRight->ComponentName2.ComponentName = TEXT("WheelRight");
         Base_WheelRight->SetDisableCollision(true);
-        // Base_WheelRight->SetRelativeLocation(FVector(0, 8, 2.3));
-        Base_WheelRight->SetRelativeRotation(FRotator(0, -90, 0));
+        Base_WheelRight->SetRelativeLocation(FVector(3.2, 8, 2.3));
+        Base_WheelRight->SetRelativeRotation(FRotator(0, 90, 0));
         Base_WheelRight->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
         Base_WheelRight->SetAngularDriveParams(MaxForce, MaxForce, MaxForce);
         Base_WheelRight->SetAngularVelocityDriveTwistAndSwing(true, false);
@@ -123,16 +71,19 @@ void ATurtlebotBurger::SetupConstraintsAndPhysics()
         Base_WheelRight->SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0);
         Base_WheelRight->SetLinearZLimit(ELinearConstraintMotion::LCM_Locked, 0);
 
-        Base_CasterBack->ComponentName2.ComponentName = TEXT("Base");
-        Base_CasterBack->ComponentName1.ComponentName = TEXT("CasterBack");
-        Base_CasterBack->SetDisableCollision(true);
-        // Base_CasterBack->SetRelativeLocation(FVector(-8, 0, -.5));
-        Base_CasterBack->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 0);
-        Base_CasterBack->SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0);
-        Base_CasterBack->SetLinearZLimit(ELinearConstraintMotion::LCM_Locked, 0);
+        // need to attach child to physics constraint first before attaching physics constraint to parent.
+        WheelLeft->SetupAttachment(Base_WheelLeft);
+        WheelLeft->SetRelativeRotation(FRotator(0, -90, 0));
+        WheelRight->SetupAttachment(Base_WheelRight);
+        WheelRight->SetRelativeRotation(FRotator(0, 90, 0));
+
+        Base_WheelRight->SetupAttachment(Base);
+        Base_WheelLeft->SetupAttachment(Base);
+
+        return true;
     }
     else
     {
-        UE_LOG_WITH_INFO(LogTurtlebotBurger, Error, TEXT("Turtlebot not initialized - can't setup constraints!"));
+        return false;
     }
 }
