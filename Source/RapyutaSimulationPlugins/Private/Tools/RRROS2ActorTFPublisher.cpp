@@ -22,20 +22,23 @@ void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
 {
     UROS2SetBoolSrv* triggerPublishService = Cast<UROS2SetBoolSrv>(Service);
 
-    FROSSetBoolReq request;
-    triggerPublishService->GetRequest(request);
-    if (request.bData)
+    if (IsValid(triggerPublishService))
     {
-        StartPublishTimer();
-    }
-    else
-    {
-        StopPublishTimer();
-    }
+        FROSSetBoolReq request;
+        triggerPublishService->GetRequest(request);
+        if (request.bData)
+        {
+            StartPublishTimer();
+        }
+        else
+        {
+            StopPublishTimer();
+        }
 
-    FROSSetBoolRes response;
-    response.bSuccess = true;
-    triggerPublishService->SetResponse(response);
+        FROSSetBoolRes response;
+        response.bSuccess = true;
+        triggerPublishService->SetResponse(response);
+    }
 }
 
 void URRROS2ActorTFPublisher::SetReferenceActorByName(const FString& InName)
@@ -46,8 +49,11 @@ void URRROS2ActorTFPublisher::SetReferenceActorByName(const FString& InName)
 
 void URRROS2ActorTFPublisher::SetReferenceActorByActor(AActor* InActor)
 {
-    ReferenceActor = InActor;
-    ReferenceActorName = ReferenceActor->GetName();
+    if (IsValid(InActor))
+    {
+        ReferenceActor = InActor;
+        ReferenceActorName = ReferenceActor->GetName();
+    }
 }
 
 void URRROS2ActorTFPublisher::SetTargetActorByName(const FString& InName)

@@ -137,7 +137,7 @@ public:
     float RayOffsetDown = 20.f;
 
     //! to activate/deactivate floor checks to stick the robot on its surface below
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bAdaptToSurfaceBelow = true;
 
     UFUNCTION(BlueprintCallable)
@@ -226,6 +226,8 @@ protected:
      * [UpdatedComponent](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/GameFramework/UMovementComponent/UpdatedComponent/)
      */
     virtual void UpdateMovement(float InDeltaTime);
+
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     /**
      * @brief Update odom.

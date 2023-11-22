@@ -340,7 +340,7 @@ public:
 
     //! Main robot movement component (kinematics/diff-drive or wheels-drive comp)
     //! #MovementComponent and #RobotVehicleMoveComponent should point to same pointer.
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(VisibleAnywhere, Replicated)
     UMovementComponent* MovementComponent = nullptr;
 
     //! Movecomponent casted to #URobotVehicleMovementComponent for utility.

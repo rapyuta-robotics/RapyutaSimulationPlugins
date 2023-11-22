@@ -30,6 +30,7 @@ void URobotVehicleMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetime
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(URobotVehicleMovementComponent, OwnerVehicle);
+    DOREPLIFETIME(URobotVehicleMovementComponent, bAdaptToSurfaceBelow);
 }
 
 void URobotVehicleMovementComponent::InitAIMovementComp()
