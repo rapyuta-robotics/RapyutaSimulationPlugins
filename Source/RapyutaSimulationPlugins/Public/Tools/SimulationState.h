@@ -54,12 +54,12 @@ struct RAPYUTASIMULATIONPLUGINS_API FRREntityInfo
  * This struct is used to create TMap<FName, FRREntities>.
  *
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRREntities
 {
     GENERATED_BODY()
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly)
     TArray<AActor*> Actors;
 };
 
@@ -215,7 +215,7 @@ public:
 
     //! All existing entities with tags which can be manipulated by this class via ROS 2 services.
     //! @todo Converting to TArrays to be able to be replicated
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FName, FRREntities> EntitiesWithTag;
 
     //! Replicatable copy of #Entities
