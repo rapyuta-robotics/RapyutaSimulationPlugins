@@ -552,17 +552,24 @@ public:
     bool bJointControl = true;
 
     // UI WIDGET --
-    UPROPERTY()
+    //! Enable widget or not
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     uint8 bUIWidgetEnabled : 1;
+
     //! UI widget component
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UWidgetComponent> UIWidgetComp = nullptr;
-    //! #URRUserWidget's widget
-    UPROPERTY()
+
+    //! #UUserWidget's widget
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<URRUserWidget> UIUserWidget = nullptr;
 
+    //! Widget class
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Classes)
+    TSubclassOf<UUserWidget> UIUserWidgetClass;
+
     //! Relative pose of the UI widget from the owner robot
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform UIWidgetOffset = FTransform(FVector(0.f, 0.f, 100.f));
 
     /**
