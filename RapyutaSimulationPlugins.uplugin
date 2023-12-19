@@ -38,6 +38,10 @@
  		{
 			"Name": "rclUE",
 			"Enabled": true
+		},
+		{
+			"Name": "JsonBlueprintUtilities",
+			"Enabled": true
 		}
    ]
 }
