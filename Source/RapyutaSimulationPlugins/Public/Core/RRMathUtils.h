@@ -12,6 +12,7 @@
 
 // UE
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Math/RandomStream.h"
 //#include "Math/UnrealMath.h"
 //#include "GenericPlatform/GenericPlatformMath.h"
@@ -362,11 +363,11 @@ public:
 
     /**
      * @brief update current value with step to reach target within tolerance
-     * 
-     * @param current 
-     * @param target 
-     * @param step 
-     * @param tolerance 
+     *
+     * @param current
+     * @param target
+     * @param step
+     * @param tolerance
      */
     FORCEINLINE static bool StepUpdate(double& current, const double target, const double step, const double tolerance)
     {
@@ -392,11 +393,11 @@ public:
 
     /**
      * @brief update current value with step to reach target within tolerance
-     * 
-     * @param current 
-     * @param target 
-     * @param step 
-     * @param tolerance 
+     *
+     * @param current
+     * @param target
+     * @param step
+     * @param tolerance
      */
     FORCEINLINE static bool StepUpdateAngle(double& current, const double target, const double step, const double tolerance)
     {
@@ -422,6 +423,21 @@ public:
 
         current = currentNormalized;
         return reached;
+    }
+
+    /**
+     * @brief Get the Rotator From Two vectors
+     *
+     * @param Vector1
+     * @param Vector2
+     * @return FRotator
+     */
+    UFUNCTION(BlueprintCallable)
+    static FRotator GetRotatorFromVectors(const FVector& Vector1, const FVector& Vector2)
+    {
+        float dot = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(Vector1, Vector2)));
+        FVector cross = FVector::CrossProduct(Vector1, Vector2);
+        return UKismetMathLibrary::RotatorFromAxisAndAngle(cross, dot);
     }
 
 private:

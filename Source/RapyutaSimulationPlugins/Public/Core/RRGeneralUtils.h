@@ -514,4 +514,21 @@ public:
         }
         return output;
     }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    static USceneComponent* FindChildComponentByClass(const USceneComponent* InTarget,
+                                                      const TSubclassOf<UActorComponent> InComponentClass,
+                                                      bool bIncludeAllDescendants = false)
+    {
+        TArray<USceneComponent*> children;
+        InTarget->GetChildrenComponents(bIncludeAllDescendants, children);
+        for (const auto& child : children)
+        {
+            if (child->IsA(InComponentClass))
+            {
+                return child;
+            }
+        }
+        return nullptr;
+    }
 };
