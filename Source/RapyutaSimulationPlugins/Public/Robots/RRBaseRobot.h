@@ -581,17 +581,20 @@ public:
      * @brief Set robot's tooltip text through #UIWidgetComp's label
      * @param InTooltip
      */
+    UFUNCTION(BlueprintCallable)
     void SetTooltipText(const FString& InTooltip);
     /**
      * @brief Toggle robot's tooltip visibility
      * @param bInTooltipVisible
      */
+    UFUNCTION(BlueprintCallable)
     void SetTooltipVisible(bool bInTooltipVisible);
 
     /**
      * @brief Set visibility of #UIUserWidget
      * @param bInWidgetVisible
      */
+    UFUNCTION(BlueprintCallable)
     void SetUIWidgetVisible(bool bInWidgetVisible);
 
 protected:
