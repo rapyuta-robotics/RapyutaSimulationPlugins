@@ -47,6 +47,7 @@ void ARRBaseRobot::SetupDefault()
     AutoPossessPlayer = EAutoReceiveInput::Disabled;
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
     bUIWidgetEnabled = false;
+    UIUserWidgetClass = URRUserWidget::StaticClass();
 
     // NOTE: Any custom object class (eg ROS2InterfaceClass, VehicleMoveComponentClass) that is required to be configurable by this class' child BP ones
     // & IF its object needs to be created before BeginPlay(),
@@ -193,7 +194,6 @@ void ARRBaseRobot::PostInitializeComponents()
     {
         InitMoveComponent();
     }
-
     BPPostInitializeComponents();
 }
 
@@ -536,11 +536,18 @@ void ARRBaseRobot::InitUIWidget()
     UIWidgetComp = URRUObjectUtils::CreateAndAttachChildComponent<UWidgetComponent>(
         this, *FString::Printf(TEXT("%sUIWidget"), *GetName()), UIWidgetOffset);
 
+    UIWidgetComp->SetWorldScale3D(FVector::ZeroVector);
+
     // 1- Set [WidgetClass] as [URRUserWidget]
-    UIWidgetComp->SetWidgetClass(URRUserWidget::StaticClass());
+    UIWidgetComp->SetWidgetClass(UIUserWidgetClass);
 
     // 1.1 - Init [UIWidgetComp]
     UIWidgetComp->InitWidget();
+    TObjectPtr<UUserWidget> widget = UIWidgetComp->GetWidget();
+    if (widget == nullptr)
+    {
+        return;
+    }
     UIWidgetComp->SetDrawSize(FIntPoint(500.f, 50.f));
     UIWidgetComp->SetPivot(FVector2D::ZeroVector);
     UIWidgetComp->SetCanEverAffectNavigation(false);
@@ -549,12 +556,12 @@ void ARRBaseRobot::InitUIWidget()
     UIWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
 
     // 1.2 - Save [UIWidgetComp]'s widget into [UIUserWidget]
-    UIUserWidget = Cast<URRUserWidget>(UIWidgetComp->GetWidget());
-    UIUserWidget->OwnerWidgetComponent = UIWidgetComp;
-
-    // 2- Add [UIUserWidget] to viewport with robot's name as initial text
-    UIUserWidget->AddToViewport();
-    UIUserWidget->SetLabelText(GetName());
+    UIUserWidget = Cast<URRUserWidget>(widget);
+    if (UIUserWidget)
+    {
+        UIUserWidget->OwnerWidgetComponent = UIWidgetComp;
+        UIUserWidget->SetLabelText(GetName());
+    }
 }
 
 bool ARRBaseRobot::CheckUIUserWidget() const
@@ -595,9 +602,10 @@ void ARRBaseRobot::SetTooltipVisible(bool bInTooltipVisible)
 
 void ARRBaseRobot::SetUIWidgetVisible(bool bInWidgetVisible)
 {
-    if (CheckUIUserWidget())
+    TObjectPtr<UUserWidget> widget = UIWidgetComp->GetWidget();
+    if (widget)
     {
-        UIUserWidget->SetVisibility(bInWidgetVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+        widget->SetVisibility(bInWidgetVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     }
 }
 
@@ -641,6 +649,22 @@ bool ARRBaseRobot::InitPropertiesFromJSON()
     if (nullptr == ROSSpawnParameters)
     {
         return false;
+    }
+
+    TSharedRef<TJsonReader<TCHAR>> jsonReader = TJsonReaderFactory<TCHAR>::Create(ROSSpawnParameters->ActorJsonConfigs);
+    TSharedPtr<FJsonObject> jsonObj = MakeShareable(new FJsonObject());
+    if (!FJsonSerializer::Deserialize(jsonReader, jsonObj) && jsonObj.IsValid())
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("Failed to deserialize json to object"));
+        return false;
+    }
+
+    // Parse single value
+    bool bParam = false;
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("enable_widget"), bParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("enable_widget value: %d"), bParam);
+        bUIWidgetEnabled = bParam;
     }
     return true;
 }
