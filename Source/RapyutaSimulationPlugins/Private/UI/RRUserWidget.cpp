@@ -3,6 +3,7 @@
 
 TSharedRef<SWidget> URRUserWidget::RebuildWidget()
 {
+    UE_LOG_WITH_INFO_SHORT_NAMED(LogRapyutaCore, Log, TEXT(""));
     // Propably nullptr: Either because of the lowest-level class or root component not being set yet
     if (!Cast<UPanelWidget>(GetRootWidget()) && WidgetTree)
     {
@@ -13,7 +14,10 @@ TSharedRef<SWidget> URRUserWidget::RebuildWidget()
     {
         MainPanelWidget = Cast<UPanelWidget>(GetRootWidget());
         verify(MainPanelWidget);
+    }
 
+    if (MainPanelWidget && TextBlock == nullptr)
+    {
         // This will create MainPanelWidget's slots
         SetupContents();
         verify(MainPanelWidget->GetSlots().Num() > 0);
