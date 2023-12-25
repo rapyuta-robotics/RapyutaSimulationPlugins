@@ -32,7 +32,7 @@ public:
 
     //! WidgetComponent is a mesh component as surface in the 3D environment on which to render widgets normally rendered to
     //! the screen. It is first rendered to a render target, then that render target is displayed in the world.
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UWidgetComponent> OwnerWidgetComponent = nullptr;
 
     UPROPERTY(meta = (BindWidgetOptional))
@@ -54,14 +54,14 @@ public:
         return childWidget;
     }
 
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void SetActivated(bool bIsActivated);
 
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void SetLabelText(const FString& InText);
 
 protected:
-	//! Invoked as the widget is added to the viewport
+    //! Invoked as the widget is added to the viewport
     virtual TSharedRef<SWidget> RebuildWidget() override;
     virtual bool NativeSupportsKeyboardFocus() const override
     {
