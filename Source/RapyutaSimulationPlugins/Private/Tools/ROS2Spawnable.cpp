@@ -36,6 +36,7 @@ void UROS2Spawnable::InitializeParameters(const FROSSpawnEntityReq& InRequest)
                      *InRequest.RobotNamespace.Replace(TEXT("/"), TEXT("")));
     ActorNamespace = InRequest.RobotNamespace.Replace(TEXT("/"), TEXT(""));
     ActorReferenceFrame = InRequest.State.ReferenceFrame;
+    ActorJsonConfigs = InRequest.JsonParameters;
 }
 
 void UROS2Spawnable::SetActorModelName(const FString& InModelName)
