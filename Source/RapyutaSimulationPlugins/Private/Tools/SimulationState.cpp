@@ -381,6 +381,10 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
         robot->ROSSpawnParameters = spawnableComponent;
         robot->ServerRobot = robot;
     }
+    else
+    {
+        newEntity->AddOwnedComponent(spawnableComponent);
+    }
 
     // Add tags
     UE_LOG_WITH_INFO(LogRapyutaCore,
@@ -393,9 +397,6 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InROSSpawn
         newEntity->Tags.Emplace(tag);
         spawnableComponent->AddTag(tag);
     }
-
-    // Add Json configs
-    spawnableComponent->ActorJsonConfigs = InROSSpawnRequest.JsonParameters;
 
     // Finish spawning Entity
     // Destroy seems not make newEntity=nullptr evevn if it failed.
