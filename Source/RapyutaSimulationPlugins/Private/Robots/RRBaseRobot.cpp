@@ -216,6 +216,11 @@ void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeA
             DefaultRoot->DestroyComponent();
             DefaultRoot = nullptr;
         }
+        else if (IsValid(DefaultRoot))
+        {
+            // Cannot remove [DefaultRoot] in ctor thus to be done later in [PreInitializeComponents()]
+            DefaultRoot->AttachToComponent(InBaseMeshComp, FAttachmentTransformRules::KeepRelativeTransform);
+        }
     }
 }
 
