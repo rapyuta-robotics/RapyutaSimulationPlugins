@@ -19,7 +19,7 @@ void URRROS2EntityStateSensorComponent::BeginPlay()
 
 void URRROS2EntityStateSensorComponent::SetReferenceActorByName(const FString& InName)
 {
-    AActor* newReferenceActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
+    AActor* newReferenceActor = URRGeneralUtils::FindActorByName<AActor>(GetWorld(), InName);
     if (newReferenceActor)
     {
         const bool bNewReference = (ReferenceActor != newReferenceActor);

@@ -11,6 +11,7 @@
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 // RapyutaSimulationPlugins
+#include "Drives/DifferentialDriveComponent.h"
 #include "Robots/Turtlebot3/TurtlebotBurgerBase.h"
 
 #include "TurtlebotBurger.generated.h"
