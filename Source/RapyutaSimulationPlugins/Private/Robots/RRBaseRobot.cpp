@@ -533,40 +533,17 @@ void ARRBaseRobot::SetLocalAngularVel(const FVector& InAngularVel)
 
 void ARRBaseRobot::InitUIWidget()
 {
-    UIWidgetComp = URRUObjectUtils::CreateAndAttachChildComponent<UWidgetComponent>(
+    UIWidgetComp = URRUObjectUtils::CreateAndAttachChildComponent<URRUIWidgetComponent>(
         this, *FString::Printf(TEXT("%sUIWidget"), *GetName()), UIWidgetOffset);
 
-    UIWidgetComp->SetWorldScale3D(FVector::ZeroVector);
+    UIWidgetComp->UIUserWidgetClass = UIUserWidgetClass;
 
-    // 1- Set [WidgetClass] as [URRUserWidget]
-    UIWidgetComp->SetWidgetClass(UIUserWidgetClass);
-
-    // 1.1 - Init [UIWidgetComp]
-    UIWidgetComp->InitWidget();
-    TObjectPtr<UUserWidget> widget = UIWidgetComp->GetWidget();
-    if (widget == nullptr)
-    {
-        return;
-    }
-    UIWidgetComp->SetDrawSize(FIntPoint(500.f, 50.f));
-    UIWidgetComp->SetPivot(FVector2D::ZeroVector);
-    UIWidgetComp->SetCanEverAffectNavigation(false);
-    UIWidgetComp->SetTwoSided(true);
-    // NOTE: Using Screen widget space, [UIWidgetComp] will be always facing user view, thus no need to manually orientate it per Tick
-    UIWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
-
-    // 1.2 - Save [UIWidgetComp]'s widget into [UIUserWidget]
-    UIUserWidget = Cast<URRUserWidget>(widget);
-    if (UIUserWidget)
-    {
-        UIUserWidget->OwnerWidgetComponent = UIWidgetComp;
-        UIUserWidget->SetLabelText(GetName());
-    }
+    UIWidgetComp->Init();
 }
 
 bool ARRBaseRobot::CheckUIUserWidget() const
 {
-    if (UIUserWidget)
+    if (UIWidgetComp->GetRRWidget())
     {
         return true;
     }
@@ -581,31 +558,6 @@ bool ARRBaseRobot::CheckUIUserWidget() const
             UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Requires [bUIWidgetEnabled] to use UIUserWidget"));
         }
         return false;
-    }
-}
-
-void ARRBaseRobot::SetTooltipText(const FString& InTooltip)
-{
-    if (CheckUIUserWidget())
-    {
-        UIUserWidget->SetLabelText(InTooltip);
-    }
-}
-
-void ARRBaseRobot::SetTooltipVisible(bool bInTooltipVisible)
-{
-    if (CheckUIUserWidget() && UIUserWidget->TextBlock)
-    {
-        UIUserWidget->TextBlock->SetVisibility(bInTooltipVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-    }
-}
-
-void ARRBaseRobot::SetUIWidgetVisible(bool bInWidgetVisible)
-{
-    TObjectPtr<UUserWidget> widget = UIWidgetComp->GetWidget();
-    if (widget)
-    {
-        widget->SetVisibility(bInWidgetVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     }
 }
 
