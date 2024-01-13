@@ -10,6 +10,7 @@
 #include "CoreMinimal.h"
 
 // RapyutaSimulationPlugins
+#include "Drives/RRDifferentialDriveComponent.h"
 #include "Drives/RRPhysicsJointComponent.h"
 #include "Robots/Turtlebot3/TurtlebotBurgerBase.h"
 

@@ -21,6 +21,7 @@
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
 #include "Tools/ROS2Spawnable.h"
+#include "Tools/RRUIWidgetComponent.h"
 
 #include "RRBaseRobot.generated.h"
 
@@ -557,44 +558,20 @@ public:
 
     //! UI widget component
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TObjectPtr<UWidgetComponent> UIWidgetComp = nullptr;
-
-    //! #UUserWidget's widget
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TObjectPtr<URRUserWidget> UIUserWidget = nullptr;
-
-    //! Widget class
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Classes)
-    TSubclassOf<UUserWidget> UIUserWidgetClass;
+    TObjectPtr<URRUIWidgetComponent> UIWidgetComp = nullptr;
 
     //! Relative pose of the UI widget from the owner robot
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform UIWidgetOffset = FTransform(FVector(0.f, 0.f, 100.f));
 
+    //! Widget class
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Classes)
+    TSubclassOf<UUserWidget> UIUserWidgetClass;
+
     /**
      * @brief Check whether #UIUserWidget is valid
      */
     bool CheckUIUserWidget() const;
-
-    /**
-     * @brief Set robot's tooltip text through #UIWidgetComp's label
-     * @param InTooltip
-     */
-    UFUNCTION(BlueprintCallable)
-    void SetTooltipText(const FString& InTooltip);
-    /**
-     * @brief Toggle robot's tooltip visibility
-     * @param bInTooltipVisible
-     */
-    UFUNCTION(BlueprintCallable)
-    void SetTooltipVisible(bool bInTooltipVisible);
-
-    /**
-     * @brief Set visibility of #UIUserWidget
-     * @param bInWidgetVisible
-     */
-    UFUNCTION(BlueprintCallable)
-    void SetUIWidgetVisible(bool bInWidgetVisible);
 
 protected:
     /**

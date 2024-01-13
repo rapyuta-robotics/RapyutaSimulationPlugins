@@ -132,10 +132,9 @@ void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
 
     if (response.bSuccess)
     {
-        FTransform relativeTransf;
         FTransform worldTransf = ServerSimState->Entities[request.Name]->GetTransform();
-        URRGeneralUtils::GetRelativeTransform(
-            request.ReferenceFrame, ServerSimState->Entities.FindRef(request.ReferenceFrame), worldTransf, relativeTransf);
+        FTransform relativeTransf =
+            URRGeneralUtils::GetRelativeTransform(ServerSimState->Entities.FindRef(request.ReferenceFrame), worldTransf);
         relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
         response.State.Pose.Position = relativeTransf.GetTranslation();
@@ -219,7 +218,7 @@ FROSSpawnEntityRes URRROS2SimulationStateClient::SpawnEntityImpl(FROSSpawnEntity
             response.StatusMessage = FString::Printf(
                 TEXT("[%s] Failed to spawn entity of model [%s]. Entity Name is empty"), *GetName(), *entityModelName);
         }
-        else if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
+        else if (nullptr == URRGeneralUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
             // RPC to Server's Spawn entity
             ServerSpawnEntity(InRequest);
@@ -227,7 +226,7 @@ FROSSpawnEntityRes URRROS2SimulationStateClient::SpawnEntityImpl(FROSSpawnEntity
             // RPC is not blocking and can't get actor even if it is spawned.
             // todo: handle failed to spawn with collision and etc.
 
-            // AActor* newEntity = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName);
+            // AActor* newEntity = URRGeneralUtils::FindActorByName<AActor>(GetWorld(), entityName);
             // if (nullptr == newEntity)
             // {
             //     response.bSuccess = false;
