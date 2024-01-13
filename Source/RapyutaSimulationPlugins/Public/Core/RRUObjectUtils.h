@@ -333,102 +333,37 @@ public:
     UFUNCTION()
     static void RegisterActorComponent(UActorComponent* Comp);
 
-    /**
-     * @brief Find actor by name. GetAllActors() is expensive.
-     *
-     * @tparam T
-     * @param InWorld
-     * @param InName
-     * @param InCaseType
-     * @return T*
-     *
-     */
-    template<typename T>
-    static T* FindActorByName(UWorld* InWorld, const FString& InName, const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
-    {
-        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
-        {
-            if (actorItr->GetName().Equals(InName, InCaseType))
-            {
-                return *actorItr;
-            }
-        }
-        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("Actor named [%s] is unavailable."), *InName);
-        return nullptr;
-    }
-
-    /**
-     * @brief Find actor by subname. search actor whose name contains InSubname.
-     *
-     * @tparam T
-     * @param InWorld
-     * @param InSubname
-     * @param InCaseType
-     * @return T*
-     */
-    template<typename T>
-    static T* FindActorBySubname(UWorld* InWorld,
-                                 const FString& InSubname,
-                                 const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
-    {
-        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
-        {
-            if (actorItr->GetName().Contains(InSubname, InCaseType))
-            {
-                return *actorItr;
-            }
-        }
-        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("Actor name containing [%s] is unavailable."), *InSubname);
-        return nullptr;
-    }
-
-    template<typename T>
-    static TArray<T*> FindActorListBySubname(UWorld* InWorld,
-                                             const FString& InSubname,
-                                             const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
-    {
-        TArray<T*> actors;
-        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
-        {
-            if (actorItr->GetName().Contains(InSubname, InCaseType))
-            {
-                actors.Add(*actorItr);
-            }
-        }
-        return actors;
-    }
-
     UFUNCTION()
     static AActor* FindEnvironmentActor(UWorld* InWorld)
     {
         // There is only one common [Environment] actor of all Scene instances!
-        return FindActorBySubname<AActor>(InWorld, TEXT("MainEnvironment"));
+        return URRGeneralUtils::FindActorBySubname<AActor>(InWorld, TEXT("MainEnvironment"));
     }
 
     UFUNCTION()
     static AActor* FindSkyActor(UWorld* InWorld)
     {
         // There is only one common [Sky] actor of all Scene instances!
-        return FindActorBySubname<AActor>(InWorld, TEXT("RapyutaSky"));
+        return URRGeneralUtils::FindActorBySubname<AActor>(InWorld, TEXT("RapyutaSky"));
     }
 
     UFUNCTION()
     static ASkyLight* FindSkyLight(UWorld* InWorld)
     {
         // There is only one common [SkyLight] actor of all Scene instances!
-        return FindActorBySubname<ASkyLight>(InWorld, TEXT("SkyLight"));
+        return URRGeneralUtils::FindActorBySubname<ASkyLight>(InWorld, TEXT("SkyLight"));
     }
 
     UFUNCTION()
     static AActor* FindFloorActor(UWorld* InWorld)
     {
-        return FindActorBySubname<AActor>(InWorld, TEXT("MainFloor"));
+        return URRGeneralUtils::FindActorBySubname<AActor>(InWorld, TEXT("MainFloor"));
     }
 
     UFUNCTION()
     static AActor* FindWallActor(UWorld* InWorld)
     {
-        return FindActorBySubname<AActor>(InWorld, TEXT("MainWall"));
+        return URRGeneralUtils::FindActorBySubname<AActor>(InWorld, TEXT("MainWall"));
     }
 
     UFUNCTION()
@@ -472,7 +407,7 @@ public:
     static APostProcessVolume* FindPostProcessVolume(UWorld* InWorld)
     {
         // There is only one common [PostProcessVolume] actor of all Scene instances!
-        return FindActorBySubname<APostProcessVolume>(InWorld, TEXT("PostProcessVolume"));
+        return URRGeneralUtils::FindActorBySubname<APostProcessVolume>(InWorld, TEXT("PostProcessVolume"));
     }
 
     // TActorSpawnInfo: [FRRActorSpawnInfo], etc.

@@ -94,6 +94,17 @@ public:
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FRotator RotatorUEToROS(const FRotator& Input, const bool bDegToRad = true)
+    {
+        FRotator output = Input;
+        output.Roll = bDegToRad ? FMath::DegreesToRadians(output.Roll) : output.Roll;
+        output.Pitch = -bDegToRad ? FMath::DegreesToRadians(output.Pitch) : output.Pitch;
+        output.Yaw = -bDegToRad ? FMath::DegreesToRadians(output.Yaw) : output.Yaw;
+
+        return output;
+    }
+
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
     static FQuat QuatUEToROS(const FQuat& Input)
     {
         FQuat Output = Input;
@@ -171,6 +182,17 @@ public:
         output.Z = -output.Z;
 
         return bRadToDeg ? FMath::RadiansToDegrees(output) : output;
+    }
+
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FRotator RotatorROSToUE(const FRotator& Input, const bool bRadToDeg = true)
+    {
+        FRotator output = Input;
+        output.Roll = bRadToDeg ? FMath::RadiansToDegrees(output.Roll) : output.Roll;
+        output.Pitch = -bRadToDeg ? FMath::RadiansToDegrees(output.Pitch) : output.Pitch;
+        output.Yaw = -bRadToDeg ? FMath::RadiansToDegrees(output.Yaw) : output.Yaw;
+
+        return output;
     }
 
     UFUNCTION(BlueprintCallable, Category = "Conversion")
