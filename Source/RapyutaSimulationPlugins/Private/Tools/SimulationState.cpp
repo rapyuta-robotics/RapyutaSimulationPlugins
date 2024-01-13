@@ -421,7 +421,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InRequest,
         const FString& entityModelName = InRequest.Xml;
         const FString& entityName = InRequest.State.Name;
         verify(false == entityName.IsEmpty());
-        if (nullptr == URRUObjectUtils::FindActorByName<AActor>(GetWorld(), entityName))
+        if (nullptr == URRGeneralUtils::FindActorByName<AActor>(GetWorld(), entityName))
         {
             // Calculate to-be-spawned entity's [world transf]
             FTransform relativeTransf =
