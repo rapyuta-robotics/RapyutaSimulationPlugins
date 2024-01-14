@@ -22,6 +22,10 @@ void URRJointComponent::InitializeComponent()
 
 void URRJointComponent::SetDelegates(const FJointCallback& InOnControlSuccessDelegate,
                                      const FJointCallback& InOnControlFailDelegate,
+                                     const float InPositionTolerance,
+                                     const float InOrientationTolerance,
+                                     const float InLinearTolerance,
+                                     const float InAngularTolerance,
                                      const float InTimeOut)
 {
     if (!InOnControlSuccessDelegate.IsBound())
@@ -44,6 +48,12 @@ void URRJointComponent::SetDelegates(const FJointCallback& InOnControlSuccessDel
         OnControlFailDelegate = InOnControlFailDelegate;
     }
 
+    PositionTolerance = (InPositionTolerance >= 0.f) ? InPositionTolerance : PositionTolerance;
+    OrientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
+
+    LinearVelocityTolerance = (InLinearTolerance >= 0.f) ? InLinearTolerance : LinearVelocityTolerance;
+    AngularVelocityTolerance = (InAngularTolerance >= 0.f) ? InAngularTolerance : AngularVelocityTolerance;
+
     ControlStartTime = GetWorld()->GetTimeSeconds();
     ControlTimeout = InTimeOut;
 };
@@ -57,6 +67,58 @@ void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const
     bMovingToTargetVelocity = true;
     ControlStartTime = GetWorld()->GetTimeSeconds();
 };
+
+void URRJointComponent::SetSingleLinearVelocityTarget(const float Input)
+{
+    SetVelocityTarget(FVector(Input, LinearVelocity.Y, LinearVelocity.Z), AngularVelocity);
+};
+
+void URRJointComponent::SetSingleAngularVelocityTarget(const float Input)
+{
+    SetVelocityTarget(LinearVelocity, FVector(Input, AngularVelocity.Y, AngularVelocity.Z));
+};
+
+void URRJointComponent::SetVelocityTargetWithDelegates(const FVector& InLinearVelocity,
+                                                       const FVector& InAngularVelocity,
+                                                       const FJointCallback& InOnControlSuccessDelegate,
+                                                       const FJointCallback& InOnControlFailDelegate,
+                                                       const float InLinearTolerance,
+                                                       const float InAngularTolerance,
+                                                       const float InTimeOut)
+{
+    SetVelocityTarget(InLinearVelocity, InAngularVelocity);
+    SetDelegates(InOnControlSuccessDelegate, InOnControlFailDelegate, -1.0, -1.0, InLinearTolerance, InAngularTolerance, InTimeOut);
+}
+
+void URRJointComponent::SetSingleLinearVelocityTargetWithDelegates(const float Input,
+                                                                   const FJointCallback& InOnControlSuccessDelegate,
+                                                                   const FJointCallback& InOnControlFailDelegate,
+                                                                   const float InLinearTolerance,
+                                                                   const float InTimeOut)
+{
+    SetVelocityTargetWithDelegates(FVector(Input, LinearVelocity.Y, LinearVelocity.Z),
+                                   AngularVelocity,
+                                   InOnControlSuccessDelegate,
+                                   InOnControlFailDelegate,
+                                   InLinearTolerance,
+                                   -1.0,
+                                   InTimeOut);
+}
+
+void URRJointComponent::SetSingleAngularVelocityTargetWithDelegates(const float Input,
+                                                                    const FJointCallback& InOnControlSuccessDelegate,
+                                                                    const FJointCallback& InOnControlFailDelegate,
+                                                                    const float InAngularTolerance,
+                                                                    const float InTimeOut)
+{
+    SetVelocityTargetWithDelegates(LinearVelocity,
+                                   FVector(Input, AngularVelocity.Y, AngularVelocity.Z),
+                                   InOnControlSuccessDelegate,
+                                   InOnControlFailDelegate,
+                                   -1.0,
+                                   InAngularTolerance,
+                                   InTimeOut);
+}
 
 bool URRJointComponent::HasReachedVelocityTarget(const float InLinearTolerance, const float InAngularTolerance)
 {
@@ -118,6 +180,25 @@ void URRJointComponent::SetVelocityTargetWithArray(const TArray<float>& InVeloci
     SetVelocityTarget(OutLinearVelocity, OutAngularVelocity);
 }
 
+void URRJointComponent::SetVelocityTargetWithArrayWithDelegates(const TArray<float>& InVelocity,
+                                                                const FJointCallback& InOnControlSuccessDelegate,
+                                                                const FJointCallback& InOnControlFailDelegate,
+                                                                const float InLinearTolerance,
+                                                                const float InAngularTolerance,
+                                                                const float InTimeOut)
+{
+    FVector OutLinearVelocity;
+    FVector OutAngularVelocity;
+    VelocityFromArray(InVelocity, OutLinearVelocity, OutAngularVelocity);
+    SetVelocityTargetWithDelegates(OutLinearVelocity,
+                                   OutAngularVelocity,
+                                   InOnControlSuccessDelegate,
+                                   InOnControlFailDelegate,
+                                   InLinearTolerance,
+                                   InAngularTolerance,
+                                   InTimeOut);
+}
+
 void URRJointComponent::SetVelocityWithArray(const TArray<float>& InVelocity)
 {
     FVector OutLinearVelocity;
@@ -138,14 +219,57 @@ void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator&
     bMovingToTargetPose = true;
 };
 
+void URRJointComponent::SetSinglePositionTarget(const float Input)
+{
+    SetPoseTarget(FVector(Input, Position.Y, Position.Z), Orientation);
+}
+
+void URRJointComponent::SetSingleOrientationTarget(const float Input)
+{
+    SetPoseTarget(Position, FRotator(Orientation.Pitch, Orientation.Yaw, Input));
+}
+
 void URRJointComponent::SetPoseTargetWithDelegates(const FVector& InPosition,
                                                    const FRotator& InOrientation,
                                                    const FJointCallback& InOnControlSuccessDelegate,
                                                    const FJointCallback& InOnControlFailDelegate,
+                                                   const float InPositionTolerance,
+                                                   const float InOrientationTolerance,
                                                    const float InTimeOut)
 {
     SetPoseTarget(InPosition, InOrientation);
-    SetDelegates(InOnControlSuccessDelegate, InOnControlFailDelegate, InTimeOut);
+    SetDelegates(
+        InOnControlSuccessDelegate, InOnControlFailDelegate, InPositionTolerance, InOrientationTolerance, -1.0, -1.0, InTimeOut);
+}
+
+void URRJointComponent::SetSinglePositionTargetWithDelegates(const float Input,
+                                                             const FJointCallback& InOnControlSuccessDelegate,
+                                                             const FJointCallback& InOnControlFailDelegate,
+                                                             const float InPositionTolerance,
+                                                             const float InTimeOut)
+{
+    SetPoseTargetWithDelegates(FVector(Input, Position.Y, Position.Z),
+                               Orientation,
+                               InOnControlSuccessDelegate,
+                               InOnControlFailDelegate,
+                               InPositionTolerance,
+                               -1.0,
+                               InTimeOut);
+}
+
+void URRJointComponent::SetSingleOrientationTargetWithDelegates(const float Input,
+                                                                const FJointCallback& InOnControlSuccessDelegate,
+                                                                const FJointCallback& InOnControlFailDelegate,
+                                                                const float InOrientationTolerance,
+                                                                const float InTimeOut)
+{
+    SetPoseTargetWithDelegates(Position,
+                               FRotator(Orientation.Pitch, Orientation.Yaw, Input),
+                               InOnControlSuccessDelegate,
+                               InOnControlFailDelegate,
+                               -1.0,
+                               InOrientationTolerance,
+                               InTimeOut);
 }
 
 bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, const float InOrientationTolerance)
@@ -158,6 +282,13 @@ bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, co
     const float positionTolerance = (InPositionTolerance >= 0.f) ? InPositionTolerance : PositionTolerance;
     const float orientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
     bool res = PositionTarget.Equals(Position, positionTolerance) && OrientationTarget.Equals(Orientation, orientationTolerance);
+
+#if RAPYUTA_JOINT_DEBUG
+    UE_LOG_WITH_INFO_SHORT_NAMED(
+        LogTemp, Warning, TEXT("%d %f %s %s"), res, positionTolerance, *PositionTarget.ToString(), *Position.ToString());
+    UE_LOG_WITH_INFO_SHORT_NAMED(
+        LogTemp, Warning, TEXT("%d %f %s %s"), res, orientationTolerance, *OrientationTarget.ToString(), *Orientation.ToString());
+#endif
 
     if (res)
     {
@@ -236,12 +367,20 @@ void URRJointComponent::SetPoseTargetWithArray(const TArray<float>& InPose)
 void URRJointComponent::SetPoseTargetWithArrayWithDelegates(const TArray<float>& InPose,
                                                             const FJointCallback& InOnControlSuccessDelegate,
                                                             const FJointCallback& InOnControlFailDelegate,
+                                                            const float InPositionTolerance,
+                                                            const float InOrientationTolerance,
                                                             const float InTimeOut)
 {
     FVector OutPosition;
     FRotator OutOrientation;
     PoseFromArray(InPose, OutPosition, OutOrientation);
-    SetPoseTargetWithDelegates(OutPosition, OutOrientation, InOnControlSuccessDelegate, InOnControlFailDelegate, InTimeOut);
+    SetPoseTargetWithDelegates(OutPosition,
+                               OutOrientation,
+                               InOnControlSuccessDelegate,
+                               InOnControlFailDelegate,
+                               InPositionTolerance,
+                               InOrientationTolerance,
+                               InTimeOut);
 }
 
 void URRJointComponent::SetPoseWithArray(const TArray<float>& InPose)
