@@ -18,6 +18,8 @@
 
 #define RAPYUTA_JOINT_DEBUG (0)
 
+DECLARE_DYNAMIC_DELEGATE(FJointCallback);
+
 UENUM(BlueprintType)
 enum class ERRJointControlType : uint8
 {
@@ -47,6 +49,15 @@ protected:
 
 public:
     virtual bool IsValid();
+
+    /**
+     * @brief Call #UpdatePose after update #PositionTarget and #OrientationTarget with #LinearVelocity and AngularVelocity
+     *
+     * @param DeltaTime
+     * @param TickType
+     * @param ThisTickFunction
+     */
+    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
     /**
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
@@ -116,6 +127,21 @@ public:
     virtual void SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation);
 
     /**
+     * @brief Set Pose Target.
+     *
+     * @param InPosition
+     * @param InOrientation
+     * @param InOnControlSuccessDelegate
+     * @param InOnControlFailDelegate
+    */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetPoseTargetWithDelegates(const FVector& InPosition,
+                                            const FRotator& InOrientation,
+                                            const FJointCallback& InOnControlSuccessDelegate,
+                                            const FJointCallback& InOnControlFailDelegate,
+                                            const float InTimeOut = -1.0);
+
+    /**
      * @brief Check Pose reach the target pose.
      * If minus values are given, #PositionTolerance and #OrientationTolerance will be used.
      *
@@ -140,6 +166,20 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetPoseTargetWithArray(const TArray<float>& InPose);
+
+    /**
+     * @brief Set Pose Target.
+     *
+     * @param InPose
+     * @param InOnControlSuccessDelegate
+     * @param InOnControlFailDelegate
+     * @param InTimeOut
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetPoseTargetWithArrayWithDelegates(const TArray<float>& InPose,
+                                                     const FJointCallback& InOnControlSuccessDelegate,
+                                                     const FJointCallback& InOnControlFailDelegate,
+                                                     const float InTimeOut = -1.0);
 
     /**
      * @brief Teleport robot to given pose. Implementation is in child class.
@@ -262,8 +302,50 @@ public:
     }
 
 protected:
+    UFUNCTION()
+    virtual void UpdateState(const float DeltaTime);
+
+    UFUNCTION()
+    virtual void UpdateControl(const float DeltaTime);
+
     UPROPERTY()
     FTransform JointToChildLink = FTransform::Identity;
+
     UPROPERTY()
     FTransform ParentLinkToJoint = FTransform::Identity;
+
+    //! true if joint is moving to target pose
+    UPROPERTY(VisibleAnywhere)
+    bool bMovingToTargetPose = false;
+
+    //! true if joint is moving to target velocity
+    UPROPERTY(VisibleAnywhere)
+    bool bMovingToTargetVelocity = false;
+
+    /**
+     * @brief Set Delegates which will be unbounded when move is completed or timeouthappen
+     *
+     * @param InOnControlSuccessDelegate
+     * @param InOnControlFailDelegate
+    */
+    virtual void SetDelegates(const FJointCallback& InOnControlSuccessDelegate,
+                              const FJointCallback& InOnControlFailDelegate,
+                              const float InTimeOut = -1.0f);
+
+    //! Delegate which is called when joint reach target vel/pose
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FJointCallback OnControlSuccessDelegate;
+
+    //! Delegate which is called whenjoint failed to reach target vel/pose
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FJointCallback OnControlFailDelegate;
+
+    //! time when target pose/vel are set.
+    float ControlStartTime = 0.f;
+
+    //! timeout. If joint can't reach target in this duration, OnControlFailDelegate should be called.
+    //! used only with #SetPoseTargetWithDelegate
+    //! if this is set less than 0, timeout won't happen.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float ControlTimeout = -1.0f;
 };
