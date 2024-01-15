@@ -456,8 +456,8 @@ void URRRobotROS2Interface::UpdateJointState(UROS2GenericMsg* InMessage)
         // UE to ROS conversion
         if (joint.Value->LinearDOF == 1)
         {
-            msg.Position.Emplace(joint.Value->Position[0]);
-            msg.Velocity.Emplace(joint.Value->LinearVelocity[0]);
+            msg.Position.Emplace(URRConversionUtils::DistanceUEToROS(joint.Value->Position[0]));
+            msg.Velocity.Emplace(URRConversionUtils::DistanceUEToROS(joint.Value->LinearVelocity[0]));
         }
         else if (joint.Value->RotationalDOF == 1)
         {
