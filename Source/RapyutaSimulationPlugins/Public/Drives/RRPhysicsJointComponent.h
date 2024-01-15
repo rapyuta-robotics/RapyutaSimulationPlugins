@@ -46,15 +46,6 @@ public:
     virtual void InitializeComponent() override;
 
     /**
-     * @brief
-     *
-     * @param DeltaTime
-     * @param TickType
-     * @param ThisTickFunction
-     */
-    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-    /**
      * @brief Do nothing since can't set velocity directly to physics joint.
      * @param InLinearVelocity
      * @param InAngularVelocity
@@ -179,11 +170,9 @@ protected:
     UPROPERTY(VisibleAnywhere)
     FRotator MidOrientationTarget = FRotator::ZeroRotator;
 
-    UFUNCTION()
-    virtual void UpdateState(const float DeltaTime);
+    virtual void UpdateState(const float DeltaTime) override;
 
-    UFUNCTION()
-    virtual void UpdateControl(const float DeltaTime);
+    virtual void UpdateControl(const float DeltaTime) override;
 
     UFUNCTION()
     /**

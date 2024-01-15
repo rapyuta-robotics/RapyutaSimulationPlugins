@@ -24,10 +24,12 @@ void URRKinematicJointComponent::InitializeComponent()
     Super::InitializeComponent();
 }
 
-// Called every frame
-void URRKinematicJointComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void URRKinematicJointComponent::UpdateControl(const float DeltaTime)
 {
-    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+void URRKinematicJointComponent::UpdateState(const float DeltaTime)
+{
     if (!LinearVelocity.IsZero() || !AngularVelocity.IsZero())
     {
         FVector dPos = LinearVelocity * DeltaTime;
