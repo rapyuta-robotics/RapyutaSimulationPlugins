@@ -14,6 +14,8 @@
 
 #define RAPYUTA_JOINT_DEBUG (0)
 
+DECLARE_DYNAMIC_DELEGATE(FJointCallback);
+
 UENUM(BlueprintType)
 enum class ERRJointControlType : uint8
 {
@@ -46,6 +48,15 @@ public:
     virtual bool IsValid();
 
     /**
+     * @brief Call #UpdatePose after update #PositionTarget and #OrientationTarget with #LinearVelocity and AngularVelocity
+     *
+     * @param DeltaTime
+     * @param TickType
+     * @param ThisTickFunction
+     */
+    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+    /**
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
      * 
      */
@@ -70,6 +81,80 @@ public:
     virtual void SetVelocityTarget(const FVector& InLinearVelocity, const FVector& InAngularVelocity);
 
     /**
+     * @brief Utility wrapper of #SetVelocityTarget to provide 1 DoF target orientation
+     * This is useful since most of the joint is 1 DOF
+     *
+     * @param Input
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetSingleLinearVelocityTarget(const float Input);
+
+    /**
+     * @brief Utility wrapper of #SetVelocityTarget to provide 1 DoF target position
+     * This is useful since most of the joint is 1 DOF
+     *
+     * @param Input
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetSingleAngularVelocityTarget(const float Input);
+
+    /**
+     * @brief Set the Velocity Target With Delegates object
+     *
+     * @param InLinearVelocity
+     * @param InAngularVelocity
+     * @param InOnControlSuccessDelegate
+     * @param InOnControlFailDelegate
+     * @param InLinearTolerance
+     * @param InAngularTolerance
+     * @param InTimeOut
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetVelocityTargetWithDelegates(const FVector& InLinearVelocity,
+                                                const FVector& InAngularVelocity,
+                                                const FJointCallback& InOnControlSuccessDelegate,
+                                                const FJointCallback& InOnControlFailDelegate,
+                                                const float InLinearTolerance = -1.0,
+                                                const float InAngularTolerance = -1.0,
+                                                const float InTimeOut = -1.0);
+
+    /**
+     * @brief Utility wrapper of #SetVelocityTargetWithDelegates to provide 1 DoF targetlinear  velocity
+     * This is useful since most of the joint is 1 DOF
+     *
+     *
+     * @param Input
+     * @param InOnControlSuccessDelegate
+     * @param InOnControlFailDelegate
+     * @param InLinearTolerance
+     * @param InTimeOut
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetSingleLinearVelocityTargetWithDelegates(const float Input,
+                                                            const FJointCallback& InOnControlSuccessDelegate,
+                                                            const FJointCallback& InOnControlFailDelegate,
+                                                            const float InLinearTolerance = -1.0,
+                                                            const float InTimeOut = -1.0);
+
+    /**
+     * @brief Utility wrapper of #SetVelocityTargetWithDelegates to provide 1 DoF target angular velocity
+     * This is useful since most of the joint is 1 DOF
+     *
+     *
+     * @param Input
+     * @param InOnControlSuccessDelegate
+     * @param InOnControlFailDelegate
+     * @param InLinearTolerance
+     * @param InTimeOut
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetSingleAngularVelocityTargetWithDelegates(const float Input,
+                                                             const FJointCallback& InOnControlSuccessDelegate,
+                                                             const FJointCallback& InOnControlFailDelegate,
+                                                             const float InAngularTolerance = -1.0,
+                                                             const float InTimeOut = -1.0);
+
+    /**
      * @brief Set the Velocity With TArray.
      * Control to move joint with this velocity should be implemented in child class.
      * TArray size should be #LinearDOF +  #RotationalDOF
@@ -86,6 +171,25 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetVelocityTargetWithArray(const TArray<float>& InVelocity);
+
+    /**
+     * @brief Set the Velocity Target With Array With Delegates object
+     *
+     *
+     * @param InVelocity
+     * @param InOnControlSuccessDelegate
+     * @param InOnControlFailDelegate
+     * @param InLinearTolerance
+     * @param InAngularTolerance
+     * @param InTimeOut
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetVelocityTargetWithArrayWithDelegates(const TArray<float>& InVelocity,
+                                                         const FJointCallback& InOnControlSuccessDelegate,
+                                                         const FJointCallback& InOnControlFailDelegate,
+                                                         const float InLinearTolerance = -1.0,
+                                                         const float InAngularTolerance = -1.0,
+                                                         const float InTimeOut = -1.0);
 
     /**
      * @brief Check Pose reach the target pose.
@@ -113,6 +217,78 @@ public:
     virtual void SetPoseTarget(const FVector& InPosition, const FRotator& InOrientation);
 
     /**
+     * @brief Utility wrapper of #SetPoseTarget to provide 1 DoF target orientation
+     * This is useful since most of the joint is 1 DOF
+     *
+     * @param Input
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetSinglePositionTarget(const float Input);
+
+    /**
+     * @brief Utility wrapper of #SetPoseTarget to provide 1 DoF target position
+     * This is useful since most of the joint is 1 DOF
+     *
+     * @param Input
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetSingleOrientationTarget(const float Input);
+
+    /**
+     * @brief Set Pose Target.
+     *
+     * @param InPosition
+     * @param InOrientation
+     * @param InOnControlSuccessDelegate called when move to target success
+     * @param InOnControlFailDelegate called when move to target fail
+     * @param InPositionTolerance  update #PositionTolerance if this is set >= 0.
+     * @param InOrientationTolerance update #OrientationTolerance if this is set >= 0.
+     * @param InTimeOut
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetPoseTargetWithDelegates(const FVector& InPosition,
+                                            const FRotator& InOrientation,
+                                            const FJointCallback& InOnControlSuccessDelegate,
+                                            const FJointCallback& InOnControlFailDelegate,
+                                            const float InPositionTolerance = -1.0,
+                                            const float InOrientationTolerance = -1.0,
+                                            const float InTimeOut = -1.0);
+
+    /**
+     * @brief Utility wrapper of #SetPoseTargetWithDelegates to provide 1 DoF target position
+     * This is useful since most of the joint is 1 DOF
+     *
+     * @param Input
+     * @param InOnControlSuccessDelegate
+     * @param InOnControlFailDelegate
+     * @param InPositionTolerance
+     * @param InTimeOut
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetSinglePositionTargetWithDelegates(const float Input,
+                                                      const FJointCallback& InOnControlSuccessDelegate,
+                                                      const FJointCallback& InOnControlFailDelegate,
+                                                      const float InPositionTolerance = -1.0,
+                                                      const float InTimeOut = -1.0);
+
+    /**
+     * @brief Utility wrapper of #SetPoseTargetWithDelegates to provide 1 DoF target orientation
+     * This is useful since most of the joint is 1 DOF
+     *
+     * @param Input
+     * @param InOnControlSuccessDelegate called when move to target success
+     * @param InOnControlFailDelegate called when move to target fail
+     * @param InOrientationTolerance update #OrientationTolerance if this is set >= 0.
+     * @param InTimeOut
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetSingleOrientationTargetWithDelegates(const float Input,
+                                                         const FJointCallback& InOnControlSuccessDelegate,
+                                                         const FJointCallback& InOnControlFailDelegate,
+                                                         const float InOrientationTolerance = -1.0,
+                                                         const float InTimeOut = -1.0);
+
+    /**
      * @brief Check Pose reach the target pose.
      * If minus values are given, #PositionTolerance and #OrientationTolerance will be used.
      *
@@ -137,6 +313,22 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void SetPoseTargetWithArray(const TArray<float>& InPose);
+
+    /**
+     * @brief Set Pose Target.
+     *
+     * @param InPose
+     * @param InOnControlSuccessDelegate
+     * @param InOnControlFailDelegate
+     * @param InTimeOut
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetPoseTargetWithArrayWithDelegates(const TArray<float>& InPose,
+                                                     const FJointCallback& InOnControlSuccessDelegate,
+                                                     const FJointCallback& InOnControlFailDelegate,
+                                                     const float InPositionTolerance = -1.0,
+                                                     const float InOrientationTolerance = -1.0,
+                                                     const float InTimeOut = -1.0);
 
     /**
      * @brief Teleport robot to given pose. Implementation is in child class.
@@ -247,10 +439,57 @@ public:
     FRotator InitialOrientation = FRotator::ZeroRotator;
 
 protected:
+    UFUNCTION()
+    virtual void UpdateState(const float DeltaTime);
+
+    UFUNCTION()
+    virtual void UpdateControl(const float DeltaTime);
 
     UPROPERTY()
     FTransform JointToChildLink = FTransform::Identity;
+
     UPROPERTY()
     FTransform ParentLinkToJoint = FTransform::Identity;
 
+    //! true if joint is moving to target pose
+    UPROPERTY(VisibleAnywhere)
+    bool bMovingToTargetPose = false;
+
+    //! true if joint is moving to target velocity
+    UPROPERTY(VisibleAnywhere)
+    bool bMovingToTargetVelocity = false;
+
+    /**
+    * @brief Set Delegates which will be unbounded when move is completed or timeouthappen
+    *
+    * @param InOnControlSuccessDelegate called when move to target success
+    * @param InOnControlFailDelegate called when move to target fail
+    * @param InPositionTolerance  update #PositionTolerance if this is set >= 0.
+    * @param InOrientationTolerance update #OrientationTolerance if this is set >= 0.
+    * @param InTimeOut if this is set less than 0, timeout won't happen.
+    */
+    virtual void SetDelegates(const FJointCallback& InOnControlSuccessDelegate,
+                              const FJointCallback& InOnControlFailDelegate,
+                              const float InPositionTolerance = -1.0,
+                              const float InOrientationTolerance = -1.0,
+                              const float InLinearTolerance = -1.0,
+                              const float InAngularTolerance = -1.0,
+                              const float InTimeOut = -1.0f);
+
+    //! Delegate which is called when joint reach target vel/pose
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FJointCallback OnControlSuccessDelegate;
+
+    //! Delegate which is called whenjoint failed to reach target vel/pose
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FJointCallback OnControlFailDelegate;
+
+    //! time when target pose/vel are set.
+    float ControlStartTime = 0.f;
+
+    //! timeout. If joint can't reach target in this duration, OnControlFailDelegate should be called.
+    //! used only with #SetPoseTargetWithDelegate
+    //! if this is set less than 0, timeout won't happen.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float ControlTimeout = -1.0f;
 };
