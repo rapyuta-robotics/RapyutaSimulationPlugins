@@ -41,15 +41,6 @@ public:
 
 public:
     /**
-     * @brief Call #UpdatePose after update #PositionTarget and #OrientationTarget with #LinearVelocity and AngularVelocity
-     *
-     * @param DeltaTime
-     * @param TickType
-     * @param ThisTickFunction
-     */
-    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-    /**
      * @brief Set velocity target
      * Velocity become same value as VelocityTarget with Kinematic Mode.
      * @param InLinearVelocity
@@ -84,4 +75,9 @@ public:
     virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation) override;
 
     virtual void MoveToInitPose();
+
+protected:
+    virtual void UpdateState(const float DeltaTime) override;
+
+    virtual void UpdateControl(const float DeltaTime) override;
 };
