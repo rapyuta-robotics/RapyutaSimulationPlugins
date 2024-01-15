@@ -34,13 +34,6 @@ public:
     URRKinematicJointComponent();
 
     /**
-     * @brief Initialize #JointToChildLink and #ParentLinkToJoint
-     *
-     */
-    virtual void InitializeComponent() override;
-
-public:
-    /**
      * @brief Set velocity target
      * Velocity become same value as VelocityTarget with Kinematic Mode.
      * @param InLinearVelocity
