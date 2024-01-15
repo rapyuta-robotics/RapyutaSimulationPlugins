@@ -43,7 +43,7 @@ public:
      * @brief Initialize #Constraint #JointToChildLink and #ParentLinkToJoint
      *
      */
-    virtual void InitializeComponent() override;
+    virtual void Initialize() override;
 
     /**
      * @brief Do nothing since can't set velocity directly to physics joint.
