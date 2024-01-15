@@ -64,11 +64,13 @@ public:
     UPROPERTY(VisibleAnywhere, Replicated)
     ARRBaseRobot* OwnerVehicle = nullptr;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<URRFloatingMovementComponent> AIMovementComp = nullptr;
+
     /**
      * @brief Init #AIMovementComp, which drives the robot kinematically using UE AI Navigation
      */
+    UFUNCTION(BlueprintCallable)
     void InitAIMovementComp();
 
     /**
