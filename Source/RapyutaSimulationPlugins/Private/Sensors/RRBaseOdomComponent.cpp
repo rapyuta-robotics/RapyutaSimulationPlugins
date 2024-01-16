@@ -8,6 +8,7 @@ URRBaseOdomComponent::URRBaseOdomComponent()
     TopicName = TEXT("odom");
     PublicationFrequencyHz = 30;
     FrameId = TEXT("odom");    //default frame id
+    SensorPublisherClass = URRROS2OdomPublisher::StaticClass();
 }
 
 void URRBaseOdomComponent::SensorUpdate()
@@ -23,6 +24,11 @@ void URRBaseOdomComponent::SensorUpdate()
 void URRBaseOdomComponent::PreInitializePublisher(UROS2NodeComponent* InROS2Node, const FString& InTopicName)
 {
     Super::PreInitializePublisher(InROS2Node, InTopicName);
+    auto odompublisher = Cast<URRROS2OdomPublisher>(SensorPublisher);
+    if (odompublisher)
+    {
+        odompublisher->bPublishOdomTf = bPublishOdomTf;
+    }
 }
 
 void URRBaseOdomComponent::SetFrameIds(const FString& InFrameId, const FString& InChildFrameId)
