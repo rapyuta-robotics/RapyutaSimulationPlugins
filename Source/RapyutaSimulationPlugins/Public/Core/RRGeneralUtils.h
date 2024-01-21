@@ -10,6 +10,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Json.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "TimerManager.h"
 
@@ -59,7 +60,7 @@ public:
             }
         }
 #endif
-        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("Actor named [%s] is unavailable."), *InName);
+        UE_LOG(LogTemp, Log, TEXT("Actor named [%s] is unavailable."), *InName);
         return nullptr;
     }
 
@@ -111,7 +112,7 @@ public:
             }
         }
 #endif
-        UE_LOG_WITH_INFO(LogTemp, Log, TEXT("Actor name containing [%s] is unavailable."), *InSubname);
+        UE_LOG(LogTemp, Log, TEXT("Actor name containing [%s] is unavailable."), *InSubname);
         return nullptr;
     }
 
@@ -234,7 +235,7 @@ public:
             OutTransf = FTransform::Identity;
             if (Verbose)
             {
-                UE_LOG_WITH_INFO(LogTemp, Error, TEXT("RefActor is not valid."));
+                UE_LOG(LogTemp, Error, TEXT("RefActor is not valid."));
             }
             return false;
         }
@@ -269,7 +270,7 @@ public:
             OutTransf = FTransform::Identity;
             if (Verbose)
             {
-                UE_LOG_WITH_INFO(LogTemp, Error, TEXT("World is not given. Return Idnetity Transform"));
+                UE_LOG(LogTemp, Error, TEXT("World is not given. Return Idnetity Transform"));
             }
             return false;
         }
@@ -280,7 +281,7 @@ public:
             OutTransf = FTransform::Identity;
             if (Verbose)
             {
-                UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Reference Actor %s is not valid."), *RefActorName);
+                UE_LOG(LogTemp, Warning, TEXT("Reference Actor %s is not valid."), *RefActorName);
             }
             return false;
         }

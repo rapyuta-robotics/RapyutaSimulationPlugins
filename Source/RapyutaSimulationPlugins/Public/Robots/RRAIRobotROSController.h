@@ -37,13 +37,13 @@ public:
     float OrientationTolerance = 5.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float LinearMotionTolerance = 5.f;
+    float LinearMotionTolerance = 10.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRotator OrientationTarget = FRotator::ZeroRotator;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FRotator LinearMotionTarget = FVector::ZeroVector;
+    FVector LinearMotionTarget = FVector::ZeroVector;
 
 protected:
     /**
@@ -72,7 +72,7 @@ protected:
     bool bRotating = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float RotationSpeed = 30.f;
+    float RotationSpeed = 90.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float LinearSpeed = 100.f;
@@ -94,6 +94,7 @@ protected:
     */
     virtual void SetDelegates(const FMoveCompleteCallback& InOnSuccess,
                               const FMoveCompleteCallback& InOnFail,
+                              const float InLinearMotionToleranc = -1.0,
                               const float InOrientationTolerance = -1.0,
                               const float InTimeOut = -1.0f);
 
@@ -104,6 +105,8 @@ protected:
     //! Delegate which is called whenjoint failed to reach target vel/pose
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FMoveCompleteCallback OnFail;
+
+    static ARRAIRobotROSController* CheckController(APawn* TargetPawn);
 
     virtual EPathFollowingRequestResult::Type MoveToActorWithDelegates(AActor* Goal,
                                                                        const FMoveCompleteCallback& InOnSuccess,
@@ -133,6 +136,38 @@ protected:
                                                                       const float InOrientationTolerance = -1.0,
                                                                       const float InTimeOut = -1.0);
 
+    virtual EPathFollowingRequestResult::Type MoveToLocationWithDelegates(const FVector& Dest,
+                                                                          const FRotator& DestRotator,
+                                                                          const FMoveCompleteCallback& InOnSuccess,
+                                                                          const FMoveCompleteCallback& InOnFail,
+                                                                          float AcceptanceRadius = -1,
+                                                                          bool bStopOnOverlap = true,
+                                                                          bool bUsePathfinding = true,
+                                                                          bool bProjectDestinationToNavigation = false,
+                                                                          bool bCanStrafe = true,
+                                                                          TSubclassOf<UNavigationQueryFilter> FilterClass = NULL,
+                                                                          bool bAllowPartialPath = true,
+                                                                          const float InOrientationTolerance = -1.0,
+                                                                          const float InTimeOut = -1.0);
+
+    UFUNCTION(BlueprintCallable,
+              Category = "AI|Navigation",
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static EPathFollowingRequestResult::Type MoveToLocationWithDelegates(APawn* TargetPawn,
+                                                                         const FVector& Dest,
+                                                                         const FRotator& DestRotator,
+                                                                         const FMoveCompleteCallback& InOnSuccess,
+                                                                         const FMoveCompleteCallback& InOnFail,
+                                                                         float AcceptanceRadius = -1,
+                                                                         bool bStopOnOverlap = true,
+                                                                         bool bUsePathfinding = true,
+                                                                         bool bProjectDestinationToNavigation = false,
+                                                                         bool bCanStrafe = true,
+                                                                         TSubclassOf<UNavigationQueryFilter> FilterClass = NULL,
+                                                                         bool bAllowPartialPath = true,
+                                                                         const float InOrientationTolerance = -1.0,
+                                                                         const float InTimeOut = -1.0);
+
     /**
      * @brief Check orientation reach the target orientation.
      * If minus values are given, #OrientationTolerance will be used.
@@ -142,10 +177,49 @@ protected:
     virtual bool HasReachedOrientationTarget(const float InOrientationTolerance = -1.0);
 
     UFUNCTION(BlueprintCallable)
-    virtual void SetOrientationTarget(const FRotator& InOrientation, const bool InStartMoving = true);
+    virtual bool HasReachedLinearMotionTarget(const float InLinearMotionTolerance = -1.0);
 
-    UFUNCTION(BlueprintCallable)
-    virtual void SetLinearMotionTarget(const FRotator& InPosition, const bool InStartMoving = true);
+    virtual void SetOrientationTarget(const FRotator& InOrientation, const bool InReset = true);
+
+    UFUNCTION(BlueprintCallable,
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static void SetOrientationTarget(APawn* TargetPawn, const FRotator& InOrientation);
+
+    virtual void SetOrientationTargetWthDelegates(const FRotator& InOrientation,
+                                                  const FMoveCompleteCallback& InOnSuccess,
+                                                  const FMoveCompleteCallback& InOnFail,
+                                                  const float InOrientationTolerance = -1.0,
+                                                  const float InTimeOut = -1.0);
+
+    UFUNCTION(BlueprintCallable,
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static void SetOrientationTargetWthDelegates(APawn* TargetPawn,
+                                                 const FRotator& InOrientation,
+                                                 const FMoveCompleteCallback& InOnSuccess,
+                                                 const FMoveCompleteCallback& InOnFail,
+                                                 const float InOrientationTolerance = -1.0,
+                                                 const float InTimeOut = -1.0);
+
+    virtual void SetLinearMotionTarget(const FVector& InPosition, const bool InReset = true);
+
+    UFUNCTION(BlueprintCallable,
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static void SetLinearMotionTarget(APawn* TargetPawn, const FVector& InPosition);
+
+    virtual void SetLinearMotionTargetWthDelegates(const FVector& InPosition,
+                                                   const FMoveCompleteCallback& InOnSuccess,
+                                                   const FMoveCompleteCallback& InOnFail,
+                                                   const float InLinearMotionTolerancee = -1.0,
+                                                   const float InTimeOut = -1.0);
+
+    UFUNCTION(BlueprintCallable,
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static void SetLinearMotionTargetWthDelegates(APawn* TargetPawn,
+                                                  const FVector& InPosition,
+                                                  const FMoveCompleteCallback& InOnSuccess,
+                                                  const FMoveCompleteCallback& InOnFail,
+                                                  const float InLinearMotionTolerancee = -1.0,
+                                                  const float InTimeOut = -1.0);
 
     //! time when target pose/vel are set.
     float MoveStartTime = 0.f;
@@ -163,4 +237,7 @@ protected:
     virtual void UpdateRotation(float DeltaSeconds);
 
     virtual void UpdateLinearMotion(float DeltaSeconds);
+
+    UFUNCTION(BlueprintCallable)
+    virtual void ResetControl();
 };

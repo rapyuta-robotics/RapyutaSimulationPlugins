@@ -16,8 +16,17 @@ void ARRAIRobotROSController::OnUnPossess()
     Super::OnUnPossess();
 }
 
+void ARRAIRobotROSController::ResetControl()
+{
+    bRotating = false;
+    bLinearMoving = false;
+    OnSuccess.Unbind();
+    OnFail.Unbind();
+}
+
 void ARRAIRobotROSController::SetDelegates(const FMoveCompleteCallback& InOnSuccess,
                                            const FMoveCompleteCallback& InOnFail,
+                                           const float InLinearMotionTolerance,
                                            const float InOrientationTolerance,
                                            const float InTimeOut)
 {
@@ -41,11 +50,33 @@ void ARRAIRobotROSController::SetDelegates(const FMoveCompleteCallback& InOnSucc
         OnFail = InOnFail;
     }
 
+    LinearMotionTolerance = (InLinearMotionTolerance >= 0) ? InLinearMotionTolerance : LinearMotionTolerance;
     OrientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
 
     MoveStartTime = GetWorld()->GetTimeSeconds();
     MoveTimeout = InTimeOut;
 };
+
+ARRAIRobotROSController* ARRAIRobotROSController::CheckController(APawn* TargetPawn)
+{
+    if (IsValid(TargetPawn))
+    {
+        auto controller = Cast<ARRAIRobotROSController>(TargetPawn->GetController());
+        if (controller)
+        {
+            return controller;
+        }
+        else
+        {
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Controller should be child class of ARRAIRobotROSController"));
+        }
+    }
+    else
+    {
+        UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("TargetPawn is not valid"));
+    }
+    return nullptr;
+}
 
 EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelegates(AActor* Goal,
                                                                                     const FMoveCompleteCallback& InOnSuccess,
@@ -59,7 +90,7 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelega
                                                                                     const float InOrientationTolerance,
                                                                                     const float InTimeOut)
 {
-    SetDelegates(InOnSuccess, InOnFail, InOrientationTolerance, InTimeOut);
+    SetDelegates(InOnSuccess, InOnFail, -1, InOrientationTolerance, InTimeOut);
     OrientationTarget = Goal->GetActorRotation();
     bRotating = false;
     bLinearMoving = false;
@@ -80,31 +111,85 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelega
                                                                                     const float InTimeOut)
 {
     EPathFollowingRequestResult::Type res = EPathFollowingRequestResult::Type::Failed;
-    if (IsValid(TargetPawn))
+    auto controller = CheckController(TargetPawn);
+    if (controller)
     {
-        auto controller = Cast<ARRAIRobotROSController>(TargetPawn->GetController());
-        if (controller)
-        {
-            res = controller->MoveToActorWithDelegates(Goal,
-                                                       InOnSuccess,
-                                                       InOnFail,
-                                                       AcceptanceRadius,
-                                                       bStopOnOverlap,
-                                                       bUsePathfinding,
-                                                       bCanStrafe,
-                                                       FilterClass,
-                                                       bAllowPartialPath,
-                                                       InOrientationTolerance,
-                                                       InTimeOut);
-        }
-        else
-        {
-            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Controller should be child class of ARRAIRobotROSController"));
-        }
+        res = controller->MoveToActorWithDelegates(Goal,
+                                                   InOnSuccess,
+                                                   InOnFail,
+                                                   AcceptanceRadius,
+                                                   bStopOnOverlap,
+                                                   bUsePathfinding,
+                                                   bCanStrafe,
+                                                   FilterClass,
+                                                   bAllowPartialPath,
+                                                   InOrientationTolerance,
+                                                   InTimeOut);
     }
-    else
+    return res;
+};
+
+EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDelegates(
+    const FVector& Dest,
+    const FRotator& DestRotator,
+    const FMoveCompleteCallback& InOnSuccess,
+    const FMoveCompleteCallback& InOnFail,
+    float AcceptanceRadius,
+    bool bStopOnOverlap,
+    bool bUsePathfinding,
+    bool bProjectDestinationToNavigation,
+    bool bCanStrafe,
+    TSubclassOf<UNavigationQueryFilter> FilterClass,
+    bool bAllowPartialPath,
+    const float InOrientationTolerance,
+    const float InTimeOut)
+{
+    SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
+    bRotating = false;
+    bLinearMoving = false;
+    return MoveToLocation(Dest,
+                          AcceptanceRadius,
+                          bStopOnOverlap,
+                          bUsePathfinding,
+                          bProjectDestinationToNavigation,
+                          bCanStrafe,
+                          FilterClass,
+                          bAllowPartialPath);
+}
+
+EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDelegates(
+    APawn* TargetPawn,
+    const FVector& Dest,
+    const FRotator& DestRotator,
+    const FMoveCompleteCallback& InOnSuccess,
+    const FMoveCompleteCallback& InOnFail,
+    float AcceptanceRadius,
+    bool bStopOnOverlap,
+    bool bUsePathfinding,
+    bool bProjectDestinationToNavigation,
+    bool bCanStrafe,
+    TSubclassOf<UNavigationQueryFilter> FilterClass,
+    bool bAllowPartialPath,
+    const float InOrientationTolerance,
+    const float InTimeOut)
+{
+    EPathFollowingRequestResult::Type res = EPathFollowingRequestResult::Type::Failed;
+    auto controller = CheckController(TargetPawn);
+    if (controller)
     {
-        UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("TargetPawn is not valid"));
+        res = controller->MoveToLocationWithDelegates(Dest,
+                                                      DestRotator,
+                                                      InOnSuccess,
+                                                      InOnFail,
+                                                      AcceptanceRadius,
+                                                      bStopOnOverlap,
+                                                      bUsePathfinding,
+                                                      bProjectDestinationToNavigation,
+                                                      bCanStrafe,
+                                                      FilterClass,
+                                                      bAllowPartialPath,
+                                                      InOrientationTolerance,
+                                                      InTimeOut);
     }
     return res;
 };
@@ -114,19 +199,18 @@ void ARRAIRobotROSController::OnMoveCompleted(FAIRequestID RequestID, const FPat
     Super::OnMoveCompleted(RequestID, Result);
     if (Result.Code == EPathFollowingResult::Success)
     {
-        SetOrientationTarget(OrientationTarget);
+        SetOrientationTarget(OrientationTarget, false);
     }
     else
     {
         if (OnFail.IsBound())
         {
             OnFail.ExecuteIfBound();
-            OnFail.Unbind();
         }
     }
 }
 
-void ARRAIRobotROSController::SetOrientationTarget(const FRotator& InOrientation, const bool InStartMoving = false)
+void ARRAIRobotROSController::SetOrientationTarget(const FRotator& InOrientation, const bool InReset)
 {
     OrientationTarget = InOrientation;
     FVector orientationVec = GetPawn()->GetActorRotation().Euler();
@@ -136,13 +220,48 @@ void ARRAIRobotROSController::SetOrientationTarget(const FRotator& InOrientation
         float angleDiff = FRotator::NormalizeAxis(orientationTargetVec[i] - orientationVec[i]);
         AngularVelocity[i] = FMath::IsNearlyZero(angleDiff) ? 0 : angleDiff < 0 ? -RotationSpeed : RotationSpeed;
     }
-    bRotating = InStartMoving;
-    OnSuccess.Unbind();
-    OnFail.Unbind();
-    MoveTimeout = -1.0f;
+
+    if (InReset)
+    {
+        ResetControl();
+    }
+    bRotating = true;
 }
 
-void ARRAIRobotROSController::SetLinearMotionTarget(const FRotator& InPosition, const bool InStartMoving = true)
+void ARRAIRobotROSController::SetOrientationTarget(APawn* TargetPawn, const FRotator& InOrientation)
+{
+    auto controller = CheckController(TargetPawn);
+    if (controller)
+    {
+        controller->SetOrientationTarget(InOrientation);
+    }
+}
+
+void ARRAIRobotROSController::SetOrientationTargetWthDelegates(const FRotator& InOrientation,
+                                                               const FMoveCompleteCallback& InOnSuccess,
+                                                               const FMoveCompleteCallback& InOnFail,
+                                                               const float InOrientationTolerance,
+                                                               const float InTimeOut)
+{
+    SetDelegates(InOnSuccess, InOnFail, -1, InOrientationTolerance, InTimeOut);
+    SetOrientationTarget(InOrientation, false);
+}
+
+void ARRAIRobotROSController::SetOrientationTargetWthDelegates(APawn* TargetPawn,
+                                                               const FRotator& InOrientation,
+                                                               const FMoveCompleteCallback& InOnSuccess,
+                                                               const FMoveCompleteCallback& InOnFail,
+                                                               const float InOrientationTolerance,
+                                                               const float InTimeOut)
+{
+    auto controller = CheckController(TargetPawn);
+    if (controller)
+    {
+        controller->SetOrientationTargetWthDelegates(InOrientation, InOnSuccess, InOnFail, InOrientationTolerance, InTimeOut);
+    }
+}
+
+void ARRAIRobotROSController::SetLinearMotionTarget(const FVector& InPosition, const bool InReset)
 {
     FVector location = GetPawn()->GetActorLocation();
     LinearMotionTarget = InPosition;
@@ -151,10 +270,45 @@ void ARRAIRobotROSController::SetLinearMotionTarget(const FRotator& InPosition, 
         float diff = LinearMotionTarget[i] - location[i];
         LinearVelocity[i] = FMath::IsNearlyZero(diff) ? 0 : diff < 0 ? -LinearSpeed : LinearSpeed;
     }
-    bLinearMoving = InStartMoving;
-    OnSuccess.Unbind();
-    OnFail.Unbind();
-    MoveTimeout = -1.0f;
+
+    if (InReset)
+    {
+        ResetControl();
+    }
+    bLinearMoving = true;
+}
+
+void ARRAIRobotROSController::SetLinearMotionTarget(APawn* TargetPawn, const FVector& InPosition)
+{
+    auto controller = CheckController(TargetPawn);
+    if (controller)
+    {
+        controller->SetLinearMotionTarget(InPosition);
+    }
+}
+
+void ARRAIRobotROSController::SetLinearMotionTargetWthDelegates(const FVector& InPosition,
+                                                                const FMoveCompleteCallback& InOnSuccess,
+                                                                const FMoveCompleteCallback& InOnFail,
+                                                                const float InLinearMotionTolerancee,
+                                                                const float InTimeOut)
+{
+    SetDelegates(InOnSuccess, InOnFail, InLinearMotionTolerancee, -1, InTimeOut);
+    SetLinearMotionTarget(InPosition, false);
+}
+
+void ARRAIRobotROSController::SetLinearMotionTargetWthDelegates(APawn* TargetPawn,
+                                                                const FVector& InPosition,
+                                                                const FMoveCompleteCallback& InOnSuccess,
+                                                                const FMoveCompleteCallback& InOnFail,
+                                                                const float InLinearMotionTolerancee,
+                                                                const float InTimeOut)
+{
+    auto controller = CheckController(TargetPawn);
+    if (controller)
+    {
+        controller->SetLinearMotionTargetWthDelegates(InPosition, InOnSuccess, InOnFail, InLinearMotionTolerancee, InTimeOut);
+    }
 }
 
 void ARRAIRobotROSController::UpdateRotation(float DeltaSeconds)
@@ -212,14 +366,12 @@ bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientat
 
     const float orientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
     bool res = OrientationTarget.Equals(GetPawn()->GetActorRotation(), orientationTolerance);
-
     if (res)
     {
         bRotating = false;
         if (OnSuccess.IsBound())
         {
             OnSuccess.ExecuteIfBound();
-            OnSuccess.Unbind();
         }
     }
     else
@@ -232,7 +384,6 @@ bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientat
             {
                 bRotating = false;
                 OnFail.ExecuteIfBound();
-                OnFail.Unbind();
             }
         }
     }
@@ -241,7 +392,7 @@ bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientat
 
 bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const float InLinearMotionTolerance)
 {
-    if (!bRotating)
+    if (!bLinearMoving)
     {
         return true;
     }
