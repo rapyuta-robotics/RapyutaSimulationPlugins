@@ -16,6 +16,8 @@
 
 class URRRobotROS2Interface;
 
+DECLARE_DYNAMIC_DELEGATE(FMoveCompleteCallback);
+
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
  * This class has authority to start ROS 2 Component in pausses robot.
@@ -28,6 +30,21 @@ UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API ARRAIRobotROSController : public ARRBaseRobotROSController
 {
     GENERATED_BODY()
+
+public:
+    //! [degree] tolerance for control
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float OrientationTolerance = 5.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float LinearMotionTolerance = 5.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FRotator OrientationTarget = FRotator::ZeroRotator;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FRotator LinearMotionTarget = FVector::ZeroVector;
+
 protected:
     /**
      * @brief Initialize robot pawn by calling #ARRBaseRobot::InitROS2Interface.
@@ -43,4 +60,107 @@ protected:
      * @sa [OnUnPossess](https://docs.unrealengine.com/5.1/en-US/API/Runtime/AIModule/AAIController/OnUnPossess/)
      */
     virtual void OnUnPossess() override;
+
+    virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
+
+    //! true if actor is moving to target pose
+    UPROPERTY(VisibleAnywhere)
+    bool bLinearMoving = false;
+
+    //! true if actor is rotating to target orientation
+    UPROPERTY(VisibleAnywhere)
+    bool bRotating = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float RotationSpeed = 30.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float LinearSpeed = 100.f;
+
+    UPROPERTY(VisibleAnywhere)
+    FVector LinearVelocity = FVector::ZeroVector;
+
+    UPROPERTY(VisibleAnywhere)
+    FVector AngularVelocity = FVector::ZeroVector;
+
+    /**
+    * @brief Set Delegates which will be unbounded when move is completed or timeouthappen
+    *
+    * @param InOnControlSuccessDelegate called when move to target success
+    * @param InOnControlFailDelegate called when move to target fail
+    * @param InPositionTolerance  update #PositionTolerance if this is set >= 0.
+    * @param InOrientationTolerance update #OrientationTolerance if this is set >= 0.
+    * @param InTimeOut if this is set less than 0, timeout won't happen.
+    */
+    virtual void SetDelegates(const FMoveCompleteCallback& InOnSuccess,
+                              const FMoveCompleteCallback& InOnFail,
+                              const float InOrientationTolerance = -1.0,
+                              const float InTimeOut = -1.0f);
+
+    //! Delegate which is called when joint reach target vel/pose
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FMoveCompleteCallback OnSuccess;
+
+    //! Delegate which is called whenjoint failed to reach target vel/pose
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FMoveCompleteCallback OnFail;
+
+    virtual EPathFollowingRequestResult::Type MoveToActorWithDelegates(AActor* Goal,
+                                                                       const FMoveCompleteCallback& InOnSuccess,
+                                                                       const FMoveCompleteCallback& InOnFail,
+                                                                       float AcceptanceRadius = -1,
+                                                                       bool bStopOnOverlap = true,
+                                                                       bool bUsePathfinding = true,
+                                                                       bool bCanStrafe = true,
+                                                                       TSubclassOf<UNavigationQueryFilter> FilterClass = NULL,
+                                                                       bool bAllowPartialPath = true,
+                                                                       const float InOrientationTolerance = -1.0,
+                                                                       const float InTimeOut = -1.0);
+
+    UFUNCTION(BlueprintCallable,
+              Category = "AI|Navigation",
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static EPathFollowingRequestResult::Type MoveToActorWithDelegates(APawn* TargetPawn,
+                                                                      AActor* Goal,
+                                                                      const FMoveCompleteCallback& InOnSuccess,
+                                                                      const FMoveCompleteCallback& InOnFail,
+                                                                      float AcceptanceRadius = -1,
+                                                                      bool bStopOnOverlap = true,
+                                                                      bool bUsePathfinding = true,
+                                                                      bool bCanStrafe = true,
+                                                                      TSubclassOf<UNavigationQueryFilter> FilterClass = NULL,
+                                                                      bool bAllowPartialPath = true,
+                                                                      const float InOrientationTolerance = -1.0,
+                                                                      const float InTimeOut = -1.0);
+
+    /**
+     * @brief Check orientation reach the target orientation.
+     * If minus values are given, #OrientationTolerance will be used.
+     *
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual bool HasReachedOrientationTarget(const float InOrientationTolerance = -1.0);
+
+    UFUNCTION(BlueprintCallable)
+    virtual void SetOrientationTarget(const FRotator& InOrientation, const bool InStartMoving = true);
+
+    UFUNCTION(BlueprintCallable)
+    virtual void SetLinearMotionTarget(const FRotator& InPosition, const bool InStartMoving = true);
+
+    //! time when target pose/vel are set.
+    float MoveStartTime = 0.f;
+
+    //! timeout. If joint can't reach target in this duration, OnControlFailDelegate should be called.
+    //! used only with #SetPoseTargetWithDelegate
+    //! if this is set less than 0, timeout won't happen.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float MoveTimeout = -1.0f;
+
+    virtual void Tick(float DeltaSeconds) override;
+
+    virtual void UpdateControl(float DeltaSeconds);
+
+    virtual void UpdateRotation(float DeltaSeconds);
+
+    virtual void UpdateLinearMotion(float DeltaSeconds);
 };
