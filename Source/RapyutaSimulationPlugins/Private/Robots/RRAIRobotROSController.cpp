@@ -92,6 +92,7 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelega
 {
     SetDelegates(InOnSuccess, InOnFail, -1, InOrientationTolerance, InTimeOut);
     OrientationTarget = Goal->GetActorRotation();
+    AIMovePoseTarget = Goal->GetActorLocation(); // for teleport on fail
     bRotating = false;
     bLinearMoving = false;
     return MoveToActor(Goal, AcceptanceRadius, bStopOnOverlap, bUsePathfinding, bCanStrafe, FilterClass, bAllowPartialPath);
@@ -145,6 +146,8 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     const float InTimeOut)
 {
     SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
+    OrientationTarget = GetActorRotation();
+    AIMovePoseTarget = Dest; // for teleport on fail
     bRotating = false;
     bLinearMoving = false;
     return MoveToLocation(Dest,
@@ -205,6 +208,11 @@ void ARRAIRobotROSController::OnMoveCompleted(FAIRequestID RequestID, const FPat
     {
         if (OnFail.IsBound())
         {
+            if(bTeleportOnFail)
+            {
+                SetActorLocation(AIMovePoseTarget);
+                SetActorRotation(OrientationTarget);
+            }
             OnFail.ExecuteIfBound();
         }
     }
@@ -382,6 +390,10 @@ bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientat
             float currentTime = GetWorld()->GetTimeSeconds();
             if (MoveTimeout > 0 && currentTime - MoveStartTime > MoveTimeout)
             {
+                if(bTeleportOnFail)
+                {
+                    SetActorRotation(OrientationTarget);
+                }
                 bRotating = false;
                 OnFail.ExecuteIfBound();
             }
@@ -406,7 +418,6 @@ bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const float InLinearM
         if (OnSuccess.IsBound())
         {
             OnSuccess.ExecuteIfBound();
-            OnSuccess.Unbind();
         }
     }
     else
@@ -417,9 +428,12 @@ bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const float InLinearM
             float currentTime = GetWorld()->GetTimeSeconds();
             if (MoveTimeout > 0 && currentTime - MoveStartTime > MoveTimeout)
             {
+                if(bTeleportOnFail)
+                {
+                    SetActorLocation(LinearMotionTarget);
+                }
                 bLinearMoving = false;
                 OnFail.ExecuteIfBound();
-                OnFail.Unbind();
             }
         }
     }

@@ -45,6 +45,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector LinearMotionTarget = FVector::ZeroVector;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bTeleportOnFail = true;
+
 protected:
     /**
      * @brief Initialize robot pawn by calling #ARRBaseRobot::InitROS2Interface.
@@ -62,6 +65,9 @@ protected:
     virtual void OnUnPossess() override;
 
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
+
+    UPROPERTY(VisibleAnywhere)
+    FVector AIMovePoseTarget;
 
     //! true if actor is moving to target pose
     UPROPERTY(VisibleAnywhere)
