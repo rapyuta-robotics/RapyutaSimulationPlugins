@@ -1,5 +1,5 @@
 /**
- * @file RRRobotROS2Interface.h
+ * @file RRBaseROS2Interface.h
  * @brief Base Robot ROS2Interface class. Other robot ROS2Interface class should inherit from this class.
  * @copyright Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
  */
@@ -18,10 +18,9 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
-#include "Robots/RRBaseROS2Interface.h"
 #include "Sensors/RRBaseOdomComponent.h"
 
-#include "RRRobotROS2Interface.generated.h"
+#include "RRBaseROS2Interface.generated.h"
 
 class ARRBaseRobot;
 /**
@@ -36,7 +35,7 @@ class ARRBaseRobot;
  * @todo add handling of service and action.
  */
 UCLASS(Blueprintable, EditInlineNew)
-class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
+class RAPYUTASIMULATIONPLUGINS_API URRBaseROS2Interface : public UObject
 {
     GENERATED_BODY()
 
@@ -44,10 +43,6 @@ class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
     ROS2_CREATE_SUBSCRIBER(RobotROS2Node, this, InTopicName, InMsgClass, InCallback)
 
 public:
-    //! Target robot
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    TObjectPtr<ARRBaseRobot> Robot = nullptr;
-
     virtual bool IsSupportedForNetworking() const override
     {
         return true;
@@ -75,7 +70,7 @@ public:
      * @param InRobot
      */
     UFUNCTION(BlueprintCallable)
-    virtual void Initialize(ARRBaseRobot* InRobot);
+    virtual void Initialize(AActor* Owner);
 
     /**
      * @brief AdditionalInitialization implemented in BP.
@@ -96,77 +91,7 @@ public:
      *
      * @param InPawn
      */
-    void InitRobotROS2Node(ARRBaseRobot* InRobot);
-
-    //////////////////////////////
-    //Mobile
-    //////////////////////////////
-
-    //! Odometry source
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    TObjectPtr<URRBaseOdomComponent> OdomComponent = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    bool bPublishOdom = true;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    bool bPublishOdomTf = false;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    float OdomPublicationFrequencyHz = 30;
-
-    //! Movement command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    FString CmdVelTopicName = TEXT("cmd_vel");
-
-    //////////////////////////////
-    //Joint
-    //////////////////////////////
-
-    /**
-     * @brief Move robot joints by setting position or velocity to Pawn(=Robot) with given ROS 2 msg.
-     * Supports only 1 DOF joints.
-     * Effort control is not supported.
-     * @sa [sensor_msgs/JointState](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html)
-     */
-    UFUNCTION()
-    virtual void JointCmdCallback(const UROS2GenericMsg* Msg);
-
-    //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    FString JointCmdTopicName = TEXT("ue_joint_commands");
-
-    /**
-     * @brief Update Joint State msg
-     *
-     * @param InMessage
-     */
-    UFUNCTION()
-    void UpdateJointState(UROS2GenericMsg* InMessage);
-
-    //! JointState Publisher
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TObjectPtr<UROS2Publisher> JointStatePublisher = nullptr;
-
-    //! Joint control command topic. If empty is given, subscriber will not be initiated.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    float JointStatePublicationFrequencyHz = 30.f;
-
-    //! Joint state topic
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    FString JointStateTopicName = TEXT("ue_joint_states");
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    bool bWarnAboutMissingLink = true;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    TObjectPtr<URRROS2TFsPublisher> JointsTFPublisher = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    bool bPublishJointTf = false;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    float JointTfPublicationFrequencyHz = 1.f;
+    void InitRobotROS2Node(AActor* Owner);
 
     /**
      * @brief Setup ROS Params, overridable by child classes to config custom ROS 2 Interface's params
@@ -189,10 +114,6 @@ public:
         SetupROSParams();
         BPSetupROSParams();
     }
-
-    //! Odom publisher
-    UPROPERTY(Transient, BlueprintReadWrite, Replicated)
-    TObjectPtr<URRROS2OdomPublisher> OdomPublisher = nullptr;
 
     //! You can add your publishers here to ask ROS2Interface to manage.
     //! Other option is to create child class to overwrite each method.
@@ -272,96 +193,28 @@ public:
      */
     UFUNCTION()
     virtual bool InitActionServers();
-
-    /**
-     * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS 2 msg.
-     * Typically this receive Twist msg to move robot.
-     */
-    UFUNCTION()
-    virtual void MovementCallback(const UROS2GenericMsg* Msg);
-
-protected:
-    template<typename TROS2Message,
-             typename TROS2MessageData,
-             typename TRobot,
-             typename TRobotMemFuncType = void (TRobot::*)(const TROS2MessageData&)>
-    FORCEINLINE void OnMessageReceived(const TROS2Message* InMsg, const TRobotMemFuncType& InMemFunc)
-    {
-        const auto* msg = Cast<TROS2Message>(InMsg);
-        if (IsValid(msg))
-        {
-            TROS2MessageData msgData;
-            msg->GetMsg(msgData);
-
-            // (Note) In this callback, which could be invoked from a ROS working thread,
-            // thus any direct referencing to its member in this GameThread lambda needs to be verified.
-            AsyncTask(ENamedThreads::GameThread,
-                      [this, InMemFunc, msgData]
-                      {
-                          auto* robot = Cast<TRobot>(Robot);
-                          if (IsValid(Cast<UObject>(robot)))
-                          {
-                              ::Invoke(InMemFunc, robot, msgData);
-                          }
-                      });
-        }
-    }
-
-    template<typename TROS2Message, typename TROS2MessageData, typename TRobot>
-    FORCEINLINE void OnMessageReceivedFunc(const TROS2Message* InMsg, const TFunction<void(const TROS2MessageData&)>& InFunc)
-    {
-        if (IsValid(InMsg))
-        {
-            TROS2MessageData msgData;
-            InMsg->GetMsg(msgData);
-
-            // (Note) In this callback, which could be invoked from a ROS working thread,
-            // thus any direct referencing to its member in this GameThread lambda needs to be verified.
-            AsyncTask(ENamedThreads::GameThread,
-                      [this, InFunc, msgData]
-                      {
-                          auto* robot = Cast<TRobot>(Robot);
-                          if (IsValid(Cast<UObject>(robot)))
-                          {
-                              InFunc(msgData);
-                          }
-                      });
-        }
-    }
-
-    UPROPERTY()
-    TMap<FName /*ServiceName*/, UROS2ServiceClient*> ServiceClientList;
-
-    template<typename TService, typename TServiceRequest>
-    void MakeServiceRequest(const FName& InServiceName, const TServiceRequest& InRequest)
-    {
-        // Create and update request
-        if (auto* client = ServiceClientList.FindRef(InServiceName))
-        {
-            TService* service = CastChecked<TService>(client->Service);
-            client->SendRequest(service, InRequest);
-
-            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("%s [%s] Request made"), *InServiceName.ToString(), *GetName());
-        }
-        else
-        {
-            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName.ToString());
-        }
-    }
 };
 
 /**
- * @brief Wrapper class of URRRobotROS2Interfaceas component
+ * @brief Wrapper class of URRBaseROS2Interfaceas component
  * This class should be useful to create custom ROSInterface.
  *
  */
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2InterfaceComponent : public URRBaseROS2InterfaceComponent
+class RAPYUTASIMULATIONPLUGINS_API URRBaseROS2InterfaceComponent : public UActorComponent
 {
     GENERATED_BODY()
 public:
-    URRRobotROS2InterfaceComponent()
-    {
-        ROS2InterfaceClass = URRRobotROS2Interface::StaticClass();
-    };
+    virtual void BeginPlay() override;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced)
+    TObjectPtr<URRBaseROS2Interface> ROS2Interface = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<URRBaseROS2Interface> ROS2InterfaceClass = URRBaseROS2Interface::StaticClass();
+
+    //! add all subcomonents of owner to #ROS2Interface
+    //! You can manually add one by one instead of using this class.
+    UFUNCTION(BlueprintCallable)
+    void AddAllSubComponentToROSInterface();
 };

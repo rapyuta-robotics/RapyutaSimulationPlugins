@@ -92,7 +92,7 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelega
 {
     SetDelegates(InOnSuccess, InOnFail, -1, InOrientationTolerance, InTimeOut);
     OrientationTarget = Goal->GetActorRotation();
-    AIMovePoseTarget = Goal->GetActorLocation(); // for teleport on fail
+    AIMovePoseTarget = Goal->GetActorLocation();    // for teleport on fail
     bRotating = false;
     bLinearMoving = false;
     return MoveToActor(Goal, AcceptanceRadius, bStopOnOverlap, bUsePathfinding, bCanStrafe, FilterClass, bAllowPartialPath);
@@ -146,8 +146,8 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     const float InTimeOut)
 {
     SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
-    OrientationTarget = GetActorRotation();
-    AIMovePoseTarget = Dest; // for teleport on fail
+    OrientationTarget = GetPawn()->GetActorRotation();
+    AIMovePoseTarget = Dest;    // for teleport on fail
     bRotating = false;
     bLinearMoving = false;
     return MoveToLocation(Dest,
@@ -208,10 +208,10 @@ void ARRAIRobotROSController::OnMoveCompleted(FAIRequestID RequestID, const FPat
     {
         if (OnFail.IsBound())
         {
-            if(bTeleportOnFail)
+            if (bTeleportOnFail)
             {
-                SetActorLocation(AIMovePoseTarget);
-                SetActorRotation(OrientationTarget);
+                GetPawn()->SetActorLocation(AIMovePoseTarget);
+                GetPawn()->SetActorRotation(OrientationTarget);
             }
             OnFail.ExecuteIfBound();
         }
@@ -390,9 +390,9 @@ bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientat
             float currentTime = GetWorld()->GetTimeSeconds();
             if (MoveTimeout > 0 && currentTime - MoveStartTime > MoveTimeout)
             {
-                if(bTeleportOnFail)
+                if (bTeleportOnFail)
                 {
-                    SetActorRotation(OrientationTarget);
+                    GetPawn()->SetActorRotation(OrientationTarget);
                 }
                 bRotating = false;
                 OnFail.ExecuteIfBound();
@@ -428,9 +428,9 @@ bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const float InLinearM
             float currentTime = GetWorld()->GetTimeSeconds();
             if (MoveTimeout > 0 && currentTime - MoveStartTime > MoveTimeout)
             {
-                if(bTeleportOnFail)
+                if (bTeleportOnFail)
                 {
-                    SetActorLocation(LinearMotionTarget);
+                    GetPawn()->SetActorLocation(LinearMotionTarget);
                 }
                 bLinearMoving = false;
                 OnFail.ExecuteIfBound();
