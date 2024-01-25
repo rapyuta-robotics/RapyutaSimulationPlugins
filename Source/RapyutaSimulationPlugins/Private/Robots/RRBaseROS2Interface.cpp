@@ -25,19 +25,27 @@ void URRBaseROS2Interface::Initialize(AActor* Owner)
     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Verbose, TEXT("InitializeROS2Interface"));
 #endif
 
-    if (Owner)
+    if (Owner == nullptr)
     {
-        ROSSpawnParameters = Owner->FindComponentByClass<UROS2Spawnable>();
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No pawn is given."));
+        return;
     }
+
+    ROSSpawnParameters = Owner->FindComponentByClass<UROS2Spawnable>();
 
     SetupROSParamsAll();
 
     // Instantiate a ROS 2 node for InRobot
-    if (Owner)
-    {
-        InitRobotROS2Node(Owner);
-    }
+    InitRobotROS2Node(Owner);
 
+    InitInterfaces();
+
+    // Additional initialization implemented in BP
+    BPInitialize();
+}
+
+void URRBaseROS2Interface::InitInterfaces()
+{
     // Refresh TF, Odom publishers
     InitPublishers();
 
@@ -55,9 +63,6 @@ void URRBaseROS2Interface::Initialize(AActor* Owner)
 
     // Initialize action servers
     InitActionServers();
-
-    // Additional initialization implemented in BP
-    BPInitialize();
 }
 
 void URRBaseROS2Interface::DeInitialize()
@@ -79,6 +84,12 @@ void URRBaseROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 void URRBaseROS2Interface::InitRobotROS2Node(AActor* Owner)
 {
+    InitROS2NodeParam(Owner);
+    RobotROS2Node->Init();
+}
+
+void URRBaseROS2Interface::InitROS2NodeParam(AActor* Owner)
+{
     const FString nodeName = URRGeneralUtils::GetNewROS2NodeName(Owner->GetName());
     if (RobotROS2Node == nullptr)
     {
@@ -94,7 +105,6 @@ void URRBaseROS2Interface::InitRobotROS2Node(AActor* Owner)
         RobotROS2Node->Namespace = ROSSpawnParameters->GetNamespace();
     }
 
-    RobotROS2Node->Init();
 }
 
 bool URRBaseROS2Interface::InitPublishers()

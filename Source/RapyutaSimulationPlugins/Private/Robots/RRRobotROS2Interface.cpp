@@ -20,24 +20,27 @@
 #include "Core/RRGeneralUtils.h"
 #include "Robots/RRBaseRobot.h"
 
-void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
+void URRRobotROS2Interface::Initialize(AActor* Owner)
 {
-#if RAPYUTA_SIM_VERBOSE
-    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Verbose, TEXT("InitializeROS2Interface"));
-#endif
-    if (nullptr == InRobot)
+    Robot = Cast<ARRBaseRobot>(Owner);
+    if (nullptr == Robot)
     {
-        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("No pawn is given."));
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Owner should be child class of RRBaseRobot."));
         return;
     }
 
-    Robot = InRobot;
     Robot->ROS2Interface = this;
     ROSSpawnParameters = Robot->ROSSpawnParameters;
-    SetupROSParamsAll();
 
-    // Instantiate a ROS 2 node for InRobot
-    InitRobotROS2Node(InRobot);
+    Super::Initialize(Owner);
+}
+
+void URRRobotROS2Interface::InitInterfaces()
+{
+    if (!Robot)
+    {
+        return;
+    }
 
     // OdomPublisher (with TF)
     if (bPublishOdom && Robot->bMobileRobot)
@@ -54,52 +57,25 @@ void URRRobotROS2Interface::Initialize(ARRBaseRobot* InRobot)
 
     // Initialize Robot's sensors (lidar, etc.)
     // NOTE: This inits both static sensors added by BP robot & possiblly also dynamic ones added in the overriding child InitSensors()
-    verify(InRobot->InitSensors(RobotROS2Node));
-
-    // Refresh TF, Odom publishers
-    InitPublishers();
-
-    // cmd_vel, joint state, and other ROS topic inputs.
-    InitSubscriptions();
-
-    // Initialize service clients
-    InitServiceClients();
-
-    // Initialize service servers
-    InitServiceServers();
-
-    // Initialize action clients
-    InitActionClients();
-
-    // Initialize action servers
-    InitActionServers();
-
-    // Additional initialization implemented in BP
-    BPInitialize();
+    verify(Robot->InitSensors(RobotROS2Node));
+    Super::InitInterfaces();
 }
 
 void URRRobotROS2Interface::DeInitialize()
 {
-    if (nullptr == RobotROS2Node)
-    {
-        return;
-    }
+    Super::DeInitialize();
 
     if (nullptr != Robot)
     {
         Robot->ROS2Interface = nullptr;
         Robot = nullptr;
     }
-
-    StopPublishers();
 }
 
 void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(URRRobotROS2Interface, Robot);
-    DOREPLIFETIME(URRRobotROS2Interface, RobotROS2Node);
-    DOREPLIFETIME(URRRobotROS2Interface, ROSSpawnParameters);
     DOREPLIFETIME(URRRobotROS2Interface, OdomComponent);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdom);
     DOREPLIFETIME(URRRobotROS2Interface, bPublishOdomTf);
@@ -110,32 +86,18 @@ void URRRobotROS2Interface::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(URRRobotROS2Interface, bWarnAboutMissingLink);
 }
 
-void URRRobotROS2Interface::InitRobotROS2Node(ARRBaseRobot* InRobot)
+void URRRobotROS2Interface::InitROS2NodeParam(AActor* Owner)
 {
-    const FString nodeName = URRGeneralUtils::GetNewROS2NodeName(InRobot->GetName());
-    if (RobotROS2Node == nullptr)
+    Super::InitROS2NodeParam(Owner);
+    if (!ROSSpawnParameters && Robot)
     {
-        FActorSpawnParameters spawnParams;
-        spawnParams.Name = FName(*nodeName);
-        RobotROS2Node = NewObject<UROS2NodeComponent>(InRobot);
+        RobotROS2Node->Namespace = Robot->RobotUniqueName;
     }
-    RobotROS2Node->Name = nodeName;
-
-    // Set robot's [ROS2Node] namespace from spawn parameters if existing
-    if (ROSSpawnParameters)
-    {
-        RobotROS2Node->Namespace = ROSSpawnParameters->GetNamespace();
-    }
-    else
-    {
-        RobotROS2Node->Namespace = InRobot->RobotUniqueName;
-    }
-    RobotROS2Node->Init();
 }
 
 bool URRRobotROS2Interface::InitPublishers()
 {
-    if (false == IsValid(RobotROS2Node))
+    if (!Super::InitPublishers())
     {
         return false;
     }
@@ -175,38 +137,12 @@ bool URRRobotROS2Interface::InitPublishers()
         }
     }
 
-    // Additional publishers by child class or robot
-    for (auto& pub : Publishers)
-    {
-        if (pub.Value != nullptr)
-        {
-            RobotROS2Node->AddPublisher(pub.Value);
-        }
-        else
-        {
-            UE_LOG_WITH_INFO(
-                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *pub.Key, *GetName());
-        }
-    }
-
     return true;
-}
-
-void URRRobotROS2Interface::StopPublishers()
-{
-    // Additional publishers by child class or robot
-    for (auto& pub : Publishers)
-    {
-        if (pub.Value != nullptr)
-        {
-            pub.Value->StopPublishTimer();
-        }
-    }
 }
 
 bool URRRobotROS2Interface::InitSubscriptions()
 {
-    if (false == IsValid(RobotROS2Node))
+    if (!Super::InitSubscriptions())
     {
         return false;
     }
@@ -224,111 +160,6 @@ bool URRRobotROS2Interface::InitSubscriptions()
             JointCmdTopicName, UROS2JointStateMsg::StaticClass(), &URRRobotROS2Interface::JointCmdCallback);
     }
 
-    // Additional subscribers by child class or robot
-    for (auto& sub : Subscribers)
-    {
-        if (sub.Value != nullptr)
-        {
-            RobotROS2Node->AddSubscription(sub.Value);
-        }
-        else
-        {
-            UE_LOG_WITH_INFO(
-                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *sub.Key, *GetName());
-        }
-    }
-    return true;
-}
-
-bool URRRobotROS2Interface::InitServiceClients()
-{
-    if (false == IsValid(RobotROS2Node))
-    {
-        return false;
-    }
-
-    // Additional subscribers by child class or robot
-    for (auto& client : ServiceClients)
-    {
-        if (client.Value != nullptr)
-        {
-            RobotROS2Node->AddServiceClient(client.Value);
-        }
-        else
-        {
-            UE_LOG_WITH_INFO(
-                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *client.Key, *GetName());
-        }
-    }
-    return true;
-}
-
-bool URRRobotROS2Interface::InitServiceServers()
-{
-    if (false == IsValid(RobotROS2Node))
-    {
-        return false;
-    }
-
-    // Additional subscribers by child class or robot
-    for (auto& server : ServiceServers)
-    {
-        if (server.Value != nullptr)
-        {
-            RobotROS2Node->AddServiceServer(server.Value);
-        }
-        else
-        {
-            UE_LOG_WITH_INFO(
-                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *server.Key, *GetName());
-        }
-    }
-    return true;
-}
-
-bool URRRobotROS2Interface::InitActionClients()
-{
-    if (false == IsValid(RobotROS2Node))
-    {
-        return false;
-    }
-
-    // Additional subscribers by child class or robot
-    for (auto& client : ActionClients)
-    {
-        if (client.Value != nullptr)
-        {
-            RobotROS2Node->AddActionClient(client.Value);
-        }
-        else
-        {
-            UE_LOG_WITH_INFO(
-                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *client.Key, *GetName());
-        }
-    }
-    return true;
-}
-
-bool URRRobotROS2Interface::InitActionServers()
-{
-    if (false == IsValid(RobotROS2Node))
-    {
-        return false;
-    }
-
-    // Additional subscribers by child class or robot
-    for (auto& server : ActionServers)
-    {
-        if (server.Value != nullptr)
-        {
-            RobotROS2Node->AddActionServer(server.Value);
-        }
-        else
-        {
-            UE_LOG_WITH_INFO(
-                LogRapyutaCore, Warning, TEXT("[%s] %s is nullptr. Please create before initialization."), *server.Key, *GetName());
-        }
-    }
     return true;
 }
 

@@ -72,6 +72,8 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void Initialize(AActor* Owner);
 
+    virtual void InitInterfaces();
+
     /**
      * @brief AdditionalInitialization implemented in BP.
      * Child BP class can use this method to add initialization behaviour
@@ -91,7 +93,9 @@ public:
      *
      * @param InPawn
      */
-    void InitRobotROS2Node(AActor* Owner);
+    virtual void InitRobotROS2Node(AActor* Owner);
+
+    virtual void InitROS2NodeParam(AActor* Owner);
 
     /**
      * @brief Setup ROS Params, overridable by child classes to config custom ROS 2 Interface's params
