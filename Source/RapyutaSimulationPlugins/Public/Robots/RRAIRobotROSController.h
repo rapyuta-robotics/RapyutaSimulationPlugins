@@ -17,6 +17,7 @@
 class URRRobotROS2Interface;
 
 DECLARE_DYNAMIC_DELEGATE(FMoveCompleteCallback);
+DECLARE_DELEGATE(FMoveCompleteCallbackStatic);
 
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
@@ -108,6 +109,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FMoveCompleteCallback OnSuccess;
 
+    //! Delegate which is called on action completed internally
+    FMoveCompleteCallbackStatic OnSuccessInternal;
+
     //! Delegate which is called whenjoint failed to reach target vel/pose
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FMoveCompleteCallback OnFail;
@@ -174,6 +178,24 @@ protected:
                                                                          const float InOrientationTolerance = -1.0,
                                                                          const float InTimeOut = -1.0);
 
+    virtual void LinearMoveToLocationWithDelegates(const FVector& Dest,
+                                                   const FRotator& DestRotator,
+                                                   const FMoveCompleteCallback& InOnSuccess,
+                                                   const FMoveCompleteCallback& InOnFail,
+                                                   float AcceptanceRadius = -1,
+                                                   const float InOrientationTolerance = -1.0,
+                                                   const float InTimeOut = -1.0);
+
+    UFUNCTION(BlueprintCallable,
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static void LinearMoveToLocationWithDelegates(APawn* TargetPawn,
+                                                  const FVector& Dest,
+                                                  const FRotator& DestRotator,
+                                                  const FMoveCompleteCallback& InOnSuccess,
+                                                  const FMoveCompleteCallback& InOnFail,
+                                                  float AcceptanceRadius = -1,
+                                                  const float InOrientationTolerance = -1.0,
+                                                  const float InTimeOut = -1.0);
     /**
      * @brief Check orientation reach the target orientation.
      * If minus values are given, #OrientationTolerance will be used.
@@ -187,15 +209,27 @@ protected:
 
     virtual void SetOrientationTarget(const FRotator& InOrientation, const bool InReset = true);
 
+    virtual void SetRelativeOrientationTarget(const FRotator& InOrientation, const bool InReset = true);
+
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
     static void SetOrientationTarget(APawn* TargetPawn, const FRotator& InOrientation);
+
+    UFUNCTION(BlueprintCallable,
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static void SetRelativeOrientationTarget(APawn* TargetPawn, const FRotator& InOrientation);
 
     virtual void SetOrientationTargetWthDelegates(const FRotator& InOrientation,
                                                   const FMoveCompleteCallback& InOnSuccess,
                                                   const FMoveCompleteCallback& InOnFail,
                                                   const float InOrientationTolerance = -1.0,
                                                   const float InTimeOut = -1.0);
+
+    virtual void SetRelativeOrientationTargetWthDelegates(const FRotator& InOrientation,
+                                                          const FMoveCompleteCallback& InOnSuccess,
+                                                          const FMoveCompleteCallback& InOnFail,
+                                                          const float InOrientationTolerance = -1.0,
+                                                          const float InTimeOut = -1.0);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
@@ -206,17 +240,38 @@ protected:
                                                  const float InOrientationTolerance = -1.0,
                                                  const float InTimeOut = -1.0);
 
+    UFUNCTION(BlueprintCallable,
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static void SetRelativeOrientationTargetWthDelegates(APawn* TargetPawn,
+                                                         const FRotator& InOrientation,
+                                                         const FMoveCompleteCallback& InOnSuccess,
+                                                         const FMoveCompleteCallback& InOnFail,
+                                                         const float InOrientationTolerance = -1.0,
+                                                         const float InTimeOut = -1.0);
+
     virtual void SetLinearMotionTarget(const FVector& InPosition, const bool InReset = true);
+
+    virtual void SetRelativeLinearMotionTarget(const FVector& InPosition, const bool InReset = true);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
     static void SetLinearMotionTarget(APawn* TargetPawn, const FVector& InPosition);
+
+    UFUNCTION(BlueprintCallable,
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static void SetRelativeLinearMotionTarget(APawn* TargetPawn, const FVector& InPosition);
 
     virtual void SetLinearMotionTargetWthDelegates(const FVector& InPosition,
                                                    const FMoveCompleteCallback& InOnSuccess,
                                                    const FMoveCompleteCallback& InOnFail,
                                                    const float InLinearMotionTolerancee = -1.0,
                                                    const float InTimeOut = -1.0);
+
+    virtual void SetRelativeLinearMotionTargetWthDelegates(const FVector& InPosition,
+                                                           const FMoveCompleteCallback& InOnSuccess,
+                                                           const FMoveCompleteCallback& InOnFail,
+                                                           const float InLinearMotionTolerancee = -1.0,
+                                                           const float InTimeOut = -1.0);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
@@ -226,6 +281,15 @@ protected:
                                                   const FMoveCompleteCallback& InOnFail,
                                                   const float InLinearMotionTolerancee = -1.0,
                                                   const float InTimeOut = -1.0);
+
+    UFUNCTION(BlueprintCallable,
+              meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
+    static void SetRelativeLinearMotionTargetWthDelegates(APawn* TargetPawn,
+                                                          const FVector& InPosition,
+                                                          const FMoveCompleteCallback& InOnSuccess,
+                                                          const FMoveCompleteCallback& InOnFail,
+                                                          const float InLinearMotionTolerancee = -1.0,
+                                                          const float InTimeOut = -1.0);
 
     //! time when target pose/vel are set.
     float MoveStartTime = 0.f;
