@@ -209,7 +209,7 @@ protected:
 
     virtual void SetOrientationTarget(const FRotator& InOrientation, const bool InReset = true);
 
-    virtual void SetRelativeOrientationTarget(const FRotator& InOrientation, const bool InReset = true);
+    virtual void AddLocalOrientationOffset(const FRotator& InOrientation, const bool InReset = true);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
@@ -217,7 +217,7 @@ protected:
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
-    static void SetRelativeOrientationTarget(APawn* TargetPawn, const FRotator& InOrientation);
+    static void AddLocalOrientationOffset(APawn* TargetPawn, const FRotator& InOrientation);
 
     virtual void SetOrientationTargetWthDelegates(const FRotator& InOrientation,
                                                   const FMoveCompleteCallback& InOnSuccess,
@@ -225,11 +225,11 @@ protected:
                                                   const float InOrientationTolerance = -1.0,
                                                   const float InTimeOut = -1.0);
 
-    virtual void SetRelativeOrientationTargetWthDelegates(const FRotator& InOrientation,
-                                                          const FMoveCompleteCallback& InOnSuccess,
-                                                          const FMoveCompleteCallback& InOnFail,
-                                                          const float InOrientationTolerance = -1.0,
-                                                          const float InTimeOut = -1.0);
+    virtual void AddLocalOrientationOffsetWthDelegates(const FRotator& InOrientation,
+                                                       const FMoveCompleteCallback& InOnSuccess,
+                                                       const FMoveCompleteCallback& InOnFail,
+                                                       const float InOrientationTolerance = -1.0,
+                                                       const float InTimeOut = -1.0);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
@@ -242,16 +242,16 @@ protected:
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
-    static void SetRelativeOrientationTargetWthDelegates(APawn* TargetPawn,
-                                                         const FRotator& InOrientation,
-                                                         const FMoveCompleteCallback& InOnSuccess,
-                                                         const FMoveCompleteCallback& InOnFail,
-                                                         const float InOrientationTolerance = -1.0,
-                                                         const float InTimeOut = -1.0);
+    static void AddLocalOrientationOffsetWthDelegates(APawn* TargetPawn,
+                                                      const FRotator& InOrientation,
+                                                      const FMoveCompleteCallback& InOnSuccess,
+                                                      const FMoveCompleteCallback& InOnFail,
+                                                      const float InOrientationTolerance = -1.0,
+                                                      const float InTimeOut = -1.0);
 
     virtual void SetLinearMotionTarget(const FVector& InPosition, const bool InReset = true);
 
-    virtual void SetRelativeLinearMotionTarget(const FVector& InPosition, const bool InReset = true);
+    virtual void AddLocalLinearMotionOffset(const FVector& InPosition, const bool InReset = true);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
@@ -259,7 +259,7 @@ protected:
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
-    static void SetRelativeLinearMotionTarget(APawn* TargetPawn, const FVector& InPosition);
+    static void AddLocalLinearMotionOffset(APawn* TargetPawn, const FVector& InPosition);
 
     virtual void SetLinearMotionTargetWthDelegates(const FVector& InPosition,
                                                    const FMoveCompleteCallback& InOnSuccess,
@@ -267,11 +267,11 @@ protected:
                                                    const float InLinearMotionTolerancee = -1.0,
                                                    const float InTimeOut = -1.0);
 
-    virtual void SetRelativeLinearMotionTargetWthDelegates(const FVector& InPosition,
-                                                           const FMoveCompleteCallback& InOnSuccess,
-                                                           const FMoveCompleteCallback& InOnFail,
-                                                           const float InLinearMotionTolerancee = -1.0,
-                                                           const float InTimeOut = -1.0);
+    virtual void AddLocalLinearMotionOffsetWthDelegates(const FVector& InPosition,
+                                                        const FMoveCompleteCallback& InOnSuccess,
+                                                        const FMoveCompleteCallback& InOnFail,
+                                                        const float InLinearMotionTolerancee = -1.0,
+                                                        const float InTimeOut = -1.0);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
@@ -284,12 +284,12 @@ protected:
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
-    static void SetRelativeLinearMotionTargetWthDelegates(APawn* TargetPawn,
-                                                          const FVector& InPosition,
-                                                          const FMoveCompleteCallback& InOnSuccess,
-                                                          const FMoveCompleteCallback& InOnFail,
-                                                          const float InLinearMotionTolerancee = -1.0,
-                                                          const float InTimeOut = -1.0);
+    static void AddLocalLinearMotionOffsetWthDelegates(APawn* TargetPawn,
+                                                       const FVector& InPosition,
+                                                       const FMoveCompleteCallback& InOnSuccess,
+                                                       const FMoveCompleteCallback& InOnFail,
+                                                       const float InLinearMotionTolerancee = -1.0,
+                                                       const float InTimeOut = -1.0);
 
     //! time when target pose/vel are set.
     float MoveStartTime = 0.f;
