@@ -143,11 +143,15 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     TSubclassOf<UNavigationQueryFilter> FilterClass,
     bool bAllowPartialPath,
     const float InOrientationTolerance,
-    const float InTimeOut)
+    const float InTimeOut,
+    const FVector& OriginPosition,
+    const FRotator& OriginRotator)
 {
     SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
-    OrientationTarget = DestRotator;
-    AIMovePoseTarget = Dest;    // for teleport on fail
+    FTransform worldDest = URRGeneralUtils::GetWorldTransform(FTransform(OriginRotator, OriginPosition, FVector::OneVector),
+                                                              FTransform(DestRotator, Dest, FVector::OneVector));
+    OrientationTarget = worldDest.GetRotation().Rotator();
+    AIMovePoseTarget = worldDest.GetLocation();    // for teleport on fail
     bRotating = false;
     bLinearMoving = false;
     return MoveToLocation(Dest,
@@ -174,7 +178,9 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     TSubclassOf<UNavigationQueryFilter> FilterClass,
     bool bAllowPartialPath,
     const float InOrientationTolerance,
-    const float InTimeOut)
+    const float InTimeOut,
+    const FVector& OriginPosition,
+    const FRotator& OriginRotator)
 {
     EPathFollowingRequestResult::Type res = EPathFollowingRequestResult::Type::Failed;
     auto controller = CheckController(TargetPawn);
@@ -192,7 +198,9 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
                                                       FilterClass,
                                                       bAllowPartialPath,
                                                       InOrientationTolerance,
-                                                      InTimeOut);
+                                                      InTimeOut,
+                                                      OriginPosition,
+                                                      OriginRotator);
     }
     return res;
 };

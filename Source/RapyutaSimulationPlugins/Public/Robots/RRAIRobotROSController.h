@@ -158,7 +158,9 @@ protected:
                                                                           TSubclassOf<UNavigationQueryFilter> FilterClass = NULL,
                                                                           bool bAllowPartialPath = true,
                                                                           const float InOrientationTolerance = -1.0,
-                                                                          const float InTimeOut = -1.0);
+                                                                          const float InTimeOut = -1.0,
+                                                                          const FVector& OriginPosition = FVector::ZeroVector,
+                                                                          const FRotator& OriginRotator = FRotator::ZeroRotator);
 
     UFUNCTION(BlueprintCallable,
               Category = "AI|Navigation",
@@ -176,7 +178,9 @@ protected:
                                                                          TSubclassOf<UNavigationQueryFilter> FilterClass = NULL,
                                                                          bool bAllowPartialPath = true,
                                                                          const float InOrientationTolerance = -1.0,
-                                                                         const float InTimeOut = -1.0);
+                                                                         const float InTimeOut = -1.0,
+                                                                         const FVector& OriginPosition = FVector::ZeroVector,
+                                                                         const FRotator& OriginRotator = FRotator::ZeroRotator);
 
     virtual void LinearMoveToLocationWithDelegates(const FVector& Dest,
                                                    const FRotator& DestRotator,
