@@ -457,22 +457,7 @@ void ARRAIRobotROSController::UpdateLinearMotion(float DeltaSeconds)
 {
     if (bLinearMoving)
     {
-        FVector location = GetPawn()->GetActorLocation();
-        // FVector dPos = LinearVelocity * DeltaSeconds;
-        // for (uint8 i = 0; i < 3; i++)
-        // {
-        //     if (FMath::Abs(location[i] - LinearMotionTarget[i]) < FMath::Abs(LinearMotionTolerance))
-        //     {
-        //         location[i] = LinearMotionTarget[i];
-        //         LinearVelocity[i] = 0;
-        //     }
-        //     else
-        //     {
-        //         location[i] += dPos[i];
-        //     }
-        // }
-        // GetPawn()->SetActorLocation(location);
-        FVector dPos = LinearMotionTarget - location;
+        FVector dPos = LinearMotionTarget - GetPawn()->GetActorLocation();
         if (dPos.Size() <= LinearMotionTolerance)
         {
             GetPawn()->SetActorLocation(LinearMotionTarget);
