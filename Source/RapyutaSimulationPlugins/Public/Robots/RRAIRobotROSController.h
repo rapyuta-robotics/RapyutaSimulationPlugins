@@ -159,8 +159,8 @@ protected:
                                                                           bool bAllowPartialPath = true,
                                                                           const float InOrientationTolerance = -1.0,
                                                                           const float InTimeOut = -1.0,
-                                                                          const FVector& OriginPosition = FVector::ZeroVector,
-                                                                          const FRotator& OriginRotator = FRotator::ZeroRotator);
+                                                                          const FVector& InOriginPosition = FVector::ZeroVector,
+                                                                          const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     UFUNCTION(BlueprintCallable,
               Category = "AI|Navigation",
@@ -179,8 +179,8 @@ protected:
                                                                          bool bAllowPartialPath = true,
                                                                          const float InOrientationTolerance = -1.0,
                                                                          const float InTimeOut = -1.0,
-                                                                         const FVector& OriginPosition = FVector::ZeroVector,
-                                                                         const FRotator& OriginRotator = FRotator::ZeroRotator);
+                                                                         const FVector& InOriginPosition = FVector::ZeroVector,
+                                                                         const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     virtual void LinearMoveToLocationWithDelegates(const FVector& Dest,
                                                    const FRotator& DestRotator,
@@ -188,7 +188,9 @@ protected:
                                                    const FMoveCompleteCallback& InOnFail,
                                                    float AcceptanceRadius = -1,
                                                    const float InOrientationTolerance = -1.0,
-                                                   const float InTimeOut = -1.0);
+                                                   const float InTimeOut = -1.0,
+                                                   const FVector& InOriginPosition = FVector::ZeroVector,
+                                                   const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
@@ -199,7 +201,9 @@ protected:
                                                   const FMoveCompleteCallback& InOnFail,
                                                   float AcceptanceRadius = -1,
                                                   const float InOrientationTolerance = -1.0,
-                                                  const float InTimeOut = -1.0);
+                                                  const float InTimeOut = -1.0,
+                                                  const FVector& InOriginPosition = FVector::ZeroVector,
+                                                  const FRotator& InOriginRotator = FRotator::ZeroRotator);
     /**
      * @brief Check orientation reach the target orientation.
      * If minus values are given, #OrientationTolerance will be used.
@@ -211,23 +215,29 @@ protected:
     UFUNCTION(BlueprintCallable)
     virtual bool HasReachedLinearMotionTarget(const float InLinearMotionTolerance = -1.0);
 
-    virtual void SetOrientationTarget(const FRotator& InOrientation, const bool InReset = true);
+    virtual void SetOrientationTarget(const FRotator& InOrientation,
+                                      const bool InReset = true,
+                                      const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     virtual void AddLocalOrientationOffset(const FRotator& InOrientation, const bool InReset = true);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
-    static void SetOrientationTarget(APawn* TargetPawn, const FRotator& InOrientation);
+    static void SetOrientationTarget(APawn* TargetPawn,
+                                     const FRotator& InOrientation,
+                                     const bool InReset = true,
+                                     const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
-    static void AddLocalOrientationOffset(APawn* TargetPawn, const FRotator& InOrientation);
+    static void AddLocalOrientationOffset(APawn* TargetPawn, const FRotator& InOrientation, const bool InReset = true);
 
     virtual void SetOrientationTargetWthDelegates(const FRotator& InOrientation,
                                                   const FMoveCompleteCallback& InOnSuccess,
                                                   const FMoveCompleteCallback& InOnFail,
                                                   const float InOrientationTolerance = -1.0,
-                                                  const float InTimeOut = -1.0);
+                                                  const float InTimeOut = -1.0,
+                                                  const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     virtual void AddLocalOrientationOffsetWthDelegates(const FRotator& InOrientation,
                                                        const FMoveCompleteCallback& InOnSuccess,
@@ -242,7 +252,8 @@ protected:
                                                  const FMoveCompleteCallback& InOnSuccess,
                                                  const FMoveCompleteCallback& InOnFail,
                                                  const float InOrientationTolerance = -1.0,
-                                                 const float InTimeOut = -1.0);
+                                                 const float InTimeOut = -1.0,
+                                                 const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
@@ -253,23 +264,32 @@ protected:
                                                       const float InOrientationTolerance = -1.0,
                                                       const float InTimeOut = -1.0);
 
-    virtual void SetLinearMotionTarget(const FVector& InPosition, const bool InReset = true);
+    virtual void SetLinearMotionTarget(const FVector& InPosition,
+                                       const bool InReset = true,
+                                       const FVector& InOriginPosition = FVector::ZeroVector,
+                                       const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     virtual void AddLocalLinearMotionOffset(const FVector& InPosition, const bool InReset = true);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
-    static void SetLinearMotionTarget(APawn* TargetPawn, const FVector& InPosition);
+    static void SetLinearMotionTarget(APawn* TargetPawn,
+                                      const FVector& InPosition,
+                                      const bool InReset = true,
+                                      const FVector& InOriginPosition = FVector::ZeroVector,
+                                      const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
-    static void AddLocalLinearMotionOffset(APawn* TargetPawn, const FVector& InPosition);
+    static void AddLocalLinearMotionOffset(APawn* TargetPawn, const FVector& InPosition, const bool InReset = true);
 
     virtual void SetLinearMotionTargetWthDelegates(const FVector& InPosition,
                                                    const FMoveCompleteCallback& InOnSuccess,
                                                    const FMoveCompleteCallback& InOnFail,
                                                    const float InLinearMotionTolerancee = -1.0,
-                                                   const float InTimeOut = -1.0);
+                                                   const float InTimeOut = -1.0,
+                                                   const FVector& InOriginPosition = FVector::ZeroVector,
+                                                   const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     virtual void AddLocalLinearMotionOffsetWthDelegates(const FVector& InPosition,
                                                         const FMoveCompleteCallback& InOnSuccess,
@@ -284,7 +304,9 @@ protected:
                                                   const FMoveCompleteCallback& InOnSuccess,
                                                   const FMoveCompleteCallback& InOnFail,
                                                   const float InLinearMotionTolerancee = -1.0,
-                                                  const float InTimeOut = -1.0);
+                                                  const float InTimeOut = -1.0,
+                                                  const FVector& InOriginPosition = FVector::ZeroVector,
+                                                  const FRotator& InOriginRotator = FRotator::ZeroRotator);
 
     UFUNCTION(BlueprintCallable,
               meta = (DefaultToSelf = "TargetPawn", AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
