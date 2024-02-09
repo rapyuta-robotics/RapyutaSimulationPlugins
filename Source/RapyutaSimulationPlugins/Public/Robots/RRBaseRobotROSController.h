@@ -13,7 +13,7 @@
 
 #include "RRBaseRobotROSController.generated.h"
 
-class URRRobotROS2Interface;
+class URRBaseROS2Interface;
 
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
@@ -42,4 +42,9 @@ protected:
      * @sa [OnUnPossess](https://docs.unrealengine.com/5.1/en-US/API/Runtime/AIModule/AAIController/OnUnPossess/)
      */
     virtual void OnUnPossess() override;
+
+    /**
+     * This is used if controlled pawn is not child class of RRBaseRobot
+    */
+    URRBaseROS2Interface* ROS2Interface = nullptr;
 };

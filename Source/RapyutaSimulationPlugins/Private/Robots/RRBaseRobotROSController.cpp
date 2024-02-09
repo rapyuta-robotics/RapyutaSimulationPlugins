@@ -20,11 +20,19 @@ void ARRBaseRobotROSController::OnPossess(APawn* InPawn)
         URRBaseROS2InterfaceComponent* ROS2InterfaceComponent = InPawn->FindComponentByClass<URRBaseROS2InterfaceComponent>();
         if (ROS2InterfaceComponent)
         {
-            ROS2InterfaceComponent->ROS2Interface->Initialize(InPawn);
+            ROS2Interface = ROS2InterfaceComponent->ROS2Interface;
+            if (ROS2Interface)
+            {
+                ROS2Interface->Initialize(InPawn);
+            }
+            else
+            {
+                UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Pawn does not have ROS2Interface as a member."));
+            }
         }
         else
         {
-            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Pawn does not have ROS2Interface as a child component."));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Pawn does not have ROS2InterfaceComponent as a child component."));
         }
     }
 }
@@ -38,14 +46,13 @@ void ARRBaseRobotROSController::OnUnPossess()
     }
     else
     {
-        URRBaseROS2InterfaceComponent* ROS2InterfaceComponent = GetPawn()->FindComponentByClass<URRBaseROS2InterfaceComponent>();
-        if (ROS2InterfaceComponent)
+        if (ROS2Interface)
         {
-            ROS2InterfaceComponent->ROS2Interface->DeInitialize();
+            ROS2Interface->DeInitialize();
         }
         else
         {
-            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Pawn does not have ROS2Interface as a child component."));
+            UE_LOG_WITH_INFO(LogRapyutaCore, Log, TEXT("Pawn does not have ROS2Interface as a member."));
         }
     }
     Super::OnUnPossess();

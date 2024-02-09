@@ -1,14 +1,49 @@
-// Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
+/// Copyright 2020-2022 Rapyuta Robotics Co., Ltd.
 
 #include "Robots/RRAIRobotROSController.h"
 
+// rclUE
+#include "Msgs/ROS2Int32.h"
+#include "Msgs/ROS2PoseStamped.h"
+#include "Msgs/ROS2Str.h"
+#include "ROS2NodeComponent.h"
+
 // RapyutaSimulationPlugins
+#include "Core/RRGeneralUtils.h"
 #include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotROS2Interface.h"
 
 void ARRAIRobotROSController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
+
+    // add ros interface
+    // 1. subscribe pose goal
+    // 2. subscribe string name goal
+    // 3. pub navigation status
+    // 4. subscribe param,, set_vel, set_angular_vel
+    // 5. Parse parameter, topic name, initial params
+    if (InPawn)
+    {
+        // ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
+        //                        this,
+        //                        PoseGoalTopicName,
+        //                        UROS2StrMsg::StaticClass(),
+        //                        &ARRAIRobotROSController::PoseGoalCallback);
+        // ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
+        //                        this,
+        //                        ActorGoalTopicName,
+        //                        UROS2StrMsg::StaticClass(),
+        //                        &ARRAIRobotROSController::ActorGoalCallback);
+        // ROS2_CREATE_LOOP_PUBLISHER(ROS2Interface->RobotROS2Node,
+        //                            this,
+        //                            NavStatusTopicName,
+        //                            UROS2Publisher::StaticClass(),
+        //                            UROS2Int32Msg::StaticClass(),
+        //                            NavStatusPublicationFrequencyHz,
+        //                            &ARRAIRobotROSController::UpdateNavStatus,
+        //                            NavStatusPublisher);
+    }
 }
 
 void ARRAIRobotROSController::OnUnPossess()
@@ -16,10 +51,48 @@ void ARRAIRobotROSController::OnUnPossess()
     Super::OnUnPossess();
 }
 
+void ARRAIRobotROSController::UpdateNavStatus(UROS2GenericMsg* InMessage)
+{
+    FROSInt32 msg;
+    msg.Data = (int)NavStatus;
+    CastChecked<UROS2Int32Msg>(InMessage)->SetMsg(msg);
+}
+
+void ARRAIRobotROSController::PoseGoalCallback(const UROS2GenericMsg* Msg)
+{
+    const UROS2PoseStampedMsg* poseStampedMsg = Cast<UROS2PoseStampedMsg>(Msg);
+    if (IsValid(poseStampedMsg))
+    {
+        FROSPoseStamped poseStamped;
+        poseStampedMsg->GetMsg(poseStamped);
+        // move to  with delegates
+        // inside delegate: pub nav status
+    }
+}
+
+void ARRAIRobotROSController::ActorGoalCallback(const UROS2GenericMsg* Msg)
+{
+    const UROS2StrMsg* strMsg = Cast<UROS2StrMsg>(Msg);
+    if (IsValid(strMsg))
+    {
+        FROSStr str;
+        strMsg->GetMsg(str);
+
+        auto targetActor = URRGeneralUtils::FindActorByName<AActor>(GetWorld(), str.Data);
+        if (!targetActor)
+        {
+            UE_LOG_WITH_INFO_SHORT_NAMED(LogTemp, Warning, TEXT("Can't find actor named: %s"), *str.Data);
+            return;
+        }
+
+        FMoveCompleteCallback onSuccess, onFail;    // dummy
+        MoveToActorWithDelegates(targetActor, onSuccess, onFail);
+    }
+}
+
 void ARRAIRobotROSController::ResetControl()
 {
-    bRotating = false;
-    bLinearMoving = false;
+    NavStatus = ERRAIRobotNavStatus::IDLE;
     OnSuccess.Unbind();
     OnFail.Unbind();
 }
@@ -90,12 +163,24 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelega
                                                                                     const float InOrientationTolerance,
                                                                                     const float InTimeOut)
 {
-    SetDelegates(InOnSuccess, InOnFail, -1, InOrientationTolerance, InTimeOut);
+    NavStatus = ERRAIRobotNavStatus::AI_MOVING;
+    SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
     OrientationTarget = Goal->GetActorRotation();
     AIMovePoseTarget = Goal->GetActorLocation();    // for teleport on fail
-    bRotating = false;
-    bLinearMoving = false;
-    return MoveToActor(Goal, AcceptanceRadius, bStopOnOverlap, bUsePathfinding, bCanStrafe, FilterClass, bAllowPartialPath);
+
+    auto res = MoveToActor(Goal, AcceptanceRadius, bStopOnOverlap, bUsePathfinding, bCanStrafe, FilterClass, bAllowPartialPath);
+    if (res == EPathFollowingRequestResult::Type::AlreadyAtGoal)
+    {
+        if (SetOrientationTarget(OrientationTarget, false))
+        {
+            res = EPathFollowingRequestResult::Type::RequestSuccessful;
+        }
+        else
+        {
+            ResetControl();
+        }
+    }
+    return res;
 }
 
 EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelegates(APawn* TargetPawn,
@@ -147,21 +232,35 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     const FVector& InOriginPosition,
     const FRotator& InOriginRotator)
 {
+    // todo check already in tolerance
+    NavStatus = ERRAIRobotNavStatus::AI_MOVING;
     SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
     FTransform worldDest = URRGeneralUtils::GetWorldTransform(FTransform(InOriginRotator, InOriginPosition, FVector::OneVector),
                                                               FTransform(DestRotator, Dest, FVector::OneVector));
     OrientationTarget = worldDest.GetRotation().Rotator();
     AIMovePoseTarget = worldDest.GetLocation();    // for teleport on fail
-    bRotating = false;
-    bLinearMoving = false;
-    return MoveToLocation(Dest,
-                          AcceptanceRadius,
-                          bStopOnOverlap,
-                          bUsePathfinding,
-                          bProjectDestinationToNavigation,
-                          bCanStrafe,
-                          FilterClass,
-                          bAllowPartialPath);
+
+    auto res = MoveToLocation(Dest,
+                              AcceptanceRadius,
+                              bStopOnOverlap,
+                              bUsePathfinding,
+                              bProjectDestinationToNavigation,
+                              bCanStrafe,
+                              FilterClass,
+                              bAllowPartialPath);
+
+    if (res == EPathFollowingRequestResult::Type::AlreadyAtGoal)
+    {
+        if (SetOrientationTarget(OrientationTarget, false))
+        {
+            res = EPathFollowingRequestResult::Type::RequestSuccessful;
+        }
+        else
+        {
+            ResetControl();
+        }
+    }
+    return res;
 }
 
 EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDelegates(
@@ -208,25 +307,29 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
 void ARRAIRobotROSController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
     Super::OnMoveCompleted(RequestID, Result);
-    if (Result.Code == EPathFollowingResult::Success)
+    if (NavStatus == ERRAIRobotNavStatus::AI_MOVING)
     {
-        SetOrientationTarget(OrientationTarget, false);
-    }
-    else
-    {
-        if (OnFail.IsBound())
+        NavStatus = ERRAIRobotNavStatus::IDLE;
+        if (Result.Code == EPathFollowingResult::Success)
+        {
+            SetOrientationTarget(OrientationTarget, false);
+        }
+        else
         {
             if (bTeleportOnFail)
             {
                 GetPawn()->SetActorLocation(AIMovePoseTarget);
                 GetPawn()->SetActorRotation(OrientationTarget);
             }
-            OnFail.ExecuteIfBound();
+            if (OnFail.IsBound())
+            {
+                OnFail.ExecuteIfBound();
+            }
         }
     }
 }
 
-void ARRAIRobotROSController::LinearMoveToLocationWithDelegates(const FVector& Dest,
+bool ARRAIRobotROSController::LinearMoveToLocationWithDelegates(const FVector& Dest,
                                                                 const FRotator& DestRotator,
                                                                 const FMoveCompleteCallback& InOnSuccess,
                                                                 const FMoveCompleteCallback& InOnFail,
@@ -236,17 +339,18 @@ void ARRAIRobotROSController::LinearMoveToLocationWithDelegates(const FVector& D
                                                                 const FVector& InOriginPosition,
                                                                 const FRotator& InOriginRotator)
 {
-    SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
     FTransform worldDest = URRGeneralUtils::GetWorldTransform(FTransform(InOriginRotator, InOriginPosition, FVector::OneVector),
                                                               FTransform(DestRotator, Dest, FVector::OneVector));
-
-    bRotating = false;
-    bLinearMoving = false;
 
     FRotator worldDestRotator = worldDest.GetRotation().Rotator();
     FVector worldDestLocation = worldDest.GetLocation();    // for teleport on fail
 
-    // Rotate -> Linear -> Rotate
+    SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
+    if (HasReachedLinearMotionTarget(worldDestLocation))
+    {
+        return SetOrientationTarget(worldDestRotator, false);
+    }
+
     OnSuccessInternal.BindLambda(
         [&, worldDestLocation, worldDestRotator]()
         {
@@ -259,11 +363,10 @@ void ARRAIRobotROSController::LinearMoveToLocationWithDelegates(const FVector& D
             SetLinearMotionTarget(worldDestLocation, false);
         });
 
-    // Calc orientation to Dest from current ActorLocation
-    SetOrientationTarget((worldDestLocation - GetPawn()->GetActorLocation()).Rotation(), false);
+    return SetOrientationTarget((worldDestLocation - GetPawn()->GetActorLocation()).Rotation(), false);
 }
 
-void ARRAIRobotROSController::LinearMoveToLocationWithDelegates(APawn* TargetPawn,
+bool ARRAIRobotROSController::LinearMoveToLocationWithDelegates(APawn* TargetPawn,
                                                                 const FVector& Dest,
                                                                 const FRotator& DestRotator,
                                                                 const FMoveCompleteCallback& InOnSuccess,
@@ -277,23 +380,34 @@ void ARRAIRobotROSController::LinearMoveToLocationWithDelegates(APawn* TargetPaw
     auto controller = CheckController(TargetPawn);
     if (controller)
     {
-        controller->LinearMoveToLocationWithDelegates(Dest,
-                                                      DestRotator,
-                                                      InOnSuccess,
-                                                      InOnFail,
-                                                      AcceptanceRadius,
-                                                      InOrientationTolerance,
-                                                      InTimeOut,
-                                                      InOriginPosition,
-                                                      InOriginRotator);
+        return controller->LinearMoveToLocationWithDelegates(Dest,
+                                                             DestRotator,
+                                                             InOnSuccess,
+                                                             InOnFail,
+                                                             AcceptanceRadius,
+                                                             InOrientationTolerance,
+                                                             InTimeOut,
+                                                             InOriginPosition,
+                                                             InOriginRotator);
+    }
+    else
+    {
+        return false;
     }
 }
 
-void ARRAIRobotROSController::SetOrientationTarget(const FRotator& InOrientation,
+bool ARRAIRobotROSController::SetOrientationTarget(const FRotator& InOrientation,
                                                    const bool InReset,
                                                    const FRotator& InOriginRotator)
 {
+    NavStatus = ERRAIRobotNavStatus::ROTATING;
     OrientationTarget = (InOriginRotator + InOrientation);
+    if (HasReachedOrientationTarget())
+    {
+        UE_LOG_WITH_INFO_SHORT(LogTemp, Log, TEXT("Already at goal orientation"));
+        return false;
+    }
+
     FVector orientationVec = GetPawn()->GetActorRotation().Euler();
     FVector orientationTargetVec = OrientationTarget.Euler();
     for (uint8 i = 0; i < 3; i++)
@@ -306,15 +420,16 @@ void ARRAIRobotROSController::SetOrientationTarget(const FRotator& InOrientation
     {
         ResetControl();
     }
-    bRotating = true;
+
+    return true;
 }
 
-void ARRAIRobotROSController::AddLocalOrientationOffset(const FRotator& InOrientation, const bool InReset)
+bool ARRAIRobotROSController::AddLocalOrientationOffset(const FRotator& InOrientation, const bool InReset)
 {
-    SetOrientationTarget(InOrientation, InReset, GetPawn()->GetActorRotation());
+    return SetOrientationTarget(InOrientation, InReset, GetPawn()->GetActorRotation());
 }
 
-void ARRAIRobotROSController::SetOrientationTarget(APawn* TargetPawn,
+bool ARRAIRobotROSController::SetOrientationTarget(APawn* TargetPawn,
                                                    const FRotator& InOrientation,
                                                    const bool InReset,
                                                    const FRotator& InOriginRotator)
@@ -322,16 +437,20 @@ void ARRAIRobotROSController::SetOrientationTarget(APawn* TargetPawn,
     auto controller = CheckController(TargetPawn);
     if (controller)
     {
-        controller->SetOrientationTarget(InOrientation, InReset, InOriginRotator);
+        return controller->SetOrientationTarget(InOrientation, InReset, InOriginRotator);
+    }
+    else
+    {
+        return false;
     }
 }
 
-void ARRAIRobotROSController::AddLocalOrientationOffset(APawn* TargetPawn, const FRotator& InOrientation, const bool InReset)
+bool ARRAIRobotROSController::AddLocalOrientationOffset(APawn* TargetPawn, const FRotator& InOrientation, const bool InReset)
 {
-    SetOrientationTarget(TargetPawn, InOrientation, InReset, TargetPawn->GetActorRotation());
+    return SetOrientationTarget(TargetPawn, InOrientation, InReset, TargetPawn->GetActorRotation());
 }
 
-void ARRAIRobotROSController::SetOrientationTargetWthDelegates(const FRotator& InOrientation,
+bool ARRAIRobotROSController::SetOrientationTargetWthDelegates(const FRotator& InOrientation,
                                                                const FMoveCompleteCallback& InOnSuccess,
                                                                const FMoveCompleteCallback& InOnFail,
                                                                const float InOrientationTolerance,
@@ -339,20 +458,20 @@ void ARRAIRobotROSController::SetOrientationTargetWthDelegates(const FRotator& I
                                                                const FRotator& InOriginRotator)
 {
     SetDelegates(InOnSuccess, InOnFail, -1, InOrientationTolerance, InTimeOut);
-    SetOrientationTarget(InOrientation, false, InOriginRotator);
+    return SetOrientationTarget(InOrientation, false, InOriginRotator);
 }
 
-void ARRAIRobotROSController::AddLocalOrientationOffsetWthDelegates(const FRotator& InOrientation,
+bool ARRAIRobotROSController::AddLocalOrientationOffsetWthDelegates(const FRotator& InOrientation,
                                                                     const FMoveCompleteCallback& InOnSuccess,
                                                                     const FMoveCompleteCallback& InOnFail,
                                                                     const float InOrientationTolerance,
                                                                     const float InTimeOut)
 {
-    SetOrientationTargetWthDelegates(
+    return SetOrientationTargetWthDelegates(
         InOrientation, InOnSuccess, InOnFail, InOrientationTolerance, InTimeOut, GetPawn()->GetActorRotation());
 }
 
-void ARRAIRobotROSController::SetOrientationTargetWthDelegates(APawn* TargetPawn,
+bool ARRAIRobotROSController::SetOrientationTargetWthDelegates(APawn* TargetPawn,
                                                                const FRotator& InOrientation,
                                                                const FMoveCompleteCallback& InOnSuccess,
                                                                const FMoveCompleteCallback& InOnFail,
@@ -363,30 +482,41 @@ void ARRAIRobotROSController::SetOrientationTargetWthDelegates(APawn* TargetPawn
     auto controller = CheckController(TargetPawn);
     if (controller)
     {
-        controller->SetOrientationTargetWthDelegates(
+        return controller->SetOrientationTargetWthDelegates(
             InOrientation, InOnSuccess, InOnFail, InOrientationTolerance, InTimeOut, InOriginRotator);
+    }
+    else
+    {
+        return false;
     }
 }
 
-void ARRAIRobotROSController::AddLocalOrientationOffsetWthDelegates(APawn* TargetPawn,
+bool ARRAIRobotROSController::AddLocalOrientationOffsetWthDelegates(APawn* TargetPawn,
                                                                     const FRotator& InOrientation,
                                                                     const FMoveCompleteCallback& InOnSuccess,
                                                                     const FMoveCompleteCallback& InOnFail,
                                                                     const float InOrientationTolerance,
                                                                     const float InTimeOut)
 {
-    SetOrientationTargetWthDelegates(
+    return SetOrientationTargetWthDelegates(
         TargetPawn, InOrientation, InOnSuccess, InOnFail, InOrientationTolerance, InTimeOut, TargetPawn->GetActorRotation());
 }
 
-void ARRAIRobotROSController::SetLinearMotionTarget(const FVector& InPosition,
+bool ARRAIRobotROSController::SetLinearMotionTarget(const FVector& InPosition,
                                                     const bool InReset,
                                                     const FVector& InOriginPosition,
                                                     const FRotator& InOriginRotator)
 {
     FTransform worldDest = URRGeneralUtils::GetWorldTransform(FTransform(InOriginRotator, InOriginPosition, FVector::OneVector),
                                                               FTransform(InPosition));
+
     LinearMotionTarget = worldDest.GetLocation();
+    NavStatus = ERRAIRobotNavStatus::LINEAR_MOVING;
+    if (HasReachedLinearMotionTarget())
+    {
+        UE_LOG_WITH_INFO_SHORT(LogTemp, Log, TEXT("Already at goal location"));
+        return false;
+    }
 
     // FVector location = GetPawn()->GetActorLocation();
     // for (uint8 i = 0; i < 3; i++)
@@ -399,15 +529,16 @@ void ARRAIRobotROSController::SetLinearMotionTarget(const FVector& InPosition,
     {
         ResetControl();
     }
-    bLinearMoving = true;
+
+    return true;
 }
 
-void ARRAIRobotROSController::AddLocalLinearMotionOffset(const FVector& InPosition, const bool InReset)
+bool ARRAIRobotROSController::AddLocalLinearMotionOffset(const FVector& InPosition, const bool InReset)
 {
-    SetLinearMotionTarget(InPosition, InReset, GetPawn()->GetActorLocation(), GetPawn()->GetActorRotation());
+    return SetLinearMotionTarget(InPosition, InReset, GetPawn()->GetActorLocation(), GetPawn()->GetActorRotation());
 }
 
-void ARRAIRobotROSController::SetLinearMotionTarget(APawn* TargetPawn,
+bool ARRAIRobotROSController::SetLinearMotionTarget(APawn* TargetPawn,
                                                     const FVector& InPosition,
                                                     const bool InReset,
                                                     const FVector& InOriginPosition,
@@ -416,16 +547,20 @@ void ARRAIRobotROSController::SetLinearMotionTarget(APawn* TargetPawn,
     auto controller = CheckController(TargetPawn);
     if (controller)
     {
-        controller->SetLinearMotionTarget(InPosition, InReset, InOriginPosition, InOriginRotator);
+        return controller->SetLinearMotionTarget(InPosition, InReset, InOriginPosition, InOriginRotator);
+    }
+    else
+    {
+        return false;
     }
 }
 
-void ARRAIRobotROSController::AddLocalLinearMotionOffset(APawn* TargetPawn, const FVector& InPosition, const bool InReset)
+bool ARRAIRobotROSController::AddLocalLinearMotionOffset(APawn* TargetPawn, const FVector& InPosition, const bool InReset)
 {
-    SetLinearMotionTarget(TargetPawn, InPosition, InReset, TargetPawn->GetActorLocation(), TargetPawn->GetActorRotation());
+    return SetLinearMotionTarget(TargetPawn, InPosition, InReset, TargetPawn->GetActorLocation(), TargetPawn->GetActorRotation());
 }
 
-void ARRAIRobotROSController::SetLinearMotionTargetWthDelegates(const FVector& InPosition,
+bool ARRAIRobotROSController::SetLinearMotionTargetWthDelegates(const FVector& InPosition,
                                                                 const FMoveCompleteCallback& InOnSuccess,
                                                                 const FMoveCompleteCallback& InOnFail,
                                                                 const float InLinearMotionTolerancee,
@@ -434,25 +569,25 @@ void ARRAIRobotROSController::SetLinearMotionTargetWthDelegates(const FVector& I
                                                                 const FRotator& InOriginRotator)
 {
     SetDelegates(InOnSuccess, InOnFail, InLinearMotionTolerancee, -1, InTimeOut);
-    SetLinearMotionTarget(InPosition, false, InOriginPosition, InOriginRotator);
+    return SetLinearMotionTarget(InPosition, false, InOriginPosition, InOriginRotator);
 }
 
-void ARRAIRobotROSController::AddLocalLinearMotionOffsetWthDelegates(const FVector& InPosition,
+bool ARRAIRobotROSController::AddLocalLinearMotionOffsetWthDelegates(const FVector& InPosition,
                                                                      const FMoveCompleteCallback& InOnSuccess,
                                                                      const FMoveCompleteCallback& InOnFail,
                                                                      const float InLinearMotionTolerancee,
                                                                      const float InTimeOut)
 {
-    SetLinearMotionTargetWthDelegates(InPosition,
-                                      InOnSuccess,
-                                      InOnFail,
-                                      InLinearMotionTolerancee,
-                                      InTimeOut,
-                                      GetPawn()->GetActorLocation(),
-                                      GetPawn()->GetActorRotation());
+    return SetLinearMotionTargetWthDelegates(InPosition,
+                                             InOnSuccess,
+                                             InOnFail,
+                                             InLinearMotionTolerancee,
+                                             InTimeOut,
+                                             GetPawn()->GetActorLocation(),
+                                             GetPawn()->GetActorRotation());
 }
 
-void ARRAIRobotROSController::SetLinearMotionTargetWthDelegates(APawn* TargetPawn,
+bool ARRAIRobotROSController::SetLinearMotionTargetWthDelegates(APawn* TargetPawn,
                                                                 const FVector& InPosition,
                                                                 const FMoveCompleteCallback& InOnSuccess,
                                                                 const FMoveCompleteCallback& InOnFail,
@@ -464,30 +599,34 @@ void ARRAIRobotROSController::SetLinearMotionTargetWthDelegates(APawn* TargetPaw
     auto controller = CheckController(TargetPawn);
     if (controller)
     {
-        controller->SetLinearMotionTargetWthDelegates(
+        return controller->SetLinearMotionTargetWthDelegates(
             InPosition, InOnSuccess, InOnFail, InLinearMotionTolerancee, InTimeOut, InOriginPosition, InOriginRotator);
     }
+    else
+    {
+        return false;
+    }
 }
-void ARRAIRobotROSController::AddLocalLinearMotionOffsetWthDelegates(APawn* TargetPawn,
+bool ARRAIRobotROSController::AddLocalLinearMotionOffsetWthDelegates(APawn* TargetPawn,
                                                                      const FVector& InPosition,
                                                                      const FMoveCompleteCallback& InOnSuccess,
                                                                      const FMoveCompleteCallback& InOnFail,
                                                                      const float InLinearMotionTolerancee,
                                                                      const float InTimeOut)
 {
-    SetLinearMotionTargetWthDelegates(TargetPawn,
-                                      InPosition,
-                                      InOnSuccess,
-                                      InOnFail,
-                                      InLinearMotionTolerancee,
-                                      InTimeOut,
-                                      TargetPawn->GetActorLocation(),
-                                      TargetPawn->GetActorRotation());
+    return SetLinearMotionTargetWthDelegates(TargetPawn,
+                                             InPosition,
+                                             InOnSuccess,
+                                             InOnFail,
+                                             InLinearMotionTolerancee,
+                                             InTimeOut,
+                                             TargetPawn->GetActorLocation(),
+                                             TargetPawn->GetActorRotation());
 }
 
 void ARRAIRobotROSController::UpdateRotation(float DeltaSeconds)
 {
-    if (bRotating)
+    if (NavStatus == ERRAIRobotNavStatus::ROTATING)
     {
         FVector orientationVec = GetPawn()->GetActorRotation().Euler();
         FVector orientationTargetVec = OrientationTarget.Euler();
@@ -511,8 +650,10 @@ void ARRAIRobotROSController::UpdateRotation(float DeltaSeconds)
 
 void ARRAIRobotROSController::UpdateLinearMotion(float DeltaSeconds)
 {
-    if (bLinearMoving)
+    if (NavStatus == ERRAIRobotNavStatus::LINEAR_MOVING)
     {
+        UE_LOG_WITH_INFO_SHORT(
+            LogTemp, Log, TEXT("%s, %s"), *LinearMotionTarget.ToString(), *GetPawn()->GetActorLocation().ToString());
         FVector dPos = LinearMotionTarget - GetPawn()->GetActorLocation();
         if (dPos.Size() <= LinearMotionTolerance)
         {
@@ -525,18 +666,23 @@ void ARRAIRobotROSController::UpdateLinearMotion(float DeltaSeconds)
     }
 }
 
+bool ARRAIRobotROSController::HasReachedOrientationTarget(const FRotator InOrientationTarget, const float InOrientationTolerance)
+{
+    const float orientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
+    return OrientationTarget.Equals(GetPawn()->GetActorRotation(), orientationTolerance);
+}
+
 bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientationTolerance)
 {
-    if (!bRotating)
+    if (NavStatus != ERRAIRobotNavStatus::ROTATING)
     {
         return true;
     }
 
-    const float orientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
-    bool res = OrientationTarget.Equals(GetPawn()->GetActorRotation(), orientationTolerance);
+    bool res = HasReachedOrientationTarget(OrientationTarget, InOrientationTolerance);
     if (res)
     {
-        bRotating = false;
+        NavStatus = ERRAIRobotNavStatus::IDLE;
         if (OnSuccessInternal.IsBound())
         {
             OnSuccessInternal.ExecuteIfBound();
@@ -558,7 +704,7 @@ bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientat
                 {
                     GetPawn()->SetActorRotation(OrientationTarget);
                 }
-                bRotating = false;
+                NavStatus = ERRAIRobotNavStatus::IDLE;
                 OnFail.ExecuteIfBound();
             }
         }
@@ -566,19 +712,23 @@ bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientat
     return res;
 };
 
+bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const FVector InLinearMotionTarget, const float InLinearMotionTolerance)
+{
+    const float linearMotionTolerance = (InLinearMotionTolerance >= 0) ? InLinearMotionTolerance : LinearMotionTolerance;
+    return InLinearMotionTarget.Equals(GetPawn()->GetActorLocation(), linearMotionTolerance);
+}
+
 bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const float InLinearMotionTolerance)
 {
-    if (!bLinearMoving)
+    if (NavStatus != ERRAIRobotNavStatus::LINEAR_MOVING)
     {
         return true;
     }
 
-    const float linearMotionTolerance = (InLinearMotionTolerance >= 0) ? InLinearMotionTolerance : LinearMotionTolerance;
-    bool res = LinearMotionTarget.Equals(GetPawn()->GetActorLocation(), linearMotionTolerance);
-
+    bool res = HasReachedLinearMotionTarget(LinearMotionTarget, InLinearMotionTolerance);
     if (res)
     {
-        bLinearMoving = false;
+        NavStatus = ERRAIRobotNavStatus::IDLE;
         if (OnSuccessInternal.IsBound())
         {
             OnSuccessInternal.ExecuteIfBound();
@@ -600,7 +750,7 @@ bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const float InLinearM
                 {
                     GetPawn()->SetActorLocation(LinearMotionTarget);
                 }
-                bLinearMoving = false;
+                NavStatus = ERRAIRobotNavStatus::IDLE;
                 OnFail.ExecuteIfBound();
             }
         }
