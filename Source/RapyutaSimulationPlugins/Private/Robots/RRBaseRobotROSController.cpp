@@ -14,6 +14,7 @@ void ARRBaseRobotROSController::OnPossess(APawn* InPawn)
     if (robot)
     {
         robot->InitROS2Interface();
+        ROS2Interface = robot->ROS2Interface;
     }
     else
     {

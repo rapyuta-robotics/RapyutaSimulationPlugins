@@ -17,33 +17,10 @@ void ARRAIRobotROSController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
 
-    // add ros interface
-    // 1. subscribe pose goal
-    // 2. subscribe string name goal
-    // 3. pub navigation status
-    // 4. subscribe param,, set_vel, set_angular_vel
-    // 5. Parse parameter, topic name, initial params
-    if (InPawn)
-    {
-        // ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
-        //                        this,
-        //                        PoseGoalTopicName,
-        //                        UROS2StrMsg::StaticClass(),
-        //                        &ARRAIRobotROSController::PoseGoalCallback);
-        // ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
-        //                        this,
-        //                        ActorGoalTopicName,
-        //                        UROS2StrMsg::StaticClass(),
-        //                        &ARRAIRobotROSController::ActorGoalCallback);
-        // ROS2_CREATE_LOOP_PUBLISHER(ROS2Interface->RobotROS2Node,
-        //                            this,
-        //                            NavStatusTopicName,
-        //                            UROS2Publisher::StaticClass(),
-        //                            UROS2Int32Msg::StaticClass(),
-        //                            NavStatusPublicationFrequencyHz,
-        //                            &ARRAIRobotROSController::UpdateNavStatus,
-        //                            NavStatusPublisher);
-    }
+    /**
+     * @todo this won't work with client-server
+    */
+    InitROS2Interface();
 }
 
 void ARRAIRobotROSController::OnUnPossess()
@@ -51,10 +28,64 @@ void ARRAIRobotROSController::OnUnPossess()
     Super::OnUnPossess();
 }
 
+void ARRAIRobotROSController::InitROS2Interface()
+{
+    if (!InitROS2InterfaceImpl())
+    {
+        GetWorld()->GetTimerManager().SetTimer(
+            ROS2InitTimer, FTimerDelegate::CreateLambda([this] { InitROS2InterfaceImpl(); }), 1.0f, true);
+    }
+}
+
+bool ARRAIRobotROSController::InitROS2InterfaceImpl()
+{
+    // add ros interface
+    // 1. subscribe pose goal
+    // 2. subscribe string name goal
+    // 3. pub navigation status
+    // 4. subscribe param,, set_vel, set_angular_vel
+    // 5. Parse parameter, topic name, initial params
+
+    // UE_LOG_WITH_INFO_SHORT_NAMED(LogTemp,
+    //                              Warning,
+    //                              TEXT("%d, %d, %d"),
+    //                              ROS2Interface == nullptr,
+    //                              ROS2Interface->RobotROS2Node == nullptr,
+    //                              ROS2Interface->RobotROS2Node->State == UROS2State::Initialized);
+    if (GetPawn() && ROS2Interface && ROS2Interface->RobotROS2Node &&
+        ROS2Interface->RobotROS2Node->State == UROS2State::Initialized)
+    {
+        ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
+                               this,
+                               PoseGoalTopicName,
+                               UROS2PoseStampedMsg::StaticClass(),
+                               &ARRAIRobotROSController::PoseGoalCallback);
+        ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
+                               this,
+                               ActorGoalTopicName,
+                               UROS2StrMsg::StaticClass(),
+                               &ARRAIRobotROSController::ActorGoalCallback);
+        ROS2_CREATE_LOOP_PUBLISHER(ROS2Interface->RobotROS2Node,
+                                   this,
+                                   NavStatusTopicName,
+                                   UROS2Publisher::StaticClass(),
+                                   UROS2Int32Msg::StaticClass(),
+                                   NavStatusPublicationFrequencyHz,
+                                   &ARRAIRobotROSController::UpdateNavStatus,
+                                   NavStatusPublisher);
+        GetWorld()->GetTimerManager().ClearTimer(ROS2InitTimer);
+        // UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT(""));
+        return true;
+    }
+
+    return false;
+}
+
 void ARRAIRobotROSController::UpdateNavStatus(UROS2GenericMsg* InMessage)
 {
     FROSInt32 msg;
     msg.Data = (int)NavStatus;
+    // UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("%d, %d"), NavStatus, msg.Data);
     CastChecked<UROS2Int32Msg>(InMessage)->SetMsg(msg);
 }
 
@@ -65,8 +96,13 @@ void ARRAIRobotROSController::PoseGoalCallback(const UROS2GenericMsg* Msg)
     {
         FROSPoseStamped poseStamped;
         poseStampedMsg->GetMsg(poseStamped);
-        // move to  with delegates
-        // inside delegate: pub nav status
+        FTransform worldTrans =
+            URRGeneralUtils::GetWorldTransform(poseStamped.Header.FrameId,
+                                               this,
+                                               URRConversionUtils::TransformROSToUE(FTransform(
+                                                   poseStamped.Pose.Orientation, poseStamped.Pose.Position, FVector::OneVector)));
+        FMoveCompleteCallback onSuccess, onFail;    // dummy
+        MoveToLocationWithDelegates(worldTrans.GetLocation(), worldTrans.GetRotation().Rotator(), onSuccess, onFail);
     }
 }
 
@@ -232,7 +268,6 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     const FVector& InOriginPosition,
     const FRotator& InOriginRotator)
 {
-    // todo check already in tolerance
     NavStatus = ERRAIRobotNavStatus::AI_MOVING;
     SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
     FTransform worldDest = URRGeneralUtils::GetWorldTransform(FTransform(InOriginRotator, InOriginPosition, FVector::OneVector),
@@ -652,8 +687,6 @@ void ARRAIRobotROSController::UpdateLinearMotion(float DeltaSeconds)
 {
     if (NavStatus == ERRAIRobotNavStatus::LINEAR_MOVING)
     {
-        UE_LOG_WITH_INFO_SHORT(
-            LogTemp, Log, TEXT("%s, %s"), *LinearMotionTarget.ToString(), *GetPawn()->GetActorLocation().ToString());
         FVector dPos = LinearMotionTarget - GetPawn()->GetActorLocation();
         if (dPos.Size() <= LinearMotionTolerance)
         {

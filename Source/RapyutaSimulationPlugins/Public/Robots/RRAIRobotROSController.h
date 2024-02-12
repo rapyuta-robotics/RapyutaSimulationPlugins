@@ -365,9 +365,21 @@ protected:
     virtual void ResetControl();
 
     // ROS
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTimerHandle ROS2InitTimer;
+
+    UFUNCTION()
+    void InitROS2Interface();
+
+    UFUNCTION()
+    bool InitROS2InterfaceImpl();
+
+    UFUNCTION()
     void UpdateNavStatus(UROS2GenericMsg* InMessage);
 
+    UFUNCTION()
     void PoseGoalCallback(const UROS2GenericMsg* Msg);
 
+    UFUNCTION()
     void ActorGoalCallback(const UROS2GenericMsg* Msg);
 };
