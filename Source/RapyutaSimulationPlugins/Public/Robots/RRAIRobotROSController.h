@@ -44,6 +44,10 @@ class RAPYUTASIMULATIONPLUGINS_API ARRAIRobotROSController : public ARRBaseRobot
 public:
     //! [degree] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bDebug = false;
+
+    //! [degree] tolerance for control
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float OrientationTolerance = 5.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -57,6 +61,12 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bTeleportOnFail = true;
+
+    UFUNCTION(BlueprintCallable)
+    virtual bool SetSpeed(const float InSpeed);
+
+    UFUNCTION(BlueprintCallable)
+    virtual bool SetAcceleration(const float InAcceleration);
 
     // ROS
     //! JointState Publisher
@@ -77,6 +87,18 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString ActorGoalTopicName = TEXT("actor_goal");
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int Mode = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector RandomMoveBoundingBox = FVector::OneVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    AActor* OriginActor = nullptr;
+
+    UFUNCTION(BlueprintCallable)
+    bool InitPropertiesFromJSON();
 
 protected:
     /**

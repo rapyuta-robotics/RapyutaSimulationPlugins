@@ -30,10 +30,145 @@ void ARRAIRobotROSController::OnUnPossess()
 
 void ARRAIRobotROSController::InitROS2Interface()
 {
+    InitPropertiesFromJSON();
     if (!InitROS2InterfaceImpl())
     {
         GetWorld()->GetTimerManager().SetTimer(
             ROS2InitTimer, FTimerDelegate::CreateLambda([this] { InitROS2InterfaceImpl(); }), 1.0f, true);
+    }
+}
+
+bool ARRAIRobotROSController::InitPropertiesFromJSON()
+{
+    // Verify [ROSSpawnParameters], which houses JSON
+    if (nullptr == ROS2Interface || nullptr == ROS2Interface->ROSSpawnParameters)
+    {
+        return false;
+    }
+
+    TSharedRef<TJsonReader<TCHAR>> jsonReader =
+        TJsonReaderFactory<TCHAR>::Create(ROS2Interface->ROSSpawnParameters->ActorJsonConfigs);
+    TSharedPtr<FJsonObject> jsonObj = MakeShareable(new FJsonObject());
+    if (!FJsonSerializer::Deserialize(jsonReader, jsonObj) && jsonObj.IsValid())
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("Failed to deserialize json to object"));
+        return false;
+    }
+
+    // Parse single value
+    bool bParam = false;
+    int intParam = 0;
+    float floatParam = 0.f;
+    FVector vectorParam = FVector::ZeroVector;
+    FString stringParam = TEXT("");
+
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("debug"), bParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("debug value: %d"), bParam);
+        bDebug = bParam;
+    }
+
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("mode"), intParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("mode value: %d"), intParam);
+        Mode = intParam;
+    }
+
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("speed"), floatParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("speed value: %f"), floatParam);
+        SetSpeed(URRConversionUtils::DistanceROSToUE(floatParam));
+    }
+
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("acceleration"), floatParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("acceleration value: %f"), floatParam);
+        SetAcceleration(URRConversionUtils::DistanceROSToUE(floatParam));
+    }
+
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("acceptance_radius"), floatParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("acceptance_radius value: %f"), floatParam);
+        const float InLinearMotionTolerance = URRConversionUtils::DistanceROSToUE(floatParam);
+        LinearMotionTolerance = (InLinearMotionTolerance >= 0) ? InLinearMotionTolerance : LinearMotionTolerance;
+    }
+
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("orientation_tolerance"), floatParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("orientation_tolerance value: %f"), floatParam);
+        const float InOrientationTolerance = FMath::RadiansToDegrees(floatParam);
+        OrientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
+    }
+
+    // if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("random_move_bounding_box"), vectorParam))
+    // {
+    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("random_move_bounding_box value: %s"), *vectorParam.ToString());
+    //     RandomMoveBoundingBox = URRConversionUtils::VectorROSToUE(vectorParam);
+    // }
+
+    // if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("origin"), vectorParam))
+    // {
+    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("origin value: %s"), *vectorParam.ToString());
+    //     RandomMoveBoundingBox = URRConversionUtils::VectorROSToUE(vectorParam);
+    // }
+    // else if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("origin"), stringParam))
+    // {
+    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("origin value: %s"), *stringParam);
+    // }
+
+    return true;
+}
+
+bool ARRAIRobotROSController::SetSpeed(const float InSpeed)
+{
+    if (GetPawn() && GetPawn()->GetMovementComponent())
+    {
+        auto floatingMoveComp = Cast<UFloatingPawnMovement>(GetPawn()->GetMovementComponent());
+        if (floatingMoveComp)
+        {
+            floatingMoveComp->MaxSpeed = InSpeed;
+            return true;
+        }
+
+        auto characterMoveComp = Cast<UCharacterMovementComponent>(GetPawn()->GetMovementComponent());
+        if (characterMoveComp)
+        {
+            characterMoveComp->MaxWalkSpeed = characterMoveComp->MaxCustomMovementSpeed = characterMoveComp->MaxFlySpeed =
+                characterMoveComp->MaxSwimSpeed = InSpeed;
+            return true;
+        }
+
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore,
+            Warning,
+            TEXT("MovementComponent must be child class of UFloatingPawnMovement or UCharacterMovementComponent."));
+        return false;
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Pawn or MovementComponent is nullptr"));
+        return false;
+    }
+}
+
+bool ARRAIRobotROSController::SetAcceleration(const float InAcceleration)
+{
+    if (GetPawn() && GetPawn()->GetMovementComponent())
+    {
+        auto floatingMoveComp = Cast<UFloatingPawnMovement>(GetPawn()->GetMovementComponent());
+        if (floatingMoveComp)
+        {
+            floatingMoveComp->Acceleration = floatingMoveComp->Deceleration = InAcceleration;
+            return true;
+        }
+
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("MovementComponent must be child class of UFloatingPawnMovement."));
+        return false;
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Pawn or MovementComponent is nullptr"));
+        return false;
     }
 }
 
@@ -46,12 +181,6 @@ bool ARRAIRobotROSController::InitROS2InterfaceImpl()
     // 4. subscribe param,, set_vel, set_angular_vel
     // 5. Parse parameter, topic name, initial params
 
-    // UE_LOG_WITH_INFO_SHORT_NAMED(LogTemp,
-    //                              Warning,
-    //                              TEXT("%d, %d, %d"),
-    //                              ROS2Interface == nullptr,
-    //                              ROS2Interface->RobotROS2Node == nullptr,
-    //                              ROS2Interface->RobotROS2Node->State == UROS2State::Initialized);
     if (GetPawn() && ROS2Interface && ROS2Interface->RobotROS2Node &&
         ROS2Interface->RobotROS2Node->State == UROS2State::Initialized)
     {
@@ -74,7 +203,6 @@ bool ARRAIRobotROSController::InitROS2InterfaceImpl()
                                    &ARRAIRobotROSController::UpdateNavStatus,
                                    NavStatusPublisher);
         GetWorld()->GetTimerManager().ClearTimer(ROS2InitTimer);
-        // UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT(""));
         return true;
     }
 
@@ -85,7 +213,6 @@ void ARRAIRobotROSController::UpdateNavStatus(UROS2GenericMsg* InMessage)
 {
     FROSInt32 msg;
     msg.Data = (int)NavStatus;
-    // UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("%d, %d"), NavStatus, msg.Data);
     CastChecked<UROS2Int32Msg>(InMessage)->SetMsg(msg);
 }
 
@@ -204,7 +331,8 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelega
     OrientationTarget = Goal->GetActorRotation();
     AIMovePoseTarget = Goal->GetActorLocation();    // for teleport on fail
 
-    auto res = MoveToActor(Goal, AcceptanceRadius, bStopOnOverlap, bUsePathfinding, bCanStrafe, FilterClass, bAllowPartialPath);
+    auto res =
+        MoveToActor(Goal, LinearMotionTolerance, bStopOnOverlap, bUsePathfinding, bCanStrafe, FilterClass, bAllowPartialPath);
     if (res == EPathFollowingRequestResult::Type::AlreadyAtGoal)
     {
         if (SetOrientationTarget(OrientationTarget, false))
@@ -276,7 +404,7 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     AIMovePoseTarget = worldDest.GetLocation();    // for teleport on fail
 
     auto res = MoveToLocation(Dest,
-                              AcceptanceRadius,
+                              LinearMotionTolerance,
                               bStopOnOverlap,
                               bUsePathfinding,
                               bProjectDestinationToNavigation,
