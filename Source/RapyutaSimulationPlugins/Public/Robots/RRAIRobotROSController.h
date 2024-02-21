@@ -95,6 +95,9 @@ public:
     FVector RandomMoveBoundingBox = FVector::OneVector;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FTransform> GoalSequence;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     AActor* OriginActor = nullptr;
 
     UFUNCTION(BlueprintCallable)

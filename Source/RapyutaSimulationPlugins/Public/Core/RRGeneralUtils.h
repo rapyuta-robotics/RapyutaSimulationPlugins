@@ -663,6 +663,85 @@ public:
 
     /**
      * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
+     *
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, FVector& OutValue)
+    {
+        bool res = true;
+        auto const tempJsonObj = InJsonObj->GetObjectField(InFieldName);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("x"), OutValue.X);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("y"), OutValue.Y);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("z"), OutValue.Z);
+
+        return res;
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
+     *
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, FRotator& OutValue)
+    {
+        bool res = true;
+        auto const tempJsonObj = InJsonObj->GetObjectField(InFieldName);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("roll"), OutValue.Roll);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("pitch"), OutValue.Pitch);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("yaw"), OutValue.Yaw);
+
+        return res;
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
+     *
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, FQuat& OutValue)
+    {
+        bool res = true;
+        auto const tempJsonObj = InJsonObj->GetObjectField(InFieldName);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("x"), OutValue.X);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("y"), OutValue.Y);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("z"), OutValue.Z);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("w"), OutValue.W);
+
+        return res;
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
+     *
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, FTransform& OutValue)
+    {
+        bool res = true;
+        FVector vectorParam = FVector::ZeroVector;
+        FRotator rotatorParam = FRotator::ZeroRotator;
+        auto const tempJsonObj = InJsonObj->GetObjectField(InFieldName);
+        res &= GetJsonField(tempJsonObj, TEXT("position"), vectorParam);
+        res &= GetJsonField(tempJsonObj, TEXT("orientation"), rotatorParam);
+        OutValue = FTransform(rotatorParam, vectorParam, FVector::OneVector);
+
+        return res;
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
      * If the field does not exist, OutValue = InDefaultValue
      *
      * @param InJsonObj the Json object containing the required field

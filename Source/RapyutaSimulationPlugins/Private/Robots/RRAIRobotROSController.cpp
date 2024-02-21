@@ -59,6 +59,7 @@ bool ARRAIRobotROSController::InitPropertiesFromJSON()
     bool bParam = false;
     int intParam = 0;
     float floatParam = 0.f;
+    FTransform transformParam = FTransform::Identity;
     FVector vectorParam = FVector::ZeroVector;
     FString stringParam = TEXT("");
 
@@ -100,21 +101,52 @@ bool ARRAIRobotROSController::InitPropertiesFromJSON()
         OrientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
     }
 
-    // if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("random_move_bounding_box"), vectorParam))
-    // {
-    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("random_move_bounding_box value: %s"), *vectorParam.ToString());
-    //     RandomMoveBoundingBox = URRConversionUtils::VectorROSToUE(vectorParam);
-    // }
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("random_move_bounding_box"), vectorParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("random_move_bounding_box value: %s"), *vectorParam.ToString());
+        RandomMoveBoundingBox = URRConversionUtils::VectorROSToUE(vectorParam);
+    }
 
-    // if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("origin"), vectorParam))
-    // {
-    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("origin value: %s"), *vectorParam.ToString());
-    //     RandomMoveBoundingBox = URRConversionUtils::VectorROSToUE(vectorParam);
-    // }
-    // else if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("origin"), stringParam))
-    // {
-    //     UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("origin value: %s"), *stringParam);
-    // }
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("origin"), vectorParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("origin value: %s"), *vectorParam.ToString());
+        RandomMoveBoundingBox = URRConversionUtils::VectorROSToUE(vectorParam);
+    }
+    else if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("origin"), stringParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("origin value: %s"), *stringParam);
+        OriginActor = URRGeneralUtils::FindActorByName<AActor>(GetWorld(), stringParam);
+        if (!OriginActor)
+        {
+            UE_LOG_WITH_INFO_SHORT_NAMED(LogTemp, Warning, TEXT("Can't find actor named: %s"), *stringParam);
+        }
+    }
+
+    const TArray<TSharedPtr<FJsonValue>>* paramArray;
+    if (jsonObj->TryGetArrayField(TEXT("goal_sequence"), paramArray))
+    {
+        for (const auto& param : *paramArray)
+        {
+            if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("pose"), transformParam))
+            {
+                UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("goal_sequence pose value: %s"), *transformParam.ToString());
+                GoalSequence.Add(transformParam);
+            }
+            else if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("name"), stringParam))
+            {
+                auto targetActor = URRGeneralUtils::FindActorByName<AActor>(GetWorld(), stringParam);
+                if (!targetActor)
+                {
+                    UE_LOG_WITH_INFO_SHORT_NAMED(LogTemp, Warning, TEXT("Can't find actor named: %s"), *stringParam);
+                }
+                else
+                {
+                    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("goal_sequence name value: %s"), *stringParam);
+                    GoalSequence.Add(targetActor->GetTransform());
+                }
+            }
+        }
+    }
 
     return true;
 }
