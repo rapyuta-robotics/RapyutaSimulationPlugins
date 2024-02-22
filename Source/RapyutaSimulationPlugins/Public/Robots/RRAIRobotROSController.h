@@ -28,6 +28,19 @@ enum class ERRAIRobotNavStatus : uint8
     ROTATING UMETA(DisplayName = "Rotating")
 };
 
+UENUM(BlueprintType)
+enum class ERRAIRobotMode : uint8
+{
+    BEGIN = 0 UMETA(DisplayName = "Begin"),
+
+    MANUAL = 1 UMETA(DisplayName = "Manual"),
+    SEQUENCE = 2 UMETA(DisplayName = "Sequence"),
+    RANDOM_SEQUENCE = 3 UMETA(DisplayName = "Random Sequence"),
+    RANDOM_AREA = 4 UMETA(DisplayName = "Random Area"),
+
+    END = 100 UMETA(DisplayName = "End")
+};
+
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
  * This class has authority to start ROS 2 Component in pausses robot.
@@ -77,7 +90,10 @@ public:
     float NavStatusPublicationFrequencyHz = 1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString SetSpeedTopicName = TEXT("set_vel");
+    FString SetSpeedTopicName = TEXT("set_speed");
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString SetModeTopicName = TEXT("set_mode");
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString NavStatusTopicName = TEXT("nav_status");
@@ -89,7 +105,7 @@ public:
     FString ActorGoalTopicName = TEXT("actor_goal");
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int Mode = 0;
+    ERRAIRobotMode Mode = ERRAIRobotMode::MANUAL;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector RandomMoveBoundingBox = FVector::OneVector;
@@ -99,6 +115,12 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     AActor* OriginActor = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FTransform Origin = FTransform::Identity;
+
+    UFUNCTION(BlueprintCallable)
+    virtual FTransform GetOrigin();
 
     UFUNCTION(BlueprintCallable)
     bool InitPropertiesFromJSON();
@@ -151,7 +173,8 @@ protected:
                               const FMoveCompleteCallback& InOnFail,
                               const float InLinearMotionToleranc = -1.0,
                               const float InOrientationTolerance = -1.0,
-                              const float InTimeOut = -1.0f);
+                              const float InTimeOut = -1.0f,
+                              const bool Verbose = false);
 
     //! Delegate which is called when joint reach target vel/pose
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -262,10 +285,18 @@ protected:
 
     virtual bool HasReachedOrientationTarget(const FRotator InOrientationTarget, const float InOrientationTolerance = -1.0);
 
+    virtual bool OrientationEquals(const FRotator InOrientationTarget1,
+                                   const FRotator InOrientationTarget2,
+                                   const float InOrientationTolerance = -1.0);
+
     UFUNCTION(BlueprintCallable)
     virtual bool HasReachedLinearMotionTarget(const float InLinearMotionTolerance = -1.0);
 
     virtual bool HasReachedLinearMotionTarget(const FVector InLinearMotionTarget, const float InLinearMotionTolerance = -1.0);
+
+    virtual bool PositionEquals(const FVector InLinearMotionTarget1,
+                                const FVector InLinearMotionTarget2,
+                                const float InLinearMotionTolerance = -1.0);
 
     virtual bool SetOrientationTarget(const FRotator& InOrientation,
                                       const bool InReset = true,
@@ -407,4 +438,16 @@ protected:
 
     UFUNCTION()
     void ActorGoalCallback(const UROS2GenericMsg* Msg);
+
+    UFUNCTION()
+    void SetSpeedCallback(const UROS2GenericMsg* Msg);
+
+    UFUNCTION()
+    void SetModeCallback(const UROS2GenericMsg* Msg);
+
+    // Mode variable
+    int GoalIndex = 0;
+
+    UFUNCTION()
+    virtual void ModeUpdate();
 };

@@ -3,6 +3,7 @@
 #include "Robots/RRAIRobotROSController.h"
 
 // rclUE
+#include "Msgs/ROS2Float32.h"
 #include "Msgs/ROS2Int32.h"
 #include "Msgs/ROS2PoseStamped.h"
 #include "Msgs/ROS2Str.h"
@@ -72,7 +73,14 @@ bool ARRAIRobotROSController::InitPropertiesFromJSON()
     if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("mode"), intParam))
     {
         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("mode value: %d"), intParam);
-        Mode = intParam;
+        if (intParam > (int)ERRAIRobotMode::BEGIN && intParam < (int)ERRAIRobotMode::END)
+        {
+            Mode = static_cast<ERRAIRobotMode>(intParam);
+        }
+        else
+        {
+            Mode = ERRAIRobotMode::MANUAL;
+        }
     }
 
     if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("speed"), floatParam))
@@ -127,12 +135,13 @@ bool ARRAIRobotROSController::InitPropertiesFromJSON()
     {
         for (const auto& param : *paramArray)
         {
-            if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("pose"), transformParam))
+            if (URRGeneralUtils::GetJsonField(param->AsObject(), TEXT("pose"), transformParam))
             {
-                UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("goal_sequence pose value: %s"), *transformParam.ToString());
-                GoalSequence.Add(transformParam);
+                FTransform ROStf = URRConversionUtils::TransformROSToUE(transformParam);
+                UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("goal_sequence pose value: %s"), *ROStf.ToString());
+                GoalSequence.Add(ROStf);
             }
-            else if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("name"), stringParam))
+            else if (URRGeneralUtils::GetJsonField(param->AsObject(), TEXT("name"), stringParam))
             {
                 auto targetActor = URRGeneralUtils::FindActorByName<AActor>(GetWorld(), stringParam);
                 if (!targetActor)
@@ -235,6 +244,16 @@ bool ARRAIRobotROSController::InitROS2InterfaceImpl()
                                    &ARRAIRobotROSController::UpdateNavStatus,
                                    NavStatusPublisher);
         GetWorld()->GetTimerManager().ClearTimer(ROS2InitTimer);
+        ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
+                               this,
+                               SetSpeedTopicName,
+                               UROS2Float32Msg::StaticClass(),
+                               &ARRAIRobotROSController::SetSpeedCallback);
+        ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
+                               this,
+                               SetModeTopicName,
+                               UROS2Int32Msg::StaticClass(),
+                               &ARRAIRobotROSController::SetModeCallback);
         return true;
     }
 
@@ -285,6 +304,42 @@ void ARRAIRobotROSController::ActorGoalCallback(const UROS2GenericMsg* Msg)
     }
 }
 
+void ARRAIRobotROSController::SetSpeedCallback(const UROS2GenericMsg* Msg)
+{
+    const UROS2Float32Msg* floatMsg = Cast<UROS2Float32Msg>(Msg);
+    if (IsValid(floatMsg))
+    {
+        FROSFloat32 floatValue;
+        floatMsg->GetMsg(floatValue);
+        float floatData = floatValue.Data;
+
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("speed is changed to: %f"), floatData);
+        SetSpeed(URRConversionUtils::DistanceROSToUE(floatData));
+    }
+}
+
+void ARRAIRobotROSController::SetModeCallback(const UROS2GenericMsg* Msg)
+{
+    const UROS2Int32Msg* intMsg = Cast<UROS2Int32Msg>(Msg);
+    if (IsValid(intMsg))
+    {
+        FROSInt32 intValue;
+        intMsg->GetMsg(intValue);
+        int intData = intValue.Data;
+
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("mode value: %d"), intData);
+        if (intData > (int)ERRAIRobotMode::BEGIN && intData < (int)ERRAIRobotMode::END)
+        {
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("mode value is changed to %d"), intData);
+            Mode = static_cast<ERRAIRobotMode>(intData);
+        }
+        else
+        {
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("invalid mode value %d are given."));
+        }
+    }
+}
+
 void ARRAIRobotROSController::ResetControl()
 {
     NavStatus = ERRAIRobotNavStatus::IDLE;
@@ -296,11 +351,15 @@ void ARRAIRobotROSController::SetDelegates(const FMoveCompleteCallback& InOnSucc
                                            const FMoveCompleteCallback& InOnFail,
                                            const float InLinearMotionTolerance,
                                            const float InOrientationTolerance,
-                                           const float InTimeOut)
+                                           const float InTimeOut,
+                                           const bool Verbose)
 {
     if (!InOnSuccess.IsBound())
     {
-        UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("OnSuccess Delegate is not set - is this on purpose? "));
+        if (Verbose)
+        {
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("OnSuccess Delegate is not set - is this on purpose? "));
+        }
     }
     else
     {
@@ -310,7 +369,10 @@ void ARRAIRobotROSController::SetDelegates(const FMoveCompleteCallback& InOnSucc
 
     if (!InOnFail.IsBound())
     {
-        UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("OnFail Delegate is not set - is this on purpose? "));
+        if (Verbose)
+        {
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("OnFail Delegate is not set - is this on purpose? "));
+        }
     }
     else
     {
@@ -358,7 +420,14 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelega
                                                                                     const float InOrientationTolerance,
                                                                                     const float InTimeOut)
 {
+    if (NavStatus == ERRAIRobotNavStatus::AI_MOVING && PositionEquals(AIMovePoseTarget, Goal->GetActorLocation()))
+    {
+        UE_LOG_WITH_INFO_SHORT(LogTemp, Log, TEXT("Same Navigation position target is given. Ignore."));
+        return EPathFollowingRequestResult::Type::Failed;
+    }
+
     NavStatus = ERRAIRobotNavStatus::AI_MOVING;
+
     SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
     OrientationTarget = Goal->GetActorRotation();
     AIMovePoseTarget = Goal->GetActorLocation();    // for teleport on fail
@@ -428,10 +497,17 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     const FVector& InOriginPosition,
     const FRotator& InOriginRotator)
 {
-    NavStatus = ERRAIRobotNavStatus::AI_MOVING;
-    SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
     FTransform worldDest = URRGeneralUtils::GetWorldTransform(FTransform(InOriginRotator, InOriginPosition, FVector::OneVector),
                                                               FTransform(DestRotator, Dest, FVector::OneVector));
+
+    if (NavStatus == ERRAIRobotNavStatus::AI_MOVING && PositionEquals(AIMovePoseTarget, worldDest.GetLocation()))
+    {
+        UE_LOG_WITH_INFO_SHORT(LogTemp, Log, TEXT("Same Navigation position target is given. Ignore."));
+        return EPathFollowingRequestResult::Type::Failed;
+    }
+
+    NavStatus = ERRAIRobotNavStatus::AI_MOVING;
+    SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
     OrientationTarget = worldDest.GetRotation().Rotator();
     AIMovePoseTarget = worldDest.GetLocation();    // for teleport on fail
 
@@ -859,10 +935,17 @@ void ARRAIRobotROSController::UpdateLinearMotion(float DeltaSeconds)
     }
 }
 
-bool ARRAIRobotROSController::HasReachedOrientationTarget(const FRotator InOrientationTarget, const float InOrientationTolerance)
+bool ARRAIRobotROSController::OrientationEquals(const FRotator InOrientationTarget1,
+                                                const FRotator InOrientationTarget2,
+                                                const float InOrientationTolerance)
 {
     const float orientationTolerance = (InOrientationTolerance >= 0) ? InOrientationTolerance : OrientationTolerance;
-    return OrientationTarget.Equals(GetPawn()->GetActorRotation(), orientationTolerance);
+    return InOrientationTarget2.Equals(InOrientationTarget1, orientationTolerance);
+}
+
+bool ARRAIRobotROSController::HasReachedOrientationTarget(const FRotator InOrientationTarget, const float InOrientationTolerance)
+{
+    return OrientationEquals(GetPawn()->GetActorRotation(), InOrientationTarget, InOrientationTolerance);
 }
 
 bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientationTolerance)
@@ -905,10 +988,17 @@ bool ARRAIRobotROSController::HasReachedOrientationTarget(const float InOrientat
     return res;
 };
 
-bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const FVector InLinearMotionTarget, const float InLinearMotionTolerance)
+bool ARRAIRobotROSController::PositionEquals(const FVector InLinearMotionTarget1,
+                                             const FVector InLinearMotionTarget2,
+                                             const float InLinearMotionTolerance)
 {
     const float linearMotionTolerance = (InLinearMotionTolerance >= 0) ? InLinearMotionTolerance : LinearMotionTolerance;
-    return InLinearMotionTarget.Equals(GetPawn()->GetActorLocation(), linearMotionTolerance);
+    return InLinearMotionTarget2.Equals(InLinearMotionTarget1, linearMotionTolerance);
+}
+
+bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const FVector InLinearMotionTarget, const float InLinearMotionTolerance)
+{
+    return PositionEquals(GetPawn()->GetActorLocation(), InLinearMotionTarget, InLinearMotionTolerance);
 }
 
 bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const float InLinearMotionTolerance)
@@ -951,6 +1041,74 @@ bool ARRAIRobotROSController::HasReachedLinearMotionTarget(const float InLinearM
     return res;
 };
 
+FTransform ARRAIRobotROSController::GetOrigin()
+{
+    if (OriginActor)
+    {
+        return OriginActor->GetTransform();
+    }
+    else
+    {
+        return Origin;
+    }
+}
+
+void ARRAIRobotROSController::ModeUpdate()
+{
+    if (Mode != ERRAIRobotMode::MANUAL)
+    {
+        if (NavStatus == ERRAIRobotNavStatus::IDLE)
+        {
+            FMoveCompleteCallback onSuccess, onFail;    // dummy
+            switch (Mode)
+            {
+                case ERRAIRobotMode::SEQUENCE:
+                    if (GoalSequence.Num() > 0)
+                    {
+                        MoveToLocationWithDelegates(GoalSequence[GoalIndex].GetLocation(),
+                                                    GoalSequence[GoalIndex].GetRotation().Rotator(),
+                                                    onSuccess,
+                                                    onFail);
+                        GoalIndex++;
+                        if (GoalSequence.Num() <= GoalIndex)
+                        {
+                            GoalIndex = 0;
+                        }
+                    }
+                    break;
+                case ERRAIRobotMode::RANDOM_SEQUENCE:
+                    if (GoalSequence.Num() > 0)
+                    {
+                        if (GoalSequence.Num() > 2)
+                        {
+                            int temp = FMath::RandRange(0, GoalSequence.Num() - 1);
+                            while (temp == GoalIndex)
+                            {
+                                temp = FMath::RandRange(0, GoalSequence.Num() - 1);
+                            }
+                            GoalIndex = temp;
+                        }
+                        MoveToLocationWithDelegates(GoalSequence[GoalIndex].GetLocation(),
+                                                    GoalSequence[GoalIndex].GetRotation().Rotator(),
+                                                    onSuccess,
+                                                    onFail);
+                    }
+                    break;
+                case ERRAIRobotMode::RANDOM_AREA:
+                    MoveToLocationWithDelegates(
+                        UKismetMathLibrary::RandomPointInBoundingBox(GetOrigin().GetLocation(), RandomMoveBoundingBox),
+                        FRotator(0.0, UKismetMathLibrary::RandomRotator(true).Yaw, 0.0),
+                        onSuccess,
+                        onFail);
+                    break;
+                default:
+                    Mode = ERRAIRobotMode::MANUAL;
+                    break;
+            }
+        }
+    }
+}
+
 void ARRAIRobotROSController::UpdateControl(float DeltaSeconds)
 {
     UpdateRotation(DeltaSeconds);
@@ -965,5 +1123,6 @@ void ARRAIRobotROSController::Tick(float DeltaSeconds)
         UpdateControl(DeltaSeconds);
         HasReachedOrientationTarget();
         HasReachedLinearMotionTarget();
+        ModeUpdate();
     }
 };

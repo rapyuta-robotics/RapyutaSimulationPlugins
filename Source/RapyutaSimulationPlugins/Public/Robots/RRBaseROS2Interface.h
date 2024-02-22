@@ -64,6 +64,11 @@ public:
     UPROPERTY(VisibleAnywhere, Replicated)
     TObjectPtr<UROS2Spawnable> ROSSpawnParameters = nullptr;
 
+    //! Defautl ROS namespace.
+    //! This is not used if robot spawn from ROS or Pawn is #ARRBaseRobot
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString DefautlROSNamespace = TEXT("");
+
     /**
      * @brief Initialize robot's ROS 2 interface by calling #InitRobotROS2Node, #InitPublishers, #InitSubscriptions and #ARRBaseRobot::InitSensors.
      * This method is mainly used by #ARRBaseoRbotROSController via #ARRBaseRobot::InitROS2Interface.

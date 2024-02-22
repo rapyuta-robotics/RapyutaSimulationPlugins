@@ -104,7 +104,10 @@ void URRBaseROS2Interface::InitROS2NodeParam(AActor* Owner)
     {
         RobotROS2Node->Namespace = ROSSpawnParameters->GetNamespace();
     }
-
+    else
+    {
+        RobotROS2Node->Namespace = DefautlROSNamespace;
+    }
 }
 
 bool URRBaseROS2Interface::InitPublishers()
