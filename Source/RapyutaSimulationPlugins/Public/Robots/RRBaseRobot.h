@@ -71,7 +71,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnRobotCreationDone, bool /* bCreationResul
  * This actor use #URRRobotROS2Interface as the main ROS 2 communication tool.
  * This actor has basic functionality to use with client-server, e.g. replication setting
  * - Moves kinematically with #URobotVehicleMovementComponent.
- * - Is possessed by #ARRRobotVehicleROSController to be control from ROS2.
+ * - Is possessed by #ARRBaseRobotROSController to be control from ROS2.
  * You can find example at #ATurtlebotBurger.
  */
 UCLASS()

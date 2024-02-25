@@ -89,6 +89,12 @@ bool ARRAIRobotROSController::InitPropertiesFromJSON()
         SetSpeed(URRConversionUtils::DistanceROSToUE(floatParam));
     }
 
+    if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("angular_vel"), floatParam))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("angular_vel value: %f"), floatParam);
+        SetRotationRate(FMath::RadiansToDegrees(floatParam));
+    }
+
     if (URRGeneralUtils::GetJsonField(jsonObj, TEXT("acceleration"), floatParam))
     {
         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("acceleration value: %f"), floatParam);
@@ -162,6 +168,7 @@ bool ARRAIRobotROSController::InitPropertiesFromJSON()
 
 bool ARRAIRobotROSController::SetSpeed(const float InSpeed)
 {
+    LinearSpeed = InSpeed;
     if (GetPawn() && GetPawn()->GetMovementComponent())
     {
         auto floatingMoveComp = Cast<UFloatingPawnMovement>(GetPawn()->GetMovementComponent());
@@ -183,6 +190,29 @@ bool ARRAIRobotROSController::SetSpeed(const float InSpeed)
             LogRapyutaCore,
             Warning,
             TEXT("MovementComponent must be child class of UFloatingPawnMovement or UCharacterMovementComponent."));
+        return false;
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Warning, TEXT("Pawn or MovementComponent is nullptr"));
+        return false;
+    }
+}
+
+bool ARRAIRobotROSController::SetRotationRate(const float InRotationRate)
+{
+    RotationRate = InRotationRate;
+    if (GetPawn() && GetPawn()->GetMovementComponent())
+    {
+        auto characterMoveComp = Cast<UCharacterMovementComponent>(GetPawn()->GetMovementComponent());
+        if (characterMoveComp)
+        {
+            characterMoveComp->RotationRate = InRotationRate * FRotator(1.0, 1.0, 1.0);
+            return true;
+        }
+
+        UE_LOG_WITH_INFO_NAMED(
+            LogRapyutaCore, Warning, TEXT("MovementComponent must be child class of UCharacterMovementComponent."));
         return false;
     }
     else
@@ -243,7 +273,6 @@ bool ARRAIRobotROSController::InitROS2InterfaceImpl()
                                    NavStatusPublicationFrequencyHz,
                                    &ARRAIRobotROSController::UpdateNavStatus,
                                    NavStatusPublisher);
-        GetWorld()->GetTimerManager().ClearTimer(ROS2InitTimer);
         ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
                                this,
                                SetSpeedTopicName,
@@ -251,9 +280,15 @@ bool ARRAIRobotROSController::InitROS2InterfaceImpl()
                                &ARRAIRobotROSController::SetSpeedCallback);
         ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
                                this,
+                               SetAngularVelTopicName,
+                               UROS2Float32Msg::StaticClass(),
+                               &ARRAIRobotROSController::SetAngularVelCallback);
+        ROS2_CREATE_SUBSCRIBER(ROS2Interface->RobotROS2Node,
+                               this,
                                SetModeTopicName,
                                UROS2Int32Msg::StaticClass(),
                                &ARRAIRobotROSController::SetModeCallback);
+        GetWorld()->GetTimerManager().ClearTimer(ROS2InitTimer);
         return true;
     }
 
@@ -315,6 +350,20 @@ void ARRAIRobotROSController::SetSpeedCallback(const UROS2GenericMsg* Msg)
 
         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("speed is changed to: %f"), floatData);
         SetSpeed(URRConversionUtils::DistanceROSToUE(floatData));
+    }
+}
+
+void ARRAIRobotROSController::SetAngularVelCallback(const UROS2GenericMsg* Msg)
+{
+    const UROS2Float32Msg* floatMsg = Cast<UROS2Float32Msg>(Msg);
+    if (IsValid(floatMsg))
+    {
+        FROSFloat32 floatValue;
+        floatMsg->GetMsg(floatValue);
+        float floatData = floatValue.Data;
+
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Log, TEXT("rotation rate is changed to: %f"), floatData);
+        SetRotationRate(FMath::RadiansToDegrees(floatData));
     }
 }
 
@@ -420,7 +469,7 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelega
                                                                                     const float InOrientationTolerance,
                                                                                     const float InTimeOut)
 {
-    if (NavStatus == ERRAIRobotNavStatus::AI_MOVING && PositionEquals(AIMovePoseTarget, Goal->GetActorLocation()))
+    if (NavStatus == ERRAIRobotNavStatus::AI_MOVING && PositionEquals(AIMovePositionTarget, Goal->GetActorLocation()))
     {
         UE_LOG_WITH_INFO_SHORT(LogTemp, Log, TEXT("Same Navigation position target is given. Ignore."));
         return EPathFollowingRequestResult::Type::Failed;
@@ -430,7 +479,7 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToActorWithDelega
 
     SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
     OrientationTarget = Goal->GetActorRotation();
-    AIMovePoseTarget = Goal->GetActorLocation();    // for teleport on fail
+    AIMovePositionTarget = Goal->GetActorLocation();    // for teleport on fail
 
     auto res =
         MoveToActor(Goal, LinearMotionTolerance, bStopOnOverlap, bUsePathfinding, bCanStrafe, FilterClass, bAllowPartialPath);
@@ -500,7 +549,7 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     FTransform worldDest = URRGeneralUtils::GetWorldTransform(FTransform(InOriginRotator, InOriginPosition, FVector::OneVector),
                                                               FTransform(DestRotator, Dest, FVector::OneVector));
 
-    if (NavStatus == ERRAIRobotNavStatus::AI_MOVING && PositionEquals(AIMovePoseTarget, worldDest.GetLocation()))
+    if (NavStatus == ERRAIRobotNavStatus::AI_MOVING && PositionEquals(AIMovePositionTarget, worldDest.GetLocation()))
     {
         UE_LOG_WITH_INFO_SHORT(LogTemp, Log, TEXT("Same Navigation position target is given. Ignore."));
         return EPathFollowingRequestResult::Type::Failed;
@@ -509,7 +558,7 @@ EPathFollowingRequestResult::Type ARRAIRobotROSController::MoveToLocationWithDel
     NavStatus = ERRAIRobotNavStatus::AI_MOVING;
     SetDelegates(InOnSuccess, InOnFail, AcceptanceRadius, InOrientationTolerance, InTimeOut);
     OrientationTarget = worldDest.GetRotation().Rotator();
-    AIMovePoseTarget = worldDest.GetLocation();    // for teleport on fail
+    AIMovePositionTarget = worldDest.GetLocation();    // for teleport on fail
 
     auto res = MoveToLocation(Dest,
                               LinearMotionTolerance,
@@ -589,7 +638,7 @@ void ARRAIRobotROSController::OnMoveCompleted(FAIRequestID RequestID, const FPat
         {
             if (bTeleportOnFail)
             {
-                GetPawn()->SetActorLocation(AIMovePoseTarget);
+                GetPawn()->SetActorLocation(AIMovePositionTarget);
                 GetPawn()->SetActorRotation(OrientationTarget);
             }
             if (OnFail.IsBound())
@@ -684,7 +733,7 @@ bool ARRAIRobotROSController::SetOrientationTarget(const FRotator& InOrientation
     for (uint8 i = 0; i < 3; i++)
     {
         float angleDiff = FRotator::NormalizeAxis(orientationTargetVec[i] - orientationVec[i]);
-        AngularVelocity[i] = FMath::IsNearlyZero(angleDiff) ? 0 : angleDiff < 0 ? -RotationSpeed : RotationSpeed;
+        AngularVelocity[i] = FMath::IsNearlyZero(angleDiff) ? 0 : angleDiff < 0 ? -RotationRate : RotationRate;
     }
 
     if (InReset)
@@ -788,13 +837,6 @@ bool ARRAIRobotROSController::SetLinearMotionTarget(const FVector& InPosition,
         UE_LOG_WITH_INFO_SHORT(LogTemp, Log, TEXT("Already at goal location"));
         return false;
     }
-
-    // FVector location = GetPawn()->GetActorLocation();
-    // for (uint8 i = 0; i < 3; i++)
-    // {
-    //     float diff = LinearMotionTarget[i] - location[i];
-    //     LinearVelocity[i] = FMath::IsNearlyZero(diff) ? 0 : diff < 0 ? -LinearSpeed : LinearSpeed;
-    // }
 
     if (InReset)
     {

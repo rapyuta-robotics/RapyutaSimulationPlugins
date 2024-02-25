@@ -60,6 +60,10 @@ public:
      */
     virtual void Initialize(AActor* Owner) override;
 
+    /**
+     * @brief Init publishers, subscribers, service clients, service servers, action clients, and action servers.
+     *
+     */
     virtual void InitInterfaces() override;
 
     /**
@@ -69,6 +73,11 @@ public:
      */
     virtual void DeInitialize() override;
 
+    /**
+     * @brief Spawn ROS2 Node, and initialize it if ROS2 Node = nullptr
+     *
+     * @param Owner
+     */
     virtual void InitROS2NodeParam(AActor* Owner) override;
 
     //////////////////////////////
@@ -213,23 +222,20 @@ protected:
         }
     }
 
-    UPROPERTY()
-    TMap<FName /*ServiceName*/, UROS2ServiceClient*> ServiceClientList;
-
     template<typename TService, typename TServiceRequest>
-    void MakeServiceRequest(const FName& InServiceName, const TServiceRequest& InRequest)
+    void MakeServiceRequest(const FString& InServiceName, const TServiceRequest& InRequest)
     {
         // Create and update request
-        if (auto* client = ServiceClientList.FindRef(InServiceName))
+        if (auto* client = ServiceClients.FindRef(InServiceName))
         {
             TService* service = CastChecked<TService>(client->Service);
             client->SendRequest(service, InRequest);
 
-            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("%s [%s] Request made"), *InServiceName.ToString(), *GetName());
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("%s [%s] Request made"), *InServiceName, *GetName());
         }
         else
         {
-            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName.ToString());
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName);
         }
     }
 };

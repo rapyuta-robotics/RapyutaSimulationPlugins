@@ -25,16 +25,17 @@
 class ARRBaseRobot;
 /**
  * @brief  Base Robot ROS 2 interface class.
- * This class owns ROS2Node and controls ROS 2 interfaces of the #Robot, by
- * - Providing ROS 2 subscribers to control robot joints and movement
- * - Providing Odometry publisher.
- * - Controling #URRROS2BaseSensorComponent in #ARRBaseRobot.
- *
+ * This class owns ROS2Node and controls ROS 2 interfaces
  *
  * Please create child class of this class to custom ROS2Interface which have your own ROS2Interfaces.
- * @todo add handling of service and action.
  */
 UCLASS(Blueprintable, EditInlineNew)
+/**
+ * @class URRBaseROS2Interface
+ * @brief This class represents the base ROS 2 interface for a robot in the RapyutaSimulationPlugins module.
+ *        It provides functionality for initializing and managing ROS 2 nodes, publishers, subscribers, service clients,
+ *        service servers, action clients, and action servers.
+ */
 class RAPYUTASIMULATIONPLUGINS_API URRBaseROS2Interface : public UObject
 {
     GENERATED_BODY()
@@ -57,6 +58,7 @@ public:
     void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     //! ROS 2 node of this interface created by #InitRobotROS2Node
+    //! @todo rename to ROS2Node
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     TObjectPtr<UROS2NodeComponent> RobotROS2Node = nullptr;
 
@@ -77,6 +79,10 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void Initialize(AActor* Owner);
 
+    /**
+     * @brief Init publishers, subscribers, service clients, service servers, action clients, and action servers.
+     *
+     */
     virtual void InitInterfaces();
 
     /**
@@ -100,6 +106,11 @@ public:
      */
     virtual void InitRobotROS2Node(AActor* Owner);
 
+    /**
+     * @brief Spawn ROS2 Node, and initialize it if ROS2 Node = nullptr
+     *
+     * @param Owner
+     */
     virtual void InitROS2NodeParam(AActor* Owner);
 
     /**
