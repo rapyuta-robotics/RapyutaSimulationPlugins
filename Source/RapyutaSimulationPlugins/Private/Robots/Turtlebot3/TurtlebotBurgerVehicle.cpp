@@ -34,7 +34,7 @@ void ATurtlebotBurgerVehicle::SetupDefaultRootSkeletal()
     RootComponent = SkeletalMeshComp;
     DefaultRoot->SetupAttachment(SkeletalMeshComp);
 
-    AIControllerClass = ARRRobotVehicleROSController::StaticClass();
+    AIControllerClass = ARRBaseRobotROSController::StaticClass();
 }
 
 void ATurtlebotBurgerVehicle::PreInitializeComponents()
