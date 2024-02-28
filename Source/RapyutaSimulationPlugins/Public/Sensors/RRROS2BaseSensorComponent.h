@@ -21,6 +21,57 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
 
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRGaussianNoise : public UObject
+{
+    GENERATED_BODY()
+
+public:
+    URRGaussianNoise()
+    {
+        Init();
+    }
+
+    URRGaussianNoise(const float InNoiseMean, const float InNoiseVariance)
+    {
+        Init(InNoiseMean, InNoiseVariance);
+    }
+
+    UFUNCTION(BlueprintCallable)
+    virtual void Init()
+    {
+        GaussianRNG = std::normal_distribution<>{NoiseMean, NoiseVariance};
+    }
+
+    virtual void Init(const float InNoiseMean, const float InNoiseVariance)
+    {
+        NoiseMean = InNoiseMean;
+        NoiseVariance = InNoiseVariance;
+        Init();
+    }
+
+    UFUNCTION(BlueprintCallable)
+    virtual float Get()
+    {
+        return GaussianRNG(Gen);
+    }
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float NoiseMean = 0.f;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float NoiseVariance = 0.01f;
+
+protected:
+    //! C++11 RNG for odometry noise
+    std::random_device Rng;
+
+    //! C++11 RNG for odometry noise
+    std::mt19937 Gen = std::mt19937{Rng()};
+
+    std::normal_distribution<> GaussianRNG;
+};
+
 /**
  * @brief Base ROS 2 Sensor Component class. Other sensors class should inherit from this class.
  * Provide features to initialize with [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html)

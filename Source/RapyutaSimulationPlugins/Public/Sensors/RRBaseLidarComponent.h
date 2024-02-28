@@ -109,6 +109,12 @@ public:
     float DHAngle = 0.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
+    TObjectPtr<URRGaussianNoise> PositionNoise;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    TObjectPtr<URRGaussianNoise> IntensityNoise;
+
+    UPROPERTY(EditAnywhere, Category = "Noise")
     float PositionalNoiseMean = 0.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
@@ -158,16 +164,6 @@ public:
 protected:
     UPROPERTY()
     float Dt = 0.f;
-
-    //! C++11 RNG for noise
-    std::random_device Rng;
-
-    //! C++11 RNG for noise
-    std::mt19937 Gen = std::mt19937{Rng()};
-
-    std::normal_distribution<> GaussianRNGPosition;
-
-    std::normal_distribution<> GaussianRNGIntensity;
 
     FLinearColor InterpolateColor(float InX);
     static float GetIntensityFromDist(float InBaseIntensity, float InDistance);
