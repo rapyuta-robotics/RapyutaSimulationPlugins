@@ -21,6 +21,7 @@
 #include "Drives/RobotVehicleMovementComponent.h"
 #include "Sensors/RRROS2BaseSensorComponent.h"
 #include "Tools/ROS2Spawnable.h"
+#include "Tools/RRUIWidgetComponent.h"
 
 #include "RRBaseRobot.generated.h"
 
@@ -70,7 +71,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnRobotCreationDone, bool /* bCreationResul
  * This actor use #URRRobotROS2Interface as the main ROS 2 communication tool.
  * This actor has basic functionality to use with client-server, e.g. replication setting
  * - Moves kinematically with #URobotVehicleMovementComponent.
- * - Is possessed by #ARRRobotVehicleROSController to be control from ROS2.
+ * - Is possessed by #ARRBaseRobotROSController to be control from ROS2.
  * You can find example at #ATurtlebotBurger.
  */
 UCLASS()
@@ -111,7 +112,7 @@ public:
     void SetupDefault();
 
     UPROPERTY(VisibleAnywhere, Replicated)
-    USceneComponent* DefaultRoot = nullptr;
+    TObjectPtr<USceneComponent> DefaultRoot = nullptr;
 
     /**
      * @brief Set the root offset for #RobotVehicleMoveComponent
@@ -165,14 +166,14 @@ public:
 
     //! Default class to use when ROS 2 Interface is setup for robot
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "ROS 2 Interface Class"), Replicated)
-    TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass;
+    TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass = nullptr;
 
     /**
      * Robot's ROS 2 Interface.
      * With the client-server setup, this is created in the server and replicated to the client and initialized only in the client.
      */
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
-    URRRobotROS2Interface* ROS2Interface = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Replicated, ReplicatedUsing = OnRep_ROS2Interface)
+    TObjectPtr<URRRobotROS2Interface> ROS2Interface = nullptr;
 
     /**
      * @brief Function called with #ROS2Interface replication. Start ROS2Interface if bStartStopROS2Interface=true.
@@ -203,14 +204,14 @@ public:
     //! You can change paramter in BP for manually placed robot but
     //! Paramerter will be overwirten if you spawn from /SpawnEntity srv.
     UPROPERTY(BlueprintReadWrite, Replicated)
-    UROS2Spawnable* ROSSpawnParameters = nullptr;
+    TObjectPtr<UROS2Spawnable> ROSSpawnParameters = nullptr;
 
     /**
      * @brief Pointer to the robot's server-owned version
      * @note Owner can't be used since non-player pawn don't have that.
      */
     UPROPERTY(VisibleAnywhere, Replicated)
-    ARRBaseRobot* ServerRobot = nullptr;
+    TObjectPtr<ARRBaseRobot> ServerRobot = nullptr;
 
     /**
      * @brief Instantiate ROS 2 Interface without initializing yet
@@ -319,6 +320,18 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, UStaticMeshComponent*> Links;
 
+    /**
+     * @brief Add UStaticMeshComponent to #Links
+     * InLinkName is used for frame name of tf.
+     *
+     * @param InLinkName
+     * @param InMesh
+     * @return true
+     * @return false
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual bool AddLink(const FString& InLinkName, UStaticMeshComponent* InMesh);
+
     //! Base mesh comp, normally also as the root comp
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UMeshComponent> BaseMeshComp = nullptr;
@@ -329,6 +342,7 @@ public:
      * @param bInMakeAsRoot
      * @param bInDestroyDefaultRoot Whether or not destroying #DefaultRoot upon (bInMakeAsRoot == true), in which case if kept it is only to support compatibility in users' child-BP class
      */
+    UFUNCTION(BlueprintCallable)
     void SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeAsRoot = true, bool bInDestroyDefaultRoot = true);
 
     /**
@@ -337,6 +351,24 @@ public:
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, URRJointComponent*> Joints;
+
+    /**
+     * @brief Add URRJointComponent to #Joints and set Joint's parent and child link from name in #Links
+     * InParentLinkName and InChildLinkName need to be in #Links beforehand.
+     * InJointName is used for joint name of joint_states topic
+     *
+     * @param InParentLinkName
+     * @param InChildLinkName
+     * @param InJointName
+     * @param InJoint
+     * @return true
+     * @return false
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual bool AddJoint(const FString& InParentLinkName,
+                          const FString& InChildLinkName,
+                          const FString& InJointName,
+                          URRJointComponent* InJoint);
 
     /**
      * Initialize #Joints or not. Initial pose are set in each joint.
@@ -417,14 +449,15 @@ public:
 
     //! Main robot movement component (kinematics/diff-drive or wheels-drive comp)
     //! #MovementComponent and #RobotVehicleMoveComponent should point to same pointer.
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    UMovementComponent* MovementComponent = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced)
+    TObjectPtr<UMovementComponent> MovementComponent = nullptr;
 
     //! Movecomponent casted to #URobotVehicleMovementComponent for utility.
     //! This should be pointing same thing as #MovementComponent
     //! This should be set from #SetMoveComponent
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
-    URobotVehicleMovementComponent* RobotVehicleMoveComponent = nullptr;
+    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Replicated)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Replicated)
+    TObjectPtr<URobotVehicleMovementComponent> RobotVehicleMoveComponent;
 
     //! Class of the main robot movement component, configurable in child class
     //! If VehicleMoveComponentClass == nullptr, it is expected that MovementComponent is set from BP or user code.
@@ -526,11 +559,7 @@ public:
 
     //! UI widget component
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TObjectPtr<UWidgetComponent> UIWidgetComp = nullptr;
-
-    //! #UUserWidget's widget
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TObjectPtr<URRUserWidget> UIUserWidget = nullptr;
+    TObjectPtr<URRUIWidgetComponent> UIWidgetComp = nullptr;
 
     //! Widget class
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Classes)
@@ -540,30 +569,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform UIWidgetOffset = FTransform(FVector(0.f, 0.f, 100.f));
 
+    //! Widget class
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Classes)
+    TSubclassOf<UUserWidget> UIUserWidgetClass;
+
     /**
      * @brief Check whether #UIUserWidget is valid
      */
     bool CheckUIUserWidget() const;
-
-    /**
-     * @brief Set robot's tooltip text through #UIWidgetComp's label
-     * @param InTooltip
-     */
-    UFUNCTION(BlueprintCallable)
-    void SetTooltipText(const FString& InTooltip);
-    /**
-     * @brief Toggle robot's tooltip visibility
-     * @param bInTooltipVisible
-     */
-    UFUNCTION(BlueprintCallable)
-    void SetTooltipVisible(bool bInTooltipVisible);
-
-    /**
-     * @brief Set visibility of #UIUserWidget
-     * @param bInWidgetVisible
-     */
-    UFUNCTION(BlueprintCallable)
-    void SetUIWidgetVisible(bool bInWidgetVisible);
 
 protected:
     /**

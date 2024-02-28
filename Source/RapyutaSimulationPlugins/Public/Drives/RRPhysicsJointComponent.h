@@ -40,10 +40,10 @@ public:
     virtual bool IsValid() override;
 
     /**
-     * @brief Initialize #JointToChildLink and #ParentLinkToJoint
+     * @brief Initialize #Constraint #JointToChildLink and #ParentLinkToJoint
      *
      */
-    virtual void Initialize() override;
+    virtual void InitializeComponent() override;
 
     /**
      * @brief Do nothing since can't set velocity directly to physics joint.

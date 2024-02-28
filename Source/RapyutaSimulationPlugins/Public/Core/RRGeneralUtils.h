@@ -10,7 +10,11 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Json.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "TimerManager.h"
+
+// #include "Core/RRUObjectUtils.h"
 
 #include "RRGeneralUtils.generated.h"
 
@@ -27,6 +31,142 @@ class RAPYUTASIMULATIONPLUGINS_API URRGeneralUtils : public UBlueprintFunctionLi
     GENERATED_BODY()
 public:
     /**
+     * @brief Find actor by name. GetAllActors() is expensive.
+     *
+     * @tparam T
+     * @param InWorld
+     * @param InName
+     * @param InCaseType
+     * @return T*
+     *
+     */
+    template<typename T>
+    static T* FindActorByName(UWorld* InWorld, const FString& InName, const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (actorItr->GetName().Equals(InName, InCaseType))
+            {
+                return *actorItr;
+            }
+        }
+#if WITH_EDITOR
+        // check Display Name if actor not found by ID Name
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (UKismetSystemLibrary::GetDisplayName(*actorItr).Equals(InName, InCaseType))
+            {
+                return *actorItr;
+            }
+        }
+#endif
+        UE_LOG(LogTemp, Log, TEXT("Actor named [%s] is unavailable."), *InName);
+        return nullptr;
+    }
+
+    /**
+     * @brief Blueprint Callable, non template version of FindActorByName
+     *
+     * @param WorldContextObject
+     * @param InName
+     * @param InCaseType
+     * @return AActor*
+     */
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
+    static AActor* FindActorByName(const UObject* WorldContextObject,
+                                   const FString& InName,
+                                   const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+        return FindActorByName<AActor>(World, InName, InCaseType);
+    }
+
+    /**
+     * @brief Find actor by subname. search actor whose name contains InSubname.
+     *
+     * @tparam T
+     * @param InWorld
+     * @param InSubname
+     * @param InCaseType
+     * @return T*
+     */
+    template<typename T>
+    static T* FindActorBySubname(UWorld* InWorld,
+                                 const FString& InSubname,
+                                 const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (actorItr->GetName().Contains(InSubname, InCaseType))
+            {
+                return *actorItr;
+            }
+        }
+#if WITH_EDITOR
+        // check Display Name if actor not found by ID Name
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (UKismetSystemLibrary::GetDisplayName(*actorItr).Contains(InSubname, InCaseType))
+            {
+                return *actorItr;
+            }
+        }
+#endif
+        UE_LOG(LogTemp, Log, TEXT("Actor name containing [%s] is unavailable."), *InSubname);
+        return nullptr;
+    }
+
+    /**
+     * @brief Blueprint Callable, non template version of FindActorBySubname
+     *
+     * @param WorldContextObject
+     * @param InSubname
+     * @param InCaseType
+     * @return AActor*
+     */
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
+    static AActor* FindActorBySubname(const UObject* WorldContextObject,
+                                      const FString& InSubname,
+                                      const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+        return FindActorBySubname<AActor>(World, InSubname, InCaseType);
+    }
+
+    template<typename T>
+    static TArray<T*> FindActorListBySubname(UWorld* InWorld,
+                                             const FString& InSubname,
+                                             const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        TArray<T*> actors;
+        for (TActorIterator<T> actorItr(InWorld); actorItr; ++actorItr)
+        {
+            if (actorItr->GetName().Contains(InSubname, InCaseType))
+            {
+                actors.Add(*actorItr);
+            }
+#if WITH_EDITOR
+            // check Display Name if actor not found by ID Name
+            else if (UKismetSystemLibrary::GetDisplayName(*actorItr).Contains(InSubname, InCaseType))
+            {
+                actors.Add(*actorItr);
+            }
+#endif
+        }
+
+        return actors;
+    }
+
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
+    static TArray<AActor*> FindActorListBySubname(const UObject* WorldContextObject,
+                                                  const FString& InSubname,
+                                                  const ESearchCase::Type InCaseType = ESearchCase::IgnoreCase)
+    {
+        UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+        return FindActorListBySubname<AActor>(World, InSubname, InCaseType);
+    }
+
+    /**
      * @brief Get the Ref Transform.
      * If RefActor==nullptr, return false.
      * @param RefActorName  If this is empty, OutTranf become FTransform::Identity, i.e. reference become world origin.
@@ -35,7 +175,6 @@ public:
      * @return true
      * @return false
      */
-    UFUNCTION(BlueprintCallable)
     static bool GetRefTransform(const FString& RefActorName, const AActor* RefActor, FTransform& OutTransf)
     {
         if (RefActorName.IsEmpty())    // refrence is world origin
@@ -50,6 +189,104 @@ public:
             }
             OutTransf = RefActor->GetTransform();
         }
+        return true;
+    }
+
+    /**
+     * @brief Get the Ref Transform. If RefActor==nullptr, search actor from name. If no actor is found, return false and OutTransf = FTransform::Identity
+     *
+     * @param RefActorName
+     * @param RefActor
+     * @param InWorld
+     * @param OutTransf
+     * @param Verbose
+     * @return true
+     * @return false
+     */
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
+    static bool GetRefTransform(const FString& RefActorName,
+                                const AActor* RefActor,
+                                const UObject* WorldContextObject,
+                                FTransform& OutTransf,
+                                const bool Verbose = false)
+    {
+        bool res = GetRefTransformByActor(RefActor, OutTransf, Verbose);
+        if (!res)
+        {
+            res = GetRefTransformByName(RefActorName, WorldContextObject, OutTransf, Verbose);
+        }
+        return res;
+    }
+
+    /**
+     * @brief Get the Ref Transform. If RefActor==nullptr, OutTransf = FTransform::Identity
+     *
+     * @param RefActor
+     * @param OutTransf
+     * @param Verbose
+     * @return true
+     * @return false
+     */
+    UFUNCTION(BlueprintCallable)
+    static bool GetRefTransformByActor(const AActor* RefActor, FTransform& OutTransf, const bool Verbose = false)
+    {
+        if (RefActor == nullptr)
+        {
+            OutTransf = FTransform::Identity;
+            if (Verbose)
+            {
+                UE_LOG(LogTemp, Error, TEXT("RefActor is not valid."));
+            }
+            return false;
+        }
+        OutTransf = RefActor->GetTransform();
+        return true;
+    }
+
+    /**
+     * @brief Get the Ref Transform. Search actor from name. If no actor is found, return false and OutTransf = FTransform::Identity
+     *
+     * @param RefActorName
+     * @param WorldContextObject
+     * @param OutTransf
+     * @param Verbose
+     * @return true
+     * @return false
+     */
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
+    static bool GetRefTransformByName(const FString& RefActorName,
+                                      const UObject* WorldContextObject,
+                                      FTransform& OutTransf,
+                                      const bool Verbose = false)
+    {
+        if (RefActorName.IsEmpty())    // refrence is world origin
+        {
+            OutTransf = FTransform::Identity;
+            return true;
+        }
+
+        if (WorldContextObject == nullptr)
+        {
+            OutTransf = FTransform::Identity;
+            if (Verbose)
+            {
+                UE_LOG(LogTemp, Error, TEXT("World is not given. Return Idnetity Transform"));
+            }
+            return false;
+        }
+
+        AActor* refActor = URRGeneralUtils::FindActorByName(WorldContextObject, RefActorName);
+        if (refActor == nullptr)
+        {
+            OutTransf = FTransform::Identity;
+            if (Verbose)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Reference Actor %s is not valid."), *RefActorName);
+            }
+            return false;
+        }
+
+        OutTransf = refActor->GetTransform();
         return true;
     }
 
@@ -79,26 +316,60 @@ public:
      * @param WorldTransf Transform in world frame
      * @return FTransform Transform in reference frame
      */
-    static FTransform GetRelativeTransform(const AActor* RefActor, const FTransform& WorldTransf)
+    static FTransform GetRelativeTransform(const AActor* RefActor, const FTransform& WorldTransf, const bool Verbose = false)
     {
-        if (RefActor == nullptr)
-        {
-            return WorldTransf;
-        }
-        return GetRelativeTransform(RefActor->GetTransform(), WorldTransf);
+        FTransform outTransf;
+        GetRefTransformByActor(RefActor, outTransf, Verbose);
+        return GetRelativeTransform(outTransf, WorldTransf);
     }
 
     /**
-     * @brief Get the transform in reference frame. If RefActor==nullptr, return WorldTransf
+     * @brief Get the transform in reference frame.  If Actor with given name is not exists, return WorldTransf
+     *
+     * @param RefActorName
+     * @param WorldContextObject
+     * @param WorldTransf Transform in world frame
+     * @return FTransform Transform in reference frame
+     */
+    static FTransform GetRelativeTransform(const FString& RefActorName,
+                                           const UObject* WorldContextObject,
+                                           const FTransform& WorldTransf,
+                                           const bool Verbose = false)
+    {
+        FTransform outTransf;
+        GetRefTransformByName(RefActorName, WorldContextObject, outTransf, Verbose);
+        return GetRelativeTransform(outTransf, WorldTransf);
+    }
+
+    /**
+     * @brief Blueprint wrapper for GetRelativeTransform
      *
      * @param RefActor
      * @param WorldTransf Transform in world frame
      * @return FTransform Transform in reference frame
      */
     UFUNCTION(BlueprintCallable)
-    static FTransform GetRelativeTransformFromActor(const AActor* RefActor, const FTransform& WorldTransf)
+    static FTransform GetRelativeTransformFromActor(const AActor* RefActor,
+                                                    const FTransform& WorldTransf,
+                                                    const bool Verbose = false)
     {
-        return GetRelativeTransform(RefActor, WorldTransf);
+        return GetRelativeTransform(RefActor, WorldTransf, Verbose);
+    }
+
+    /**
+     * @brief Blueprint wrapper for GetRelativeTransform
+     *
+     * @param RefActor
+     * @param WorldTransf Transform in world frame
+     * @return FTransform Transform in reference frame
+     */
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
+    static FTransform GetRelativeTransformFromName(const FString& RefActorName,
+                                                   const UObject* WorldContextObject,
+                                                   const FTransform& WorldTransf,
+                                                   const bool Verbose = false)
+    {
+        return GetRelativeTransform(RefActorName, WorldContextObject, WorldTransf, Verbose);
     }
 
     /**
@@ -126,13 +397,38 @@ public:
     }
 
     /**
+     * @brief Get the transform in reference frame.
+     *
+     * @param RefActorName If this is empty, use world origin as reference, i.e. OutTransf=InTransf
+     * @param RefActor If this is nullptr, return false.
+     * @param InTransf Transform in world frame
+     * @param OutTransf Transform in reference frame
+     * @return true
+     * @return false
+     */
+    static bool GetRelativeTransform(const FString& RefActorName,
+                                     const AActor* RefActor,
+                                     const FTransform& InTransf,
+                                     const UObject* WorldContextObject,
+                                     FTransform& OutTransf)
+    {
+        FTransform refTransf;
+        bool result = GetRefTransform(RefActorName, RefActor, WorldContextObject, refTransf);
+        if (result)
+        {
+            OutTransf = URRGeneralUtils::GetRelativeTransform(refTransf, InTransf);
+        }
+        return result;
+    }
+
+    /**
      * @brief Get the transform in world frame
      *
      * @param RefTransf Reference frame
      * @param RelativeTransf Transform in reference frame
      * @return FTransform Transform in world frame
      */
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
     static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)
     {
         FTransform worldTransf;
@@ -151,26 +447,62 @@ public:
      * @param RelativeTransf Transform in reference frame
      * @return FTransform Transform in world frame
      */
-    static FTransform GetWorldTransform(const AActor* RefActor, const FTransform& RelativeTransf)
+    static FTransform GetWorldTransform(const AActor* RefActor, const FTransform& RelativeTransf, const bool Verbose = false)
     {
-        if (RefActor == nullptr)
-        {
-            return RelativeTransf;
-        }
-        return GetWorldTransform(RefActor->GetTransform(), RelativeTransf);
+        FTransform outTransf;
+        GetRefTransformByActor(RefActor, outTransf, Verbose);
+        return GetWorldTransform(outTransf, RelativeTransf);
     }
 
     /**
      * @brief Get the transform in world frame. If RefActor==nullptr, return RelativeTransf
+     *
+     * @param RefActorName
+     * @param WorldContextObject
+     * @param RefActor
+     * @param RelativeTransf Transform in reference frame
+     * @param Verbose
+     * @return FTransform Transform in world frame
+     */
+    static FTransform GetWorldTransform(const FString& RefActorName,
+                                        const UObject* WorldContextObject,
+                                        const FTransform& RelativeTransf,
+                                        const bool Verbose = false)
+    {
+        FTransform outTransf;
+        GetRefTransformByName(RefActorName, WorldContextObject, outTransf, Verbose);
+        return GetWorldTransform(outTransf, RelativeTransf);
+    }
+
+    /**
+     * @brief Blueprint wrapper for GetRelativeTransform
      *
      * @param RefActor
      * @param RelativeTransf Transform in reference frame
      * @return FTransform Transform in world frame
      */
     UFUNCTION(BlueprintCallable)
-    static FTransform GetWorldTransformFromActor(const AActor* RefActor, const FTransform& RelativeTransf)
+    static FTransform GetWorldTransformFromActor(const AActor* RefActor,
+                                                 const FTransform& RelativeTransf,
+                                                 const bool Verbose = false)
     {
-        return GetWorldTransform(RefActor, RelativeTransf);
+        return GetWorldTransform(RefActor, RelativeTransf, Verbose);
+    }
+
+    /**
+     * @brief Blueprint wrapper for GetRelativeTransform
+     *
+     * @param RefActor
+     * @param RelativeTransf Transform in reference frame
+     * @return FTransform Transform in world frame
+     */
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
+    static FTransform GetWorldTransformFromName(const FString& RefActorName,
+                                                const UObject* WorldContextObject,
+                                                const FTransform& RelativeTransf,
+                                                const bool Verbose = false)
+    {
+        return GetWorldTransform(RefActorName, WorldContextObject, RelativeTransf, Verbose);
     }
 
     /**
@@ -191,6 +523,32 @@ public:
     {
         FTransform refTransf;
         bool result = GetRefTransform(RefActorName, RefActor, refTransf);
+        if (result)
+        {
+            OutTransf = URRGeneralUtils::GetWorldTransform(refTransf, InTransf);
+        }
+        return result;
+    }
+
+    /**
+     * @brief Get the transform in world frame
+     *
+     * @param RefActorName If this is empty, use world origin as reference, i.e. OutTransf=InTransf
+     * @param RefActor If this is nullptr, return false.
+     * @param InTransf Transform in reference frame
+     * @param OutTransf Transform in world frame
+     *
+     * @return true
+     * @return false
+     */
+    static bool GetWorldTransform(const FString& RefActorName,
+                                  const AActor* RefActor,
+                                  const FTransform& InTransf,
+                                  const UObject* WorldContextObject,
+                                  FTransform& OutTransf)
+    {
+        FTransform refTransf;
+        bool result = GetRefTransform(RefActorName, RefActor, WorldContextObject, refTransf);
         if (result)
         {
             OutTransf = URRGeneralUtils::GetWorldTransform(refTransf, InTransf);
@@ -301,6 +659,85 @@ public:
     FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, bool& OutValue)
     {
         return InJsonObj.Get()->TryGetBoolField(InFieldName, OutValue);
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
+     *
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, FVector& OutValue)
+    {
+        bool res = true;
+        auto const tempJsonObj = InJsonObj->GetObjectField(InFieldName);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("x"), OutValue.X);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("y"), OutValue.Y);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("z"), OutValue.Z);
+
+        return res;
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
+     *
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, FRotator& OutValue)
+    {
+        bool res = true;
+        auto const tempJsonObj = InJsonObj->GetObjectField(InFieldName);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("roll"), OutValue.Roll);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("pitch"), OutValue.Pitch);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("yaw"), OutValue.Yaw);
+
+        return res;
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
+     *
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, FQuat& OutValue)
+    {
+        bool res = true;
+        auto const tempJsonObj = InJsonObj->GetObjectField(InFieldName);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("x"), OutValue.X);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("y"), OutValue.Y);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("z"), OutValue.Z);
+        res &= tempJsonObj.Get()->TryGetNumberField(TEXT("w"), OutValue.W);
+
+        return res;
+    }
+
+    /**
+     * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
+     *
+     * @param InJsonObj the Json object containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    FORCEINLINE static bool GetJsonField(const TSharedPtr<FJsonObject>& InJsonObj, const FString& InFieldName, FTransform& OutValue)
+    {
+        bool res = true;
+        FVector vectorParam = FVector::ZeroVector;
+        FRotator rotatorParam = FRotator::ZeroRotator;
+        auto const tempJsonObj = InJsonObj->GetObjectField(InFieldName);
+        res &= GetJsonField(tempJsonObj, TEXT("position"), vectorParam);
+        res &= GetJsonField(tempJsonObj, TEXT("orientation"), rotatorParam);
+        OutValue = FTransform(rotatorParam, vectorParam, FVector::OneVector);
+
+        return res;
     }
 
     /**

@@ -44,26 +44,56 @@ void URRROS2ActorTFPublisher::TriggerPublishSrv(UROS2GenericSrv* Service)
 
 void URRROS2ActorTFPublisher::SetReferenceActorByName(const FString& InName)
 {
-    ReferenceActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
-    ReferenceActorName = InName;
+    auto newRefActor = URRGeneralUtils::FindActorByName<AActor>(GetWorld(), InName);
+    if (newRefActor)
+    {
+        ReferenceActor = newRefActor;
+        ReferenceActorName = InName;
+    }
+    else
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Reference Actor %s is not valid."), *ReferenceActorName);
+    }
 }
 
 void URRROS2ActorTFPublisher::SetReferenceActorByActor(AActor* InActor)
 {
-    ReferenceActor = InActor;
-    ReferenceActorName = ReferenceActor->GetName();
+    if (InActor)
+    {
+        ReferenceActor = InActor;
+        ReferenceActorName = ReferenceActor->GetName();
+    }
+    else
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Reference Actor is not valid."));
+    }
 }
 
 void URRROS2ActorTFPublisher::SetTargetActorByName(const FString& InName)
 {
-    TargetActor = URRUObjectUtils::FindActorByName<AActor>(GetWorld(), InName);
-    TargetActorName = InName;
+    auto newTargetActor = URRGeneralUtils::FindActorByName<AActor>(GetWorld(), InName);
+    if (newTargetActor)
+    {
+        TargetActor = newTargetActor;
+        TargetActorName = InName;
+    }
+    else
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Target Actor %s is not valid."), *ReferenceActorName);
+    }
 }
 
 void URRROS2ActorTFPublisher::SetTargetActorByActor(AActor* InActor)
 {
-    TargetActor = InActor;
-    TargetActorName = TargetActor->GetName();
+    if (InActor)
+    {
+        TargetActor = InActor;
+        TargetActorName = TargetActor->GetName();
+    }
+    else
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Target Actor is not valid."));
+    }
 }
 
 void URRROS2ActorTFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)

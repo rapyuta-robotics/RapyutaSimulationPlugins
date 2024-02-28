@@ -6,9 +6,13 @@
 
 #pragma once
 
+// UE
 #include "Components/ActorComponent.h"
-#include "Core/RRStaticMeshComponent.h"
 #include "CoreMinimal.h"
+
+// RapyutaSimulationPlugins
+#include "Core/RRStaticMeshComponent.h"
+#include "Tools/RRROS2TFPublisher.h"
 
 #include "RRJointComponent.generated.h"
 
@@ -40,7 +44,6 @@ public:
     URRJointComponent();
 
 protected:
-    virtual void BeginPlay() override;
     virtual void PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation);
     virtual void VelocityFromArray(const TArray<float>& InVelocity, FVector& OutLinearVelocity, FVector& OutAngularVelocity);
 
@@ -58,9 +61,9 @@ public:
 
     /**
      * @brief Initialize #JointToChildLink and #ParentLinkToJoint
-     * 
+     *
      */
-    virtual void Initialize();
+    virtual void InitializeComponent() override;
 
     /**
      * @brief Directly set velocity.
@@ -332,7 +335,7 @@ public:
 
     /**
      * @brief Teleport robot to given pose. Implementation is in child class.
-     * 
+     *
      */
     UFUNCTION(BlueprintCallable)
     virtual void Teleport(const FVector& InPosition, const FRotator& InOrientation);
@@ -375,7 +378,7 @@ public:
     //! [cm/s] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float LinearVelocityTolerance = 10.f;
-    
+
     //! [degree/s] tolerance for control
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float AngularVelocityTolerance = 10.f;
@@ -438,6 +441,18 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRotator InitialOrientation = FRotator::ZeroRotator;
 
+    UFUNCTION(BlueprintCallable)
+    FTransform GetJointToChildLink()
+    {
+        return JointToChildLink;
+    }
+
+    UFUNCTION(BlueprintCallable)
+    FTransform GetParentLinkToJoint()
+    {
+        return ParentLinkToJoint;
+    }
+
 protected:
     UFUNCTION()
     virtual void UpdateState(const float DeltaTime);
@@ -492,4 +507,7 @@ protected:
     //! if this is set less than 0, timeout won't happen.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float ControlTimeout = -1.0f;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void ResetControl();
 };

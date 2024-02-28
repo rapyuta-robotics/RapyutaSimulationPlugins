@@ -156,20 +156,28 @@ void ARRBaseRobot::PreInitializeComponents()
         SetRobotName(ROSSpawnParameters->ActorName);
     }
 
-    if (ROS2InterfaceClass)
+    if (ROS2Interface == nullptr)
     {
-        // ROS2Interface is created at server and replicated to client.
-        if (!IsNetMode(NM_Client) && ROS2Interface == nullptr)
+        if (ROS2InterfaceClass)
         {
-            CreateROS2Interface();
+            // ROS2Interface is created at server and replicated to client.
+            if (!IsNetMode(NM_Client))
+            {
+                CreateROS2Interface();
+            }
+        }
+        else
+        {
+            UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
+                                   Warning,
+                                   TEXT("ROS2InterfaceClass has not been configured, "
+                                        "probably later in child BP class!"));
         }
     }
-    else
+
+    if (bStartStopROS2Interface)
     {
-        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
-                               Warning,
-                               TEXT("ROS2InterfaceClass has not been configured, "
-                                    "probably later in child BP class!"));
+        InitROS2Interface();
     }
 
     BPPreInitializeComponents();
@@ -204,8 +212,6 @@ void ARRBaseRobot::SetBaseMeshComp(UMeshComponent* InBaseMeshComp, bool bInMakeA
         {
             // NOTE: [RootComponent] must be valid for the spawning
             SetRootComponent(InBaseMeshComp);
-            // Cannot remove [DefaultRoot] in ctor thus to be done later in [PreInitializeComponents()]
-            DefaultRoot->SetupAttachment(InBaseMeshComp);
         }
         // else: If Root is some other component, probably setup in Child class,
         // [BaseMeshComp] will only be promoted later AFTER removing that Root
@@ -261,16 +267,13 @@ void ARRBaseRobot::SetRootOffset(const FTransform& InRootOffset)
 
 void ARRBaseRobot::CreateROS2Interface()
 {
-    UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Display, TEXT("IsNetMode: %d"), IsNetMode(NM_Client));
+    UE_LOG_WITH_INFO_SHORT_NAMED(LogRapyutaCore,
+                                 Log,
+                                 TEXT("ROS2InterfaceClass: [%s] - IsNetMode: %d"),
+                                 *ROS2InterfaceClass->GetName(),
+                                 IsNetMode(NM_Client));
     ROS2Interface = CastChecked<URRRobotROS2Interface>(
         URRUObjectUtils::CreateSelfSubobject(this, ROS2InterfaceClass, FString::Printf(TEXT("%sROS2Interface"), *GetName())));
-    ROS2Interface->ROSSpawnParameters = ROSSpawnParameters;
-    ROS2Interface->SetupROSParamsAll();
-
-    if (bStartStopROS2Interface)
-    {
-        InitROS2Interface();
-    }
 
     // NOTE: NOT call ROS2Interface->Initialize(this) here since robot's ros2-based accessories might not have been fully accessible
     // yet.
@@ -530,40 +533,17 @@ void ARRBaseRobot::SetLocalAngularVel(const FVector& InAngularVel)
 
 void ARRBaseRobot::InitUIWidget()
 {
-    UIWidgetComp = URRUObjectUtils::CreateAndAttachChildComponent<UWidgetComponent>(
+    UIWidgetComp = URRUObjectUtils::CreateAndAttachChildComponent<URRUIWidgetComponent>(
         this, *FString::Printf(TEXT("%sUIWidget"), *GetName()), UIWidgetOffset);
 
-    UIWidgetComp->SetWorldScale3D(FVector::ZeroVector);
+    UIWidgetComp->UIUserWidgetClass = UIUserWidgetClass;
 
-    // 1- Set [WidgetClass] as [URRUserWidget]
-    UIWidgetComp->SetWidgetClass(UIUserWidgetClass);
-
-    // 1.1 - Init [UIWidgetComp]
-    UIWidgetComp->InitWidget();
-    TObjectPtr<UUserWidget> widget = UIWidgetComp->GetWidget();
-    if (widget == nullptr)
-    {
-        return;
-    }
-    UIWidgetComp->SetDrawSize(FIntPoint(500.f, 50.f));
-    UIWidgetComp->SetPivot(FVector2D::ZeroVector);
-    UIWidgetComp->SetCanEverAffectNavigation(false);
-    UIWidgetComp->SetTwoSided(true);
-    // NOTE: Using Screen widget space, [UIWidgetComp] will be always facing user view, thus no need to manually orientate it per Tick
-    UIWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
-
-    // 1.2 - Save [UIWidgetComp]'s widget into [UIUserWidget]
-    UIUserWidget = Cast<URRUserWidget>(widget);
-    if (UIUserWidget)
-    {
-        UIUserWidget->OwnerWidgetComponent = UIWidgetComp;
-        UIUserWidget->SetLabelText(GetName());
-    }
+    UIWidgetComp->Init();
 }
 
 bool ARRBaseRobot::CheckUIUserWidget() const
 {
-    if (UIUserWidget)
+    if (UIWidgetComp->GetRRWidget())
     {
         return true;
     }
@@ -578,31 +558,6 @@ bool ARRBaseRobot::CheckUIUserWidget() const
             UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Requires [bUIWidgetEnabled] to use UIUserWidget"));
         }
         return false;
-    }
-}
-
-void ARRBaseRobot::SetTooltipText(const FString& InTooltip)
-{
-    if (CheckUIUserWidget())
-    {
-        UIUserWidget->SetLabelText(InTooltip);
-    }
-}
-
-void ARRBaseRobot::SetTooltipVisible(bool bInTooltipVisible)
-{
-    if (CheckUIUserWidget() && UIUserWidget->TextBlock)
-    {
-        UIUserWidget->TextBlock->SetVisibility(bInTooltipVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-    }
-}
-
-void ARRBaseRobot::SetUIWidgetVisible(bool bInWidgetVisible)
-{
-    TObjectPtr<UUserWidget> widget = UIWidgetComp->GetWidget();
-    if (widget)
-    {
-        widget->SetVisibility(bInWidgetVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     }
 }
 
@@ -729,4 +684,34 @@ void ARRBaseRobot::SetChildComponentsCollisionEnabled(const bool IsEnable)
             }
         }
     }
+}
+
+bool ARRBaseRobot::AddLink(const FString& InLinkName, UStaticMeshComponent* InMesh)
+{
+    if (InLinkName.IsEmpty() || InMesh == nullptr)
+    {
+        UE_LOG_WITH_INFO_SHORT_NAMED(LogRapyutaCore, Error, TEXT("Mesh must not be nullptr and LinkName smust not be empty."));
+        return false;
+    }
+
+    Links.Add(InLinkName, InMesh);
+    return true;
+}
+
+bool ARRBaseRobot::AddJoint(const FString& InParentLinkName,
+                            const FString& InChildLinkName,
+                            const FString& InJointName,
+                            URRJointComponent* InJoint)
+{
+    if (!Links.Contains(InParentLinkName) || !Links.Contains(InChildLinkName))
+    {
+        UE_LOG_WITH_INFO_SHORT_NAMED(
+            LogRapyutaCore, Error, TEXT("Links don\'t have %s and/or %s."), *InParentLinkName, *InChildLinkName);
+        return false;
+    }
+
+    InJoint->ParentLink = Links[InParentLinkName];
+    InJoint->ChildLink = Links[InChildLinkName];
+    Joints.Add(InJointName, InJoint);
+    return true;
 }

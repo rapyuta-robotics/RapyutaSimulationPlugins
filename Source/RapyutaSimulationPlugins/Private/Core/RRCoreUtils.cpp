@@ -7,8 +7,10 @@
 #include "HAL/PlatformProcess.h"
 #include "IESConverter.h"
 #include "ImageUtils.h"
+#include "TextureCompiler.h"
 #if WITH_EDITOR
 #include "Factories/TextureFactory.h"
+#include "ThumbnailRendering/ThumbnailManager.h"
 #endif
 
 // RapyutaSimulationPlugins
@@ -326,8 +328,15 @@ UTexture2D* URRCoreUtils::LoadImageToTexture(const FString& InFullFilePath, cons
     }
     else
     {
+        // Check if already created before by [InTextureName]
+        UTexture2D* texture = FindObjectFast<UTexture2D>(GetTransientPackage(), FName(*InTextureName));
+        if (texture)
+        {
+            return texture;
+        }
+
         // NOTE: This use [UTexture2D::CreateTransient()], which is ineligible for saving to asset
-        UTexture2D* texture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
+        texture = FImageUtils::ImportFileAsTexture2D(InFullFilePath);
         if (texture)
         {
             texture->Rename(*InTextureName);
@@ -483,4 +492,174 @@ bool URRCoreUtils::LoadIESProfilesFromFolder(const FString& InFolderPath,
     }
 
     return bResult;
+}
+
+// -------------------------------------------------------------------------------------------------------------------------
+// GRAPHICS UTILS --
+//
+#if WITH_EDITOR
+bool URRCoreUtils::RenderThumbnail(UObject* InObject,
+                                   uint32 InImageWidth,
+                                   uint32 InImageHeight,
+                                   const ThumbnailTools::EThumbnailTextureFlushMode::Type InFlushMode,
+                                   FObjectThumbnail* OutThumbnail)
+{
+    // Renderer must be initialized before generating thumbnails
+    if (!ensure(FApp::CanEverRender()))
+    {
+        return false;
+    }
+    if (!ensure(GIsRHIInitialized))
+    {
+        return false;
+    }
+
+    // Get the rendering info for this object
+    FThumbnailRenderingInfo* renderInfo = UThumbnailManager::Get().GetRenderingInfo(InObject);
+    if ((nullptr == renderInfo) || (nullptr == renderInfo->Renderer))
+    {
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore,
+                               Error,
+                               TEXT("[ThumbnailManager] No rendering info found for class [%s]"),
+                               *InObject->GetClass()->GetName());
+        return false;
+    }
+
+    if (false == renderInfo->Renderer->CanVisualizeAsset(InObject))
+    {
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore,
+                               Error,
+                               TEXT("[%s] cannot be visualized, probably due to invalid rendering resource"),
+                               *InObject->GetName());
+        return false;
+    }
+
+    // Thumbnail size
+    if (OutThumbnail)
+    {
+        OutThumbnail->SetImageSize(InImageWidth, InImageHeight);
+    }
+
+    // Create a static texture render target, as commonly used for all thumbnails
+    static UTextureRenderTarget2D* sThumbnailRenderTarget = []()
+    {
+        // Create thumbnail render target
+        UTextureRenderTarget2D* renderTarget = NewObject<UTextureRenderTarget2D>(GetTransientPackage());
+        renderTarget->AddToRoot();
+        renderTarget->ClearColor = FLinearColor::Transparent;
+        renderTarget->TargetGamma = GEngine->GetDisplayGamma();
+        renderTarget->RenderTargetFormat = RTF_RGBA8;
+        return renderTarget;
+    }();
+    sThumbnailRenderTarget->InitAutoFormat(InImageWidth, InImageHeight);
+    auto* renderTargetResource = sThumbnailRenderTarget->GameThread_GetRenderTargetResource();
+
+    // Create a canvas for the render target and clear it to black
+    FCanvas canvas(renderTargetResource, nullptr, FGameTime::GetTimeSinceAppStart(), GMaxRHIFeatureLevel);
+    canvas.Clear(FLinearColor::Transparent);
+
+    // Wait for all textures to be streamed in before rendering the thumbnail
+    // @todo CB: This helps but doesn't 100% guarantee fully-streamed-in resources!
+    if (ThumbnailTools::EThumbnailTextureFlushMode::AlwaysFlush == InFlushMode)
+    {
+        if (GShaderCompilingManager)
+        {
+            GShaderCompilingManager->ProcessAsyncResults(false, true);
+        }
+
+        if (UTexture* texture = Cast<UTexture>(InObject))
+        {
+            FTextureCompilingManager::Get().FinishCompilation({texture});
+        }
+
+        FlushAsyncLoading();
+        IStreamingManager::Get().StreamAllResources(100.f);
+    }
+
+    // Make sure we suppress any message dialogs that might result from constructing
+    // or initializing any of the renderable objects.
+    {
+        TGuardValue<bool> Unattended(GIsRunningUnattendedScript, true);
+
+        // Draw thumbnail onto [canvas]
+        renderInfo->Renderer->Draw(
+            InObject, 0, 0, InImageWidth, InImageHeight, renderTargetResource, &canvas, false /*bAdditionalViewFamily*/);
+    }
+
+    // Flush [canvas], tell rendering thread to finish drawing batched elements
+    canvas.Flush_GameThread();
+    {
+        ENQUEUE_RENDER_COMMAND(UpdateThumbnailRTCommand)
+        (
+            [renderTargetResource](FRHICommandListImmediate& RHICmdList) {
+                TransitionAndCopyTexture(
+                    RHICmdList, renderTargetResource->GetRenderTargetTexture(), renderTargetResource->TextureRHI, {});
+            });
+
+        if (OutThumbnail)
+        {
+            const FIntRect thumbnailRect(0, 0, OutThumbnail->GetImageWidth(), OutThumbnail->GetImageHeight());
+            TArray<uint8>& outThumbnailData = OutThumbnail->AccessImageData();
+
+            outThumbnailData.Empty();
+            outThumbnailData.AddUninitialized(OutThumbnail->GetImageWidth() * OutThumbnail->GetImageHeight() * sizeof(FColor));
+
+            // Read remote texture's contents (GPU) back to system memory (CPU)
+            renderTargetResource->ReadPixelsPtr((FColor*)outThumbnailData.GetData(), FReadSurfaceDataFlags(), thumbnailRect);
+        }
+    }
+    return true;
+}
+#endif
+
+bool URRCoreUtils::GenerateThumbnail(UObject* InObject, uint32 InImageWidth, uint32 InImageHeight, const FString& InSaveImagePath)
+{
+    if (IsRunningCommandlet() && !IsAllowCommandletRendering())
+    {
+        UE_LOG_WITH_INFO_SHORT(
+            LogRapyutaCore,
+            Warning,
+            TEXT("[%s] is running without [-AllowCommandletRendering], thus unable to generate [%s]'s thumbnail!"),
+            *GetRunningCommandletClass()->GetName(),
+            *InObject->GetName());
+        return false;
+    }
+#if WITH_EDITOR
+    FObjectThumbnail thumbnail;
+    // Already logged here-in
+    if (false == URRCoreUtils::RenderThumbnail(
+                     InObject, InImageWidth, InImageHeight, ThumbnailTools::EThumbnailTextureFlushMode::AlwaysFlush, &thumbnail))
+    {
+        return false;
+    }
+
+    // Ref: FImageUtils::ThumbnailCompressImageArray()
+#if RAPYUTA_SIM_DEBUG
+    FColor* thumbnailColorData = (FColor*)thumbnail.AccessImageData().GetData();
+    // Thumbnails are saved as RGBA but FColors are stored as BGRA. An option to swap the order upon compression may be added at
+    // some point. At the moment, manually swapping Red and Blue
+    for (int32 i = 0; i < InImageWidth * InImageHeight; ++i)
+    {
+        Swap(thumbnailColorData[i].R, thumbnailColorData[i].B);
+    }
+#endif
+
+    // Compress thumbnail data & save to disk
+    thumbnail.CompressImageData();
+    if (FFileHelper::SaveArrayToFile(thumbnail.AccessCompressedImageData(), *InSaveImagePath))
+    {
+        UE_LOG_WITH_INFO_SHORT(
+            LogRapyutaCore, Log, TEXT("[%s]'s thumbnail has been saved to file [%s]"), *InObject->GetName(), *InSaveImagePath);
+        return true;
+    }
+    else
+    {
+        UE_LOG_WITH_INFO_SHORT(
+            LogRapyutaCore, Error, TEXT("Failed saving [%s]'s thumbnail to file [%s]"), *InObject->GetName(), *InSaveImagePath);
+        return false;
+    }
+#else
+    UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("Editor-only API"));
+    return false;
+#endif
 }

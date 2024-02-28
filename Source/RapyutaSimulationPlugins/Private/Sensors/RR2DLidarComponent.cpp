@@ -65,12 +65,17 @@ void URR2DLidarComponent::SensorUpdate()
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
     // complex collisions: true
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true, GetOwner());
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true);
     TraceParams.bReturnPhysicalMaterial = true;
 
     // TraceParams.bIgnoreTouches = true;
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnFaceIndex = true;
+
+    if (bIgnoreSelf)
+    {
+        TraceParams.AddIgnoredActor(GetOwner());
+    }
 
     FVector lidarPos = GetComponentLocation();
     FRotator lidarRot = GetComponentRotation();
@@ -95,7 +100,7 @@ void URR2DLidarComponent::SensorUpdate()
             TraceHandles[i] = world->AsyncLineTraceByChannel(EAsyncTraceType::Single,
                                                              startPos,
                                                              endPos,
-                                                             ECC_Visibility,
+                                                             TraceCollisionChannel,
                                                              TraceParams,
                                                              FCollisionResponseParams::DefaultResponseParam,
                                                              nullptr);
@@ -115,8 +120,12 @@ void URR2DLidarComponent::SensorUpdate()
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
             // + WithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
 
-            GetWorld()->LineTraceSingleByChannel(
-                RecordedHits[Index], startPos, endPos, ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
+            GetWorld()->LineTraceSingleByChannel(RecordedHits[Index],
+                                                 startPos,
+                                                 endPos,
+                                                 TraceCollisionChannel,
+                                                 TraceParams,
+                                                 FCollisionResponseParams::DefaultResponseParam);
         },
         false);
 #endif
@@ -163,7 +172,7 @@ void URR2DLidarComponent::SensorUpdate()
                         LineBatcher->DrawPoint(h.ImpactPoint,
                                                InterpColorFromIntensity(GetIntensityFromDist(IntensityReflective, Distance)),
                                                5,
-                                               10,
+                                               DrawPointDepthIntensity,
                                                Dt);
                     }
                     // non reflective material
@@ -174,7 +183,7 @@ void URR2DLidarComponent::SensorUpdate()
                         LineBatcher->DrawPoint(h.ImpactPoint,
                                                InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)),
                                                5,
-                                               10,
+                                               DrawPointDepthIntensity,
                                                Dt);
                     }
                     // reflective material
@@ -200,7 +209,7 @@ void URR2DLidarComponent::SensorUpdate()
                                 NormalAlignment * (IntensityReflective - IntensityNonReflective) + IntensityNonReflective,
                                 Distance)),
                             5,
-                            10,
+                            DrawPointDepthIntensity,
                             Dt);
                     }
                 }
@@ -208,14 +217,17 @@ void URR2DLidarComponent::SensorUpdate()
                 {
                     // UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("no physics material"));
                     // LineBatcher->DrawLine(h.TraceStart, h.ImpactPoint, ColorHit, 10, .5, dt);
-                    LineBatcher->DrawPoint(
-                        h.ImpactPoint, InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)), 5, 10, Dt);
+                    LineBatcher->DrawPoint(h.ImpactPoint,
+                                           InterpColorFromIntensity(GetIntensityFromDist(IntensityNonReflective, Distance)),
+                                           5,
+                                           DrawPointDepthIntensity,
+                                           Dt);
                 }
             }
             else if (ShowLidarRayMisses)
             {
                 // LineBatcher->DrawLine(h.TraceStart, h.TraceEnd, ColorMiss, 10, .25, dt);
-                LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, 10, Dt);
+                LineBatcher->DrawPoint(h.TraceEnd, ColorMiss, 2.5, DrawPointDepthIntensity, Dt);
             }
         }
     }
@@ -229,11 +241,16 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
     DHAngle = FOVHorizontal / static_cast<float>(NSamplesPerScan);
 
     // complex collisions: true
-    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true, GetOwner());
+    FCollisionQueryParams TraceParams = FCollisionQueryParams(TEXT("2DLaser_Trace"), true);
     TraceParams.bReturnPhysicalMaterial = true;
     // TraceParams.bIgnoreTouches = true;
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnFaceIndex = true;
+
+    if (bIgnoreSelf)
+    {
+        TraceParams.AddIgnoredActor(GetOwner());
+    }
 
     FVector lidarPos = GetComponentLocation();
     FRotator lidarRot = GetComponentRotation();
@@ -254,7 +271,7 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
             GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index],
                                                  startPos,
                                                  endPos,
-                                                 ECC_Visibility,
+                                                 TraceCollisionChannel,
                                                  TraceParams,
                                                  FCollisionResponseParams::DefaultResponseParam);
         },

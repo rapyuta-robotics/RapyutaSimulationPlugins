@@ -8,18 +8,20 @@ URRKinematicJointComponent::URRKinematicJointComponent()
     // todo add initialization
 }
 
-void URRKinematicJointComponent::Initialize()
+void URRKinematicJointComponent::InitializeComponent()
 {
     if (IsValid())
     {
         // set joints relations and save initial parent to joint transformation.
-        JointToChildLink = ChildLink->GetRelativeTransform();
-        ParentLinkToJoint = GetRelativeTransform();
+        JointToChildLink = URRGeneralUtils::GetRelativeTransform(GetComponentTransform(), ChildLink->GetComponentTransform());
+        ParentLinkToJoint = URRGeneralUtils::GetRelativeTransform(ParentLink->GetComponentTransform(), GetComponentTransform());
     }
     else
     {
         UE_LOG_WITH_INFO_NAMED(LogTemp, Error, TEXT("JointComponent must have ChildLink and ParentLink."));
     }
+
+    Super::InitializeComponent();
 }
 
 void URRKinematicJointComponent::UpdateControl(const float DeltaTime)
@@ -126,7 +128,6 @@ void URRKinematicJointComponent::Teleport(const FVector& InPosition, const FRota
     Super::Teleport(InPosition, InOrientation);
     SetPose(InPosition, InOrientation);
 };
-
 
 void URRKinematicJointComponent::MoveToInitPose()
 {

@@ -12,6 +12,9 @@ ATurtlebotBurgerVehicle::ATurtlebotBurgerVehicle(const FObjectInitializer& Objec
     ROS2InterfaceClass = URRTurtlebotROS2Interface::StaticClass();
     SetupDefaultRootSkeletal();
     LidarComponent = CreateDefaultSubobject<URR2DLidarComponent>(TEXT("LidarComp"));
+    LidarComponent->SetRelativeLocation(FVector(0, 0, 17.2));
+    LidarComponent->bIgnoreSelf = true;
+    LidarComponent->SetupAttachment(SkeletalMeshComp);
 }
 
 void ATurtlebotBurgerVehicle::SetupDefaultRootSkeletal()
@@ -31,7 +34,7 @@ void ATurtlebotBurgerVehicle::SetupDefaultRootSkeletal()
     RootComponent = SkeletalMeshComp;
     DefaultRoot->SetupAttachment(SkeletalMeshComp);
 
-    AIControllerClass = ARRRobotVehicleROSController::StaticClass();
+    AIControllerClass = ARRBaseRobotROSController::StaticClass();
 }
 
 void ATurtlebotBurgerVehicle::PreInitializeComponents()

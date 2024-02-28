@@ -14,12 +14,12 @@
 #include "ROS2Publisher.h"
 
 // RapyutaSimulationPlugins
+#include "Core/RRGeneralUtils.h"
 #include "Tools/RRROS2BaseSensorPublisher.h"
 
 #include "RRROS2BaseSensorComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
-
 
 /**
  * @brief Base ROS 2 Sensor Component class. Other sensors class should inherit from this class.

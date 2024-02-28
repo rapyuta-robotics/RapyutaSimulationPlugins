@@ -12,6 +12,7 @@
 
 // UE
 #if WITH_EDITOR
+#include "ObjectTools.h"
 #include "Subsystems/UnrealEditorSubsystem.h"
 #include "UnrealEd.h"
 #endif
@@ -130,6 +131,7 @@ public:
         TEXT(".pak"),       // ERRFileType::PAK
         TEXT(".ini"),       // ERRFileType::INI
         TEXT(".yaml"),      // ERRFileType::YAML
+        TEXT(".zip"),       // ERRFileType::ZIP
 
         // Image
         TEXT(".jpg"),    // ERRFileType::IMAGE_JPG
@@ -174,17 +176,15 @@ public:
 
     FORCEINLINE static ERRFileType GetFileType(const FString& InFilePath)
     {
-        ERRFileType imageFileType = ERRFileType::NONE;
-
         for (uint8 i = 0; i < static_cast<uint8>(ERRFileType::TOTAL); ++i)
         {
             const ERRFileType& fileType = static_cast<ERRFileType>(i);
             if (InFilePath.EndsWith(URRCoreUtils::GetSimFileExt(fileType)))
             {
-                imageFileType = fileType;
+                return fileType;
             }
         }
-        return imageFileType;
+        return ERRFileType::NONE;
     }
 
     FORCEINLINE static bool IsFileType(const FString& InFilePath, const TArray<ERRFileType>& InFileTypes)
@@ -279,6 +279,15 @@ public:
         }
 #endif
         return editorWorld;
+    }
+
+    static bool IsPIE()
+    {
+#if WITH_EDITOR
+        return GEditor && (GEditor->PlayWorld || GIsPlayInEditorWorld);
+#else
+        return false;
+#endif
     }
 
     template<typename T>
@@ -738,6 +747,31 @@ public:
     // -------------------------------------------------------------------------------------------------------------------------
     // GRAPHICS UTILS --
     //
+#if WITH_EDITOR
+    /**
+     * @brief Util to render thumbnail live for an object (eg skeletal/static mesh, texture)
+     * @ref ThumbnailTools::RenderThumbnail(), due to relying on GUnrealEd/GEditor, only works literally in the Editor
+     * @param InObject If this is an UClass, only ones having default-child UPrimitiveComponent objects (created in ctor or BP) are supported. Refer to #UClassThumbnailRenderer
+     * @param InImageWidth
+     * @param InImageHeight
+     * @param InFlushMode If AlwaysFulush, wait for all shaders/textures to finish compiling
+     * @param  OutThumbnail
+     */
+    static bool RenderThumbnail(UObject* InObject,
+                                uint32 InImageWidth,
+                                uint32 InImageHeight,
+                                const ThumbnailTools::EThumbnailTextureFlushMode::Type InFlushMode,
+                                FObjectThumbnail* OutThumbnail);
+#endif
+    /**
+     * @brief Generate a thumbnail for an object (eg skeletal/static mesh, texture) & save to an image file on disk
+     * @param InObject
+     * @param InImageWidth
+     * @param InImageHeight
+     * @param InSaveImagePath
+     */
+    static bool GenerateThumbnail(UObject* InObject, uint32 InImageWidth, uint32 InImageHeight, const FString& InSaveImagePath);
+
     FORCEINLINE static bool ScreenMsg(const FColor& InColor, const FString& InMessage, float InTimeToDisplay = 50000.f)
     {
         if (GEngine)
@@ -746,5 +780,27 @@ public:
             return true;
         }
         return false;
+    }
+
+    /**
+     * @brief Print message
+     * @param InMessage
+     * @param bInError
+     * @param InTimeOnScreen (secs)
+     */
+    FORCEINLINE static void PrintMessage(const FString& InMessage, bool bInError = false, float InTimeOnScreen = 100.f)
+    {
+        if (bInError)
+        {
+            UE_LOG(LogTemp, Error, TEXT("%s"), *InMessage);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Log, TEXT("%s"), *InMessage);
+        }
+        ScreenMsg(bInError ? FColor::Red : FColor::Yellow, InMessage, InTimeOnScreen);
+#if RAPYUTA_SIM_DEBUG
+        FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, *InMessage, bInError ? TEXT("Error") : TEXT("Info"));
+#endif
     }
 };

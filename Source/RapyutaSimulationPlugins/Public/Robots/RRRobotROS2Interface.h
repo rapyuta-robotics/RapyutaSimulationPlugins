@@ -14,9 +14,11 @@
 #include "ROS2ServiceClient.h"
 #include "Tools/ROS2Spawnable.h"
 #include "Tools/RRROS2OdomPublisher.h"
+#include "Tools/RRROS2TFPublisher.h"
 
 // RapyutaSimulationPlugins
 #include "Core/RRUObjectUtils.h"
+#include "Robots/RRBaseROS2Interface.h"
 #include "Sensors/RRBaseOdomComponent.h"
 
 #include "RRRobotROS2Interface.generated.h"
@@ -33,23 +35,15 @@ class ARRBaseRobot;
  * Please create child class of this class to custom ROS2Interface which have your own ROS2Interfaces.
  * @todo add handling of service and action.
  */
-UCLASS(Blueprintable)
-class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public UObject
+UCLASS(Blueprintable, EditInlineNew)
+class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2Interface : public URRBaseROS2Interface
 {
     GENERATED_BODY()
-
-#define RR_ROBOT_ROS2_SUBSCRIBE_TO_TOPIC(InTopicName, InMsgClass, InCallback) \
-    ROS2_CREATE_SUBSCRIBER(RobotROS2Node, this, InTopicName, InMsgClass, InCallback)
 
 public:
     //! Target robot
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    ARRBaseRobot* Robot = nullptr;
-
-    virtual bool IsSupportedForNetworking() const override
-    {
-        return true;
-    }
+    TObjectPtr<ARRBaseRobot> Robot = nullptr;
 
     /**
      * @brief Returns the properties used for network replication, this needs to be overridden by all actor classes with native
@@ -57,44 +51,34 @@ public:
      *
      * @param OutLifetimeProps Output lifetime properties
      */
-    void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-    //! ROS 2 node of this interface created by #InitRobotROS2Node
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    UROS2NodeComponent* RobotROS2Node = nullptr;
-
-    //! ROS2SpawnParameters which is created when robot is spawn from /SpawnEntity srv provided by #ASimulationState.
-    UPROPERTY(VisibleAnywhere, Replicated)
-    UROS2Spawnable* ROSSpawnParameters = nullptr;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     /**
      * @brief Initialize robot's ROS 2 interface by calling #InitRobotROS2Node, #InitPublishers, #InitSubscriptions and #ARRBaseRobot::InitSensors.
      * This method is mainly used by #ARRBaseoRbotROSController via #ARRBaseRobot::InitROS2Interface.
      * @param InRobot
      */
-    UFUNCTION(BlueprintCallable)
-    virtual void Initialize(ARRBaseRobot* InRobot);
+    virtual void Initialize(AActor* Owner) override;
 
     /**
-     * @brief AdditionalInitialization implemented in BP.
-     * Child BP class can use this method to add initialization behaviour
+     * @brief Init publishers, subscribers, service clients, service servers, action clients, and action servers.
+     *
      */
-    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-    void BPInitialize();
+    virtual void InitInterfaces() override;
 
     /**
      * @brief DeInitialize robot's ROS 2 interface by stopping publisher
      *
      * @param InRobot
      */
-    virtual void DeInitialize();
+    virtual void DeInitialize() override;
 
     /**
-     * @brief Spawn ROS2Node and initialize it.
+     * @brief Spawn ROS2 Node, and initialize it if ROS2 Node = nullptr
      *
-     * @param InPawn
+     * @param Owner
      */
-    void InitRobotROS2Node(ARRBaseRobot* InRobot);
+    virtual void InitROS2NodeParam(AActor* Owner) override;
 
     //////////////////////////////
     //Mobile
@@ -102,7 +86,7 @@ public:
 
     //! Odometry source
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    URRBaseOdomComponent* OdomComponent = nullptr;
+    TObjectPtr<URRBaseOdomComponent> OdomComponent = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdom = true;
@@ -129,22 +113,22 @@ public:
      */
     UFUNCTION()
     virtual void JointCmdCallback(const UROS2GenericMsg* Msg);
-    
+
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString JointCmdTopicName = TEXT("ue_joint_commands");
 
     /**
      * @brief Update Joint State msg
-     * 
-     * @param InMessage 
+     *
+     * @param InMessage
      */
     UFUNCTION()
     void UpdateJointState(UROS2GenericMsg* InMessage);
 
     //! JointState Publisher
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UROS2Publisher* JointStatePublisher = nullptr;
+    TObjectPtr<UROS2Publisher> JointStatePublisher = nullptr;
 
     //! Joint control command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
@@ -154,114 +138,33 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString JointStateTopicName = TEXT("ue_joint_states");
 
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bWarnAboutMissingLink = true;
 
-    /**
-     * @brief Setup ROS Params, overridable by child classes to config custom ROS 2 Interface's params
-     */
-    UFUNCTION()
-    virtual void SetupROSParams(){};
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    TObjectPtr<URRROS2TFsPublisher> JointsTFPublisher = nullptr;
 
-    /**
-     * @brief Setup ROS params called after #SetupROSParams. override by BP child class to config custom ROS 2 Interface's params
-    */
-    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-    void BPSetupROSParams();
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    bool bPublishJointTf = false;
 
-    /**
-     * @brief Call #SetupROSParams and #BPSetupROSParams
-     */
-    UFUNCTION(BlueprintCallable)
-    void SetupROSParamsAll()
-    {
-        SetupROSParams();
-        BPSetupROSParams();
-    }
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    float JointTfPublicationFrequencyHz = 1.f;
 
     //! Odom publisher
     UPROPERTY(Transient, BlueprintReadWrite, Replicated)
-    URRROS2OdomPublisher* OdomPublisher = nullptr;
-
-    //! You can add your publishers here to ask ROS2Interface to manage.
-    //! Other option is to create child class to overwrite each method.
-    UPROPERTY(Transient, BlueprintReadWrite)
-    TMap<FString, UROS2Publisher*> Publishers;
-
-    //! You can add your subscribers here to ask ROS2Interface to manage.
-    //! Other option is to create child class to overwrite each method.
-    UPROPERTY(Transient, BlueprintReadWrite)
-    TMap<FString, UROS2Subscriber*> Subscribers;
-
-    //! You can add your publishers here to ask ROS2Interface to manage.
-    //! Other option is to create child class to overwrite each method.
-    UPROPERTY(Transient, BlueprintReadWrite)
-    TMap<FString, UROS2ServiceClient*> ServiceClients;
-
-    //! You can add your publishers here to ask ROS2Interface to manage.
-    //! Other option is to create child class to overwrite each method.
-    UPROPERTY(Transient, BlueprintReadWrite)
-    TMap<FString, UROS2ServiceServer*> ServiceServers;
-
-    //! You can add your publishers here to ask ROS2Interface to manage.
-    //! Other option is to create child class to overwrite each method.
-    UPROPERTY(Transient, BlueprintReadWrite)
-    TMap<FString, UROS2ActionClient*> ActionClients;
-
-    //! You can add your publishers here to ask ROS2Interface to manage.
-    //! Other option is to create child class to overwrite each method.
-    UPROPERTY(Transient, BlueprintReadWrite)
-    TMap<FString, UROS2ActionServer*> ActionServers;
+    TObjectPtr<URRROS2OdomPublisher> OdomPublisher = nullptr;
 
     /**
      * @brief Initialize non sensor basic publishers such as odometry.
      * Overidden in child robot ROS 2 interface classes for specialized publishers.
      */
-    UFUNCTION()
-    virtual bool InitPublishers();
-
-    /**
-     * @brief Stop all publishers
-     *
-     */
-    UFUNCTION()
-    virtual void StopPublishers();
+    virtual bool InitPublishers() override;
 
     /**
      * @brief Initialize subscriptions for cmd_vel & joint_states topics
      * Overidden in child robot ROS 2 interface classes for specialized topic subscriptions.
      */
-    UFUNCTION()
-    virtual bool InitSubscriptions();
-
-    /**
-     * @brief Initialize service clients
-     * Overidden in child robot ROS 2 interface classes for specialized services clients.
-     */
-    UFUNCTION()
-    virtual bool InitServiceClients();
-
-    /**
-     * @brief Initialize service servers
-     * Overidden in child robot ROS 2 interface classes for specialized services servers.
-     */
-    UFUNCTION()
-    virtual bool InitServiceServers();
-
-    /**
-     * @brief Initialize action clients
-     * Overidden in child robot ROS 2 interface classes for specialized action clients.
-     */
-    UFUNCTION()
-    virtual bool InitActionClients();
-
-    /**
-     * @brief Initialize action servers
-     * Overidden in child robot ROS 2 interface classes for specialized action servers.
-     */
-    UFUNCTION()
-    virtual bool InitActionServers();
+    virtual bool InitSubscriptions() override;
 
     /**
      * @brief MoveRobot by setting velocity to Pawn(=Robot) with given ROS 2 msg.
@@ -319,23 +222,20 @@ protected:
         }
     }
 
-    UPROPERTY()
-    TMap<FName /*ServiceName*/, UROS2ServiceClient*> ServiceClientList;
-
     template<typename TService, typename TServiceRequest>
-    void MakeServiceRequest(const FName& InServiceName, const TServiceRequest& InRequest)
+    void MakeServiceRequest(const FString& InServiceName, const TServiceRequest& InRequest)
     {
         // Create and update request
-        if (auto* client = ServiceClientList.FindRef(InServiceName))
+        if (auto* client = ServiceClients.FindRef(InServiceName))
         {
             TService* service = CastChecked<TService>(client->Service);
             client->SendRequest(service, InRequest);
 
-            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("%s [%s] Request made"), *InServiceName.ToString(), *GetName());
+            UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("%s [%s] Request made"), *InServiceName, *GetName());
         }
         else
         {
-            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName.ToString());
+            UE_LOG_WITH_INFO(LogTemp, Error, TEXT("[MakeServiceRequest] [%s] srv client not found"), *InServiceName);
         }
     }
 };
@@ -346,23 +246,12 @@ protected:
  *
  */
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2InterfaceComponent : public UActorComponent
+class RAPYUTASIMULATIONPLUGINS_API URRRobotROS2InterfaceComponent : public URRBaseROS2InterfaceComponent
 {
     GENERATED_BODY()
 public:
-    URRRobotROS2InterfaceComponent();
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    ARRBaseRobot* Robot = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    URRRobotROS2Interface* ROS2Interface = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<URRRobotROS2Interface> ROS2InterfaceClass = URRRobotROS2Interface::StaticClass();
-
-    //! add all subcomonents of owner to #ROS2Interface
-    //! You can manually add one by one instead of using this class.
-    UFUNCTION(BlueprintCallable)
-    void AddAllSubComponentToROSInterface();
+    URRRobotROS2InterfaceComponent()
+    {
+        ROS2InterfaceClass = URRRobotROS2Interface::StaticClass();
+    };
 };

@@ -19,11 +19,13 @@
 #if WITH_EDITOR
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
+#include "UObject/ConstructorHelpers.h"
 #endif
 
 // RapyutaSim
 #include "Core/RRObjectCommon.h"
 #include "RapyutaSimulationPlugins.h"
+#include "logUtilities.h"
 
 #include "RRAssetUtils.generated.h"
 
@@ -235,6 +237,7 @@ public:
                                   bool bHasBPAsset = false,
                                   bool bIsFullLoad = false)
     {
+        // NOTE: [objectLibrary] is only needed to fill [OutAssetDataList], loaded objects (if [bIsFullLoad]) should be stored explicitly by callers
         UObjectLibrary* objectLibrary = UObjectLibrary::CreateLibrary(T::StaticClass(), bHasBPAsset, GIsEditor);
         if (GIsEditor)
         {
