@@ -507,4 +507,7 @@ protected:
     //! if this is set less than 0, timeout won't happen.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float ControlTimeout = -1.0f;
+
+    UFUNCTION(BlueprintCallable)
+    virtual void ResetControl();
 };

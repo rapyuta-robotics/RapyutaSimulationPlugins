@@ -16,8 +16,15 @@ bool URRJointComponent::IsValid()
 
 void URRJointComponent::InitializeComponent()
 {
+    ResetControl();
+}
+
+void URRJointComponent::ResetControl()
+{
     bMovingToTargetPose = false;
     bMovingToTargetVelocity = false;
+    OnControlSuccessDelegate.Unbind();
+    OnControlFailDelegate.Unbind();
 }
 
 void URRJointComponent::SetDelegates(const FJointCallback& InOnControlSuccessDelegate,
@@ -64,8 +71,8 @@ void URRJointComponent::SetVelocityTarget(const FVector& InLinearVelocity, const
     ControlType = ERRJointControlType::VELOCITY;
     LinearVelocityTarget = InLinearVelocity.BoundToBox(-LinearVelMax, LinearVelMax);
     AngularVelocityTarget = InAngularVelocity.BoundToBox(-AngularVelMax, AngularVelMax);
+    ResetControl();
     bMovingToTargetVelocity = true;
-    ControlStartTime = GetWorld()->GetTimeSeconds();
 };
 
 void URRJointComponent::SetSingleLinearVelocityTarget(const float Input)
@@ -216,6 +223,7 @@ void URRJointComponent::SetPoseTarget(const FVector& InPosition, const FRotator&
         FRotator(bLimitPitch ? FMath::Clamp(InOrientation.Pitch, OrientationMin.Pitch, OrientationMax.Pitch) : InOrientation.Pitch,
                  bLimitYaw ? FMath::Clamp(InOrientation.Yaw, OrientationMin.Yaw, OrientationMax.Yaw) : InOrientation.Yaw,
                  bLimitRoll ? FMath::Clamp(InOrientation.Roll, OrientationMin.Roll, OrientationMax.Roll) : InOrientation.Roll);
+    ResetControl();
     bMovingToTargetPose = true;
 };
 
@@ -296,7 +304,6 @@ bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, co
         if (OnControlSuccessDelegate.IsBound())
         {
             OnControlSuccessDelegate.ExecuteIfBound();
-            OnControlSuccessDelegate.Unbind();
         }
     }
     else
@@ -309,7 +316,6 @@ bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, co
             {
                 bMovingToTargetPose = false;
                 OnControlFailDelegate.ExecuteIfBound();
-                OnControlFailDelegate.Unbind();
             }
         }
     }

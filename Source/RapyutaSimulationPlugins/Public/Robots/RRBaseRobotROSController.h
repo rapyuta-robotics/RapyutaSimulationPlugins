@@ -13,7 +13,7 @@
 
 #include "RRBaseRobotROSController.generated.h"
 
-class URRRobotROS2Interface;
+class URRBaseROS2Interface;
 
 /**
  * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
@@ -29,7 +29,7 @@ class RAPYUTASIMULATIONPLUGINS_API ARRBaseRobotROSController : public AAIControl
     GENERATED_BODY()
 protected:
     /**
-     * @brief Initialize robot pawn by calling #ARRBaseRobot::InitROS2Interface.
+     * @brief Initialize robot pawn by calling #URRBaseROS2Interface::Initialize or #ARRBaseRobot::InitROS2Interface.
      *
      * @sa [OnPossess](https://docs.unrealengine.com/5.1/en-US/API/Runtime/AIModule/AAIController/OnPossess/)
      * @param InPawn
@@ -37,9 +37,14 @@ protected:
     virtual void OnPossess(APawn* InPawn) override;
 
     /**
-     * @brief Deinitialize robot pawn by calling #ARRBaseRobot::DeInitROS2Interface.
+     * @brief Deinitialize robot pawn by calling #URRBaseROS2Interface::DeInitialize or #ARRBaseRobot::DeInitROS2Interface.
      *
      * @sa [OnUnPossess](https://docs.unrealengine.com/5.1/en-US/API/Runtime/AIModule/AAIController/OnUnPossess/)
      */
     virtual void OnUnPossess() override;
+
+    /**
+     * This is used if controlled pawn is not child class of RRBaseRobot
+    */
+    URRBaseROS2Interface* ROS2Interface = nullptr;
 };

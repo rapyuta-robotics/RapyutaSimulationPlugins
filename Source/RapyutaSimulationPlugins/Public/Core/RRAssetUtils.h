@@ -19,11 +19,13 @@
 #if WITH_EDITOR
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
+#include "UObject/ConstructorHelpers.h"
 #endif
 
 // RapyutaSim
 #include "Core/RRObjectCommon.h"
 #include "RapyutaSimulationPlugins.h"
+#include "logUtilities.h"
 
 #include "RRAssetUtils.generated.h"
 
