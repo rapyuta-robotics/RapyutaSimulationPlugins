@@ -30,6 +30,14 @@ void URRROS2IMUComponent::Reset()
         LinearAccelerationNoise =
             NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%sLinearAccelerationNoise"), *GetName()));
     }
+    if (!OrientationNoise)
+    {
+        OrientationNoise = NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%sOrientationNoise"), *GetName()));
+    }
+    if (!AngularVelocityNoise)
+    {
+        AngularVelocityNoise = NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%sAngularVelocityNoise"), *GetName()));
+    }
     LinearAccelerationNoise->Init(NoiseMeanLinearAcceleration, NoiseVarianceLinearAcceleration);
     OrientationNoise->Init(NoiseMeanOrientation, NoiseVarianceOrientation);
     AngularVelocityNoise->Init(NoiseMeanAngularVelocity, NoiseVarianceAngularVelocity);
@@ -43,37 +51,40 @@ FROSImu URRROS2IMUComponent::GetROS2Data()
 void URRROS2IMUComponent::SensorUpdate()
 {
     const float currentTime = UGameplayStatics::GetTimeSeconds(GetWorld());
-    const FTransform currentTransform = K2_GetComponentToWorld();
-    const float dt = 1.0 / (currentTime - LastSensorUpdateTime);
+    const FTransform currentTransform = K2_GetComponentToWorld() * InitialTransform.Inverse();
+    const float dt = currentTime - LastSensorUpdateTime;
 
-    if (dt < 1e-10)
+    if (dt > 1e-10)
     {
         const float _dt = 1.0 / dt;
         Data.Header.Stamp = URRConversionUtils::FloatToROSStamp(currentTime);
 
-        const FTransform dT = currentTransform * InitialTransform.Inverse();
-        const FTransform d2T = dT * LastdT.Inverse();
+        const FTransform dT = currentTransform * LastTransform.Inverse();
 
         FQuat orientation = currentTransform.GetRotation();
         FVector angularVelocity = dT.GetRotation().GetNormalized().Euler() * _dt;
-        FVector linearAcc = d2T.GetTranslation() * _dt * _dt;
+
+        const FVector linearVel = dT.GetTranslation() * _dt;
+        FVector linearAcc = (linearVel - LastLinearVel) * _dt;
 
         // noise
-        Data.LinearAcceleration =
-            linearAcc + FVector(LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get());
-        Data.AngularVelocity =
-            angularVelocity + FVector(AngularVelocityNoise->Get(), AngularVelocityNoise->Get(), AngularVelocityNoise->Get());
-        // OrientationNoiseSum +=  OrientationNoiseDriftCoefficient  OrientationNoise->Get();
-        Data.Orientation = FQuat::MakeFromEuler(orientation.Euler() + OrientationNoiseSum + OffsetOrientation);
+        Data.LinearAcceleration = URRConversionUtils::VectorUEToROS(
+            linearAcc + FVector(LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get()));
+        Data.AngularVelocity = URRConversionUtils::VectorUEToROS(
+            angularVelocity + FVector(AngularVelocityNoise->Get(), AngularVelocityNoise->Get(), AngularVelocityNoise->Get()));
+        OrientationNoiseSum = OrientationNoiseSum + OrientationNoiseDriftCoefficient * OrientationNoise->Get();
+        Data.Orientation =
+            URRConversionUtils::QuatUEToROS(FQuat::MakeFromEuler(orientation.Euler() + OrientationNoiseSum + OffsetOrientation));
 
         LastTransform = currentTransform;
         LastdT = dT;
+        LastLinearVel = linearVel;
         LastSensorUpdateTime = currentTime;
         bIsValid = true;
     }
     else
     {
-        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Warning, TEXT("Sensor update ratio is too fast."));
+        UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Warning, TEXT("Sensor update ratio is too fast: %f"), dt);
     }
 }
 

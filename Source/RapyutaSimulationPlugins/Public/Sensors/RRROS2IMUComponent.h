@@ -54,6 +54,9 @@ public:
     FTransform LastTransform = FTransform::Identity;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FVector LastLinearVel = FVector::ZeroVector;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTransform LastdT = FTransform::Identity;
 
     UFUNCTION(BlueprintCallable)
