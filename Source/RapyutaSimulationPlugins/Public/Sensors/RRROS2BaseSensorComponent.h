@@ -8,6 +8,7 @@
 
 // UE
 #include "CoreMinimal.h"
+#include "GenericPlatform/GenericPlatformMath.h"
 
 // rclUE
 #include "ROS2NodeComponent.h"
@@ -32,21 +33,21 @@ public:
         Init();
     }
 
-    URRGaussianNoise(const float InNoiseMean, const float InNoiseVariance)
+    URRGaussianNoise(const float InMean, const float InCov)
     {
-        Init(InNoiseMean, InNoiseVariance);
+        Init(InMean, InCov);
     }
 
     UFUNCTION(BlueprintCallable)
     virtual void Init()
     {
-        GaussianRNG = std::normal_distribution<>{NoiseMean, NoiseVariance};
+        GaussianRNG = std::normal_distribution<>(Mean, std::sqrt(Cov));
     }
 
-    virtual void Init(const float InNoiseMean, const float InNoiseVariance)
+    virtual void Init(const float InMean, const float InCov)
     {
-        NoiseMean = InNoiseMean;
-        NoiseVariance = InNoiseVariance;
+        Mean = InMean;
+        Cov = InCov;
         Init();
     }
 
@@ -56,18 +57,16 @@ public:
         return GaussianRNG(Gen);
     }
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseMean = 0.f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
+    float Mean = 0.f;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVariance = 0.01f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
+    float Cov = 0.01f;
 
 protected:
-    //! C++11 RNG for odometry noise
     std::random_device Rng;
 
-    //! C++11 RNG for odometry noise
-    std::mt19937 Gen = std::mt19937{Rng()};
+    std::mt19937 Gen = std::mt19937(Rng());
 
     std::normal_distribution<> GaussianRNG;
 };

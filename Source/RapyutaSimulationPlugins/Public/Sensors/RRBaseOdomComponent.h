@@ -116,13 +116,13 @@ public:
     float NoiseMeanPosition = 0.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVariancePosition = 0.01f;
+    float NoiseVariancePosition = 0.001f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     float NoiseMeanRot = 0.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVarianceRot = 0.05f;
+    float NoiseVarianceRot = 0.005f;
 
     //! Add noise or not
     UPROPERTY(EditAnywhere, Category = "Noise")

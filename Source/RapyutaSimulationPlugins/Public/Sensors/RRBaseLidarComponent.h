@@ -124,7 +124,7 @@ public:
     float IntensityNoiseMean = 0.f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
-    float IntensityNoiseVariance = .1f;
+    float IntensityNoiseVariance = .01f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     uint8 BWithNoise : 1;

@@ -21,8 +21,7 @@
 #include "RRROS2IMUComponent.generated.h"
 
 /**
- * @brief EntityState sensor components which publish entitystate relative to a specific actor.
- * @todo Currently twist = ZeroVectors. Should be filled for physics actors.
+ * @brief IMU sensor components which publish Orienation, AngularVelocity, LinearAcceleration.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API URRROS2IMUComponent : public URRROS2BaseSensorComponent
@@ -39,26 +38,26 @@ public:
     void BeginPlay() override;
 
     /**
-     * @brief Calculate relative pose with #URRGeneralUtils and update #Data
-     * @todo Currently twist = ZeroVectors. Should be filled for physics actors.
+     * @brief Calculate IMU data, i.e. Orienation, AngularVelocity, LinearAcceleration.
      */
     virtual void SensorUpdate() override;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FTransform OffsetTransform = FTransform::Identity;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform InitialTransform = FTransform::Identity;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FTransform LastTransform = FTransform::Identity;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FVector LinearAcceleration = FVector::ZeroVector;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FVector LastLinearVel = FVector::ZeroVector;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FVector AngularVelocity = FVector::ZeroVector;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FTransform LastdT = FTransform::Identity;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FQuat Orientation = FQuat::Identity;
 
+    /**
+     * @brief Initialize sensor data
+     *
+     */
     UFUNCTION(BlueprintCallable)
     virtual void Reset();
 
@@ -96,7 +95,7 @@ public:
     /**
      * @brief return #Data
      *
-     * @return FROSEntityState
+     * @return FROSImu
      */
     UFUNCTION(BlueprintCallable)
     virtual FROSImu GetROS2Data();
@@ -115,7 +114,18 @@ protected:
     UPROPERTY(BlueprintReadWrite)
     FVector OffsetOrientation = FVector::ZeroVector;
 
+    // sensor drift
     FVector OrientationNoiseSum = FVector::ZeroVector;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTransform LastTransform = FTransform::Identity;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FVector LastLinearVel = FVector::ZeroVector;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FTransform LastdT = FTransform::Identity;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float LastSensorUpdateTime;
 };
