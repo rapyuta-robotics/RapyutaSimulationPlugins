@@ -108,23 +108,11 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float DHAngle = 0.f;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, Category = "Noise", Instanced)
     TObjectPtr<URRGaussianNoise> PositionNoise;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, Category = "Noise", Instanced)
     TObjectPtr<URRGaussianNoise> IntensityNoise;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float PositionalNoiseMean = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float PositionalNoiseVariance = 1.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float IntensityNoiseMean = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float IntensityNoiseVariance = .1f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     uint8 BWithNoise : 1;

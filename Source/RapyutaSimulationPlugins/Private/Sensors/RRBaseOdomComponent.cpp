@@ -48,8 +48,8 @@ void URRBaseOdomComponent::InitOdom()
     {
         RotNoise = NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%sRotNoise"), *GetName()));
     }
-    PositionNoise->Init(NoiseMeanPosition, NoiseVariancePosition);
-    RotNoise->Init(NoiseMeanRot, NoiseVarianceRot);
+    PositionNoise->Init();
+    RotNoise->Init();
 
     AActor* owner = GetOwner();
     OdomData.Header.FrameId = FrameId;

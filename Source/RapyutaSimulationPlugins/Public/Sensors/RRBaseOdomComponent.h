@@ -106,23 +106,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform RootOffset = FTransform::Identity;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, Category = "Noise", Instanced)
     TObjectPtr<URRGaussianNoise> PositionNoise;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, Category = "Noise", Instanced)
     TObjectPtr<URRGaussianNoise> RotNoise;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseMeanPosition = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVariancePosition = 0.01f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseMeanRot = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVarianceRot = 0.05f;
 
     //! Add noise or not
     UPROPERTY(EditAnywhere, Category = "Noise")

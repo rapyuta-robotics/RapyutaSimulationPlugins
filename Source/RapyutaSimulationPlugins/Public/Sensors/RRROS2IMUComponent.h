@@ -50,6 +50,16 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform InitialTransform = FTransform::Identity;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FVector LinearAcceleration = FVector::ZeroVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FVector AngularVelocity = FVector::ZeroVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FQuat Orientation = FQuat::Identity;
+
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTransform LastTransform = FTransform::Identity;
 
@@ -62,35 +72,17 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void Reset();
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, Category = "Noise", Instanced)
     TObjectPtr<URRGaussianNoise> LinearAccelerationNoise;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseMeanLinearAcceleration = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVarianceLinearAcceleration = 0.05f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, Category = "Noise", Instanced)
     TObjectPtr<URRGaussianNoise> OrientationNoise;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseMeanOrientation = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVarianceOrientation = 0.01f;
 
     UPROPERTY(EditAnywhere, Category = "Noise")
     float OrientationNoiseDriftCoefficient = 0.0f;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, Category = "Noise", Instanced)
     TObjectPtr<URRGaussianNoise> AngularVelocityNoise;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseMeanAngularVelocity = 0.f;
-
-    UPROPERTY(EditAnywhere, Category = "Noise")
-    float NoiseVarianceAngularVelocity = 0.01f;
 
     // ROS
     /**
