@@ -32,7 +32,7 @@ public:
         Init();
     }
 
-    URRGaussianNoise(const float Mean, const float StdDev)
+    URRGaussianNoise(const float InNoiseMean, const float InNoiseVariance)
     {
         Init(InNoiseMean, InNoiseVariance);
     }
@@ -40,13 +40,13 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void Init()
     {
-        GaussianRNG = std::normal_distribution<>(Mean, StdDev);
+        GaussianRNG = std::normal_distribution<>{NoiseMean, NoiseVariance};
     }
 
-    virtual void Init(const float InMean, const float InStdDev)
+    virtual void Init(const float InNoiseMean, const float InNoiseVariance)
     {
-        NoiseMean = InMean;
-        NoiseVariance = InStdDev;
+        NoiseMean = InNoiseMean;
+        NoiseVariance = InNoiseVariance;
         Init();
     }
 
@@ -56,16 +56,18 @@ public:
         return GaussianRNG(Gen);
     }
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
-    float Mean = 0.f;
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float NoiseMean = 0.f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
-    float StdDev = 0.01f;
+    UPROPERTY(EditAnywhere, Category = "Noise")
+    float NoiseVariance = 0.01f;
 
 protected:
+    //! C++11 RNG for odometry noise
     std::random_device Rng;
 
-    std::mt19937 Gen = std::mt19937(Rng());
+    //! C++11 RNG for odometry noise
+    std::mt19937 Gen = std::mt19937{Rng()};
 
     std::normal_distribution<> GaussianRNG;
 };

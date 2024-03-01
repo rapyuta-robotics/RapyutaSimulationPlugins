@@ -38,14 +38,9 @@ void URRROS2IMUComponent::Reset()
     {
         AngularVelocityNoise = NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%sAngularVelocityNoise"), *GetName()));
     }
-    LinearAccelerationNoise->Init();
-    OrientationNoise->Init();
-    AngularVelocityNoise->Init();
-
-    Data.OrientationCovariance[0] = Data.OrientationCovariance[4] = Data.OrientationCovariance[8] = OrientationNoise->StdDev * OrientationNoise->StdDev;
-    Data.AngularVelocityCovariance[0] = Data.AngularVelocityCovariance[4] = Data.AngularVelocityCovariance[8] = AngularVelocityNoise->StdDev * AngularVelocityNoise->StdDev;
-    Data.LinearAccelerationCovariance[0] = Data.LinearAccelerationCovariance[4] = Data.LinearAccelerationCovariance[8] = LinearAccelerationNoise->StdDev * LinearAccelerationNoise->StdDev;
-
+    LinearAccelerationNoise->Init(NoiseMeanLinearAcceleration, NoiseVarianceLinearAcceleration);
+    OrientationNoise->Init(NoiseMeanOrientation, NoiseVarianceOrientation);
+    AngularVelocityNoise->Init(NoiseMeanAngularVelocity, NoiseVarianceAngularVelocity);
 }
 
 FROSImu URRROS2IMUComponent::GetROS2Data()
@@ -72,15 +67,14 @@ void URRROS2IMUComponent::SensorUpdate()
         const FVector linearVel = dT.GetTranslation() * _dt;
         FVector linearAcc = (linearVel - LastLinearVel) * _dt;
 
-        LinearAcceleration = linearAcc + FVector(LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get());
-        AngularVelocity = angularVelocity + FVector(AngularVelocityNoise->Get(), AngularVelocityNoise->Get(), AngularVelocityNoise->Get());
-        OrientationNoiseSum = OrientationNoiseSum + OrientationNoiseDriftCoefficient * OrientationNoise->Get();
-        Orientation = FQuat::MakeFromEuler(orientation.Euler() + OrientationNoiseSum + OffsetOrientation);
-
         // noise
-        Data.LinearAcceleration = URRConversionUtils::VectorUEToROS(LinearAcceleration);
-        Data.AngularVelocity = URRConversionUtils::VectorUEToROS(AngularVelocity);
-        Data.Orientation = URRConversionUtils::QuatUEToROS(Orientation);
+        Data.LinearAcceleration = URRConversionUtils::VectorUEToROS(
+            linearAcc + FVector(LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get()));
+        Data.AngularVelocity = URRConversionUtils::VectorUEToROS(
+            angularVelocity + FVector(AngularVelocityNoise->Get(), AngularVelocityNoise->Get(), AngularVelocityNoise->Get()));
+        OrientationNoiseSum = OrientationNoiseSum + OrientationNoiseDriftCoefficient * OrientationNoise->Get();
+        Data.Orientation =
+            URRConversionUtils::QuatUEToROS(FQuat::MakeFromEuler(orientation.Euler() + OrientationNoiseSum + OffsetOrientation));
 
         LastTransform = currentTransform;
         LastdT = dT;

@@ -20,8 +20,8 @@ void URRBaseLidarComponent::BeginPlay()
     {
         IntensityNoise = NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%IntensityNoise"), *GetName()));
     }
-    PositionNoise->Init();
-    IntensityNoise->Init();
+    PositionNoise->Init(PositionalNoiseMean, PositionalNoiseVariance);
+    IntensityNoise->Init(IntensityNoiseMean, IntensityNoiseVariance);
 }
 
 void URRBaseLidarComponent::GetData(TArray<FHitResult>& OutHits, float& OutTime) const
