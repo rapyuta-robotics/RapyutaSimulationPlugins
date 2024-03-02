@@ -76,8 +76,8 @@ void UDifferentialDriveComponentBase::UpdateOdom(float DeltaTime)
     // noise added as a component of vl, vr
     // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
     //  seems to be Introduction to Autonomous Mobile Robots (Sigwart, Nourbakhsh, Scaramuzza)
-    float sl = (vl + OdomComponent->bWithNoise * OdomComponent->GaussianRNGPosition(OdomComponent->Gen)) * DeltaTime;
-    float sr = (vr + OdomComponent->bWithNoise * OdomComponent->GaussianRNGPosition(OdomComponent->Gen)) * DeltaTime;
+    float sl = (vl + OdomComponent->bWithNoise * OdomComponent->PositionNoise->Get()) * DeltaTime;
+    float sr = (vr + OdomComponent->bWithNoise * OdomComponent->PositionNoise->Get()) * DeltaTime;
     float ssum = sl + sr;
 
     float sdiff = sr - sl;

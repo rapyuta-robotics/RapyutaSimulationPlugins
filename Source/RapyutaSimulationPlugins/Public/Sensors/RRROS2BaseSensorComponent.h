@@ -8,6 +8,7 @@
 
 // UE
 #include "CoreMinimal.h"
+#include "GenericPlatform/GenericPlatformMath.h"
 
 // rclUE
 #include "ROS2NodeComponent.h"
@@ -20,6 +21,55 @@
 #include "RRROS2BaseSensorComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogROS2Sensor, Log, All);
+
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRGaussianNoise : public UObject
+{
+    GENERATED_BODY()
+
+public:
+    URRGaussianNoise()
+    {
+        Init();
+    }
+
+    URRGaussianNoise(const float InMean, const float InCov)
+    {
+        Init(InMean, InCov);
+    }
+
+    UFUNCTION(BlueprintCallable)
+    virtual void Init()
+    {
+        GaussianRNG = std::normal_distribution<>(Mean, std::sqrt(Cov));
+    }
+
+    virtual void Init(const float InMean, const float InCov)
+    {
+        Mean = InMean;
+        Cov = InCov;
+        Init();
+    }
+
+    UFUNCTION(BlueprintCallable)
+    virtual float Get()
+    {
+        return GaussianRNG(Gen);
+    }
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
+    float Mean = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
+    float Cov = 0.01f;
+
+protected:
+    std::random_device Rng;
+
+    std::mt19937 Gen = std::mt19937(Rng());
+
+    std::normal_distribution<> GaussianRNG;
+};
 
 /**
  * @brief Base ROS 2 Sensor Component class. Other sensors class should inherit from this class.

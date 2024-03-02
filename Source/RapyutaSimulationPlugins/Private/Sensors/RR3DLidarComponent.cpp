@@ -98,7 +98,7 @@ void URR3DLidarComponent::SensorUpdate()
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // To be considered: += WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // To be considered: += WithNoise * FVector(PositionNoise->Get(),PositionNoise->Get(),PositionNoise->Get());
 
             TraceHandles[i] = world->AsyncLineTraceByChannel(EAsyncTraceType::Single,
                                                              startPos,
@@ -124,7 +124,7 @@ void URR3DLidarComponent::SensorUpdate()
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // + WithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // + WithNoise *  FVector(PositionNoise->Get(),PositionNoise->Get(),PositionNoise->Get());
 
             GetWorld()->LineTraceSingleByChannel(RecordedHits[Index],
                                                  startPos,
@@ -145,10 +145,8 @@ void URR3DLidarComponent::SensorUpdate()
             RecordedHits.Num(),
             [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
             {
-                RecordedHits[Index].ImpactPoint +=
-                    FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), GaussianRNGPosition(Gen));
-                RecordedHits[Index].TraceEnd +=
-                    FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), GaussianRNGPosition(Gen));
+                RecordedHits[Index].ImpactPoint += FVector(PositionNoise->Get(), PositionNoise->Get(), PositionNoise->Get());
+                RecordedHits[Index].TraceEnd += FVector(PositionNoise->Get(), PositionNoise->Get(), PositionNoise->Get());
             },
             false);
     }
@@ -346,10 +344,10 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
         {
             int index = j + i * NSamplesPerScan;
             // float Distance = (MinRange * (RecordedHits.Last(index).Distance > 0) + RecordedHits.Last(index).Distance) * .01f;
-            // Distance += BWithNoise * GaussianRNGIntensity(Gen);
+            // Distance += BWithNoise * IntensityNoise->Get();
             FVector3f pos = FVector3f::ZeroVector;
 
-            const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
+            const float IntensityScale = 1.f + BWithNoise * IntensityNoise->Get();
             float Intensity = 0.0;
             if (RecordedHits.Last(index).PhysMaterial != nullptr)
             {
@@ -393,7 +391,7 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
             }
 
             // Convert pose to local coordinate, ROS unit and double -> float
-            FVector posInDouble = RecordedHits.Last(index).ImpactPoint + BWithNoise * GaussianRNGPosition(Gen);
+            FVector posInDouble = RecordedHits.Last(index).ImpactPoint + BWithNoise * PositionNoise->Get();
             posInDouble = URRGeneralUtils::GetRelativeTransform(
                               FTransform(GetComponentQuat(), GetComponentLocation(), FVector::OneVector), FTransform(posInDouble))
                               .GetTranslation();
