@@ -40,8 +40,16 @@ void URRBaseOdomComponent::SetFrameIds(const FString& InFrameId, const FString& 
 // todo separate ROS
 void URRBaseOdomComponent::InitOdom()
 {
-    GaussianRNGPosition = std::normal_distribution<>{NoiseMeanPos, NoiseVariancePos};
-    GaussianRNGRotation = std::normal_distribution<>{NoiseMeanRot, NoiseVarianceRot};
+    if (!PositionNoise)
+    {
+        PositionNoise = NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%sPositionNoise"), *GetName()));
+    }
+    if (!RotNoise)
+    {
+        RotNoise = NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%sRotNoise"), *GetName()));
+    }
+    PositionNoise->Init(NoiseMeanPosition, NoiseVariancePosition);
+    RotNoise->Init(NoiseMeanRot, NoiseVarianceRot);
 
     AActor* owner = GetOwner();
     OdomData.Header.FrameId = FrameId;
@@ -108,9 +116,9 @@ void URRBaseOdomComponent::UpdateOdom(float InDeltaTime)
     FVector pos = InitialTransform.GetRotation().UnrotateVector(owner->GetActorLocation() - InitialTransform.GetTranslation());
     FVector previousPos = PreviousTransform.GetTranslation();    // prev pos without noise
     PreviousTransform.SetTranslation(pos);
-    pos += previousEstimatedPos - previousPos + bWithNoise * FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), 0);
+    pos += previousEstimatedPos - previousPos + bWithNoise * FVector(PositionNoise->Get(), PositionNoise->Get(), 0);
 
-    FRotator noiseRot = FRotator(0, 0, bWithNoise * GaussianRNGRotation(Gen));
+    FRotator noiseRot = FRotator(0, 0, bWithNoise * RotNoise->Get());
     FQuat rot = owner->GetActorQuat() * InitialTransform.GetRotation().Inverse();
     FQuat previousRot = PreviousTransform.GetRotation();
     PreviousTransform.SetRotation(rot);
