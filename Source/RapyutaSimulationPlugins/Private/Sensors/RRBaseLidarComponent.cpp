@@ -12,8 +12,16 @@ URRBaseLidarComponent::URRBaseLidarComponent()
 void URRBaseLidarComponent::BeginPlay()
 {
     Super::BeginPlay();
-    GaussianRNGPosition = std::normal_distribution<>{PositionalNoiseMean, PositionalNoiseVariance};
-    GaussianRNGIntensity = std::normal_distribution<>{IntensityNoiseMean, IntensityNoiseVariance};
+    if (!PositionNoise)
+    {
+        PositionNoise = NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%PositionNoise"), *GetName()));
+    }
+    if (!IntensityNoise)
+    {
+        IntensityNoise = NewObject<URRGaussianNoise>(this, *FString::Printf(TEXT("%IntensityNoise"), *GetName()));
+    }
+    PositionNoise->Init(PositionalNoiseMean, PositionalNoiseVariance);
+    IntensityNoise->Init(IntensityNoiseMean, IntensityNoiseVariance);
 }
 
 void URRBaseLidarComponent::GetData(TArray<FHitResult>& OutHits, float& OutTime) const
@@ -31,7 +39,7 @@ FLinearColor URRBaseLidarComponent::InterpColorFromIntensity(const float InInten
 FLinearColor URRBaseLidarComponent::InterpolateColor(float InX)
 {
     // this means that viz and data sent won't correspond, which should be ok
-    InX = InX + BWithNoise * GaussianRNGIntensity(Gen);
+    InX = InX + BWithNoise * IntensityNoise->Get();
     return (InX > .5f) ? FLinearColor::LerpUsingHSV(ColorMid, ColorMax, 2 * InX - 1)
                        : FLinearColor::LerpUsingHSV(ColorMin, ColorMid, 2 * InX);
 }
