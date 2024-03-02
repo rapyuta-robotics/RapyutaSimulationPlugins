@@ -3,8 +3,8 @@
 #include "Robots/RRBaseRobotROSController.h"
 
 // RapyutaSimulationPlugins
+#include "Robots/RRBaseROS2Interface.h"
 #include "Robots/RRBaseRobot.h"
-#include "Robots/RRRobotROS2Interface.h"
 
 void ARRBaseRobotROSController::OnPossess(APawn* InPawn)
 {
@@ -14,10 +14,27 @@ void ARRBaseRobotROSController::OnPossess(APawn* InPawn)
     if (robot)
     {
         robot->InitROS2Interface();
+        ROS2Interface = robot->ROS2Interface;
     }
     else
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Pawn is not child class of ARRBaseRobot "));
+        URRBaseROS2InterfaceComponent* ROS2InterfaceComponent = InPawn->FindComponentByClass<URRBaseROS2InterfaceComponent>();
+        if (ROS2InterfaceComponent)
+        {
+            ROS2Interface = ROS2InterfaceComponent->ROS2Interface;
+            if (ROS2Interface)
+            {
+                ROS2Interface->Initialize(InPawn);
+            }
+            else
+            {
+                UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Pawn does not have ROS2Interface as a member."));
+            }
+        }
+        else
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Pawn does not have ROS2InterfaceComponent as a child component."));
+        }
     }
 }
 
@@ -30,7 +47,14 @@ void ARRBaseRobotROSController::OnUnPossess()
     }
     else
     {
-        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Pawn is not child class of ARRBaseRobot "));
+        if (ROS2Interface)
+        {
+            ROS2Interface->DeInitialize();
+        }
+        else
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore, Log, TEXT("Pawn does not have ROS2Interface as a member."));
+        }
     }
     Super::OnUnPossess();
 }
