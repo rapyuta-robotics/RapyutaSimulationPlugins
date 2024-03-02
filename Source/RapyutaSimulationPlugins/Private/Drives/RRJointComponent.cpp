@@ -316,7 +316,47 @@ bool URRJointComponent::HasReachedPoseTarget(const float InPositionTolerance, co
             {
                 bMovingToTargetPose = false;
                 OnControlFailDelegate.ExecuteIfBound();
-            };
+            }
+        }
+    }
+    return res;
+};
+
+void URRJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
+{
+    Position = InPosition.BoundToBox(PositionMin, PositionMax);
+    Orientation =
+        FRotator(bLimitPitch ? FMath::Clamp(InOrientation.Pitch, OrientationMin.Pitch, OrientationMax.Pitch) : InOrientation.Pitch,
+                 bLimitYaw ? FMath::Clamp(InOrientation.Yaw, OrientationMin.Yaw, OrientationMax.Yaw) : InOrientation.Yaw,
+                 bLimitRoll ? FMath::Clamp(InOrientation.Roll, OrientationMin.Roll, OrientationMax.Roll) : InOrientation.Roll);
+};
+
+void URRJointComponent::PoseFromArray(const TArray<float>& InPose, FVector& OutPosition, FRotator& OutOrientation)
+{
+    if (InPose.Num() != LinearDOF + RotationalDOF)
+    {
+        UE_LOG_WITH_INFO(
+            LogRapyutaCore,
+            Warning,
+            TEXT("Given joint pose values num (%u) does not match joint total DOF (Linear DOF %i & Rotational DOF %i)"),
+            InPose.Num(),
+            LinearDOF,
+            RotationalDOF);
+        return;
+    }
+
+    uint8 i;
+    FVector LinearInput = FVector(0, 0, 0);
+    for (i = 0; i < LinearDOF; i++)
+    {
+        LinearInput[i] = InPose[i];
+    }
+
+    FVector RotationalInput = FVector(0, 0, 0);
+    for (i = 0; i < RotationalDOF; i++)
+    {
+        RotationalInput[i] = InPose[LinearDOF + i];
+    }
 
             void URRJointComponent::SetPose(const FVector& InPosition, const FRotator& InOrientation)
             {
