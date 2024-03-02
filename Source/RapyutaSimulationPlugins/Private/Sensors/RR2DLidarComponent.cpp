@@ -91,7 +91,7 @@ void URR2DLidarComponent::SensorUpdate()
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // To be considered: += WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // To be considered: += WithNoise * FVector(PositionNoise->Get(),PositionNoise->Get(),PositionNoise->Get());
 
             TraceHandles[i] = world->AsyncLineTraceByChannel(EAsyncTraceType::Single,
                                                              startPos,
@@ -114,7 +114,7 @@ void URR2DLidarComponent::SensorUpdate()
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // + WithNoise *  FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // + WithNoise *  FVector(PositionNoise->Get(),PositionNoise->Get(),PositionNoise->Get());
 
             GetWorld()->LineTraceSingleByChannel(RecordedHits[Index],
                                                  startPos,
@@ -135,10 +135,8 @@ void URR2DLidarComponent::SensorUpdate()
             RecordedHits.Num(),
             [this, &TraceParams, &lidarPos, &lidarRot](int32 Index)
             {
-                RecordedHits[Index].ImpactPoint +=
-                    FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), GaussianRNGPosition(Gen));
-                RecordedHits[Index].TraceEnd +=
-                    FVector(GaussianRNGPosition(Gen), GaussianRNGPosition(Gen), GaussianRNGPosition(Gen));
+                RecordedHits[Index].ImpactPoint += FVector(PositionNoise->Get(), PositionNoise->Get(), PositionNoise->Get());
+                RecordedHits[Index].TraceEnd += FVector(PositionNoise->Get(), PositionNoise->Get(), PositionNoise->Get());
             },
             false);
     }
@@ -262,7 +260,7 @@ bool URR2DLidarComponent::Visible(AActor* TargetActor)
 
             FVector startPos = lidarPos + MinRange * UKismetMathLibrary::GetForwardVector(rot);
             FVector endPos = lidarPos + MaxRange * UKismetMathLibrary::GetForwardVector(rot);
-            // To be considered: + WithNoise * FVector(GaussianRNGPosition(Gen),GaussianRNGPosition(Gen),GaussianRNGPosition(Gen));
+            // To be considered: + WithNoise * FVector(PositionNoise->Get(),PositionNoise->Get(),PositionNoise->Get());
 
             GetWorld()->LineTraceSingleByChannel(RecordedVizHits[Index],
                                                  startPos,
@@ -320,7 +318,7 @@ FROSLaserScan URR2DLidarComponent::GetROS2Data()
         // convert to [m]
         retValue.Ranges.Add((MinRange * (RecordedHits.Last(i).Distance > 0) + RecordedHits.Last(i).Distance) * .01f);
 
-        const float IntensityScale = 1.f + BWithNoise * GaussianRNGIntensity(Gen);
+        const float IntensityScale = 1.f + BWithNoise * IntensityNoise->Get();
 
         UStaticMeshComponent* ComponentHit = Cast<UStaticMeshComponent>(RecordedHits.Last(i).GetComponent());
         if (RecordedHits.Last(i).PhysMaterial != nullptr)
