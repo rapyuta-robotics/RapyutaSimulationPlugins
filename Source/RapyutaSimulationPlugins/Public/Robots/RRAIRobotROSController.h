@@ -10,6 +10,9 @@
 // UE
 #include "AIController.h"
 #include "CoreMinimal.h"
+#include "Navigation/PathFollowingComponent.h"
+
+// RapyutaSimulationPlugins
 #include "Robots/RRBaseRobotROSController.h"
 
 #include "RRAIRobotROSController.generated.h"
