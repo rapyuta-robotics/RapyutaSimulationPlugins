@@ -199,6 +199,7 @@ protected:
     UPROPERTY(VisibleAnywhere)
     FVector AngularVelocity = FVector::ZeroVector;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ERRAIRobotNavStatus NavStatus = ERRAIRobotNavStatus::IDLE;
 
     /**
@@ -807,6 +808,14 @@ protected:
     UFUNCTION(BlueprintCallable)
     virtual void ResetControl();
 
+    /**
+     * @brief is #NavStatus IDLE or not
+     *
+     * @return virtial
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual bool InProgress();
+
     // ROS
     //! Timer to call #InitROS2Interface
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -875,7 +884,30 @@ protected:
 
     // Mode variable
     //! Current goal index in #GoalSequence used in ERRAIRobotMode::SEQUENCE and ERRAIRobotMode::RANDOM_SEQUENCE
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int GoalIndex = 0;
+
+    //! Mode transition in Tick
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bModeUpdate = true;
+
+    /**
+     * @brief Increment #GoalIndex
+     *
+     * @return true
+     * @return false if #GoalSequence is empty.
+     */
+    UFUNCTION(BlueprintCallable)
+    bool UpdateGoalSequenceIndex(FTransform& OutGoal);
+
+    /**
+     * @brief Update #GoalIndex randomly
+     *
+     * @return true if #GoalSequence is not empty and #GoalIndex is > 2
+     * @return false
+     */
+    UFUNCTION(BlueprintCallable)
+    bool RandomUpdateGoalSequenceIndex(FTransform& OutGoal);
 
     /**
      * @brief
