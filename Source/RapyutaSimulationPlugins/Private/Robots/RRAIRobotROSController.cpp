@@ -396,6 +396,11 @@ void ARRAIRobotROSController::ResetControl()
     OnFail.Unbind();
 }
 
+bool ARRAIRobotROSController::InProgress()
+{
+    return NavStatus != ERRAIRobotNavStatus::IDLE;
+}
+
 void ARRAIRobotROSController::SetDelegates(const FMoveCompleteCallback& InOnSuccess,
                                            const FMoveCompleteCallback& InOnFail,
                                            const float InLinearMotionTolerance,
@@ -1095,6 +1100,40 @@ FTransform ARRAIRobotROSController::GetOrigin()
     }
 }
 
+bool ARRAIRobotROSController::UpdateGoalSequenceIndex(FTransform& OutGoal)
+{
+    if (GoalSequence.Num() > 0)
+    {
+        GoalIndex++;
+        if (GoalSequence.Num() <= GoalIndex)
+        {
+            GoalIndex = 0;
+        }
+        OutGoal = GoalSequence[GoalIndex];
+        return true;
+    }
+    return false;
+}
+
+bool ARRAIRobotROSController::RandomUpdateGoalSequenceIndex(FTransform& OutGoal)
+{
+    if (GoalSequence.Num() > 0)
+    {
+        if (GoalSequence.Num() > 2)
+        {
+            int temp = FMath::RandRange(0, GoalSequence.Num() - 1);
+            while (temp == GoalIndex)
+            {
+                temp = FMath::RandRange(0, GoalSequence.Num() - 1);
+            }
+            GoalIndex = temp;
+            OutGoal = GoalSequence[GoalIndex];
+            return true;
+        }
+    }
+    return false;
+}
+
 void ARRAIRobotROSController::ModeUpdate()
 {
     if (Mode != ERRAIRobotMode::MANUAL)
@@ -1102,6 +1141,7 @@ void ARRAIRobotROSController::ModeUpdate()
         if (NavStatus == ERRAIRobotNavStatus::IDLE)
         {
             FMoveCompleteCallback onSuccess, onFail;    // dummy
+            FTransform dummy;
             switch (Mode)
             {
                 case ERRAIRobotMode::SEQUENCE:
@@ -1111,25 +1151,12 @@ void ARRAIRobotROSController::ModeUpdate()
                                                     GoalSequence[GoalIndex].GetRotation().Rotator(),
                                                     onSuccess,
                                                     onFail);
-                        GoalIndex++;
-                        if (GoalSequence.Num() <= GoalIndex)
-                        {
-                            GoalIndex = 0;
-                        }
                     }
+                    UpdateGoalSequenceIndex(dummy);
                     break;
                 case ERRAIRobotMode::RANDOM_SEQUENCE:
-                    if (GoalSequence.Num() > 0)
+                    if (RandomUpdateGoalSequenceIndex(dummy))
                     {
-                        if (GoalSequence.Num() > 2)
-                        {
-                            int temp = FMath::RandRange(0, GoalSequence.Num() - 1);
-                            while (temp == GoalIndex)
-                            {
-                                temp = FMath::RandRange(0, GoalSequence.Num() - 1);
-                            }
-                            GoalIndex = temp;
-                        }
                         MoveToLocationWithDelegates(GoalSequence[GoalIndex].GetLocation(),
                                                     GoalSequence[GoalIndex].GetRotation().Rotator(),
                                                     onSuccess,
@@ -1165,6 +1192,9 @@ void ARRAIRobotROSController::Tick(float DeltaSeconds)
         UpdateControl(DeltaSeconds);
         HasReachedOrientationTarget();
         HasReachedLinearMotionTarget();
-        ModeUpdate();
+        if (bModeUpdate)
+        {
+            ModeUpdate();
+        }
     }
 };
