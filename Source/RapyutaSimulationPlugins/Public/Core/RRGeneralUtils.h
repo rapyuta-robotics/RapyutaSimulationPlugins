@@ -168,33 +168,46 @@ public:
 
     /**
      * @brief Get the Ref Transform.
-     * If RefActor==nullptr, return false.
-     * @param RefActorName  If this is empty, OutTranf become FTransform::Identity, i.e. reference become world origin.
-     * @param RefActor  If this is nullptr, return false.
+     * @param RefActor  Reference Actor
      * @param OutTransf Transform of RefActor or Identity.
+     * @param ReturnIdentityWithNullptr If this is true, return true and OutTransf = FTransform::Identity with nullptr RefActor.
+     * @param Verbose
      * @return true
      * @return false
      */
-    static bool GetRefTransform(const FString& RefActorName, const AActor* RefActor, FTransform& OutTransf)
+    static bool GetRefTransform(const AActor* RefActor,
+                                FTransform& OutTransf,
+                                const bool ReturnIdentityWithNullptr = true,
+                                const bool Verbose = false)
     {
-        if (RefActorName.IsEmpty())    // refrence is world origin
+        bool res = false;
+        if (RefActor == nullptr)
         {
-            OutTransf = FTransform::Identity;
+            if (ReturnIdentityWithNullptr)
+            {
+                OutTransf = FTransform::Identity;
+                res = true;
+            }
+            else
+            {
+                if (Verbose)
+                {
+                    UE_LOG(LogTemp, Error, TEXT("RefActor is not valid."));
+                }
+                res = false;
+            }
         }
         else
         {
-            if (RefActor == nullptr)
-            {
-                return false;
-            }
             OutTransf = RefActor->GetTransform();
+            res = true;
         }
-        return true;
+        return res;
     }
 
     /**
-     * @brief Get the Ref Transform. If RefActor==nullptr, search actor from name. If no actor is found, return false and OutTransf = FTransform::Identity
-     *
+     * @brief Get the Ref Transform. If RefActor==nullptr, search actor from RefActorName. If no actor is found, return false and OutTransf = FTransform::Identity
+     * If RefActor==nullptr && RefActorName==Empty, return true and OutTransf = FTransform::Identity
      * @param RefActorName
      * @param RefActor
      * @param InWorld
@@ -295,15 +308,24 @@ public:
      *
      * @param RefTransf Reference frame
      * @param WorldTransf Transform in world frame
+     * @param IgnoreScale
      * @return FTransform Transform in reference frame
      */
     UFUNCTION(BlueprintCallable)
-    static FTransform GetRelativeTransform(const FTransform& RefTransf, const FTransform& WorldTransf)
+    static FTransform GetRelativeTransform(const FTransform& RefTransf,
+                                           const FTransform& WorldTransf,
+                                           const bool IgnoreScale = true)
     {
+        FTransform worldTransf = WorldTransf;
         FTransform refTransfNormalized = RefTransf;
         refTransfNormalized.NormalizeRotation();
+        if (IgnoreScale)
+        {
+            worldTransf.SetScale3D(FVector::OneVector);
+            refTransfNormalized.SetScale3D(FVector::OneVector);
+        }
 
-        FTransform relativeTransf = WorldTransf.GetRelativeTransform(refTransfNormalized);
+        FTransform relativeTransf = worldTransf.GetRelativeTransform(refTransfNormalized);
         relativeTransf.NormalizeRotation();
 
         return relativeTransf;
@@ -314,13 +336,18 @@ public:
      *
      * @param RefActor
      * @param WorldTransf Transform in world frame
+     * @param IgnoreScale
+     * @param Verbose
      * @return FTransform Transform in reference frame
      */
-    static FTransform GetRelativeTransform(const AActor* RefActor, const FTransform& WorldTransf, const bool Verbose = false)
+    static FTransform GetRelativeTransform(const AActor* RefActor,
+                                           const FTransform& WorldTransf,
+                                           const bool IgnoreScale = true,
+                                           const bool Verbose = false)
     {
         FTransform outTransf;
         GetRefTransformByActor(RefActor, outTransf, Verbose);
-        return GetRelativeTransform(outTransf, WorldTransf);
+        return GetRelativeTransform(outTransf, WorldTransf, IgnoreScale);
     }
 
     /**
@@ -329,16 +356,19 @@ public:
      * @param RefActorName
      * @param WorldContextObject
      * @param WorldTransf Transform in world frame
+     * @param IgnoreScale
+     * @param Verbose
      * @return FTransform Transform in reference frame
      */
     static FTransform GetRelativeTransform(const FString& RefActorName,
                                            const UObject* WorldContextObject,
                                            const FTransform& WorldTransf,
+                                           const bool IgnoreScale = true,
                                            const bool Verbose = false)
     {
         FTransform outTransf;
         GetRefTransformByName(RefActorName, WorldContextObject, outTransf, Verbose);
-        return GetRelativeTransform(outTransf, WorldTransf);
+        return GetRelativeTransform(outTransf, WorldTransf, IgnoreScale);
     }
 
     /**
@@ -346,52 +376,62 @@ public:
      *
      * @param RefActor
      * @param WorldTransf Transform in world frame
+     * @param IgnoreScale
+     * @param Verbose
      * @return FTransform Transform in reference frame
      */
     UFUNCTION(BlueprintCallable)
     static FTransform GetRelativeTransformFromActor(const AActor* RefActor,
                                                     const FTransform& WorldTransf,
+                                                    const bool IgnoreScale = true,
                                                     const bool Verbose = false)
     {
-        return GetRelativeTransform(RefActor, WorldTransf, Verbose);
+        return GetRelativeTransform(RefActor, WorldTransf, IgnoreScale, Verbose);
     }
 
     /**
      * @brief Blueprint wrapper for GetRelativeTransform
      *
      * @param RefActor
+     * @param WorldContextObject
      * @param WorldTransf Transform in world frame
+     * @param IgnoreScale
+     * @param Verbose
      * @return FTransform Transform in reference frame
      */
     UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
     static FTransform GetRelativeTransformFromName(const FString& RefActorName,
                                                    const UObject* WorldContextObject,
                                                    const FTransform& WorldTransf,
+                                                   const bool IgnoreScale = true,
                                                    const bool Verbose = false)
     {
-        return GetRelativeTransform(RefActorName, WorldContextObject, WorldTransf, Verbose);
+        return GetRelativeTransform(RefActorName, WorldContextObject, WorldTransf, IgnoreScale, Verbose);
     }
 
     /**
      * @brief Get the transform in reference frame.
-     *
-     * @param RefActorName If this is empty, use world origin as reference, i.e. OutTransf=InTransf
-     * @param RefActor If this is nullptr, return false.
-     * @param InTransf Transform in world frame
-     * @param OutTransf Transform in reference frame
+     * @param RefActor  Reference Actor
+     * @param InTransf
+     * @param OutTransf Transform of RefActor or Identity.
+     * @param IgnoreScale
+     * @param ReturnIdentityWithNullptr if this is true, return true and OutTransf = FTransform::Identity with nullptr RefActor.
+     * @param Verbose
      * @return true
      * @return false
      */
-    static bool GetRelativeTransform(const FString& RefActorName,
-                                     const AActor* RefActor,
+    static bool GetRelativeTransform(const AActor* RefActor,
                                      const FTransform& InTransf,
-                                     FTransform& OutTransf)
+                                     FTransform& OutTransf,
+                                     const bool IgnoreScale = true,
+                                     const bool ReturnIdentityWithNullptr = true,
+                                     const bool Verbose = false)
     {
         FTransform refTransf;
-        bool result = GetRefTransform(RefActorName, RefActor, refTransf);
+        bool result = GetRefTransform(RefActor, refTransf, ReturnIdentityWithNullptr, Verbose);
         if (result)
         {
-            OutTransf = URRGeneralUtils::GetRelativeTransform(refTransf, InTransf);
+            OutTransf = GetRelativeTransform(refTransf, InTransf, IgnoreScale);
         }
         return result;
     }
@@ -410,13 +450,15 @@ public:
                                      const AActor* RefActor,
                                      const FTransform& InTransf,
                                      const UObject* WorldContextObject,
-                                     FTransform& OutTransf)
+                                     FTransform& OutTransf,
+                                     const bool IgnoreScale = true,
+                                     const bool Verbose = false)
     {
         FTransform refTransf;
-        bool result = GetRefTransform(RefActorName, RefActor, WorldContextObject, refTransf);
+        bool result = GetRefTransform(RefActorName, RefActor, WorldContextObject, refTransf, Verbose);
         if (result)
         {
-            OutTransf = URRGeneralUtils::GetRelativeTransform(refTransf, InTransf);
+            OutTransf = GetRelativeTransform(refTransf, InTransf, IgnoreScale);
         }
         return result;
     }
@@ -426,14 +468,24 @@ public:
      *
      * @param RefTransf Reference frame
      * @param RelativeTransf Transform in reference frame
+     * @param IgnoreScale
      * @return FTransform Transform in world frame
      */
     UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
-    static FTransform GetWorldTransform(const FTransform& RefTransf, const FTransform& RelativeTransf)
+    static FTransform GetWorldTransform(const FTransform& RefTransf,
+                                        const FTransform& RelativeTransf,
+                                        const bool IgnoreScale = true)
     {
         FTransform worldTransf;
+        FTransform refTransf = RefTransf;
+        FTransform relativeTransf = RelativeTransf;
+        if (IgnoreScale)
+        {
+            refTransf.SetScale3D(FVector::OneVector);
+            relativeTransf.SetScale3D(FVector::OneVector);
+        }
 
-        FTransform::Multiply(&worldTransf, &RelativeTransf, &RefTransf);
+        FTransform::Multiply(&worldTransf, &relativeTransf, &refTransf);
 
         worldTransf.NormalizeRotation();
 
@@ -445,13 +497,18 @@ public:
      *
      * @param RefActor
      * @param RelativeTransf Transform in reference frame
+     * @param IgnoreScale
+     * @param Verbose
      * @return FTransform Transform in world frame
      */
-    static FTransform GetWorldTransform(const AActor* RefActor, const FTransform& RelativeTransf, const bool Verbose = false)
+    static FTransform GetWorldTransform(const AActor* RefActor,
+                                        const FTransform& RelativeTransf,
+                                        const bool IgnoreScale = true,
+                                        const bool Verbose = false)
     {
         FTransform outTransf;
         GetRefTransformByActor(RefActor, outTransf, Verbose);
-        return GetWorldTransform(outTransf, RelativeTransf);
+        return GetWorldTransform(outTransf, RelativeTransf, IgnoreScale);
     }
 
     /**
@@ -461,17 +518,19 @@ public:
      * @param WorldContextObject
      * @param RefActor
      * @param RelativeTransf Transform in reference frame
+     * @param IgnoreScale
      * @param Verbose
      * @return FTransform Transform in world frame
      */
     static FTransform GetWorldTransform(const FString& RefActorName,
                                         const UObject* WorldContextObject,
                                         const FTransform& RelativeTransf,
+                                        const bool IgnoreScale = true,
                                         const bool Verbose = false)
     {
         FTransform outTransf;
         GetRefTransformByName(RefActorName, WorldContextObject, outTransf, Verbose);
-        return GetWorldTransform(outTransf, RelativeTransf);
+        return GetWorldTransform(outTransf, RelativeTransf, IgnoreScale);
     }
 
     /**
@@ -479,30 +538,37 @@ public:
      *
      * @param RefActor
      * @param RelativeTransf Transform in reference frame
+     * @param IgnoreScale
+     * @param Verbose
      * @return FTransform Transform in world frame
      */
     UFUNCTION(BlueprintCallable)
     static FTransform GetWorldTransformFromActor(const AActor* RefActor,
                                                  const FTransform& RelativeTransf,
+                                                 const bool IgnoreScale = true,
                                                  const bool Verbose = false)
     {
-        return GetWorldTransform(RefActor, RelativeTransf, Verbose);
+        return GetWorldTransform(RefActor, RelativeTransf, IgnoreScale, Verbose);
     }
 
     /**
      * @brief Blueprint wrapper for GetRelativeTransform
      *
-     * @param RefActor
+     * @param RefActorName
+     * @param WorldContextObject
      * @param RelativeTransf Transform in reference frame
+     * @param IgnoreScale
+     * @param Verbose
      * @return FTransform Transform in world frame
      */
     UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
     static FTransform GetWorldTransformFromName(const FString& RefActorName,
                                                 const UObject* WorldContextObject,
                                                 const FTransform& RelativeTransf,
+                                                const bool IgnoreScale = true,
                                                 const bool Verbose = false)
     {
-        return GetWorldTransform(RefActorName, WorldContextObject, RelativeTransf, Verbose);
+        return GetWorldTransform(RefActorName, WorldContextObject, RelativeTransf, IgnoreScale, Verbose);
     }
 
     /**
@@ -512,20 +578,24 @@ public:
      * @param RefActor If this is nullptr, return false.
      * @param InTransf Transform in reference frame
      * @param OutTransf Transform in world frame
-     *
+     * @param ReturnIdentityWithNullptr
+     * @param IgnoreScale
+     * @param Verbose
      * @return true
      * @return false
      */
-    static bool GetWorldTransform(const FString& RefActorName,
-                                  const AActor* RefActor,
+    static bool GetWorldTransform(const AActor* RefActor,
                                   const FTransform& InTransf,
-                                  FTransform& OutTransf)
+                                  FTransform& OutTransf,
+                                  const bool ReturnIdentityWithNullptr = true,
+                                  const bool IgnoreScale = true,
+                                  const bool Verbose = false)
     {
         FTransform refTransf;
-        bool result = GetRefTransform(RefActorName, RefActor, refTransf);
+        bool result = GetRefTransform(RefActor, refTransf, ReturnIdentityWithNullptr, Verbose);
         if (result)
         {
-            OutTransf = URRGeneralUtils::GetWorldTransform(refTransf, InTransf);
+            OutTransf = GetWorldTransform(refTransf, InTransf, IgnoreScale);
         }
         return result;
     }
@@ -537,7 +607,7 @@ public:
      * @param RefActor If this is nullptr, return false.
      * @param InTransf Transform in reference frame
      * @param OutTransf Transform in world frame
-     *
+     * @param IgnoreScale
      * @return true
      * @return false
      */
@@ -545,13 +615,14 @@ public:
                                   const AActor* RefActor,
                                   const FTransform& InTransf,
                                   const UObject* WorldContextObject,
-                                  FTransform& OutTransf)
+                                  FTransform& OutTransf,
+                                  const bool IgnoreScale = true)
     {
         FTransform refTransf;
         bool result = GetRefTransform(RefActorName, RefActor, WorldContextObject, refTransf);
         if (result)
         {
-            OutTransf = URRGeneralUtils::GetWorldTransform(refTransf, InTransf);
+            OutTransf = GetWorldTransform(refTransf, InTransf, IgnoreScale);
         }
         return result;
     }

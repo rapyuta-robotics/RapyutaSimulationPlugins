@@ -229,7 +229,6 @@ void ASimulationState::ServerSetEntityState(const FROSSetEntityStateReq& InReque
         relativeTransf = URRConversionUtils::TransformROSToUE(relativeTransf);
         FTransform worldTransf;
         URRGeneralUtils::GetWorldTransform(
-            InRequest.State.ReferenceFrame,
             Entities.Contains(InRequest.State.ReferenceFrame) ? Entities[InRequest.State.ReferenceFrame] : nullptr,
             relativeTransf,
             worldTransf);
@@ -428,7 +427,7 @@ AActor* ASimulationState::ServerSpawnEntity(const FROSSpawnEntityReq& InRequest,
                 URRConversionUtils::TransformROSToUE(FTransform(InRequest.State.Pose.Orientation, InRequest.State.Pose.Position));
             const FString& referenceFrame = InRequest.State.ReferenceFrame;
             FTransform worldTransf;
-            URRGeneralUtils::GetWorldTransform(referenceFrame, Entities.FindRef(referenceFrame), relativeTransf, worldTransf);
+            URRGeneralUtils::GetWorldTransform(Entities.FindRef(referenceFrame), relativeTransf, worldTransf);
 
             // Spawn entity
             newEntity = ServerSpawnEntity(InRequest, SpawnableEntityTypes[entityModelName], worldTransf, InNetworkPlayerId);
