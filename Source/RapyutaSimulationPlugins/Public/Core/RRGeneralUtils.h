@@ -314,7 +314,7 @@ public:
     UFUNCTION(BlueprintCallable)
     static FTransform GetRelativeTransform(const FTransform& RefTransf,
                                            const FTransform& WorldTransf,
-                                           const bool IgnoreScale = true)
+                                           const bool IgnoreScale = false)
     {
         FTransform worldTransf = WorldTransf;
         FTransform refTransfNormalized = RefTransf;
@@ -342,7 +342,7 @@ public:
      */
     static FTransform GetRelativeTransform(const AActor* RefActor,
                                            const FTransform& WorldTransf,
-                                           const bool IgnoreScale = true,
+                                           const bool IgnoreScale = false,
                                            const bool Verbose = false)
     {
         FTransform outTransf;
@@ -363,7 +363,7 @@ public:
     static FTransform GetRelativeTransform(const FString& RefActorName,
                                            const UObject* WorldContextObject,
                                            const FTransform& WorldTransf,
-                                           const bool IgnoreScale = true,
+                                           const bool IgnoreScale = false,
                                            const bool Verbose = false)
     {
         FTransform outTransf;
@@ -383,7 +383,7 @@ public:
     UFUNCTION(BlueprintCallable)
     static FTransform GetRelativeTransformFromActor(const AActor* RefActor,
                                                     const FTransform& WorldTransf,
-                                                    const bool IgnoreScale = true,
+                                                    const bool IgnoreScale = false,
                                                     const bool Verbose = false)
     {
         return GetRelativeTransform(RefActor, WorldTransf, IgnoreScale, Verbose);
@@ -403,7 +403,7 @@ public:
     static FTransform GetRelativeTransformFromName(const FString& RefActorName,
                                                    const UObject* WorldContextObject,
                                                    const FTransform& WorldTransf,
-                                                   const bool IgnoreScale = true,
+                                                   const bool IgnoreScale = false,
                                                    const bool Verbose = false)
     {
         return GetRelativeTransform(RefActorName, WorldContextObject, WorldTransf, IgnoreScale, Verbose);
@@ -423,7 +423,7 @@ public:
     static bool GetRelativeTransform(const AActor* RefActor,
                                      const FTransform& InTransf,
                                      FTransform& OutTransf,
-                                     const bool IgnoreScale = true,
+                                     const bool IgnoreScale = false,
                                      const bool ReturnIdentityWithNullptr = true,
                                      const bool Verbose = false)
     {
@@ -451,7 +451,7 @@ public:
                                      const FTransform& InTransf,
                                      const UObject* WorldContextObject,
                                      FTransform& OutTransf,
-                                     const bool IgnoreScale = true,
+                                     const bool IgnoreScale = false,
                                      const bool Verbose = false)
     {
         FTransform refTransf;
@@ -474,7 +474,7 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = WorldContextObject))
     static FTransform GetWorldTransform(const FTransform& RefTransf,
                                         const FTransform& RelativeTransf,
-                                        const bool IgnoreScale = true)
+                                        const bool IgnoreScale = false)
     {
         FTransform worldTransf;
         FTransform refTransf = RefTransf;
@@ -503,7 +503,7 @@ public:
      */
     static FTransform GetWorldTransform(const AActor* RefActor,
                                         const FTransform& RelativeTransf,
-                                        const bool IgnoreScale = true,
+                                        const bool IgnoreScale = false,
                                         const bool Verbose = false)
     {
         FTransform outTransf;
@@ -525,7 +525,7 @@ public:
     static FTransform GetWorldTransform(const FString& RefActorName,
                                         const UObject* WorldContextObject,
                                         const FTransform& RelativeTransf,
-                                        const bool IgnoreScale = true,
+                                        const bool IgnoreScale = false,
                                         const bool Verbose = false)
     {
         FTransform outTransf;
@@ -545,7 +545,7 @@ public:
     UFUNCTION(BlueprintCallable)
     static FTransform GetWorldTransformFromActor(const AActor* RefActor,
                                                  const FTransform& RelativeTransf,
-                                                 const bool IgnoreScale = true,
+                                                 const bool IgnoreScale = false,
                                                  const bool Verbose = false)
     {
         return GetWorldTransform(RefActor, RelativeTransf, IgnoreScale, Verbose);
@@ -565,7 +565,7 @@ public:
     static FTransform GetWorldTransformFromName(const FString& RefActorName,
                                                 const UObject* WorldContextObject,
                                                 const FTransform& RelativeTransf,
-                                                const bool IgnoreScale = true,
+                                                const bool IgnoreScale = false,
                                                 const bool Verbose = false)
     {
         return GetWorldTransform(RefActorName, WorldContextObject, RelativeTransf, IgnoreScale, Verbose);
@@ -588,7 +588,7 @@ public:
                                   const FTransform& InTransf,
                                   FTransform& OutTransf,
                                   const bool ReturnIdentityWithNullptr = true,
-                                  const bool IgnoreScale = true,
+                                  const bool IgnoreScale = false,
                                   const bool Verbose = false)
     {
         FTransform refTransf;
@@ -616,7 +616,7 @@ public:
                                   const FTransform& InTransf,
                                   const UObject* WorldContextObject,
                                   FTransform& OutTransf,
-                                  const bool IgnoreScale = true)
+                                  const bool IgnoreScale = false)
     {
         FTransform refTransf;
         bool result = GetRefTransform(RefActorName, RefActor, WorldContextObject, refTransf);
