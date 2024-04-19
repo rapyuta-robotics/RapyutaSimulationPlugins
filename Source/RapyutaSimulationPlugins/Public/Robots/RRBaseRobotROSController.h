@@ -44,7 +44,8 @@ protected:
     virtual void OnUnPossess() override;
 
     /**
-     * This is used if controlled pawn is not child class of RRBaseRobot
+     * This is spawn in #OnPossess if controlled pawn is not child class of RRBaseRobot
     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URRBaseROS2Interface* ROS2Interface = nullptr;
 };
