@@ -15,6 +15,11 @@ URRROS2EntityStateSensorComponent::URRROS2EntityStateSensorComponent()
 void URRROS2EntityStateSensorComponent::BeginPlay()
 {
     Super::BeginPlay();
+    if (!URRGeneralUtils::GetRelativeTransform(ReferenceActorName, ReferenceActor, GetComponentTransform(), pastRelativeTransf))
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("Reference Actor %s is not valid."), *ReferenceActorName);
+    }
+    pastTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }
 
 void URRROS2EntityStateSensorComponent::SetReferenceActorByName(const FString& InName)
@@ -73,9 +78,18 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
     Data.ReferenceFrame = ReferenceActorName;
 
     // todo calc vel
-    Data.Twist.Linear = FVector::ZeroVector;
+
+        
+    float currentTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+    float deltaTime = (currentTime - pastTime);
+    FVector deltaVector = relativeTransf.GetTranslation() - pastRelativeTransf.GetTranslation();
+
+    Data.Twist.Linear = deltaVector/deltaTime;
     Data.Twist.Angular = FVector::ZeroVector;
 
+    pastRelativeTransf = relativeTransf;
+    pastTime = currentTime;
+    
     bIsValid = true;
 }
 

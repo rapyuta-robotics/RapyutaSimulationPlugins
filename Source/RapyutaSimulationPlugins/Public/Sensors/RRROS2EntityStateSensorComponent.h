@@ -57,6 +57,8 @@ public:
     FTransform OffsetTransform = FTransform::Identity;
 
     FOnNewReferenceActorDetected OnNewReferenceActorDetected;
+    FTransform pastRelativeTransf;
+    float pastTime;
 
     UFUNCTION(BlueprintCallable)
     virtual void SetReferenceActorByName(const FString& InName);
