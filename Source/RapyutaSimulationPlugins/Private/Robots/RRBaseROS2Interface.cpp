@@ -90,7 +90,11 @@ void URRBaseROS2Interface::InitRobotROS2Node(AActor* Owner)
 
 void URRBaseROS2Interface::InitROS2NodeParam(AActor* Owner)
 {
+#if WITH_EDITOR
+    const FString nodeName = URRGeneralUtils::GetNewROS2NodeName(UKismetSystemLibrary::GetDisplayName(Owner));
+#else
     const FString nodeName = URRGeneralUtils::GetNewROS2NodeName(Owner->GetName());
+#endif
     if (RobotROS2Node == nullptr)
     {
         FActorSpawnParameters spawnParams;
@@ -106,7 +110,18 @@ void URRBaseROS2Interface::InitROS2NodeParam(AActor* Owner)
     }
     else
     {
-        RobotROS2Node->Namespace = DefautlROSNamespace;
+        if (bUseActorNameAsNamespace)
+        {
+#if WITH_EDITOR
+            RobotROS2Node->Namespace = UKismetSystemLibrary::GetDisplayName(Owner);
+#else
+            RobotROS2Node->Namespace = Owner->GetName();
+#endif
+        }
+        else
+        {
+            RobotROS2Node->Namespace = DefautlROSNamespace;
+        }
     }
 }
 
