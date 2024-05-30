@@ -53,8 +53,10 @@ enum class ERRAIRobotMode : uint8
 };
 
 /**
- * @brief  Base Robot ROS controller class. Other robot controller class should inherit from this class.
+ * @brief  Base Robot ROS controller class with AI movement by UE navigation system.
  * This class has authority to start ROS 2 Component in pausses robot.
+ * This class implement basic motion unit such as AI movement and etc in C++.
+ * Complicated motion should be implemented in BP by cobining behavior implemented in C++.
  *
  * @sa [AAIController](https://docs.unrealengine.com/5.1/en-US/API/Runtime/AIModule/AAIController/)
  * @sa https://answers.unrealengine.com/questions/871116/view.html
@@ -63,12 +65,6 @@ enum class ERRAIRobotMode : uint8
  * @todo not work in client-server
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-/**
- * @brief Base class for ROS controllers of ARR robots.
- *
- * This class provides common functionality and properties for controlling ARR robots using ROS.
- * It inherits from ARRBaseRobotROSController and adds additional properties and functions specific to ROS control.
- */
 class RAPYUTASIMULATIONPLUGINS_API ARRAIRobotROSController : public ARRBaseRobotROSController
 {
     GENERATED_BODY()
@@ -836,6 +832,13 @@ protected:
     bool InitROS2InterfaceImpl();
 
     /**
+     * @brief AdditionalInitialization implemented in BP.
+     * Child BP class can use this method to add initialization behaviour
+     */
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPInitROS2InterfaceImpl();
+
+    /**
      * @brief Update NavStatus msg before publishing.
      *
      * @param InMessage
@@ -888,6 +891,7 @@ protected:
     int GoalIndex = 0;
 
     //! Mode transition in Tick
+    //! @deprecated Implemented in Behavior Tree in Child BP class
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bModeUpdate = true;
 
@@ -912,6 +916,7 @@ protected:
     /**
      * @brief
      * Mode transition function. This is called in #Tick.
+     * @deprecated Implemented in Behavior Tree in Child BP class
      */
     UFUNCTION()
     virtual void ModeUpdate();

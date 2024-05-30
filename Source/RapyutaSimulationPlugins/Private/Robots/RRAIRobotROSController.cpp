@@ -288,6 +288,10 @@ bool ARRAIRobotROSController::InitROS2InterfaceImpl()
                                SetModeTopicName,
                                UROS2Int32Msg::StaticClass(),
                                &ARRAIRobotROSController::SetModeCallback);
+
+        // Additional initialization implemented in child BP class.
+        BPInitROS2InterfaceImpl();
+
         GetWorld()->GetTimerManager().ClearTimer(ROS2InitTimer);
         return true;
     }

@@ -71,6 +71,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString DefautlROSNamespace = TEXT("");
 
+    //! This will overwrite the namespace of the ROS2Node with the actor's name.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bUseActorNameAsNamespace = true;
+
     /**
      * @brief Initialize robot's ROS 2 interface by calling #InitRobotROS2Node, #InitPublishers, #InitSubscriptions and #ARRBaseRobot::InitSensors.
      * This method is mainly used by #ARRBaseoRbotROSController via #ARRBaseRobot::InitROS2Interface.

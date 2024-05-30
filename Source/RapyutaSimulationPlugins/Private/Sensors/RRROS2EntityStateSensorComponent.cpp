@@ -55,7 +55,7 @@ FROSEntityState URRROS2EntityStateSensorComponent::GetROS2Data()
 void URRROS2EntityStateSensorComponent::SensorUpdate()
 {
     FTransform relativeTransf;
-    if (!URRGeneralUtils::GetRelativeTransform(ReferenceActorName, ReferenceActor, GetComponentTransform(), relativeTransf))
+    if (!URRGeneralUtils::GetRelativeTransform(ReferenceActor, GetComponentTransform(), relativeTransf, true))
     {
         if (bIsValid)
         {

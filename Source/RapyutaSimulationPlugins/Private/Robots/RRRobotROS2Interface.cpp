@@ -92,6 +92,14 @@ void URRRobotROS2Interface::InitROS2NodeParam(AActor* Owner)
     if (!ROSSpawnParameters && Robot)
     {
         RobotROS2Node->Namespace = Robot->RobotUniqueName;
+        if (bUseActorNameAsNamespace)
+        {
+#if WITH_EDITOR
+            RobotROS2Node->Namespace = UKismetSystemLibrary::GetDisplayName(Owner);
+#else
+            RobotROS2Node->Namespace = Owner->GetName();
+#endif
+        }
     }
 }
 

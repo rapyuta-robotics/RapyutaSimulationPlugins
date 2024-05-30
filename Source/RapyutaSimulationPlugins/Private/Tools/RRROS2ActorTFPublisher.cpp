@@ -109,7 +109,7 @@ void URRROS2ActorTFPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
         return;
     }
 
-    if (!URRGeneralUtils::GetRelativeTransform(ReferenceActorName, ReferenceActor, TargetActor->GetTransform(), TF))
+    if (!URRGeneralUtils::GetRelativeTransform(ReferenceActor, TargetActor->GetTransform(), TF, true))
     {
         if (bIsValid)
         {
