@@ -391,7 +391,7 @@ public:
                          resourceInfo.ToBeAsyncLoadedResourceNum);
 #endif
 
-        UAssetManager* assetManager = UAssetManager::GetIfValid();
+        UAssetManager* assetManager = UAssetManager::GetIfInitialized();
         if (assetManager)
         {
             for (const auto& resourceMetaData : resourceInfo.Data)

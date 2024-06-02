@@ -61,11 +61,11 @@ UClass* URRAssetUtils::FindBlueprintClass(const FString& InBlueprintClassName)
             {
                 if (auto* bp = Cast<URRBlueprint>(InAssetData.GetAsset()))
                 {
-                    if constexpr (TIsSame<URRBlueprint, UBlueprint>::Value)
+                    if constexpr (std::is_same<URRBlueprint, UBlueprint>::value)
                     {
                         foundBPClass = Cast<UBlueprint>(bp)->GeneratedClass;
                     }
-                    else if constexpr (TIsSame<URRBlueprint, UBlueprintGeneratedClass>::Value)
+                    else if constexpr (std::is_same<URRBlueprint, UBlueprintGeneratedClass>::value)
                     {
                         foundBPClass = Cast<UClass>(bp);
                     }
