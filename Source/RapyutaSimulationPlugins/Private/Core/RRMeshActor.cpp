@@ -1,6 +1,9 @@
 // Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 #include "Core/RRMeshActor.h"
 
+// Native
+#include <type_traits>
+
 // RapyutaSimulationPlugins
 #include "Core/RRCoreUtils.h"
 #include "Core/RRGameMode.h"
@@ -10,8 +13,9 @@
 #include "Core/RRStaticMeshComponent.h"
 #include "Core/RRUObjectUtils.h"
 
-using URRMeshComponent =
-    typename TChooseClass<RAPYUTA_RUNTIME_MESH_ENTITY_USE_STATIC_MESH, URRStaticMeshComponent, URRProceduralMeshComponent>::Result;
+using URRMeshComponent = typename std::conditional<RAPYUTA_RUNTIME_MESH_ENTITY_USE_STATIC_MESH,
+    URRStaticMeshComponent,
+    URRProceduralMeshComponent>::type;
 
 ARRMeshActor::ARRMeshActor()
 {

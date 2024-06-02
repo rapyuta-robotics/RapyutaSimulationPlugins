@@ -13,6 +13,7 @@
 
 // Native
 #include <mutex>
+#include <type_traits>
 
 // UE
 #include "Engine.h"
@@ -317,9 +318,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRREntityLogInfo
 };
 
 template<int8 InBitDepth>
-using FRRColor = typename TChooseClass<(8 == InBitDepth),
-                                       FColor,
-                                       typename TChooseClass<(16 == InBitDepth), FFloat16Color, FLinearColor>::Result>::Result;
+using FRRColor = typename std::conditional<(8 == InBitDepth),
+        FColor,
+        typename std::conditional<(16 == InBitDepth), FFloat16Color, FLinearColor>::type>::type;
 
 // (NOTE) TImagePixelData could be used instead
 USTRUCT()

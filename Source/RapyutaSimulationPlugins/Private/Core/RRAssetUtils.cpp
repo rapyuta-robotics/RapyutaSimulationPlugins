@@ -1,6 +1,9 @@
 // Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 #include "Core/RRAssetUtils.h"
 
+// Native
+#include <type_traits>
+
 // UE
 #include "CoreMinimal.h"
 
@@ -18,7 +21,7 @@
 #include "Core/RRGameSingleton.h"
 #include "Core/RRThreadUtils.h"
 
-using URRBlueprint = typename TChooseClass<WITH_EDITOR, UBlueprint, UBlueprintGeneratedClass>::Result;
+using URRBlueprint = typename std::conditional<WITH_EDITOR, UBlueprint, UBlueprintGeneratedClass>::type;
 
 UClass* URRAssetUtils::FindBlueprintClass(const FString& InBlueprintClassName)
 {
