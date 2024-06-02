@@ -1,6 +1,7 @@
 // Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Tools/RRUIWidgetComponent.h"
+#include "UI/RRUserWidget.h"
 
 URRUIWidgetComponent::URRUIWidgetComponent()
 {
