@@ -187,6 +187,9 @@ protected:
     template<typename T>
     bool CheckEntity(TMap<FString, T>& InEntities, const FString& InEntityName, const bool bAllowEmpty = false);
     bool CheckEntity(const FString& InEntityName, const bool bAllowEmpty = false);
+#if WITH_EDITOR
+    bool CheckEntityWithDisplayName(const FString& InEntityName, const bool bAllowEmpty = false);
+#endif
     bool CheckSpawnableEntity(const FString& InEntityName, const bool bAllowEmpty = false);
     virtual FROSSpawnEntityRes SpawnEntityImpl(FROSSpawnEntityReq& InRequest);
 };
