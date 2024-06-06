@@ -90,11 +90,18 @@ bool URRROS2SimulationStateClient::CheckEntity(TMap<FString, T>& InEntities, con
     }
     else
     {
-        UE_LOG_WITH_INFO_NAMED(
-            LogRapyutaCore,
-            Warning,
-            TEXT("Entity named [%s] is not under SimulationState control. Please register it to SimulationState!"),
-            *InEntityName);
+        FString temp = TEXT("");
+        for (auto& Elem : InEntities)
+        {
+            temp += Elem.Key + TEXT(", ");
+        }
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
+                               Warning,
+                               TEXT("Entity named [%s] is not under SimulationState control. Please register it to "
+                                    "SimulationState! \n Entities in control are: %s"),
+
+                               *InEntityName,
+                               *temp);
     }
     return result;
 }
@@ -113,6 +120,13 @@ bool URRROS2SimulationStateClient::CheckEntity(const FString& InEntityName, cons
     return CheckEntity<AActor*>(ServerSimState->Entities, InEntityName, bAllowEmpty);
 }
 
+#if WITH_EDITOR
+bool URRROS2SimulationStateClient::CheckEntityWithDisplayName(const FString& InEntityName, const bool bAllowEmpty)
+{
+    return CheckEntity<AActor*>(ServerSimState->EntitiesWithDisplayName, InEntityName, bAllowEmpty);
+}
+#endif
+
 bool URRROS2SimulationStateClient::CheckSpawnableEntity(const FString& InEntityName, const bool bAllowEmpty)
 {
     return CheckEntity<TSubclassOf<AActor>>(ServerSimState->SpawnableEntityTypes, InEntityName, bAllowEmpty);
@@ -128,13 +142,26 @@ void URRROS2SimulationStateClient::GetEntityStateSrv(UROS2GenericSrv* InService)
     FROSGetEntityStateRes response;
     response.State.Name = request.Name;
     response.State.ReferenceFrame = request.ReferenceFrame;
-    response.bSuccess = CheckEntity(request.Name, false) && CheckEntity(request.ReferenceFrame, true);
 
+    AActor* TargetActor = ServerSimState->Entities.FindRef(request.Name);
+    AActor* RefActor = ServerSimState->Entities.FindRef(request.ReferenceFrame);
+    response.bSuccess = CheckEntity(request.Name, false) && CheckEntity(request.ReferenceFrame, true);
+#if WITH_EDITOR
+    if (TargetActor == nullptr)
+    {
+        TargetActor = ServerSimState->EntitiesWithDisplayName.FindRef(request.Name);
+    }
+    if (RefActor == nullptr)
+    {
+        RefActor = ServerSimState->EntitiesWithDisplayName.FindRef(request.ReferenceFrame);
+    }
+    response.bSuccess |=
+        CheckEntityWithDisplayName(request.Name, false) && CheckEntityWithDisplayName(request.ReferenceFrame, true);
+#endif
     if (response.bSuccess)
     {
-        FTransform worldTransf = ServerSimState->Entities[request.Name]->GetTransform();
-        FTransform relativeTransf =
-            URRGeneralUtils::GetRelativeTransform(ServerSimState->Entities.FindRef(request.ReferenceFrame), worldTransf);
+        FTransform worldTransf = TargetActor->GetTransform();
+        FTransform relativeTransf = URRGeneralUtils::GetRelativeTransform(RefActor, worldTransf);
         relativeTransf = URRConversionUtils::TransformUEToROS(relativeTransf);
 
         response.State.Pose.Position = relativeTransf.GetTranslation();
@@ -156,7 +183,10 @@ void URRROS2SimulationStateClient::SetEntityStateSrv(UROS2GenericSrv* InService)
 
     FROSSetEntityStateRes response;
     response.bSuccess = CheckEntity(request.State.Name, false) && CheckEntity(request.State.ReferenceFrame, true);
-
+#if WITH_EDITOR
+    response.bSuccess |=
+        CheckEntityWithDisplayName(request.State.Name, false) && CheckEntityWithDisplayName(request.State.ReferenceFrame, true);
+#endif
     if (response.bSuccess)
     {
         // RPC to Server
@@ -180,6 +210,9 @@ void URRROS2SimulationStateClient::AttachSrv(UROS2GenericSrv* InService)
 
     FROSAttachRes response;
     response.bSuccess = CheckEntity(request.Name1, false) && CheckEntity(request.Name2, false);
+#if WITH_EDITOR
+    response.bSuccess |= CheckEntityWithDisplayName(request.Name1, false) && CheckEntityWithDisplayName(request.Name2, false);
+#endif
     if (response.bSuccess)
     {
         // RPC to server
@@ -208,6 +241,10 @@ FROSSpawnEntityRes URRROS2SimulationStateClient::SpawnEntityImpl(FROSSpawnEntity
 {
     FROSSpawnEntityRes response;
     response.bSuccess = CheckSpawnableEntity(InRequest.Xml, false) && CheckEntity(InRequest.State.ReferenceFrame, true);
+#if WITH_EDITOR
+    response.bSuccess |=
+        CheckSpawnableEntity(InRequest.Xml, false) && CheckEntityWithDisplayName(InRequest.State.ReferenceFrame, true);
+#endif
     if (response.bSuccess)
     {
         const FString& entityModelName = InRequest.Xml;
