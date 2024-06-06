@@ -98,7 +98,8 @@ bool URRROS2SimulationStateClient::CheckEntity(TMap<FString, T>& InEntities, con
         UE_LOG_WITH_INFO_NAMED(LogRapyutaCore,
                                Warning,
                                TEXT("Entity named [%s] is not under SimulationState control. Please register it to "
-                                    "SimulationState! \n Entities in controles are: %s"),
+                                    "SimulationState! \n Entities in control are: %s"),
+
                                *InEntityName,
                                *temp);
     }
