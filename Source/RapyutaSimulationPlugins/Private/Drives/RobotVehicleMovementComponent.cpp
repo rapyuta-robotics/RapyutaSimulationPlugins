@@ -20,7 +20,17 @@
 void URobotVehicleMovementComponent::Initialize()
 {
     OwnerVehicle = CastChecked<ARRBaseRobot>(GetOwner());
+    InitVelFilters();
     InitData();
+}
+
+void URobotVehicleMovementComponent::InitVelFilters()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        LinearVelFilter[i].setTau(LinearVelFilterTau[i]);
+        AngVelFilter[i].setTau(AngVelFilterTau[i]);
+    }
 }
 
 void URobotVehicleMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -69,8 +79,16 @@ void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
                 //1- Update vels to OwnerVehicle's target vels
                 if (OwnerVehicle)
                 {
-                    Velocity = OwnerVehicle->TargetLinearVel;
-                    AngularVelocity = OwnerVehicle->TargetAngularVel;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        LinearVelFilter[i].update2(InDeltaTime, OwnerVehicle->TargetLinearVel[i]);
+                        AngVelFilter[i].update2(InDeltaTime, OwnerVehicle->TargetAngularVel[i]);
+
+                        Velocity[i] = LinearVelFilter[i].getOutput();
+                        AngularVelocity[i] = AngVelFilter[i].getOutput();
+                    }
+                    // Velocity = OwnerVehicle->TargetLinearVel;
+                    // AngularVelocity = OwnerVehicle->TargetAngularVel;
                 }
                 else
                 {
