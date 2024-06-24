@@ -162,9 +162,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URRBaseOdomComponent* OdomComponent = nullptr;
 
+    //! Low Pass filter Time constant of linear velocity commands
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector LinearVelFilterTau = FVector::ZeroVector;
 
+    //! Low Pass filter Time constant of angular velocity commands
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector AngVelFilterTau = FVector::ZeroVector;
 
