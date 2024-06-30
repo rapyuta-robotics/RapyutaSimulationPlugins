@@ -337,6 +337,12 @@ void ARRBaseRobot::DeInitROS2Interface()
 
 void ARRBaseRobot::SetMoveComponent(UMovementComponent* InMoveComponent)
 {
+    if (InMoveComponent == nullptr)
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("InMoveComponent is nullptr!"));
+        return;
+    }
+
     MovementComponent = InMoveComponent;
     MovementComponent->RegisterComponent();
     MovementComponent->SetIsReplicated(true);
@@ -359,6 +365,13 @@ void ARRBaseRobot::ConfigureMovementComponent()
 
 bool ARRBaseRobot::InitMoveComponent()
 {
+    // if htere is a Movecomponent, use it as the movement component.
+    // Mainly targeting use MoveComponent in child BP.
+    if (MovementComponent == nullptr)
+    {
+        SetMoveComponent(FindComponentByClass<UMovementComponent>());
+    }
+
     // Create MovementComponent. If it is already created by BP, this part is skiped.
     if (VehicleMoveComponentClass && MovementComponent == nullptr)
     {
