@@ -812,6 +812,84 @@ public:
     }
 
     /**
+     * @brief template wrapper of #GetJsonField.
+     *
+     * @tparam T
+     * @param InJsonString the Json string containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    template<typename T>
+    static bool GetJsonField(const FString& InJsonString, const FString& InFieldName, T& OutValue)
+    {
+        TSharedRef<TJsonReader<TCHAR>> jsonReader = TJsonReaderFactory<TCHAR>::Create(InJsonString);
+        TSharedPtr<FJsonObject> jsonObj = MakeShareable(new FJsonObject());
+        if (!FJsonSerializer::Deserialize(jsonReader, jsonObj) && jsonObj.IsValid())
+        {
+            UE_LOG(LogTemp, Error, TEXT("Failed to deserialize json to object"));
+            return false;
+        }
+        return GetJsonField(jsonObj, InFieldName, OutValue);
+    }
+
+    /**
+     * @brief Blueprint wrapper of #GetJsonField.
+     * @todo Use K2_Node
+     * @param InJsonString the Json string containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    UFUNCTION(BlueprintCallable)
+    static bool GetJsonFieldVector(const FString& InJsonString, const FString& InFieldName, FVector& OutValue)
+    {
+        return GetJsonField<FVector>(InJsonString, InFieldName, OutValue);
+    }
+
+    /**
+     * @brief Blueprint wrapper of #GetJsonField.
+     * @todo Use K2_Node
+     * @param InJsonString the Json string containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    UFUNCTION(BlueprintCallable)
+    static bool GetJsonFieldRotator(const FString& InJsonString, const FString& InFieldName, FRotator& OutValue)
+    {
+        return GetJsonField<FRotator>(InJsonString, InFieldName, OutValue);
+    }
+
+    /**
+     * @brief Blueprint wrapper of #GetJsonField.
+     * @todo Use K2_Node
+     * @param InJsonString the Json string containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    UFUNCTION(BlueprintCallable)
+    static bool GetJsonFieldQuat(const FString& InJsonString, const FString& InFieldName, FQuat& OutValue)
+    {
+        return GetJsonField<FQuat>(InJsonString, InFieldName, OutValue);
+    }
+
+    /**
+     * @brief Blueprint wrapper of #GetJsonField.
+     * @todo Use K2_Node
+     * @param InJsonString the Json string containing the required field
+     * @param InFieldName the name of the field to read
+     * @param OutValue contains the returned value
+     * @return bool if the field exists in the Json object
+     */
+    UFUNCTION(BlueprintCallable)
+    static bool GetJsonFieldTransform(const FString& InJsonString, const FString& InFieldName, FTransform& OutValue)
+    {
+        return GetJsonField<FTransform>(InJsonString, InFieldName, OutValue);
+    }
+
+    /**
      * @brief Initialize OutValue with the value of the requested field in a FJsonObject.
      * If the field does not exist, OutValue = InDefaultValue
      *
