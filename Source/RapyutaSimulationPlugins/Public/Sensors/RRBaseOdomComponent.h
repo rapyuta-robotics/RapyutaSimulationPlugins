@@ -84,7 +84,7 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void InitOdom();
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EOdomSource OdomSource = EOdomSource::WORLD;
 
     /**
@@ -96,7 +96,7 @@ public:
 
     //! Publish tf or not
     //! @todo move this to publisher
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bPublishOdomTf = false;
 
     UPROPERTY(VisibleAnywhere)
