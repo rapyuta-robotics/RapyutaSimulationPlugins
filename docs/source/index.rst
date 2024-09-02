@@ -32,6 +32,7 @@ Contents
    getting_started
    components
    robots
+   external_devices
    distributed_simulation
    ue_api
    ue_asset
