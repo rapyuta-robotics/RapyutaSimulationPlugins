@@ -1,283 +1,438 @@
-External Interface Requirements
-===============================
+External Devices
+===================
 
-Software Interfaces
---------------------
+.. video:: ../_static/videos/external_devices.mp4
+    :width: 750
+    :height: 450
+
+External devices are non-robot device such as conveyor, elevator, etc.
+External devices are implemented using BP (Blueprint) to allow easy editing 
+by non-engineers. Each external device is a child class of `BP_ExternalDeviceBase`, 
+which is a child class of `RRBaseRobot`. This setup provides ROS2Node 
+and ROS2Interface functionalities.
+
+External devices can be place from editor or spawned from ROS 2  `/SpawnEntity <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv>`_ .
+
+Following devices only has basic setting such as primitive meshes as visual. 
+It is expected that user create child class and change visual mesh, collision size and etc.
+
 
 Base Class
-~~~~~~~~~~
+----------
 
 Overview
-++++++++
+^^^^^^^^
+Base class is parent class of other External Device BP classes and have common functionalities.
 
-External Devices are implemented by BP to be easily edited by non-engineers as well. 
-External Device is a child class `BP_ExternalDeviceBase`, which is a child class of `RRBaseRobot` to have `ROS2Node` and `ROS2Interface`.
+Base ROS Interfaces
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-Base Functions
-++++++++++++++
+UE external components have ROS 2 Interface which provide
 
-- **ParamParser** and **ParamParserImple**: Parse JSON parameters. Additional ROS spawn parameter parsing should be implemented here.
-  - When it is spawned from ROS, ParamParser is called from `BPInitParamPaser`.
-  - When it is spawned from UE, e.g., placed from editor, ParamParser is called from `Initialize` function. It is expected that parameters are overwritten by the editor as normal UE Actors.
-- **InitializeChildActor**: Some external devices have external devices as child actors, e.g., vertical conveyor has elevator and conveyors as child actors. Initialization of child actors such as passing parameters, setting relative pose, etc., is done here.
-- **Construction Script** calls:
-  1. `InitializeChildActor`
-  2. `Initialize`
-  3. `PostInitialize`
+- ROS2 Topic Interface: Two main interface based on modes
+    - **Low level interface**  
+        e.g. *velocity input and sensor*
 
-Parameters
-++++++++++
+        It allow user to create custom behavior of devices
+    - **Preset action** 
+        e.g. *move pallet from entrance A to entrance B*
+
+        It allow user to test integration with just trigger action. It is also useful to speed up simulation since all logic inside UE.
+
+- Parameters: 
+    - **Normal Parameters** 
+        e.g. *velocity*
+        
+        Parameters which can be changed at runtime.
+    - **Spawn Parameters** 
+        e.g. *size, floor height* 
+        
+        Parameters which can’t be changed after spawn. Pose and ROS namespace are includes as ue_msgs/SpawnEntity.srv.
+
+
+Base UE functions
+^^^^^^^^^^^^^^^^^^
+
+- ParamParser and ParamParserImpl: 
+    These handle JSON parameter parsing.  
+    When spawned from ROS, `ParamParser` is called from `BPInitParamParser`.  
+    When spawned from Unreal Engine (UE), such as when placed from the editor, 
+    `ParamParser` is called from the `Initialize` function. It is expected that 
+    parameters will be overwritten by the editor as normal UE Actors.
+
+- InitializeChildActor: 
+    Some external devices contain other devices as 
+    child actors. For example, a vertical conveyor may have an elevator and 
+    conveyors as child actors. The initialization of these child actors, such 
+    as passing parameters and setting relative positions, is performed here.
+
+- Construction Script: 
+    The construction script calls three functions:  
+    1. `InitializeChildActor`  
+    2. `Initialize`  
+    3. `PostInitialize`
+
+Parameters for BP_ExternalDeviceBase
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :header-rows: 1
 
-   * - Parameter Name
-     - Type = Default
+   * - Param Name
+     - Type (Default)
      - Note
+   * -  **ROS JSON SPAWN PARAMETER**
+     - 
+     - 
    * - /debug
-     - bool = false
-     - Mainly used to print debug log or not
+     - bool (false)
+     - Mainly used to print debug logs.
    * - /mode
-     - int = 0
-     - Most external devices have modes, e.g., manual or auto
+     - int (0)
+     - Modes such as manual or automatic.
    * - /disable_physics
-     - bool = true
-     - Disable physics of target object during operation, e.g., conveyor disables physics of payload during movement
+     - bool (true)
+     - Disables physics of the target object during operation.
    * - /size
-     - dict = {x:1, y:1, z:1}
-     - Scale of external device. Not all devices are confirmed with arbitrary sizes
-
-Other BP Exposed Parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. list-table::
-   :header-rows: 1
-
-   * - Parameter Name
-     - Type = Default
-     - Note
+     - dict {x:1, y:1, z:1}
+     - Scale of the external device.
+   * -  **BP PARAMETER**
+     - 
+     - 
    * - ParseParamFromJSON
-     - bool = true
-     - Parse parameter from JSON or not
+     - bool (true)
+     - Parse parameters from JSON.
    * - DebugParamParser
-     - bool = false
-     - Use TestJsonInput below as JSON parameter input. Mainly used for debugging JSON Param Parser
+     - bool (false)
+     - Used for debugging the JSON Param Parser.
    * - TestJsonInput
-     - string = ''
-     - Test JSON input for debugging
+     - string ('')
+     - Test JSON input for debugging.
 
 Conveyor
-~~~~~~~~
+--------
 
-Overview
-++++++++
+Overview  
+^^^^^^^^
 
-The conveyor has collision meshes with the `OverlapAll` setting. The conveyor moves objects with a given velocity that overlaps with the collision meshes.
+The conveyor has collision meshes set to `OverlapAll`. It moves objects 
+with a given velocity that overlap with the meshes.
 
-There are `BP_Conveyor` and `BP_SplineConveyor` classes, which are child classes of `BP_ConveyorBase` class. The main functionality is implemented in `BP_ConveyorCollisionMeshAddon`.
+There are two main conveyor types:
 
-`BP_Conveyor` is a simple straight conveyor, and `BP_SplineConveyor` is a conveyor along a spline curve.
+- `BP_Conveyor`: A simple straight conveyor.
+- `BP_SplineConveyor`: A conveyor that moves along a spline curve.
 
-Conveyors can be controlled by velocity input and come with two sensors that detect objects at edges.
+The conveyor can be controlled by velocity input and has two sensors to detect objects.
 
-Parameters
-++++++++++
+.. figure:: ../images/conveyor_ue.png
+   :align: center
+
+   Figure : Conveyor
+
+Conveyor Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :header-rows: 1
 
-   * - Parameter Name
-     - Type = Default
-     - Note
-   * - /mode
-     - int32 = 0
-     - 0: Move payload until it goes out of the area
-       1: Move payload until it hits the entrance sensor
-   * - /sensor1_transform
-     - transform = { position: {x:97.5, y:0, z:0}, rotation: {x:0, y:0, z:0}, size: {x:0.05, y:1, z:0.5} }
-     - Relative transform of sensor1
-   * - /sensor2_transform
-     - transform = { position: {x:-97.5, y:0, z:0}, rotation: {x:0, y:0, z:0}, size: {x:0.05, y:1, z:0.5} }
-     - Relative transform of sensor2
-   * - /vel
-     - float = 1 [m/s]
-     - Conveyor velocity
-   * - /sensor_length
-     - float = 0.1 [m]
-     - Length of sensor area
-   * - /points
-     - dict = { position: None, rotation: None, arrive_tangent: None, leave_tangent: None, scale: None }
-     - Spline points of curves. Conveyor meshes are created along the spline curve.
+   * - Param Name
 
-ROS 2 API
-~~~~~~~~~
+       [UE name if it is not pascal case of ROS one]
+     - Type (Default)
+     - Note
+   * -  **ROS JSON SPAWN PARAMETER**
+     - 
+     - 
+   * - /mode
+     - int32 (0)
+     - 
+        0. Move until payload exits the area  
+        1. Move until it hits the entrance sensor.
+   * - /sensor1_transform
+     - transform 
+        .. code-block:: json
+       
+          {
+              "position": {"x": 97.5, "y": 0, "z": 0},
+              "rotation": {"x": 0, "y": 0, "z": 0},
+              "size": {"x": 0.05, "y": 1, "z": 0.5}
+          }
+     - Relative transform of sensor1.
+   * - /sensor2_transform
+     - transform
+        .. code-block:: json
+       
+          {
+              "position": {"x": -97.5, "y": 0, "z": 0},
+              "rotation": {"x": 0, "y": 0, "z": 0},
+              "size": {"x": 0.05, "y": 1, "z": 0.5}
+          }
+     - Relative transform of sensor2.
+   * - /vel
+        [Speed]
+     - float (1.0 m/s)
+     - Conveyor speed.
+   * - /sensor_length
+        (BP_Conveyor)
+     - float (0.1 m)
+     - Sensor area length.
+   * - /points
+        (BP_SplineConveyor)
+     - json
+        .. code-block:: json
+       
+          {
+              "position": null,
+              "rotation": null,
+              "arrive_tangent": null,
+              "leave_tangent": null,
+              "scale": null
+          }
+     - Spline points for curve creation.
+   * -  **BP PARAMETER**
+     - 
+     - 
+   * - Tag
+     - string ('Payload')
+     - Actors with this tag are conveyed.
+
+ROS 2 API for Conveyor
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :header-rows: 1
 
    * - Topic Name
-     - Message Type
+     - Msg Type
      - Note
+   * - **SUBSCRIBE**
+     - 
+     - 
    * - /set_vel
-     - `example_interfaces/msg/Float32`
-     - [m/s] Move conveyor. Can be + or -
+     - `example_interfaces/msg/Float32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Float32.html>`_
+     - Conveyor speed. Can be positive or negative.
    * - /set_mode
-     - `example_interfaces/msg/Int32`
-     - 0: Move payload until it goes out of the area
-       1: Move payload until it hits the entrance sensor
+     - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
+     - Sets mode:  
+       0: Move until payload exits area  
+       1: Move until it hits the entrance sensor.
+   * - **PUBLISH**
+     - 
+     - 
    * - /entrance
-     - `example_interfaces/msg/Int32MultiArray`
-     - Size=2. 0 means no object at sensor location, 1 means something is there.
-
-*Note: Topic names are temporary and can be changed from parameters.*
+     - `example_interfaces/msg/Int32MultiArray <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32MultiArray.html>`_
+     - Size = 2. 0: No object, 1: Object detected.
 
 Elevator
-~~~~~~~~
+--------
 
-Overview
-++++++++
+Overview  
+^^^^^^^^
 
-Elevators have a container that moves between floors. The container can have doors or not. The container has a conveyor inside to automatically pull in/push out the payload.
+Elevators consist of containers that move between floors. 
+The containers can have doors and conveyors inside to automatically move payloads.
 
-*Todo:*
+.. figure:: ../images/elevator_ue.png
+   :align: center
 
-- Support multiple types of doors
-- Multiple door locations for each floor
-- Test Spawning from ROS 2
+   Figure : Elevator
 
-ROS 2 API
-~~~~~~~~~
+Elevator Parameters
+^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :header-rows: 1
 
-   * - Parameter Name
-     - Type = Default
+   * - Param Name
+
+       [UE name if it is not pascal case of ROS one]
+     - Type (Default)
      - Note
+   * -  **ROS JSON SPAWN PARAMETER**
+     - 
+     - 
    * - /mode
-     - int8 = 1
-     - 0: Manual. Able to control the elevator and door by velocity input.
-       1: Normal. Control the elevator and door by `/move_to` and `/open_door`.
-       2: Auto Move Return. The elevator moves to another floor specified in `/auto_target_floors` when the payload enters and returns to the original floor when objects go outside the elevator.
+     - int (1)
+     - 
+       0. Manual mode: Control elevator and doorby velocity input
+       1. Normal mode: Control elevator and door by /move_to and /open_door
+       2. Auto Move Return mode: Elevator moves to another floor specified in /auto_target_floors when the payload enters and returns to the original floor when objects go outside of the elevator.
    * - /floor_height
-     - float = 5 [m]
-     - Distance between floors
+     - float (5.0 m)
+     - Floor height.
    * - /floors
-     - int8[2] = [0,1]
-     - Top and bottom floor numbers
+     - int [2]([0, 1])
+     - Floor numbers.
    * - /doors
-     - bool[true, false, false]
-     - Which door opens: front or back on each floor. 0: front, 1: back
+
+        [Open Front Door by Floor]
+     - bool[2] ([true, false])
+     - Door presence.
    * - /door
-     - bool = true
-     - Spawn doors or not
+        [Has Door]
+     - bool (true)
+     - Door presence.
    * - /door_vel
-     - float = 0.3 [m/s]
-     - Door moving speed
+
+        [Back/Front Door Speed]
+     - float (0.3 m/s)
+     - Door speed.
    * - /initial_floor
-     - int32 = 0
-     - Initial floor
+     - int (0)
+     - Initial floor.
    * - /auto_target_floors
-     - int8[2] = [0,1]
-     - Target floors for auto mode
+     - int [2]([0, 1])
+     - Auto mode target floors.
    * - /vel
-     - float = 3 [m/s]
-     - Elevator moving speed
+
+        [Elevator Speed]
+     - float (3.0 m/s)
+     - Elevator speed.
+
+ROS 2 API for Elevator
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :header-rows: 1
 
    * - Topic Name
-     - Message Type
+     - Msg Type
      - Note
-   * - /set_vel
-     - `example_interfaces/msg/Float32`
-     - [m/s] Mode==0: Move the container. Can be + or -. Mode > 0: Set velocity used for `/move_to` and auto movement.
-   * - /set_front_door_vel
-     - `example_interfaces/msg/Float32`
-     - [m/s] Mode==0: Move the door. Can be + (open), - (close). Mode > 0: Set velocity used for `/move_to` and auto movement.
-   * - /set_back_door_vel
-     - `example_interfaces/msg/Float32`
-     - [m/s] Mode==0: Move the door. Can be + (open), - (close). Mode > 0: Set velocity used for `/move_to` and auto movement.
-   * - /open_door
-     - `example_interfaces/msg/Bool`
-     - Open/Close the door.
-   * - /move_to
-     - `example_interfaces/msg/Int32`
-     - Close door, move to the given floor, and open the door.
+   * - **SUBSCRIBE**
+     - 
+     - 
    * - /set_mode
-     - `example_interfaces/msg/Int32`
-     - 0: Manual. Able to control the elevator and door by velocity input. 1: Normal. Control the elevator and door by `/move_to` and `/open_door`.
+     - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
+     - 
+       0. Manual mode: Control elevator and doorby velocity input
+       1. Normal mode: Control elevator and door by /move_to and /open_door
+       2. Auto Move Return mode: Elevator moves to another floor specified in /auto_target_floors when the payload enters and returns to the original floor when objects go outside of the elevator.
+   * - /set_vel
+     - `example_interfaces/msg/Float32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Float32.html>`_
+     - 
+        - Mode==0: Move the container. can be +-
+        - Mode > 0: set vel which is used to /move_to and automovement.
+   * - /set_front_door_vel
+     - `example_interfaces/msg/Float32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Float32.html>`_
+     - 
+        - Mode==0: Move the door. can be +-
+        - Mode > 0: set vel which is used to /move_to and automovement.
+   * - /set_back_door_vel
+     - `example_interfaces/msg/Float32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Float32.html>`_
+     - 
+        - Mode==0: Move the door. can be +-
+        - Mode > 0: set vel which is used to /move_to and automovement.
+   * - /set_door_vel
+     - `example_interfaces/msg/Float32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Float32.html>`_
+     - 
+        - Mode==0: Move the door. can be +-
+        - Mode > 0: set vel which is used to /move_to and automovement.
+   * - /open_door
+     - `example_interfaces/msg/Bool <https://docs.ros2.org/foxy/api/example_interfaces/msg/Bool.html>`_
+     - Opens or closes the doors.
+   * - /move_to
+     - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
+     - Close door, move to the specified floor and open door.
+   * - /set_auto_target_floors
+     - `example_interfaces/msg/Int32MultiArray <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32MultiArray.html>`_ [2]
+     - Set the target floors for auto mode.
+   * - **PUBLISH**
+     - 
+     - 
+   * - /current_floor
+     - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
+     - Current floor.  
+       If the floor is moving, it will show the last known floor.
+   * - /door_status
+     - `example_interfaces/msg/Bool <https://docs.ros2.org/foxy/api/example_interfaces/msg/Bool.html>`_
+     - Door status. True = open, False = closed.
+   * - **SERVICE**
+     - 
+     - 
+   * - /get_door_status
+     - `ue_msgs/srv/GetBoolFromId <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/GetBoolFromId.srv>`_
+     - Returns whether the door is open or not.
+   * - /get_current_floor
+     - `ue_msgs/srv/GetInt32FromId <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/GetInt32FromId.srv>`_
+     - Returns the current floor.
+   * - /move_to
+     - `ue_msgs/srv/SetInt32 <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SetInt32.srv>`_
+     - Close door, move to the specified floor and open door.
+   * - /open_door
+     - `ue_msgs/srv/SetInt32 <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SetInt32.srv>`_
+     - Opens or closes the doors.
 
-*Note: Topic names are temporary and can be changed from parameters.*
+**Todo**  
+    - Support multiple type of doors
+    - Multiple door location for each floor
+    - Test spawning from ROS 2.
 
-.. note::
-   - [ROS 2 Documentation for Int32](https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html)
-   - [ROS 2 Documentation for Float32](https://docs.ros2.org/foxy/api/example_interfaces/msg/Float32.html)
-   - [ROS 2 Documentation for Bool](https://docs.ros2.org/foxy/api/example_interfaces/msg/Bool.html)
 
 Vertical Conveyor
-~~~~~~~~~~~~~~~~~
+-----------------
 
 Overview
-++++++++
+^^^^^^^^
 
-Vertical Conveyor is a combination of conveyors (entrances) and an elevator.
+The vertical conveyor is a combination of a conveyor and an elevator. It allows 
+for the vertical transport of payloads between multiple levels, and each level 
+can have its own entrance and exit conveyors.
 
-*Todo:*
+.. figure:: ../images/vertical_conveyor_ue.png
+   :align: center
 
-- Different parameter settings for each entrance
-- Test spawning from ROS 2
+   Figure : Vertical Conveyor
 
-ROS 2 API
-~~~~~~~~~
+Vertical Conveyor Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :header-rows: 1
 
-   * - Parameter Name
-     - Type = Default
+   * - Param Name
+     - Type (Default)
      - Note
+   * -  **ROS JSON SPAWN PARAMETER**
+     - 
+     - 
    * - /floor_height
-     - float = 10 [m]
-     - Distance between floors
+     - float (10 m)
+     - Distance between floors.
    * - /entrances
-     - int32[4] = [false, true, false, true]
-     - 0 means no entrance, 1 means entrance. Defines whether each entrance is active or not.
+     - int32 [4]([false, true, false, true])
+     - Define if each entrance is active.  
+       0. no entrance,  
+       1. entrance active.
    * - /target_entrance
-     - int8[2] = [0,1]
+     - int8 [2]([0, 1])
      - Target entrance, [in, out].
    * - /elevator
-     - string = ''
-     - JSON spawn parameter passed to the child elevator actor.
+     - string ('')
+     - JSON spawn parameter to pass to the child elevator actor.
    * - /entrance
-     - string = ''
-     - JSON spawn parameter passed to the child entrance conveyor actors.
-
-BP Parameters
-~~~~~~~~~~~~~
-
-.. list-table::
-   :header-rows: 1
-
-   * - Parameter Name
-     - Type = Default
-     - Note
+     - string ('')
+     - JSON spawn parameter to pass to child entrance conveyor actors.
+   * -  **BP PARAMETER**
+     - 
+     - 
    * - EntranceActorClass
-     - Actor Class = BP_Conveyor
-     - Entrance Conveyor Class
-
-Vertical Conveyor ROS 2 API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     - ActorClass(BP_Conveyor)
+     - Entrance conveyor class
+     
+ROS 2 API for Vertical Conveyor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :header-rows: 1
 
    * - Topic Name
-     - Message Type
+     - Msg Type
      - Note
    * - /set_target_entrance
-     - int32[2]
-     - Target entrance. [in, out].
+     - `example_interfaces/msg/Int32MultiArray <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32MultiArray.html>`_ [2]
+     - Sets the target entrance, [in, out].
 
-*Note: Topic names are temporary and can be changed from parameters.*
+**Todo**  
+    - Support different parameter settings for each entrance.
+    - Test spawning from ROS 2.
