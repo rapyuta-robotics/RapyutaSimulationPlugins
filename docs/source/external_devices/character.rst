@@ -10,8 +10,8 @@ is to simulate humans, non-robot components such as manually controlled forklift
 or off-the-shelf robots that you won't develop but exists in the environment. 
 These actors help simulate robot interactions with dynamic objects in environments like warehouses.
 
-Basic AI functionality such as pick/drop/move is implemented via behavior tree in BP_
-RRROSAIController. The main reason to implement logic in controller instead of actor is to
+Basic AI functionality such as pick/drop/move is implemented via behavior tree in BP_RRROSAIController. 
+The main reason to implement logic in controller instead of actor is to
 support both child class of RRBaseRobot and Character.
 
 RRAIRobotROSController is parent class of BP_RRROSAIController which has
@@ -22,20 +22,24 @@ BP_RRAIBaseRobot and BP_ROSSimpleCharacter uses BP_ROSAIController as controller
 is expected to overwrite function/behavior in those child actor classes to implement custom
 pick/drop/etc actions.
 
-.. video:: ../_static/videos/warehouse_sim.mov
+Following video are examples in  `rclUE-Examples <https://github.com/yuokamoto/rclUE-Examples>`_
+and `UEROSAssets <https://github.com/yuokamoto/UEROSAssets/tree/ai_robots2>`_
+repositories. 
+
+.. video:: ../_static/videos/warehouse_sim.mp4
     :width: 750
     :height: 450
 
 *Video: Warehouse Sim*
 
 
-.. video:: ../_static/videos/fork_pick_drop_ros.mov
+.. video:: ../_static/videos/fork_pick_drop_ros.mp4
     :width: 750
     :height: 450
 
 *Video: Forklift Pick/Drop From ROS*
 
-.. video:: ../_static/videos/character_pick_drop_ros.mov
+.. video:: ../_static/videos/character_pick_drop_ros.mp4
     :width: 750
     :height: 450
 
@@ -123,7 +127,7 @@ AI Controller
 -------------
 
 RRAIRobotROSController  
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 `RRAIRobotROSController` contains basic movement functionality in C++. It supports 
 movement using Unreal Engine's navigation system and allows for direct linear and 

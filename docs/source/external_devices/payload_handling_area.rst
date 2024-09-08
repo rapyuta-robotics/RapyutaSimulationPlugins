@@ -235,15 +235,15 @@ Teleport Area Manager Parameters
           [
             {
               "name": "teleport_area1",
-              "transform": ... ,
-              teleport_mode: ...,
-              ...
+              "transform": …,
+              "teleport_mode": …,
+              …
             },
             {
-              name": "teleport_area1",
-              "transform": ... ,
-              teleport_mode: ...,
-              ...
+              "name": "teleport_area1",
+              "transform": …,
+              "teleport_mode": …,
+              …
             }
           ]
      - List of TeleportAreas, each defined by name, transform, and parameters as defined in Teleport Area Parameters.
