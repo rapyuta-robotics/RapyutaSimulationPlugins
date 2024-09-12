@@ -14,12 +14,12 @@ The `BP_PayloadHandlerBase` class serves as the base class for all payload handl
 Basic Functions
 ^^^^^^^^^^^^^^^^
 
-- `/trigger` action is overwritten by child classes.  
+- `/trigger` action is overwritten by child classes.
 
-- **Manual and Auto Mode**:  
+- **Manual and Auto Mode**:
 
-  - *Manual*: The `/trigger` action is invoked manually by Unreal Engine (UE) or ROS 2.  
-  - *Auto*: The `/trigger` action is invoked periodically after a certain duration once a specific condition is met.  
+  - *Manual*: The `/trigger` action is invoked manually by Unreal Engine (UE) or ROS 2.
+  - *Auto*: The `/trigger` action is invoked periodically after a certain duration once a specific condition is met.
 
 - **Target Actor Filtering**: The target actor is filtered by `TargetTag`.
 
@@ -35,16 +35,16 @@ Payload Handler Parameters
      - Type (Default)
      - Note
    * -  **ROS JSON SPAWN PARAMETER**
-     - 
-     - 
+     -
+     -
    * - /mode
      - int32 (0)
-     - 0: Manual  
+     - 0: Manual
        1: Auto
    * - /duration
      - float (1.0)
      - Time interval to trigger action in auto mode.
-   * - /tag 
+   * - /tag
 
         [TargetTag]
      - string ('Payload')
@@ -60,8 +60,8 @@ ROS 2 API for Payload Handler
      - Msg Type
      - Note
    * -  **SUBSCRIBE**
-     - 
-     - 
+     -
+     -
    * - /set_mode
      - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
      - Sets the mode: 0 for manual, 1 for auto.
@@ -77,10 +77,10 @@ Sink Area
 
 `BP_SinkArea` is a child class of `BP_PayloadHandlerBase`.
 
-- `/trigger` action 
+- `/trigger` action
     deletes the actor.
 
-- **Condition for Auto Mode**: 
+- **Condition for Auto Mode**:
     The action is triggered when an actor overlaps with the area.
 
 
@@ -99,7 +99,7 @@ Source Area
 - `/trigger` action:
    spawns and attaches an actor to the spots.
 
-- **Condition for Auto Mode**: 
+- **Condition for Auto Mode**:
     The action is triggered when the actor in the spot is detached from the area.
 
 Depending on the `/source_mode`, the `/trigger` action will either spawn one actor at a time or all actors when all spots are empty.
@@ -119,12 +119,12 @@ Parameters for Source Area
      - Type (Default)
      - Note
    * -  **ROS JSON SPAWN PARAMETER**
-     - 
-     - 
+     -
+     -
    * - /source_mode
      - int32 (0)
-     - 
-        1. Spawns one actor at a time.  
+     -
+        1. Spawns one actor at a time.
         2. Spawns all actors together when all spots are empty.
    * - /num
      - vector (x:1, y:1, z:1)
@@ -146,13 +146,13 @@ ROS 2 API for Source Area
      - Msg Type
      - Note
    * -  **SUBSCRIBE**
-     - 
-     - 
+     -
+     -
    * - /set_spawn_mode
      - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
-     - Sets the spawn mode:  
+     - Sets the spawn mode:
 
-       0. Spawns one actor at a time,  
+       0. Spawns one actor at a time,
        1. Spawns all actors together.
 
 Teleport Area and Manager
@@ -176,11 +176,11 @@ Teleport Area Parameters
      - Type (Default)
      - Note
    * -  **ROS JSON SPAWN PARAMETER**
-     - 
-     - 
+     -
+     -
    * - /teleport_mode
      - int32 (0)
-     - 0: Entrance  
+     - 0: Entrance
        1: Exit
    * - /target_exit
      - string ('')
@@ -202,11 +202,11 @@ ROS 2 API for Teleport Area
      - Msg Type
      - Note
    * -  **SUBSCRIBE**
-     - 
-     - 
+     -
+     -
    * - /set_teleport_mode
      - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
-     - 0: Entrance  
+     - 0: Entrance
        1: Exit
    * - /set_target_exit
      - `example_interfaces/msg/String <https://docs.ros2.org/foxy/api/example_interfaces/msg/String.html>`_
@@ -224,10 +224,10 @@ Teleport Area Manager Parameters
      - Type (Default)
      - Note
    * -  **ROS JSON SPAWN PARAMETER**
-     - 
-     - 
-   * - /areas 
-   
+     -
+     -
+   * - /areas
+
         [TeleportAreas]
      - json
         .. code-block:: json
@@ -240,7 +240,7 @@ Teleport Area Manager Parameters
               …
             },
             {
-              "name": "teleport_area1",
+              "name": "teleport_area2",
               "transform": …,
               "teleport_mode": …,
               …
@@ -254,7 +254,7 @@ Teleport Area Manager Parameters
 Change Area
 -----------
 
-`BP_ChangeArea` is a child class of `BP_TeleportArea`. 
+`BP_ChangeArea` is a child class of `BP_TeleportArea`.
 It changes the target actor into a different class during teleportation.
 
 .. video:: ../_static/videos/change_area.mp4
@@ -273,12 +273,11 @@ Change Area Parameters
      - Type (Default)
      - Note
    * -  **ROS JSON SPAWN PARAMETER**
-     - 
-     - 
+     -
+     -
    * - /input_actor_classes
      - string[]
      - List of input actor classes.
    * - /output_actor_class
      - string ('')
      - Output actor class after teleportation and change.
-
