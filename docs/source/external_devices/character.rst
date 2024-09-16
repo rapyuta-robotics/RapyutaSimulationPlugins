@@ -4,13 +4,13 @@ AI Character/Robot
 AI Overview
 -----------
 
-AI Character/Robot is an actor controlled via `BP_ROSAIController`. It has preset 
-movements such as pick, drop, and navigation. The primary purpose of these actors 
-is to simulate humans, non-robot components such as manually controlled forklifts, 
-or off-the-shelf robots that you won't develop but exists in the environment. 
+AI Character/Robot is an actor controlled via `BP_ROSAIController`. It has preset
+movements such as pick, drop, and navigation. The primary purpose of these actors
+is to simulate humans, non-robot components such as manually controlled forklifts,
+or off-the-shelf robots that you won't develop but exists in the environment.
 These actors help simulate robot interactions with dynamic objects in environments like warehouses.
 
-Basic AI functionality such as pick/drop/move is implemented via behavior tree in BP_RRROSAIController. 
+Basic AI functionality such as pick/drop/move is implemented via behavior tree in BP_RRROSAIController.
 The main reason to implement logic in controller instead of actor is to
 support both child class of RRBaseRobot and Character.
 
@@ -22,9 +22,20 @@ BP_RRAIBaseRobot and BP_ROSSimpleCharacter uses BP_ROSAIController as controller
 is expected to overwrite function/behavior in those child actor classes to implement custom
 pick/drop/etc actions.
 
-Following video are examples in  `rclUE-Examples <https://github.com/yuokamoto/rclUE-Examples>`_
+*Following video are examples in  `rclUE-Examples <https://github.com/yuokamoto/rclUE-Examples>`_
 and `UEROSAssets <https://github.com/yuokamoto/UEROSAssets/tree/ai_robots2>`_
-repositories. 
+repositories.
+
+*Please check LevelBP of
+`Warehouse Map <https://github.com/yuokamoto/rclUE-Examples/blob/main/Content/Maps/Warehouse.umap>`_
+in
+`rclUE-Examples <https://github.com/yuokamoto/rclUE-Examples>`_
+for how to control AI character/robot from UE
+
+*Please check
+`warehouse_client.py <https://github.com/yuokamoto/rclUE_client_example/blob/main/rclUE_client_example/rclUE_client_example/warehouse_client.py>`_
+in  `rclUE_client_examples <https://github.com/yuokamoto/rclUE_client_example>`_
+for how to control AI character/robot from ROS 2
 
 .. video:: ../_static/videos/warehouse_sim.mp4
     :width: 750
@@ -51,42 +62,42 @@ Basic Behaviors
 
 AI characters can move using two methods:
 
-- **UE Navigation System Movement**: 
+- **UE Navigation System Movement**:
     Utilizes Unreal Engine's navigation system, requiring a navigation mesh in the map.
-  
-- **Direct Movement**: 
+
+- **Direct Movement**:
     Uses `SetActorLocation` and `SetActorRotation` for linear and rotational movement, often for tasks such as picking up or dropping objects.
 
 Combination Behaviors
 ^^^^^^^^^^^^^^^^^^^^^
 
-- **Auto Movement**: 
+- **Auto Movement**:
     The robot can move randomly or sequentially through predefined goal sequences, or move randomly within a defined area.
 
     - **SEQUENCE**: Moves repeatedly through a given `GoalSequence`.
     - **RANDOM_SEQUENCE**: Selects a random destination from `GoalSequence`.
     - **RANDOM_AREA**: Selects random destinations within a specified bounding box.
 
-- **Pick/Drop**: 
-    Combines UE navigation system movement with direct movement 
-    (forward/backward) to approach or depart from the target payload or point, lifting 
-    up or down, and attaching or detaching the object. There is also an option to 
+- **Pick/Drop**:
+    Combines UE navigation system movement with direct movement
+    (forward/backward) to approach or depart from the target payload or point, lifting
+    up or down, and attaching or detaching the object. There is also an option to
     move to another approach location before moving to the target location, which helps
     pawn to approach the target from specific direction.
 
-- **General Action**: 
-    A virtual event that can be customized in child classes. The action is 
+- **General Action**:
+    A virtual event that can be customized in child classes. The action is
     triggered by a JSON string argument and allows for flexible custom behavior.
 
 
 Behavior Trees
 ^^^^^^^^^^^^^^^
 
-**BT_ROS2Agent**  
-`BT_ROS2Agent` is a base behavior tree that switches between navigation, pick, drop, 
-and general actions. In the navigation part, it switches Auto Movement modes depending 
-on the current mode. In the pick/drop part, it includes sub-behavior trees in 
-`PickImpl/DropImpl`, which are set in the `PickImplBehavior/DropImplBehavior` 
+**BT_ROS2Agent**
+`BT_ROS2Agent` is a base behavior tree that switches between navigation, pick, drop,
+and general actions. In the navigation part, it switches Auto Movement modes depending
+on the current mode. In the pick/drop part, it includes sub-behavior trees in
+`PickImpl/DropImpl`, which are set in the `PickImplBehavior/DropImplBehavior`
 variables of `BP_RRROSAIController`.
 
 
@@ -110,13 +121,13 @@ variables of `BP_RRROSAIController`.
 
    Navigation movement part of ROS2Agent Behavior tree
 
-**BT_ROS2RobotPick/BT_ROS2RobotDrop**  
+**BT_ROS2RobotPick/BT_ROS2RobotDrop**
 These are the default sub-behavior trees used for `PickImpl/DropImpl` actions.
 
 .. figure:: ../images/bt_robot_pick.png
    :align: center
 
-   Pick sub tree 
+   Pick sub tree
 
 .. figure:: ../images/bt_robot_drop.png
    :align: center
@@ -126,12 +137,12 @@ These are the default sub-behavior trees used for `PickImpl/DropImpl` actions.
 AI Controller
 -------------
 
-RRAIRobotROSController  
+RRAIRobotROSController
 ^^^^^^^^^^^^^^^^^^^^^^
 
-`RRAIRobotROSController` contains basic movement functionality in C++. It supports 
-movement using Unreal Engine's navigation system and allows for direct linear and 
-rotational movement via `SetActorLocation` and `SetActorRotation`. Additionally, 
+`RRAIRobotROSController` contains basic movement functionality in C++. It supports
+movement using Unreal Engine's navigation system and allows for direct linear and
+rotational movement via `SetActorLocation` and `SetActorRotation`. Additionally,
 it provides a basic ROS 2 interface for external control.
 
 Parameters for RRAIRobotROSController
@@ -144,17 +155,17 @@ Parameters for RRAIRobotROSController
      - Type (Default)
      - Note
    * -  **ROS JSON SPAWN PARAMETER**
-     - 
-     - 
+     -
+     -
    * - /debug
      - bool (false)
      - Enables debug logging.
    * - /mode
      - int32 (0)
-     - Defines movement mode:  
-       0. Manual  
-       1. Sequential loop movement through `GoalSequence`  
-       2. Random through `GoalSequence`  
+     - Defines movement mode:
+       0. Manual
+       1. Sequential loop movement through `GoalSequence`
+       2. Random through `GoalSequence`
        3. Random area movement which defined with origin and random_move_bounding_box
    * - /speed
      - float (depends on movecomponent)
@@ -191,8 +202,8 @@ ROS 2 API for RRAIRobotROSController
      - Msg Type
      - Note
    * -  **SUBSCRIBE**
-     - 
-     - 
+     -
+     -
    * - /pose_goal
      - `geometry_msgs/msg/PoseStamped <https://docs.ros.org/en/noetic/api/geometry_msgs/html/msg/PoseStamped.html>`_
      - Sets a navigation goal for the robot.
@@ -202,9 +213,9 @@ ROS 2 API for RRAIRobotROSController
    * - /set_mode
      - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
      - Sets the robot's movement mode.
-        0. Manual  
-        1. Sequential loop movement through `GoalSequence`  
-        2. Random through `GoalSequence`  
+        0. Manual
+        1. Sequential loop movement through `GoalSequence`
+        2. Random through `GoalSequence`
         3. Random area movement which defined with origin and random_move_bounding_box
    * - /set_speed
      - `example_interfaces/msg/Float32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Float32.html>`_
@@ -213,11 +224,11 @@ ROS 2 API for RRAIRobotROSController
      - `example_interfaces/msg/Float32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Float32.html>`_
      - Adjusts the robot's rotational speed.
    * -  **PUBLISH**
-     - 
-     - 
+     -
+     -
    * - /nav_status
      - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
-     - 
+     -
         0. IDLE: not moving
         1. AI_MOVING: moving with UE navigation system
         2. LINEAR_MOVING: linear moving without AI
@@ -228,17 +239,17 @@ ROS 2 API for RRAIRobotROSController
 BP_RRROSAIController
 ^^^^^^^^^^^^^^^^^^^^^
 
-BP_RRROSAIController is a child class of RRAIRobotROSController and has implementation 
-for pick, drop, and other actions in addition to actor movements. These actions are implemented 
+BP_RRROSAIController is a child class of RRAIRobotROSController and has implementation
+for pick, drop, and other actions in addition to actor movements. These actions are implemented
 in a behavior tree, and can be customized via the behavior tree in child classes.
 
-Pick/Drop actions include an optional parameter for approaching a location before starting the 
+Pick/Drop actions include an optional parameter for approaching a location before starting the
 pick/drop action. This allows the actor to approach the target object from a specific direction.
 
-If the target payload is a child class of BP_PayloadBase, the defined approach locations in 
+If the target payload is a child class of BP_PayloadBase, the defined approach locations in
 BP_PayloadBase can also be used.
 
-The general action is an interface to execute actions specific to the actor. The argument to the 
+The general action is an interface to execute actions specific to the actor. The argument to the
 general action is a JSON string, which is parsed and the action is implemented in child classes.
 
 BP Parameters for BP_RRROSAIController
@@ -266,7 +277,6 @@ BP_RRROSAIController UE　API
 
     *   - .. figure:: ../images/bp_pick_bt_event.png
         - .. figure:: ../images/bp_drop_bt_event.png
-        - .. figure:: ../images/bp_wait_till_complete.png
         - .. figure:: ../images/bp_general_action.png
 
 .. list-table::
@@ -280,23 +290,23 @@ BP_RRROSAIController UE　API
      - PayloadLocation
      - vector
      - This or TargetPayload is used to find the pick target. The target is searched within a threshold from this location.
-   * - 
+   * -
      - TargetPayload
      - Actor
      - This or PayloadLocation is used to find the pick target.
-   * - 
+   * -
      - UseApproach
      - bool
      - Whether to use approach before starting the pick.
-   * - 
+   * -
      - ApproachLocation
      - vector
      - This or ApproachLocationActor is used as the navigation goal before starting the pick.
-   * - 
+   * -
      - ApproachLocationActor
      - actor
      - This or ApproachLocation is used as the navigation goal before starting the pick.
-   * - 
+   * -
      - UseDefaultApproach
      - bool
      - If true and TargetPayload is a child class of BP_PayloadBase, the defined approach location in PayloadBase will be used as the approach location.
@@ -304,34 +314,26 @@ BP_RRROSAIController UE　API
      - DropLocation
      - vector
      - This or TargetLocation is used to decide the drop target location.
-   * - 
+   * -
      - TargetLocation
      - Actor
      - This or DropLocation is used to decide the drop target location.
-   * - 
+   * -
      - UseApproach (for drop)
      - bool
      - Whether to use approach before starting the drop.
-   * - 
+   * -
      - ApproachLocation
      - vector
      - This or ApproachLocationActor is used as the navigation goal before starting the pick.
-   * - 
+   * -
      - ApproachLocationActor
      - actor
      - This or ApproachLocation is used as the navigation goal before starting the pick.
-   * - 
+   * -
      - UseDefaultApproach
      - bool
      - If true and TargetPayload is a child class of BP_PayloadBase, the defined approach location in PayloadBase will be used as the approach location.
-   * - WaitTillTaskCompleted
-     - Duration
-     - float
-     - Repeatedly checks the task status within this duration.
-   * - 
-     - Timeout
-     - float
-     - Exits if the task is not completed within this timeout.
    * - General Action
      - JsonParam
      - string
@@ -348,8 +350,8 @@ ROS 2 API for BP_RRROSAIController
      - Msg Type
      - Note
    * -  **SUBSCRIBE**
-     - 
-     - 
+     -
+     -
    * - /pick_goal
      - `geometry_msgs/msg/PointStamped <https://docs.ros.org/en/noetic/api/geometry_msgs/html/msg/PointStamped.html>`_
      - Triggers PickBTEvent with PayloadLocation.
@@ -375,14 +377,14 @@ ROS 2 API for BP_RRROSAIController
      - `example_interfaces/msg/String <https://docs.ros2.org/foxy/api/example_interfaces/msg/String.html>`_
      - Triggers the general action.
    * -  **PUBLISH**
-     - 
-     - 
+     -
+     -
    * - /task_status
      - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
-     - Publishes the current task status:  
-       0. None  
-       1. Picking  
-       2. Dropping  
+     - Publishes the current task status:
+       0. None
+       1. Picking
+       2. Dropping
        3. GeneralAction.
 
 AI Pawn
@@ -393,7 +395,7 @@ AI feature is implemented in RRAIRobotROSController, actor class mainly just has
 call controller interfaces.
 
 General action is a interface to execute action specific to the actor. Argument to general action
-is Json string and expected to be parsed and action implemented in child 
+is Json string and expected to be parsed and action implemented in child
 
 .. figure:: ../images/bp_ros_ai_api.png
    :align: center
@@ -403,8 +405,8 @@ is Json string and expected to be parsed and action implemented in child
 BP_RRAIBaseRobot
 ^^^^^^^^^^^^^^^^^^^^^
 
-BP_RRAIBaseRobot is a child class of RRBaseRobot and has a bridge interface to 
-RRAIRobotROSController. It provides basic movement and pick/drop functionality, along with 
+BP_RRAIBaseRobot is a child class of RRBaseRobot and has a bridge interface to
+RRAIRobotROSController. It provides basic movement and pick/drop functionality, along with
 the ability to customize general actions.
 
 Example child classes are available in the `rclUE-Examples <https://github.com/yuokamoto/rclUE-Examples>`_
@@ -412,14 +414,14 @@ and `UEROSAssets <https://github.com/yuokamoto/UEROSAssets/tree/ai_robots2>`_
 repositories. The warehouse map in rclUE-Examples includes examples of BP_CounterFork and BP_Track.
 
 - `BP_CounterFork <https://github.com/yuokamoto/UEROSAssets/blob/ai_robots2/Content/BP_CounterFork.uasset>`_: Demonstrates pick/drop actions.
-- `BP_Track <https://github.com/yuokamoto/UEROSAssets/blob/ai_robots2/Content/BP_Track.uasset>`_: Implements general actions, such as opening/closing containers via 
+- `BP_Track <https://github.com/yuokamoto/UEROSAssets/blob/ai_robots2/Content/BP_Track.uasset>`_: Implements general actions, such as opening/closing containers via
   general_action.
 
 BP_ROSSimpleCharacter
 ^^^^^^^^^^^^^^^^^^^^^
 
-BP_ROSSimpleCharacter is a child class of Character and interfaces with 
-RRAIRobotROSController. It provides customizable behavior, actions, and animation control for 
+BP_ROSSimpleCharacter is a child class of Character and interfaces with
+RRAIRobotROSController. It provides customizable behavior, actions, and animation control for
 AI robots or workers in Unreal Engine environments.
 
 Example child classes are available in the `rclUE-Examples <https://github.com/yuokamoto/rclUE-Examples>`_
@@ -432,10 +434,10 @@ is a child class of BP_ROSSimpleCharacter. BP_ROSCharacter is example
 of implement custom ROS enabled character.
 
 - **Custom Pick/Drop Behavior**: Demonstrated in BT_ROSCharacterPick and BT_ROSCharacterDrop.
-- **Custom Animations**: Animation Blueprints such as `ABP_RRManny` and `SKM_Manny_CtrlRig` 
+- **Custom Animations**: Animation Blueprints such as `ABP_RRManny` and `SKM_Manny_CtrlRig`
   are used to control animations during pick/drop actions.
-- **Payload Interaction**: BP_CharacterPayloadBox has PickHandles for grasping and handles for 
+- **Payload Interaction**: BP_CharacterPayloadBox has PickHandles for grasping and handles for
   determining the direction for payload placement.
 
-It is expected that users will create child classes to override behavior, animations, and meshes 
+It is expected that users will create child classes to override behavior, animations, and meshes
 as needed for specific use cases.
