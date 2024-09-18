@@ -388,7 +388,7 @@ FROSPointCloud2 URR3DLidarComponent::GetROS2Data()
             }
 
             // Convert pose to local coordinate, ROS unit and double -> float
-            FVector posInDouble = RecordedHits.Last(index).ImpactPoint + BWithNoise * PositionNoise->Get();
+            FVector posInDouble = RecordedHits.Last(index).ImpactPoint;    // + BWithNoise * PositionNoise->Get();
             posInDouble = URRGeneralUtils::GetRelativeTransform(
                               FTransform(GetComponentQuat(), GetComponentLocation(), FVector::OneVector), FTransform(posInDouble))
                               .GetTranslation();
