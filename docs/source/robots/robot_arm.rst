@@ -88,9 +88,9 @@ These BP class are child class of ARRBaseRobot and added joint and link setting.
 Panda arm is example to be controlled with moveit2.
 
 Example map is at 
-`turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExample.umap>`_ 
+`turtlebot3-UE/Content/Maps/PandaArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExample.umap>`_ 
 and
-`turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExamplePhysics.umap>`_ 
+`turtlebot3-UE/Content/Maps/PandaArmExamplePhysics.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExamplePhysics.umap>`_ 
 .
 
 reference: `How To Command Simulated Isaac Robot <https://moveit.picknik.ai/main/doc/how_to_guides/isaac_panda/isaac_panda_tutorial.html>`_

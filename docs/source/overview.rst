@@ -52,11 +52,12 @@ Components
    
 - `ARRBaseRobot <doxygen_generated/html/df/d13/class_a_r_r_base_robot.html>`_
     Base Robot class which has basic ROS 2 topic interfaces such as Twist msg, JointState and etc via ROS2Interface.
+    
     - `URRROS2BaseSensorComponent <doxygen_generated/html/d0/d58/class_u_r_r_r_o_s2_base_sensor_component.html>`_  
-      Base class of ROS 2 sensors. Other ROS 2 sensor should be child class of this class, e.g. lidar, camera, etc. 
+        Base class of ROS 2 sensors. Other ROS 2 sensor should be child class of this class, e.g. lidar, camera, etc. 
 
-      URRROS2BaseSensorComponent has `URRROS2BaseSensorPublisher <doxygen_generated/html/d5/d69/class_u_r_r_r_o_s2_base_sensor_publisher.html>`_ 
-      which publish Sensor topic and is initialized from URRROS2Interface.
+        URRROS2BaseSensorComponent has `URRROS2BaseSensorPublisher <doxygen_generated/html/d5/d69/class_u_r_r_r_o_s2_base_sensor_publisher.html>`_ 
+        which publish Sensor topic and is initialized from URRROS2Interface.
 
     - `URobotVehicleMovementComponent <doxygen_generated/html/d7/d01/class_u_robot_vehicle_movement_component.html>`_ 
         Base class of Robot movement, which is controlled by 
