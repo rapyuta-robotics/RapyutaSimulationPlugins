@@ -53,7 +53,7 @@ public:
      * sync:  Initialize #FHitResult
      * async: Initialize #FTraceHandle
      */
-    void Run() override;
+    virtual void Run() override;
 
     /**
      * @brief Get Lidar data, add noise, draw lidar rays.
@@ -63,7 +63,7 @@ public:
      * @sa [LineTraceSingleByChannel](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UWorld/LineTraceSingleByChannel/)
      * @sa [AsyncLineTraceByChannel](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/UWorld/AsyncLineTraceSingleByChannel/)
      */
-    void SensorUpdate() override;
+    virtual void SensorUpdate() override;
 
     /**
      * @brief Return true if laser hits the target actor.
@@ -71,7 +71,7 @@ public:
      * @return true
      * @return false
      */
-    bool Visible(AActor* TargetActor) override;
+    virtual bool Visible(AActor* TargetActor) override;
 
     /**
      * @brief Create ROS 2 Msg structure from #RecordedHits
@@ -79,7 +79,7 @@ public:
      * @return FROSPointCloud2
      */
     UFUNCTION(BlueprintCallable)
-    FROSPointCloud2 GetROS2Data();
+    virtual FROSPointCloud2 GetROS2Data();
 
     /**
      * @brief Set result of #GetROS2Data to InMessage.
@@ -97,7 +97,7 @@ public:
      *
      * @return uint64 #NSamplesPerScan * #NChannelsPerScan
      */
-    uint64 GetTotalScan() const
+    virtual uint64 GetTotalScan() const
     {
         return NSamplesPerScan * NChannelsPerScan;
     }
