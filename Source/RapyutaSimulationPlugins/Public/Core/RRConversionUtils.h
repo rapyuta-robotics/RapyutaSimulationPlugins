@@ -34,6 +34,12 @@ public:
         return FVector(InLocation.X, -InLocation.Y, InLocation.Z);
     }
 
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FVector2D ConvertHandedness2D(const FVector2D& InLocation)
+    {
+        return FVector2D(InLocation.X, -InLocation.Y);
+    }
+
     // UE: cm, ROS: m
     template<typename T>
     static T DistanceROSToUE(const T& InROSDistance)
@@ -75,6 +81,18 @@ public:
         OutputX = InputX * 0.01f;
         OutputY = -InputY * 0.01f;
         OutputZ = InputZ * 0.01f;
+    }
+
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FVector2D Vector2DUEToROS(const FVector2D& Input)
+    {
+        return 0.01f * ConvertHandedness2D(Input);
+    }
+
+    FORCEINLINE static void Vector2DUEToROS(const double& InputX, const double& InputY, double& OutputX, double& OutputY)
+    {
+        OutputX = InputX * 0.01f;
+        OutputY = -InputY * 0.01f;
     }
 
     /**
@@ -166,6 +184,23 @@ public:
         OutputX = InputX * 100.f;
         OutputY = -InputY * 100.f;
         OutputZ = InputZ * 100.f;
+    }
+
+    UFUNCTION(BlueprintCallable, Category = "Conversion")
+    static FVector2D Vector2DROSToUE(const FVector2D& Input)
+    {
+        return 100.f * ConvertHandedness2D(Input);
+    }
+
+    FORCEINLINE static void Vector2DROSToUE(const FVector2D& Input, FVector2D& Output)
+    {
+        Output.Set(Input.X * 100.f, -Input.Y * 100.f);
+    }
+
+    FORCEINLINE static void Vector2DROSToUE(const double& InputX, const double& InputY, double& OutputX, double& OutputY)
+    {
+        OutputX = InputX * 100.f;
+        OutputY = -InputY * 100.f;
     }
 
     /**
