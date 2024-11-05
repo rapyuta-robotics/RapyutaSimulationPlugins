@@ -468,6 +468,15 @@ public:
     virtual void SetMoveComponent(UMovementComponent* InMoveComponent);
 
     /**
+     * @brief Set linear and angular velocity to #RobotVehicleMoveComponent.
+     * Calls #SetLinearVel and #SetAngularVel
+     * @param InLinearVel
+     * @param InAngularVel
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetVel(const FVector& InLinearVel, const FVector& InAngularVel);
+
+    /**
      * @brief Set velocity to #RobotVehicleMoveComponent.
      * Calls #SetLocalLinearVel for setting velocity to #RobotVehicleMoveComponent and
      * #SyncServerLinearMovement to sync movement of the robot in the server.
@@ -574,6 +583,11 @@ public:
      */
     bool CheckUIUserWidget() const;
 
+    //! Allowed period between two successive velocity commands. After this delay, a zero speed command will be set.
+    //! If this is <= 0, time out won't happen.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float CmdVelTimeout = 0.5;
+
 protected:
     /**
      * @brief Instantiate default child components
@@ -611,6 +625,9 @@ protected:
      */
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void BPPostInitializeComponents();
+
+    //! last time when SetVel is called.
+    float LastCmdVelUpdateTime = 0;
 
 public:
     /**
