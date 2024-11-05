@@ -469,15 +469,23 @@ void ARRBaseRobot::StopMovement()
     SetAngularVel(FVector::ZeroVector);
 }
 
+void ARRBaseRobot::SetVel(const FVector& InLinearVel, const FVector& InAngularVel)
+{
+    SetLinearVel(InLinearVel);
+    SetAngularVel(InAngularVel);
+}
+
 void ARRBaseRobot::SetLinearVel(const FVector& InLinearVel)
 {
-    SyncServerLinearMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetTransform(), InLinearVel);
+    LastCmdVelUpdateTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+    SyncServerLinearMovement(LastCmdVelUpdateTime, GetTransform(), InLinearVel);
     SetLocalLinearVel(InLinearVel);
 }
 
 void ARRBaseRobot::SetAngularVel(const FVector& InAngularVel)
 {
-    SyncServerAngularMovement(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), GetActorRotation(), InAngularVel);
+    LastCmdVelUpdateTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+    SyncServerAngularMovement(LastCmdVelUpdateTime, GetActorRotation(), InAngularVel);
     SetLocalAngularVel(InAngularVel);
 }
 
@@ -605,6 +613,11 @@ void ARRBaseRobot::Tick(float DeltaSeconds)
     if (bInitializingJoints)
     {
         CheckJointsInitialization();
+    }
+
+    if (CmdVelTimeout > 0 && CmdVelTimeout <= GetWorld()->GetGameState()->GetServerWorldTimeSeconds() - LastCmdVelUpdateTime)
+    {
+        StopMovement();
     }
 }
 
