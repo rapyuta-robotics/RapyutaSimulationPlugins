@@ -63,6 +63,7 @@ void URRROS2IMUComponent::SensorUpdate()
     if (dt > 1e-10)
     {
         const float _dt = 1.0 / dt;
+        Data.Header.FrameId = FrameId;
         Data.Header.Stamp = URRConversionUtils::FloatToROSStamp(currentTime);
 
         const FTransform dT = currentTransform * LastTransform.Inverse();
