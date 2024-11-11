@@ -40,6 +40,8 @@ void URRAIRobotROSControllerParam::SetParametersFromPawn(ARRAIRobotROSController
     InController->NavStatusTopicName = NavStatusTopicName;
     InController->PoseGoalTopicName = PoseGoalTopicName;
     InController->ActorGoalTopicName = ActorGoalTopicName;
+
+    BPSetParametersFromPawn(InController);
 }
 
 void ARRAIRobotROSController::OnPossess(APawn* InPawn)

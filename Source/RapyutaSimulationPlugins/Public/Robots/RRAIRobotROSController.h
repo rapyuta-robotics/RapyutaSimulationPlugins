@@ -122,7 +122,14 @@ public:
      *
      * @param InController
      */
+    UFUNCTION(BlueprintCallable)
     void SetParametersFromPawn(ARRAIRobotROSController* InController) const;
+
+    /**
+     * @brief AdditionalInitialization implemented in BP.
+     */
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPSetParametersFromPawn(ARRAIRobotROSController* InController) const;
 };
 
 /**
