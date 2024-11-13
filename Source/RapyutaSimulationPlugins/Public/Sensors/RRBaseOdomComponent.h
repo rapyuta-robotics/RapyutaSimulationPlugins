@@ -106,26 +106,26 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform RootOffset = FTransform::Identity;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
     TObjectPtr<URRGaussianNoise> PositionNoise;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
     TObjectPtr<URRGaussianNoise> RotNoise;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
     float NoiseMeanPosition = 0.f;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
     float NoiseVariancePosition = 0.001f;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
     float NoiseMeanRot = 0.f;
 
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
     float NoiseVarianceRot = 0.005f;
 
     //! Add noise or not
-    UPROPERTY(EditAnywhere, Category = "Noise")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise")
     bool bWithNoise = true;
 
 protected:
