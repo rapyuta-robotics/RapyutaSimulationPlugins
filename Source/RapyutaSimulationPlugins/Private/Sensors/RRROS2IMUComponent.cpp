@@ -57,7 +57,8 @@ FROSImu URRROS2IMUComponent::GetROS2Data()
 void URRROS2IMUComponent::SensorUpdate()
 {
     const float currentTime = UGameplayStatics::GetTimeSeconds(GetWorld());
-    const FTransform currentTransform = K2_GetComponentToWorld() * InitialTransform.Inverse();
+    const FTransform worldTransform = K2_GetComponentToWorld();
+    const FTransform relTransform = worldTransform * InitialTransform.Inverse();
     const float dt = currentTime - LastSensorUpdateTime;
 
     if (dt > 1e-10)
@@ -66,14 +67,26 @@ void URRROS2IMUComponent::SensorUpdate()
         Data.Header.FrameId = FrameId;
         Data.Header.Stamp = URRConversionUtils::FloatToROSStamp(currentTime);
 
-        const FTransform dT = currentTransform * LastTransform.Inverse();
+        // Transform difference in reference(initial) transform
+        const FTransform dT = relTransform * LastTransform.Inverse();
 
-        FQuat orientation = currentTransform.GetRotation();
-        FVector angularVelocity = dT.GetRotation().GetNormalized().Euler() * _dt;
+        FQuat orientation = relTransform.GetRotation();    // Rotation from reference(initial) transform
+        FVector angularVelocity =
+            orientation.UnrotateVector(dT.GetRotation().GetNormalized().Euler() * _dt);    //in sensor local transform
 
         const FVector linearVel = dT.GetTranslation() * _dt;
-        FVector linearAcc = (linearVel - LastLinearVel) * _dt;
+        FVector linearAcc = orientation.UnrotateVector((linearVel - LastLinearVel) * _dt);    //in sensor local transform
 
+        // post process, add gravity and scale
+        if (bAddGravity)
+        {
+            FVector GravityAcc =
+                FVector(0.0, 0.0, -UnitConversion::ForceUnificationFactor(EUnit::KilogramsForce) * 100);    // cm/ss
+            linearAcc += worldTransform.GetRotation().UnrotateVector(GravityAcc);
+        }
+        linearAcc *= AccGain;
+
+        // noise
         LinearAcceleration =
             linearAcc + FVector(LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get());
         AngularVelocity =
@@ -81,12 +94,13 @@ void URRROS2IMUComponent::SensorUpdate()
         OrientationNoiseSum = OrientationNoiseSum + OrientationNoiseDriftCoefficient * OrientationNoise->Get();
         Orientation = FQuat::MakeFromEuler(orientation.Euler() + OrientationNoiseSum + OffsetOrientation);
 
-        // noise
+        // UE -> ROS conversion
         Data.LinearAcceleration = URRConversionUtils::VectorUEToROS(LinearAcceleration);
         Data.AngularVelocity = URRConversionUtils::VectorUEToROS(AngularVelocity);
         Data.Orientation = URRConversionUtils::QuatUEToROS(Orientation);
 
-        LastTransform = currentTransform;
+        // update
+        LastTransform = relTransform;
         LastdT = dT;
         LastLinearVel = linearVel;
         LastSensorUpdateTime = currentTime;

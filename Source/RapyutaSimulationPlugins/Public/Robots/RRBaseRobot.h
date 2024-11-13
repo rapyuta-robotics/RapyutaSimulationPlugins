@@ -467,15 +467,6 @@ public:
     virtual void SetMoveComponent(UMovementComponent* InMoveComponent);
 
     /**
-     * @brief Set linear and angular velocity to #RobotVehicleMoveComponent.
-     * Calls #SetLinearVel and #SetAngularVel
-     * @param InLinearVel
-     * @param InAngularVel
-     */
-    UFUNCTION(BlueprintCallable)
-    virtual void SetVel(const FVector& InLinearVel, const FVector& InAngularVel);
-
-    /**
      * @brief Set velocity to #RobotVehicleMoveComponent.
      * Calls #SetLocalLinearVel for setting velocity to #RobotVehicleMoveComponent and
      * #SyncServerLinearMovement to sync movement of the robot in the server.
