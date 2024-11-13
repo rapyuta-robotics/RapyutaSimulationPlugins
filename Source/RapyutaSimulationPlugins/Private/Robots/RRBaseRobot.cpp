@@ -469,12 +469,6 @@ void ARRBaseRobot::StopMovement()
     SetAngularVel(FVector::ZeroVector);
 }
 
-void ARRBaseRobot::SetVel(const FVector& InLinearVel, const FVector& InAngularVel)
-{
-    SetLinearVel(InLinearVel);
-    SetAngularVel(InAngularVel);
-}
-
 void ARRBaseRobot::SetLinearVel(const FVector& InLinearVel)
 {
     LastCmdVelUpdateTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
