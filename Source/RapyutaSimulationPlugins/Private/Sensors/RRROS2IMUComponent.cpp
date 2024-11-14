@@ -82,7 +82,7 @@ void URRROS2IMUComponent::SensorUpdate()
         {
             FVector GravityAcc =
                 FVector(0.0, 0.0, -UnitConversion::ForceUnificationFactor(EUnit::KilogramsForce) * 100);    // cm/ss
-            linearAcc += worldTransform.GetRotation().UnrotateVector(GravityAcc);
+            linearAcc -= worldTransform.GetRotation().UnrotateVector(GravityAcc);
         }
         linearAcc *= AccGain;
 
