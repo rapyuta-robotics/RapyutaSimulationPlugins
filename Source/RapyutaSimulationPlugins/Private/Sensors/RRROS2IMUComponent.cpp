@@ -82,7 +82,9 @@ void URRROS2IMUComponent::SensorUpdate()
         {
             FVector GravityAcc =
                 FVector(0.0, 0.0, -UnitConversion::ForceUnificationFactor(EUnit::KilogramsForce) * 100);    // cm/ss
-            linearAcc += worldTransform.GetRotation().UnrotateVector(GravityAcc);
+            // Gravity vector points towards Z(+) axis
+            // reference: https://base.movella.com/s/article/Why-does-an-accelerometer-measure-gravity-with-positive-sign?
+            linearAcc -= worldTransform.GetRotation().UnrotateVector(GravityAcc);
         }
         linearAcc *= AccGain;
 
