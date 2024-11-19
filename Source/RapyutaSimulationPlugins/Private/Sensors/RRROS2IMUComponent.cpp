@@ -74,6 +74,18 @@ void URRROS2IMUComponent::SensorUpdate()
         const FVector linearVel = dT.GetTranslation() * _dt;
         FVector linearAcc = (linearVel - LastLinearVel) * _dt;
 
+        // post process, add gravity and scale
+        if (bAddGravity)
+        {
+            FVector GravityAcc =
+                FVector(0.0, 0.0, -UnitConversion::ForceUnificationFactor(EUnit::KilogramsForce) * 100);    // cm/ss
+            // Gravity vector points towards Z(+) axis
+            // reference: https://base.movella.com/s/article/Why-does-an-accelerometer-measure-gravity-with-positive-sign?
+            linearAcc -= worldTransform.GetRotation().UnrotateVector(GravityAcc);
+        }
+        linearAcc *= AccGain;
+
+        // noise
         LinearAcceleration =
             linearAcc + FVector(LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get(), LinearAccelerationNoise->Get());
         AngularVelocity =
