@@ -89,6 +89,13 @@ public:
     URRROS2BaseSensorComponent();
 
     /**
+     * @brief Destroy after stop timers and destroy publisher
+     *
+     * @param bPromoteChildren
+     */
+    virtual void DestroyComponent(bool bPromoteChildren = false) override;
+
+    /**
      * @brief Create and initialize publisher and start sensor update by calling
      * #CreatePublisher, #PreInitializePublisher, #InitializePublisher and #Run.
      *

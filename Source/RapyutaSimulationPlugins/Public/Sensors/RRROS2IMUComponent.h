@@ -9,6 +9,7 @@
 // UE
 #include "CoreMinimal.h"
 #include "EngineUtils.h"
+#include "Math/UnitConversion.h"
 
 // rclUE
 #include "RRROS2BaseSensorComponent.h"
@@ -128,4 +129,10 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float LastSensorUpdateTime;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bAddGravity = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float AccGain = 1.0;
 };
