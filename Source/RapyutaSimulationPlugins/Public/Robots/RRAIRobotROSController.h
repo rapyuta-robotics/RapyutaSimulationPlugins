@@ -49,7 +49,90 @@ enum class ERRAIRobotMode : uint8
     RANDOM_SEQUENCE = 3 UMETA(DisplayName = "Random Sequence"),
     RANDOM_AREA = 4 UMETA(DisplayName = "Random Area"),
 
+    SPLINE = 10 UMETA(DisplayName = "Spline following"),
+
     END = 100 UMETA(DisplayName = "End")
+};
+
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
+class RAPYUTASIMULATIONPLUGINS_API URRAIRobotROSControllerParam : public UActorComponent
+{
+    GENERATED_BODY()
+
+public:
+    //! debug flat
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bDebug = false;
+
+    //! [degree] tolerance for orientation control
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float OrientationTolerance = 5.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float LinearMotionTolerance = 10.f;
+
+    //! Teleport to target pose if robot can't reach target pose
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bTeleportOnFail = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    ERRAIRobotMode Mode = ERRAIRobotMode::MANUAL;
+
+    //! Bounding box for random move. This is used when #Mode is ERRAIRobotMode::RANDOM_AREA
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector RandomMoveBoundingBox = FVector::OneVector;
+
+    //! Goal sequence. This is used when #Mode is ERRAIRobotMode::SEQUENCE and ERRAIRobotMode::RANDOM_SEQUENCE
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FTransform> GoalSequence;
+
+    //! Goal sequence. Transform of the Actors are set to #GoalSequence
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<AActor*> GoalSequenceActor;
+
+    //! Origin actor for move. This is used when #Mode is ERRAIRobotMode::RANDOM_AREA, ERRAIRobotMode::SEQUENCE and ERRAIRobotMode::RANDOM_SEQUENCE
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    AActor* OriginActor = nullptr;
+
+    //! Origin transform for move. This is used when #Mode is ERRAIRobotMode::RANDOM_AREA, ERRAIRobotMode::SEQUENCE and ERRAIRobotMode::RANDOM_SEQUENCE
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FTransform Origin = FTransform::Identity;
+
+    // ROS related parameters
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float NavStatusPublicationFrequencyHz = 1;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString SetSpeedTopicName = TEXT("set_speed");
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString SetAngularVelTopicName = TEXT("set_angular_vel");
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString SetModeTopicName = TEXT("set_mode");
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString NavStatusTopicName = TEXT("nav_status");
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString PoseGoalTopicName = TEXT("pose_goal");
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString ActorGoalTopicName = TEXT("actor_goal");
+
+    /**
+     * @brief Set the Parameters From Pawn to the Controller
+     *
+     * @param InController
+     */
+    UFUNCTION(BlueprintCallable)
+    void SetParametersFromPawn(ARRAIRobotROSController* InController) const;
+
+    /**
+     * @brief AdditionalInitialization implemented in BP.
+     */
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void BPSetParametersFromPawn(ARRAIRobotROSController* InController) const;
 };
 
 /**
@@ -63,6 +146,7 @@ enum class ERRAIRobotMode : uint8
  * @sa https://answers.unrealengine.com/questions/239159/how-many-ai-controllers-should-i-have.html
  *
  * @todo not work in client-server
+ * @todo replace parameters with #FRRAIRobotROSControllerParam
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class RAPYUTASIMULATIONPLUGINS_API ARRAIRobotROSController : public ARRBaseRobotROSController
@@ -144,6 +228,10 @@ public:
     //! Goal sequence. This is used when #Mode is ERRAIRobotMode::SEQUENCE and ERRAIRobotMode::RANDOM_SEQUENCE
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FTransform> GoalSequence;
+
+    //! Goal sequence. Transform of the Actors are set to #GoalSequence
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<AActor*> GoalSequenceActor;
 
     //! Origin actor for move. This is used when #Mode is ERRAIRobotMode::RANDOM_AREA, ERRAIRobotMode::SEQUENCE and ERRAIRobotMode::RANDOM_SEQUENCE
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -816,6 +904,9 @@ protected:
     //! Timer to call #InitROS2Interface
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FTimerHandle ROS2InitTimer;
+
+    UFUNCTION()
+    void InitParameters();
 
     /**
      * @brief Initialize Parameter and start timer to call #InitROS2InterfaceImpl
