@@ -303,7 +303,7 @@ BP_RRROS2AIControllerSplineParam is a parameter for spline movement in BP_RRROSA
      - If true, it will find the closest BP_SplinePath from the current location.
    * - LookAheadDistance
      - float  (0.1)
-     - Distance to look ahead on the spline. Closest spline point from Current location + LookAheadDistance is used as target to mvoe.
+     - Distance to look ahead on the spline. Closest spline point from Current location + LookAheadDistance is used as target to move.
    * - Reverse
      - bool (false)
      - If true, it will move in reverse direction of spline
