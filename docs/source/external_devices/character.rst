@@ -295,7 +295,7 @@ BP_RRROS2AIControllerSplineParam is a parameter for spline movement in BP_RRROSA
    * - Mode
      - int32 (0)
      - Defines movement mode:
-       0. OneTime: Move along spline one time adn stop at the end.
+       0. OneTime: Move along spline one time and stop at the end.
        1. LoopFromStart: Move along spline and navigate/teleport to start point when it reach end of spline and repeat movement.
        2. Reverse: Move along spline and reverse direction when it reach end/start of spline.
    * - FindClosestSpline
