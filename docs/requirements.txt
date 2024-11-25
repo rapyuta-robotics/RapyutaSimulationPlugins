@@ -1,4 +1,5 @@
 breathe
 myst-parser
 sphinxcontrib-video
+sphinxcontrib-youtube
 sphinx-rtd-theme

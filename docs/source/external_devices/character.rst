@@ -5,7 +5,8 @@ AI Overview
 -----------
 
 AI Character/Robot is an actor controlled via `BP_ROSAIController`. It has preset
-movements such as pick, drop, and navigation. The primary purpose of these actors
+movements such as pick, drop, and navigation and those movement can be triggered from both BP and ROS 2.
+The primary purpose of these actors
 is to simulate humans, non-robot components such as manually controlled forklifts,
 or off-the-shelf robots that you won't develop but exists in the environment.
 These actors help simulate robot interactions with dynamic objects in environments like warehouses.
@@ -44,21 +45,12 @@ for how to control AI character/robot from ROS 2
 *Video: Warehouse Sim*
 
 
-.. video:: ../_static/videos/fork_pick_drop_ros.mp4
-    :width: 750
-    :height: 450
-
-*Video: Forklift Pick/Drop From ROS*
-
-.. video:: ../_static/videos/character_pick_drop_ros.mp4
-    :width: 750
-    :height: 450
-
-*Video: Character Pick/Drop From ROS*
-
-
 Basic Behaviors
 ^^^^^^^^^^^^^^^^
+
+..  youtube:: Et59pX87J5c
+    :width: 500
+    :height: 300
 
 AI characters can move using two methods:
 
@@ -71,12 +63,47 @@ AI characters can move using two methods:
 Combination Behaviors
 ^^^^^^^^^^^^^^^^^^^^^
 
+.. video:: ../_static/videos/fork_pick_drop_ros.mp4
+    :width: 500
+    :height: 300
+
+*Video: Forklift Pick/Drop From ROS*
+
+.. video:: ../_static/videos/character_pick_drop_ros.mp4
+    :width: 500
+    :height: 300
+
+*Video: Character Pick/Drop From ROS*
+
+..  video::  ../_static/videos/all_character_modes.mp4
+    :width: 500
+    :height: 300
+
+*Video: Character SEQUENCE, RANDOM_SEQUENCE, RANDOM_AREA.
+
+..  youtube:: TRMRcbd_Xa0
+    :width: 500
+    :height: 300
+
+*Video: SPLINE_PATH
+
+..  youtube:: rTq_5ab_cJ0
+    :width: 500
+    :height: 300
+
+*Video: SPLINE_PATH from ROS
+
 - **Auto Movement**:
     The robot can move randomly or sequentially through predefined goal sequences, or move randomly within a defined area.
 
+    - **MANUAL**: Not automatically move until get command from BP or ROS.
     - **SEQUENCE**: Moves repeatedly through a given `GoalSequence`.
     - **RANDOM_SEQUENCE**: Selects a random destination from `GoalSequence`.
     - **RANDOM_AREA**: Selects random destinations within a specified bounding box.
+    - **SPLINE_PATH**: Moves along a spline path. SPLINE_PATH is implemented in BP_RRROSAIController and not in RRROSAIController
+
+
+    Please check `rclUE_client_example <https://github.com/yuokamoto/rclUE_client_example/blob/main/rclUE_client_example/launch/character_client_launch.py>`_ as well.
 
 - **Pick/Drop**:
     Combines UE navigation system movement with direct movement
@@ -137,10 +164,18 @@ These are the default sub-behavior trees used for `PickImpl/DropImpl` actions.
 AI Controller
 -------------
 
-RRAIRobotROSController
-^^^^^^^^^^^^^^^^^^^^^^
+`RRAIRobotROSControllerParam <https://rapyutasimulationplugins.readthedocs.io/en/latest/doxygen_generated/html/d9/d59/class_u_r_r_a_i_robot_r_o_s_controller_param.html>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`RRAIRobotROSController` contains basic movement functionality in C++. It supports
+`RRAIRobotROSControllerParam <https://rapyutasimulationplugins.readthedocs.io/en/latest/doxygen_generated/html/d9/d59/class_u_r_r_a_i_robot_r_o_s_controller_param.html>`_
+is a UActorComponent which has parameters for basic navigation functionality for RRAIRobotROSController.
+If controlled pawn has child class of RRAIRobotROSControllerParam, the param is passed to the controller when the pawn is possessed.
+
+`RRAIRobotROSController <https://rapyutasimulationplugins.readthedocs.io/en/latest/doxygen_generated/html/d1/d77/class_a_r_r_a_i_robot_r_o_s_controller.html>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`RRAIRobotROSController <https://rapyutasimulationplugins.readthedocs.io/en/latest/doxygen_generated/html/d1/d77/class_a_r_r_a_i_robot_r_o_s_controller.html>`_
+contains basic movement functionality in C++. It supports
 movement using Unreal Engine's navigation system and allows for direct linear and
 rotational movement via `SetActorLocation` and `SetActorRotation`. Additionally,
 it provides a basic ROS 2 interface for external control.
@@ -234,6 +269,53 @@ ROS 2 API for RRAIRobotROSController
         2. LINEAR_MOVING: linear moving without AI
         3. ROTATING: Rotating without AI
 
+BP_RRAIRobotROSControllerParam
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+BP_RRAIRobotROSControllerParam is child class of RRAIRobotROSControllerParam and has additional parameter such as BP_RRROS2AIControllerSplineParam.
+
+
+BP_RRROS2AIControllerSplineParam
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+BP_RRROS2AIControllerSplineParam is a parameter for spline movement in BP_RRROSAIController.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Param Name
+     - Type (Default)
+     - Note
+   * -
+     -
+     -
+   * - Debug
+     - bool (false)
+     - Enables debug logging.
+   * - Mode
+     - int32 (0)
+     - Defines movement mode:
+       0. OneTime: Move along spline one time and stop at the end.
+       1. LoopFromStart: Move along spline and navigate/teleport to start point when it reach end of spline and repeat movement.
+       2. Reverse: Move along spline and reverse direction when it reach end/start of spline.
+   * - FindClosestSpline
+     - bool (false)
+     - If true, it will find the closest BP_SplinePath from the current location.
+   * - LookAheadDistance
+     - float  (0.1)
+     - Distance to look ahead on the spline. Closest spline point from Current location + LookAheadDistance is used as target to move.
+   * - Reverse
+     - bool (false)
+     - If true, it will move in reverse direction of spline
+   * - TeleportToSpline
+     - bool (false)
+     - If true, controlled pawn will teleport to the closest spline point, otherwise controller use naviagation to move to the spline point.
+   * - KeepInitialHeight
+     - bool (false)
+     - Keep initial controlled pawn height when moving along spline.
+   * - DeleteSplineAfterOneTime
+     - bool (false)
+     - If true, spline will be deleted after one time movement along spline. It is mainly used to use spline following from ROS 2.
 
 
 BP_RRROSAIController
@@ -251,6 +333,8 @@ BP_PayloadBase can also be used.
 
 The general action is an interface to execute actions specific to the actor. The argument to the
 general action is a JSON string, which is parsed and the action is implemented in child classes.
+
+BP_RRROSAIController also support spline following movement as well.
 
 BP Parameters for BP_RRROSAIController
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
