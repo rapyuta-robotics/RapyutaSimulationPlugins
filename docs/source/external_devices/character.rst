@@ -169,7 +169,7 @@ AI Controller
 
 `RRAIRobotROSControllerParam <https://rapyutasimulationplugins.readthedocs.io/en/latest/doxygen_generated/html/d9/d59/class_u_r_r_a_i_robot_r_o_s_controller_param.html>`_
 is a UActorComponent which has parameters for basic navigation functionality for RRAIRobotROSController.
-If controlled pawn has child class of RRAIRobotROSControllerPara, the param is passed to the controller when the pawn is possed.
+If controlled pawn has child class of RRAIRobotROSControllerParam, the param is passed to the controller when the pawn is possessed.
 
 `RRAIRobotROSController <https://rapyutasimulationplugins.readthedocs.io/en/latest/doxygen_generated/html/d1/d77/class_a_r_r_a_i_robot_r_o_s_controller.html>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
