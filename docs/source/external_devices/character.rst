@@ -278,7 +278,7 @@ BP_RRAIRobotROSControllerParam is child class of RRAIRobotROSControllerParam and
 BP_RRROS2AIControllerSplineParam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-BP_RRROS2AIControllerSplineParam is a parameters for spline movement in BP_RRROSAIController.
+BP_RRROS2AIControllerSplineParam is a parameter for spline movement in BP_RRROSAIController.
 
 .. list-table::
    :header-rows: 1
