@@ -114,6 +114,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EROS2CameraType CameraType = EROS2CameraType::RGB;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool Render = true;
+   
     // ROS
     /**
      * @brief Update ROS 2 Msg structure from #RenderRequestQueue

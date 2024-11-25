@@ -49,8 +49,10 @@ void URRROS2CameraComponent::PreInitializePublisher(UROS2NodeComponent* InROS2No
 
 void URRROS2CameraComponent::SensorUpdate()
 {
-    SceneCaptureComponent->CaptureScene();
-    CaptureNonBlocking();
+    if (Render) {
+        SceneCaptureComponent->CaptureScene();
+        CaptureNonBlocking();
+    }
 }
 
 // reference https://github.com/TimmHess/UnrealImageCapture
