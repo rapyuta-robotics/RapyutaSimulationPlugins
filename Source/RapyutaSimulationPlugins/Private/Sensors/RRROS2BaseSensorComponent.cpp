@@ -81,5 +81,19 @@ void URRROS2BaseSensorComponent::Run()
 
 void URRROS2BaseSensorComponent::Stop()
 {
+    if (SensorPublisher)
+    {
+        SensorPublisher->StopPublishTimer();
+    }
     GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+}
+
+void URRROS2BaseSensorComponent::DestroyComponent(bool bPromoteChildren)
+{
+    Stop();
+    if (SensorPublisher)
+    {
+        SensorPublisher->Destroy();
+    }
+    Super::DestroyComponent();
 }

@@ -573,6 +573,11 @@ public:
      */
     bool CheckUIUserWidget() const;
 
+    //! Allowed period between two successive velocity commands. After this delay, a zero speed command will be set.
+    //! If this is <= 0, time out won't happen.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float CmdVelTimeout = 0.5;
+
 protected:
     /**
      * @brief Instantiate default child components
@@ -610,6 +615,9 @@ protected:
      */
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void BPPostInitializeComponents();
+
+    //! last time when SetVel is called.
+    float LastCmdVelUpdateTime = 0;
 
 public:
     /**

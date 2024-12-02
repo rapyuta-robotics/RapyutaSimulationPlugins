@@ -14,9 +14,48 @@
 #include "Robots/RRBaseRobot.h"
 #include "Robots/RRRobotROS2Interface.h"
 
+void URRAIRobotROSControllerParam::SetParametersFromPawn(ARRAIRobotROSController* InController) const
+{
+    if (!InController)
+    {
+        UE_LOG_WITH_INFO_NAMED(LogRapyutaCore, Error, TEXT("FCoontroller is null"));
+        return;
+    }
+    InController->bDebug = bDebug;
+    InController->OrientationTolerance = OrientationTolerance;
+    InController->LinearMotionTolerance = LinearMotionTolerance;
+    InController->bTeleportOnFail = bTeleportOnFail;
+    InController->Mode = Mode;
+    InController->RandomMoveBoundingBox = RandomMoveBoundingBox;
+    InController->GoalSequence = GoalSequence;
+    InController->GoalSequenceActor = GoalSequenceActor;
+    InController->OriginActor = OriginActor;
+    InController->Origin = Origin;
+
+    // ROS related parameters
+    InController->NavStatusPublicationFrequencyHz = NavStatusPublicationFrequencyHz;
+    InController->SetSpeedTopicName = SetSpeedTopicName;
+    InController->SetAngularVelTopicName = SetAngularVelTopicName;
+    InController->SetModeTopicName = SetModeTopicName;
+    InController->NavStatusTopicName = NavStatusTopicName;
+    InController->PoseGoalTopicName = PoseGoalTopicName;
+    InController->ActorGoalTopicName = ActorGoalTopicName;
+
+    BPSetParametersFromPawn(InController);
+}
+
 void ARRAIRobotROSController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
+
+    // Get param from Pawn
+    URRAIRobotROSControllerParam* param = InPawn->FindComponentByClass<URRAIRobotROSControllerParam>();
+    if (param)
+    {
+        param->SetParametersFromPawn(this);
+    }
+
+    InitParameters();
 
     /**
      * @todo this won't work with client-server
@@ -27,6 +66,26 @@ void ARRAIRobotROSController::OnPossess(APawn* InPawn)
 void ARRAIRobotROSController::OnUnPossess()
 {
     Super::OnUnPossess();
+}
+
+void ARRAIRobotROSController::InitParameters()
+{
+    if (OriginActor)
+    {
+        Origin = OriginActor->GetTransform();
+    }
+
+    // Transform to world transform
+    for (int i = 0; i < GoalSequence.Num(); i++)
+    {
+        GoalSequence[i] = URRGeneralUtils::GetWorldTransform(Origin, GoalSequence[i], true);
+    }
+
+    // Transform GoalSequenceActor to GoalSequence
+    for (AActor* actor : GoalSequenceActor)
+    {
+        GoalSequence.Add(actor->GetTransform());
+    }
 }
 
 void ARRAIRobotROSController::InitROS2Interface()
@@ -1096,7 +1155,8 @@ FTransform ARRAIRobotROSController::GetOrigin()
 {
     if (OriginActor)
     {
-        return OriginActor->GetTransform();
+        Origin = OriginActor->GetTransform();
+        return Origin;
     }
     else
     {
