@@ -18,34 +18,34 @@ Example Robots
      - joint state command
 
 
-Robot arm are designed to be controlled by joint state msg and publish joint state msg. 
+Robot arm are designed to be controlled by joint state msg and publish joint state msg.
 
 .. code-block:: bash
 
         $ ros2 topic pub /arm/ue_joint_commands sensor_msgs/msg/JointState  "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, name: ['joint12', 'joint23', 'joint34'], position: [1.57,1.57,1.57], velocity: [], effort: []}"
 
 
-SimpleArm 
+SimpleArm
 ^^^^^^^^^^^^^^
 
 Example map is at `turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/RobotArmExample.umap>`_
 
 - `BP_KinematicSimpleArm <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/SampleArm/BP_KinematicSimpleArm.uasset>`_
-    Example kinematic robot implementation in BP. 
+    Example kinematic robot implementation in BP.
 
-    This BP class is child class of ARRBaseRobot and added joint and link setting. 
-    
+    This BP class is child class of ARRBaseRobot and added joint and link setting.
+
     .. image:: ../images/simple_arm.png
 
-    In `Construction script in BP <https://docs.unrealengine.com/5.1/en-US/construction-script-in-unreal-engine/>`_, 
-    all joint and link relations are set. JointName which is used by ROS 2 is also set in here. 
+    In `Construction script in BP <https://docs.unrealengine.com/5.1/en-US/construction-script-in-unreal-engine/>`_,
+    all joint and link relations are set. JointName which is used by ROS 2 is also set in here.
 
     .. image:: ../images/simple_arm_construction_script.png
 
 
-UR10 
+UR10
 ^^^^^^^^^^^^^^
-These BP class are child class of ARRBaseRobot and added joint and link setting. 
+These BP class are child class of ARRBaseRobot and added joint and link setting.
 
 Example map is at `turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/RobotArmExample.umap>`_
 
@@ -53,8 +53,8 @@ reference: `Universal_Robots_ROS2_Description <https://github.com/UniversalRobot
 
 .. image:: ../images/ur10.png
 
-In `Construction script in BP <https://docs.unrealengine.com/5.1/en-US/construction-script-in-unreal-engine/>`_, 
-all joint and link relations are set. JointName which is used by ROS 2 is also set in here. 
+In `Construction script in BP <https://docs.unrealengine.com/5.1/en-US/construction-script-in-unreal-engine/>`_,
+all joint and link relations are set. JointName which is used by ROS 2 is also set in here.
 
 These robots can be controlled with ur_description package.
 
@@ -69,38 +69,38 @@ JointCmdTopicName of ROS2Interface is changed to `joint_states` to control with 
 
 - `BP_KinematicUR10 <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/UR10/BP_KinematicUR10.uasset>`_
     Joints are `URRKinematicJointComponent <doxygen_generated/html/d2/d69/class_u_r_r_kinematic_joint_component.html>`_
-    
+
     .. video:: ../_static/videos/ur10_kinematic.mp4
         :width: 750
         :height: 450
 
 -  `BP_PhysicsUR10 <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/UR10/BP_PhysicsUR10.uasset>`_
     Joints are `URRPhysicsJointComponent <doxygen_generated/html/da/dfb/class_u_r_r_physics_joint_component.html>`_
-    
+
     .. video:: ../_static/videos/ur10_physics.mp4
         :width: 750
         :height: 450
 
-Panda 
+Panda
 ^^^^^^^^^^^^^^
-These BP class are child class of ARRBaseRobot and added joint and link setting. 
+These BP class are child class of ARRBaseRobot and added joint and link setting.
 
 Panda arm is example to be controlled with moveit2.
 
-Example map is at 
-`turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExample.umap>`_ 
+Example map is at
+`turtlebot3-UE/Content/Maps/PandaArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExample.umap>`_
 and
-`turtlebot3-UE/Content/Maps/RobotArmExample.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExamplePhysics.umap>`_ 
+`turtlebot3-UE/Content/Maps/PandaArmExamplePhysics.umap <https://github.com/rapyuta-robotics/turtlebot3-UE/blob/devel/Content/Maps/PandaArmExamplePhysics.umap>`_
 .
 
 reference: `How To Command Simulated Isaac Robot <https://moveit.picknik.ai/main/doc/how_to_guides/isaac_panda/isaac_panda_tutorial.html>`_
 
 .. image:: ../images/panda.png
 
-In `Construction script in BP <https://docs.unrealengine.com/5.1/en-US/construction-script-in-unreal-engine/>`_, 
-all joint and link relations are set. JointName which is used by ROS 2 is also set in here. 
+In `Construction script in BP <https://docs.unrealengine.com/5.1/en-US/construction-script-in-unreal-engine/>`_,
+all joint and link relations are set. JointName which is used by ROS 2 is also set in here.
 
-ROS2Interface has set `isaac_joint_commands` and `isaac_joint_states` as topic names to be controlled with topic_based_ros2_control example, 
+ROS2Interface has set `isaac_joint_commands` and `isaac_joint_states` as topic names to be controlled with topic_based_ros2_control example,
 
 To build moveit2 ws
 
@@ -125,14 +125,14 @@ To run moveit2 ws
 
 - `BP_KinematicPanda <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/Panda/BP_KinematicPanda.uasset>`_
     Joints are `URRKinematicJointComponent <doxygen_generated/html/d2/d69/class_u_r_r_kinematic_joint_component.html>`_
-    
+
     .. video:: ../_static/videos/panda_moveit2.mp4
         :width: 750
         :height: 450
 
 -  `BP_PhysicsPanda <https://github.com/rapyuta-robotics/RapyutaSimulationPlugins/blob/devel/Content/Robots/Panda/BP_PhysicsPanda.uasset>`_
     Joints are `URRPhysicsJointComponent <doxygen_generated/html/da/dfb/class_u_r_r_physics_joint_component.html>`_
-    
+
     .. video:: ../_static/videos/panda_moveit2_physics.mp4
         :width: 750
         :height: 450
@@ -148,11 +148,10 @@ To create custom mobile robot
         1. Set `bMobileRobot <../doxygen_generated/html/df/d13/class_a_r_r_base_robot.html#a315bb15cfa368ec652622e27ae150c6a>`_ false.
     2. Configure meshes and joints in BP
     3. Configure construction script to set joint and link relations similar as BP_KinematicSimpleArm.
-    4. If you want to dynamically spawn robots and pass random parameters, overwrite `InitPropertiesFromJSON() <../doxygen_generated/html/df/d13/class_a_r_r_base_robot.html#a214c5936450e3b17dffaad40e944bea6>`_ 
+    4. If you want to dynamically spawn robots and pass random parameters, overwrite `InitPropertiesFromJSON() <../doxygen_generated/html/df/d13/class_a_r_r_base_robot.html#a214c5936450e3b17dffaad40e944bea6>`_
 
 3. Create child class of URRROS2Interfaces
     1. Overwrite default parameters such as topic name.
     2. Add necessary ROS Interfaces. Please also refer `rclUE tutorials <https://rclue.readthedocs.io/en/latest/examples.html#topic-service-action-examples>`_.
 
 4. Create ROS 2 Service client of  `/SpawnEntity <https://github.com/rapyuta-robotics/UE_msgs/blob/devel/srv/SpawnEntity.srv>`_ and pass necessary parameters outside of UE if you want to dynamically spawn robots from outside of UE
-
