@@ -436,3 +436,167 @@ ROS 2 API for Vertical Conveyor
 **Todo**
     - Support different parameter settings for each entrance.
     - Test spawning from ROS 2.
+
+
+
+Mobile Rack
+-----------------
+
+Overview
+^^^^^^^^
+
+The mobile rack is a combination of rack units.
+User can move unit racks to make path for robot.
+
+.. video:: ../_static/videos/mobile_rack_demo.mp4
+    :width: 750
+    :height: 450
+
+
+.. figure:: ../images/mobile_rack_ue.png
+   :align: center
+
+   Figure : Mobile Rack
+
+
+Rack Unit Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. video:: ../_static/videos/unit_rack_param.mp4
+    :width: 750
+    :height: 450
+
+.. list-table::
+   :header-rows: 1
+
+   * - Param Name
+     - Type (Default)
+     - Note
+   * -  **ROS JSON SPAWN PARAMETER**
+     -
+     -
+   * - /layer_num
+     - int (4)
+     - Number of Rack layers.
+   * - /layer_height
+     - float (2m)
+     - Height of each layer.
+   * - /plate_num
+     - vector2d ({x: 1, y: 2})
+     - Number of plate in each layer.
+   * - /plate_dim
+     - vector ({x: 1.5, y: 2.5, z: 0.1})
+     - Plate dimension.
+   * - /plate_spacing
+     - vector2d ({x: 0.2, y: 0.0})
+     - Spacing between plates.
+   * - /spot_num_per_plate
+     - int (2)
+     - Number of spots in each plate. Spot can be used as a target for pick/drop.
+   * - /spot_spacing_from_plate_edge
+     - float (0.65m)
+     - Spacing between spot and plate edge.
+   * - /has_approach_spot
+     - dict {Front: true, Rear: true}
+     - Approach spot presence. Spot can be used as a target for robot movement.
+   * - /approach_distance
+     - dict {Front: 1.5, Rear: 1.5}
+     - Approach spot distance from the rack.
+   * - /has_mesh
+     - dict {Foot: true, Side: true, Back: true}
+     - Mesh presence.
+   * - /meshe
+     - dict {Plate: None, Pillar: None, Foot: None, Side: None, Back: None}
+     - Meshes for each part. If it is None, default shape is created with primitives.
+       (\* not supported to set from ROS yet.)
+   * - /material
+     - string('None')
+     - Material for each part. If it is None, default material is used.
+       (\* not supported to set from ROS yet.)
+   * - /has_bottom_layer
+     - bool (true)
+     - Bottom layer presence.
+   * - /has_collision
+     - bool (true)
+     - Collision presence. This collision is used to move payload when rack is moving. This should be true for unit rack of mobile rack.
+   * - /allow_path_bottom
+     - bool (false)
+     - Allow path from bottom. If true, robot can pass through the bottom of the rack.
+
+Mobile Rack Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. video:: ../_static/videos/mobile_rack_param.mp4
+    :width: 750
+    :height: 450
+
+.. list-table::
+   :header-rows: 1
+
+   * - Param Name
+     - Type (Default)
+     - Note
+   * -  **ROS JSON SPAWN PARAMETER**
+     -
+     -
+   * - /unit_num
+     - int (3)
+     - Number of Rack Units.
+   * - /unit_spacing
+     - float (0.2m)
+     - Spacing between rack units.
+   * - /path_width
+     - float (3.5m)
+     - Path width
+   * - /begin_edge
+     - bool (true)
+     - Begin edge presence
+   * - /end_edge
+     - bool (true)
+     - End edge presence
+   * - /initial_path_index
+     - int (0)
+     - Initial path index.
+   * - /speed
+     - float (m/s)
+     - moving speed of rack units.
+   * - /unit_rack_param
+     - Json(Rack Unit Parameters)
+     - Rack parameter
+   * - /begine_edge_rack_param
+     - Json(Rack Unit Parameters)
+     - Begin Edge Rack parameter
+   * - /end_edge_rack_param
+     - Json(Rack Unit Parameters)
+     - End Edge Rack parameter
+
+
+ROS 2 API for Mobile Rack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. video:: ../_static/videos/mobile_rack_ros_api.mp4
+    :width: 750
+    :height: 450
+
+.. list-table::
+   :header-rows: 1
+
+   * - Topic Name
+     - Msg Type
+     - Note
+   * - **SUBSCRIBE**
+     -
+     -
+   * - /open
+     - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
+     - Open path at index.
+   * - **PUBLISH**
+     -
+     -
+   * - /path
+     - `example_interfaces/msg/Int32 <https://docs.ros2.org/foxy/api/example_interfaces/msg/Int32.html>`_
+     - Current path index.
+       If racks are moving, it will be -1
+
+**Todo**
+    - Test spawning from ROS 2.
