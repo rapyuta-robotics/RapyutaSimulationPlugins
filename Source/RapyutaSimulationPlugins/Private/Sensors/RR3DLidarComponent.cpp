@@ -14,6 +14,7 @@ void URR3DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickTyp
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 #if TRACE_ASYNC
+    // Note: Let this here in case we found a way to use AsyncLineTraceSingleByChannel without compromising RTF
     // verify(TraceHandles.Num() == RecordedHits.Num());
     // UWorld* world = GetWorld();
     // for (auto i = 0; i < TraceHandles.Num(); ++i)
