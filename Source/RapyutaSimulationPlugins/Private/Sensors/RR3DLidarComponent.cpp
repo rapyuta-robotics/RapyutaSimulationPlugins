@@ -14,33 +14,33 @@ void URR3DLidarComponent::TickComponent(float DeltaTime, enum ELevelTick TickTyp
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 #if TRACE_ASYNC
-    verify(TraceHandles.Num() == RecordedHits.Num());
-    UWorld* world = GetWorld();
-    for (auto i = 0; i < TraceHandles.Num(); ++i)
-    {
-        FTraceHandle& traceHandle = TraceHandles[i];
-        FHitResult& recordedHit = RecordedHits[i];
-        if (traceHandle._Data.FrameNumber != 0)
-        {
-            FTraceDatum Output;
-            if (world->QueryTraceData(traceHandle, Output))
-            {
-                if (Output.OutHits.Num() > 0)
-                {
-                    traceHandle._Data.FrameNumber = 0;
-                    // We should only be tracing the first hit anyhow
-                    recordedHit = Output.OutHits[0];
-                }
-                else
-                {
-                    traceHandle._Data.FrameNumber = 0;
-                    recordedHit = FHitResult();
-                    recordedHit.TraceStart = Output.Start;
-                    recordedHit.TraceEnd = Output.End;
-                }
-            }
-        }
-    }
+    // verify(TraceHandles.Num() == RecordedHits.Num());
+    // UWorld* world = GetWorld();
+    // for (auto i = 0; i < TraceHandles.Num(); ++i)
+    // {
+    //     FTraceHandle& traceHandle = TraceHandles[i];
+    //     FHitResult& recordedHit = RecordedHits[i];
+    //     if (traceHandle._Data.FrameNumber != 0)
+    //     {
+    //         FTraceDatum Output;
+    //         if (world->QueryTraceData(traceHandle, Output))
+    //         {
+    //             if (Output.OutHits.Num() > 0)
+    //             {
+    //                 traceHandle._Data.FrameNumber = 0;
+    //                 // We should only be tracing the first hit anyhow
+    //                 recordedHit = Output.OutHits[0];
+    //             }
+    //             else
+    //             {
+    //                 traceHandle._Data.FrameNumber = 0;
+    //                 recordedHit = FHitResult();
+    //                 recordedHit.TraceStart = Output.Start;
+    //                 recordedHit.TraceEnd = Output.End;
+    //             }
+    //         }
+    //     }
+    // }
 #endif
 }
 
