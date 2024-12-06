@@ -213,6 +213,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TMap<FString, AActor*> Entities;
 
+#if WITH_EDITOR
+    TMap<FString, AActor*> EntitiesWithDisplayName;
+#endif
+
     //! All existing entities with tags which can be manipulated by this class via ROS 2 services.
     //! @todo Converting to TArrays to be able to be replicated
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

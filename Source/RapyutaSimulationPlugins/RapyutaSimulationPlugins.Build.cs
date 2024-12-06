@@ -118,5 +118,9 @@ public class RapyutaSimulationPlugins : ModuleRules
         string TwoPointsInterpolationPath = GetLibPath("two_points_interpolation_cpp");
         PublicIncludePaths.Add(TwoPointsInterpolationPath);
 
+        // filter
+        string FilterPath = GetLibPath("filter_cpp");
+        PublicIncludePaths.Add(FilterPath);
+
     }
 }
