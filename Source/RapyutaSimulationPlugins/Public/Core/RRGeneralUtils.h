@@ -15,7 +15,6 @@
 #include "TimerManager.h"
 
 // #include "Core/RRUObjectUtils.h"
-
 #include "RRGeneralUtils.generated.h"
 
 // NOTE: Using TCHAR* = TEXT("") -> could cause linking error in some case!

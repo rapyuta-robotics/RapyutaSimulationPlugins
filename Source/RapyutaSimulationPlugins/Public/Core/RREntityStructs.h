@@ -152,7 +152,7 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
         : JointName(InJointName), SpringStiff(InStiffness), Damping(InDamping)
     {
     }
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString JointName;
     // For Spring-Damper Control Mode --
     //! [Stiffness](https://docs.unrealengine.com/5.2/en-US/physics-damping-in-unreal-engine)
@@ -187,23 +187,23 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotJointDynamicProperties
     float MaxForceLimit = 100000000.f;
 
     //! [rad/s or m/s]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxVelocity = 1000000.f;
 
     //! Safety Controller
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float KVelocity = 0.f;
 
     //! PID Controller P Gain
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float P = 0.1f;
 
     //! PID Controller I Gain
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float I = 0.5f;
 
     //! PID Controller D Gain
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float D = 0.01f;
 
     void PrintSelf() const
@@ -234,10 +234,10 @@ public:
     {
     }
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Name;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ERRRobotJointType Type = ERRRobotJointType::NONE;
 
     FORCEINLINE static ERRRobotJointType GetERRRobotJointTypeValueFromString(const FString& InEnumStringValue)
@@ -254,35 +254,35 @@ public:
     ERRRobotJointStatus Status = ERRRobotJointStatus::INVALID;
 
     //! [cm] In URDF/SDF: Child Link's relative Location to its Parent
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector Location = FVector::ZeroVector;
 
     //! [Quaternion] In URDF/SDF: Child Link's relative Rotation to its Parent
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FQuat Rotation = FQuat::Identity;
 
     //! Whether Rotation & Location are absolute or relative
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bIsTransformRelative = true;
 
     FTransform GetTransform() const
     {
         return FTransform(Rotation, Location);
     }
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString ParentLinkName;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString ChildLinkName;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString MimicJointName;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MimicMultiplier = 1.0f;
     //! [cm]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MimicOffset = 0.0f;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector Axis = FVector::ZeroVector;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector AxisInParentFrame = FVector::ZeroVector;
     const FVector& GetAxis(bool bIsLocal = false) const
     {
@@ -290,14 +290,14 @@ public:
     }
 
     //! [rad] for REVOLUTE joint, [m] for Prismatic Joint. (Both URDF and SDF)
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float LowerLimit = 0.f;
 
     //! [rad] for REVOLUTE joint, [m] for Prismatic Joint. (Both URDF and SDF)
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float UpperLimit = 0.f;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRRRobotJointDynamicProperties DynamicParams;
     bool operator==(const FRRRobotJointProperty& JointProp)
     {
@@ -507,24 +507,24 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRRobotLinkInertia
 {
     GENERATED_BODY()
     //! [kg]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Mass = 0.f;
     //! [cm]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector Location = FVector::ZeroVector;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FQuat Rotation = FQuat::Identity;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Ixx = 0.f;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Ixy = 0.f;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Ixz = 0.f;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Iyy = 0.f;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Iyz = 0.f;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Izz = 0.f;
 };
 
@@ -532,34 +532,38 @@ USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRREntityGeometryInfo
 {
     GENERATED_BODY()
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Name;
-    UPROPERTY(EditAnywhere)
+
+    //! Mesh type
+    //! @todo use ERRShapeType for MeshName
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString MeshName;
 
     //! This size is mostly used for Collision info in case of links being Runtime mesh components.
     //! For static mesh based linkes, the collision is already auto-generated by UE.
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector Size = FVector::ZeroVector;
 
-    UPROPERTY(EditAnywhere)
+    //! @todo merge with Size
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector WorldScale = FVector::OneVector;
 
     //! Owner Link info
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ERRShapeType LinkType = ERRShapeType::NONE;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString LinkName;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector Location = FVector::ZeroVector;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FQuat Rotation = FQuat::Identity;
     FTransform GetTransformOffset() const
     {
         return FTransform(Rotation, Location);
     }
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRRMaterialProperty MaterialInfo;
 };
 
@@ -578,15 +582,15 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRSensorBaseInfo
     {
     }
     //! ROS Topic name to which sensor data is published to
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString TopicName = TEXT("sensor_data");
 
     //! The coordinate frame in which sensor data is published under in the tf tree
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString FrameId = TEXT("sensor_frame");
 
     //! The publishing rate
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float PublicationFrequencyHz = 0.f;
 
     virtual void PrintSelf() const
@@ -606,53 +610,53 @@ USTRUCT(BlueprintType)
 struct RAPYUTASIMULATIONPLUGINS_API FRRSensorLidarInfo : public FRRSensorBaseInfo
 {
     GENERATED_BODY()
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ERRLidarSensorType LidarType = ERRLidarSensorType::NONE;
 
     //! The number of simulated lidar rays to generate per complete laser sweep cycle
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 NHorSamplesPerScan = 360;
 
     //! The number of simulated lidar rays to generate per complete laser sweep cycle
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 NVerSamplesPerScan = 360;
 
     //! [deg]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float HMinAngle = 0.f;
     //! [deg]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float HMaxAngle = 0.f;
     //! Factor to be multiplied by samples to determine the number of range data points returned
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float HResolution = 0.f;
     //! [deg]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float VMinAngle = 0.f;
     //! [deg]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float VMaxAngle = 0.f;
     //! Factor to be multiplied by samples to determine the number of range data points returned
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float VResolution = 0.f;
 
     // Range
     //! [cm] The minimum distance for each lidar ray
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MinRange = 0.f;
     //! [cm] The maximum distance for each lidar ray
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxRange = 0.f;
     //! Linear resolution of each lidar ray
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float RangeResolution = 0.f;
 
     // Noise
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString NoiseTypeName;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     double NoiseMean = 0;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     double NoiseStdDev = 0;
 
     virtual void PrintSelf() const override
@@ -690,16 +694,16 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRSensorProperty
 {
     GENERATED_BODY()
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString LinkName;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString SensorName;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ERRSensorType SensorType = ERRSensorType::NONE;
 
     //! TODO: To avoid extra memory cost, this should be actually a TUniquePtr, which is only instantiated upon SensorType as LIDAR.
     //! However, it will become not visible/editable in Blueprint like BP data table
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRRSensorLidarInfo LidarInfo;
 
     void PrintSelf() const
@@ -726,37 +730,42 @@ public:
     FRRRobotLinkProperty(FString InName) : Name(MoveTemp(InName))
     {
     }
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Name;
 
     //! Only available in SDF
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString ParentFrameName;
 
-    UPROPERTY(EditAnywhere)
-    int8 LinkIndex = INDEX_NONE;
-    UPROPERTY(EditAnywhere)
-    int8 ParentLinkIndex = INDEX_NONE;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int LinkIndex = INDEX_NONE;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int ParentLinkIndex = INDEX_NONE;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FString> ParentJointNames;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FString> ChildJointNames;
 
     //! Relative to the parent link
     //! In URDF: <joint>�s <origin xyz= "" rpy="">
     //! In SDF : <joint> -> <pose> 6 values (xyz + rpy)
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector Location = FVector::ZeroVector;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FQuat Rotation = FQuat::Identity;
     FTransform GetRelativeTransformToParent() const
     {
         return FTransform(Rotation, Location);
     }
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRRRobotLinkInertia Inertia;
 
     //! Relative visual offset to the link itself(URDF) or parent frame(SDF)
     //! In URDF: <visual>�s <origin xyz= "" rpy="">
     //! In SDF : <link> -> <pose> 6 values (xyz + rpy)
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FRREntityGeometryInfo> VisualList;
     FTransform GetVisualOffset(int32 InVisualIndex = 0) const
     {
@@ -766,7 +775,7 @@ public:
     {
         return GetRelativeTransformToParent() * GetVisualOffset(InVisualIndex);
     }
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FRREntityGeometryInfo> CollisionList;
     bool operator==(const FRRRobotLinkProperty& LinkProp)
     {
@@ -777,8 +786,9 @@ public:
         return Name.Equals(String);
     }
     // Sensor
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FRRSensorProperty> SensorList;
+
     void PrintSelf() const
     {
         UE_LOG_WITH_INFO(LogTemp, Warning, TEXT("Link Name: %s -> ParentFrameName: %s"), *Name, *ParentFrameName);
@@ -841,36 +851,36 @@ public:
     {
     }
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString WheelName;
 
     //! If left undefined then the #bAffectedByEngine value is used, if defined then #bAffectedByEngine is ignored and the
     //! differential setup on the vehicle defines which wheels get power from the engine
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EAxleType AxleType = EAxleType::Undefined;
 
     //! If BoneName is specified, offset the wheel from the bone's location.
     //! Otherwise this offsets the wheel from the vehicle's origin.
     //! [cm]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector Offset = FVector::ZeroVector;
 
     //! [cm]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float WheelRadius = 0.f;
 
     //! [cm]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float WheelWidth = 0.f;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float CorneringStiffness = 1000.f;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float FrictionForceMultiplier = 2.f;
 
     //! Wheel Lateral Skid Grip Loss, lower number less grip on skid
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float SideSlipModifier = 1.f;
 
     //! Wheel Longitudinal Slip Threshold
@@ -878,57 +888,57 @@ public:
     float SlipThreshold = 20.f;
 
     //! Wheel Lateral Skid Threshold
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float SkidThreshold = 20.f;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bAffectedBySteering = false;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bAffectedByBrake = true;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bAffectedByHandbrake = false;
 
     //! Whether engine should power this wheel
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bAffectedByEngine = false;
 
     //! Advanced Braking System enabled
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bABSEnabled = false;
 
     //! Straight Line Traction Control Enabled
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bTractionControlEnabled = false;
 
     //! Determines how the SetDriveTorque/SetBrakeTorque inputs are combined with the internal torques
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ETorqueCombineMethod ExternalTorqueCombineMethod = ETorqueCombineMethod::None;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRuntimeFloatCurve LateralSlipGraph;
 
     //! Local body direction in which where suspension forces are applied (typically along -Z-axis)
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector SuspensionAxis = FVector(0.f, 0.f, -1.f);
 
     //! Vertical offset from where suspension forces are applied (along Z-axis)
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector SuspensionForceOffset = FVector::ZeroVector;
 
     //! How far the wheel can go above the resting position
     //! [cm]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float SuspensionMaxRaise = 10.f;
 
     //! How far the wheel can drop below the resting position
     //! [cm]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float SuspensionMaxDrop = 10.f;
 
     /** Suspension damping, larger value causes the suspension to come to rest faster [range 0 to 1] */
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float SuspensionDampingRatio = 0.5f;
 
     //! Smooth suspension [0-off, 10-max] - Warning might cause momentary visual inter-penetration of the wheel against
@@ -940,41 +950,41 @@ public:
     //! At 0 wheel friction is completely independent of the loading on the wheel (This is artificial as it always assumes even
     //! balance between all wheels) At 1 wheel friction is based on the force pressing wheel into the ground. This is more
     //! realistic. Lower value cures lift off over-steer, generally makes vehicle easier to handle under extreme motions.
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float WheelLoadRatio = 0.5f;
 
     //! Spring Force (N/m)
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float SpringRate = 250.0f;
 
     //! Spring Preload (N/m)
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float SpringPreload = 50.f;
 
     //! Anti-roll effect
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float RollbarScaling = 0.15f;
 
     //! Whether wheel suspension considers simple, complex, or both
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ESweepShape SweepShape = ESweepShape::Raycast;
 
     //! Whether wheel suspension considers simple, complex, or both
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ESweepType SweepType = ESweepType::SimpleSweep;
 
     //! [deg]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxSteerAngleDeg = 50.f;
 
     //! [Nm]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxBrakeTorque = 1500.f;
 
     //! Max handbrake brake torque for this wheel (Nm). A handbrake should have a stronger brake torque
     //! than the brake. This will be ignored for wheels that are not affected by the handbrake.
     //! [Nm]
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxHandBrakeTorque = 3000.f;
 
     void PrintSelf() const
@@ -999,12 +1009,28 @@ public:
     FRRRobotJointProperty JointProp;
 };
 
+USTRUCT(BlueprintType)
+struct RAPYUTASIMULATIONPLUGINS_API FRREntityTreeLayer
+{
+    GENERATED_BODY()
+public:
+    FRREntityTreeLayer()
+    {
+    }
+    FRREntityTreeLayer(const TArray<FString> InStringArray) : StringArray(InStringArray)
+    {
+    }
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FString> StringArray;
+};
+
 // [ENTITY MODEL] --
 /**
  * @brief Core UE struct housing entity (robot, object) model data, wrapped by #FRREntityModelInfo & #FRREntityModelTableRow
  */
 USTRUCT(BlueprintType)
-struct FRREntityModelData
+struct RAPYUTASIMULATIONPLUGINS_API FRREntityModelData
 {
     GENERATED_BODY()
 public:
@@ -1019,7 +1045,7 @@ public:
     }
 
     //! Robot Model Description Type (URDF/SDF)
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ERREntityDescriptionType ModelDescType = ERREntityDescriptionType::NONE;
     bool IsURDF() const
     {
@@ -1042,7 +1068,7 @@ public:
         return URRTypeUtils::GetEnumValueAsString(TEXT("ERREntityDescriptionType"), ModelDescType);
     }
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString WorldName;
     bool IsWorldModel() const
     {
@@ -1054,7 +1080,7 @@ public:
 
     //! World model: [ModelNameList] >= 1
     //! Pure model:  [ModelNameList] == 1 if Single else > 1
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FString> ModelNameList;
     FString GetModelName() const
     {
@@ -1091,13 +1117,13 @@ public:
     FString DescriptionFilePath;
     UPROPERTY(VisibleAnywhere)
     int32 CreatedInstancesNum = 0;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString ParentFrameName;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform RelativeTransform = FTransform::Identity;
 
     //! UE Component types
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 UEComponentTypeFlags = 0;
     bool IsUEComponentEnabled(const int32 InTypeMask) const
     {
@@ -1140,15 +1166,15 @@ public:
     }
 
     // Link/Joint list
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString BaseLinkName;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FRRRobotLinkProperty> LinkPropList;
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FRRRobotJointProperty> JointPropList;
 
     //! Struct recursion is NOT yet supported for UPROPERTY
-    // UPROPERTY(EditAnywhere)
+    // UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FRREntityModelData> ChildModelsData;
 
     /**
@@ -1253,6 +1279,23 @@ public:
     }
 
     /**
+     * @brief Get the ref of the property of a link by name read from URDF/SDF or CAD like FBX/COLLADA
+     * @param InLinkName
+     * @return FRRRobotLinkProperty
+     */
+    FRRRobotLinkProperty* GetLinkPropRef(const FString& InLinkName)
+    {
+        for (auto& linkProp : LinkPropList)
+        {
+            if (linkProp.Name == InLinkName)
+            {
+                return &linkProp;
+            }
+        }
+        return nullptr;
+    }
+
+    /**
      * @brief Get the property of a joint by name read from URDF/SDF or CAD like FBX/COLLADA
      * @param InJointName
      * @return FRRRobotJointProperty
@@ -1267,6 +1310,23 @@ public:
             }
         }
         return FRRRobotJointProperty();
+    }
+
+    /**
+     * @brief Get the pointer of the property of a joint by name read from URDF/SDF or CAD like FBX/COLLADA
+     * @param InJointName
+     * @return FRRRobotJointProperty
+     */
+    FRRRobotJointProperty* GetJointPropRef(const FString& InJointName)
+    {
+        for (auto& jointProp : JointPropList)
+        {
+            if (jointProp.Name == InJointName)
+            {
+                return &jointProp;
+            }
+        }
+        return nullptr;
     }
 
     /**
@@ -1321,6 +1381,71 @@ public:
             }
         }
         return FRRRobotJointProperty();
+    }
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FRREntityTreeLayer> LinkJointTree;
+
+    TArray<FRREntityTreeLayer> SetTreeStructure()
+    {
+        LinkJointTree.Empty();
+
+        FRREntityTreeLayer linkNames, jointNames;
+        // root
+        if (bHasWorldJoint)
+        {
+            linkNames.StringArray.Emplace(TEXT("world"));
+        }
+        if (!BaseLinkName.IsEmpty())
+        {
+            linkNames.StringArray.Emplace(BaseLinkName);
+        }
+        for (auto link : LinkPropList)
+        {
+            if (link.ParentJointNames.Num() == 0)
+            {
+                linkNames.StringArray.Emplace(link.Name);
+            }
+        }
+        LinkJointTree.Emplace(linkNames);
+        linkNames.StringArray.Empty();
+
+        //non root
+        bool noNewLink = false;
+        while (!noNewLink)
+        {
+            noNewLink = true;
+            FRREntityTreeLayer lastLinkNames = LinkJointTree.Last();
+            for (auto linkName : lastLinkNames.StringArray)
+            {
+                FRRRobotLinkProperty link = GetLinkProp(linkName);
+                for (auto name : link.ChildJointNames)
+                {
+                    jointNames.StringArray.Emplace(name);
+                    linkNames.StringArray.Emplace(GetJointProp(name).ChildLinkName);
+                    noNewLink = false;
+                }
+            }
+            // for( auto joint : JointPropList)
+            // {
+            //     if(lastLinkNames.StringArray.Contains(joint.ParentLinkName))
+            //     {
+            //         jointNames.StringArray.Emplace(joint.Name);
+            //         linkNames.StringArray.Emplace(joint.ChildLinkName);
+            //         noNewLink = false;
+            //     }
+            // }
+            if (noNewLink)
+            {
+                break;
+            }
+            LinkJointTree.Emplace(jointNames);
+            LinkJointTree.Emplace(linkNames);
+            linkNames.StringArray.Empty();
+            jointNames.StringArray.Empty();
+        }
+
+        return LinkJointTree;
     }
 
     /**
@@ -1459,11 +1584,11 @@ public:
     }
 
     // UE-StaticMesh
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString WholeBodyStaticMeshName;
 
     // Material
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FRRMaterialProperty WholeBodyMaterialInfo;
     FRRMaterialProperty GetBodyMaterialInfo() const
     {
@@ -1476,15 +1601,15 @@ public:
     }
 
     // Articulated link names
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FString> ArticulatedLinksNames;
 
     // Endtip
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FString> EndEffectorNames;
 
     // Wheels properties
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FRRRobotWheelProperty> WheelPropList;
     bool HasWheel(const FString& InWheelName) const
     {
@@ -1711,6 +1836,28 @@ public:
         }
     }
 };    // END FRREntityModelData
+
+/**
+ * @brief BP Wrapper of FRREntityModelData
+ *
+ */
+UCLASS()
+class RAPYUTASIMULATIONPLUGINS_API UBPRREntityModelData : public UBlueprintFunctionLibrary
+{
+    GENERATED_BODY()
+public:
+    UFUNCTION(BlueprintCallable)
+    static FRRRobotLinkProperty GetLinkProp(const FRREntityModelData InData, const FString& InLinkName)
+    {
+        return InData.GetLinkProp(InLinkName);
+    }
+
+    UFUNCTION(BlueprintCallable)
+    static FRRRobotJointProperty GetJointProp(const FRREntityModelData InData, const FString& InJointName)
+    {
+        return InData.GetJointProp(InJointName);
+    }
+};
 
 /**
  * @brief Struct, inheriting from #FTableRowBase, storing entry data for #UDataTable

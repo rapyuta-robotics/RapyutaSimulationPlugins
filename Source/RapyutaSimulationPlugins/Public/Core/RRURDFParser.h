@@ -8,10 +8,13 @@
 #include "Core/RREntityStructs.h"
 #include "RapyutaSimulationPlugins.h"
 
+#include "RRURDFParser.generated.h"
+
 #define RAPYUTA_URDF_PARSER_DEBUG (0)
 
 /**
  * @brief [experimental]  URDF Parser to parse the information from the robot's URDF file.
+ * @todo move parser to each sensor/actuator/plugin class, then it become easier to override and extend.
  * @sa https://github.com/ros/urdfdom
  * @sa https://github.com/ros/urdf_parser_py/blob/melodic-devel/src/urdf_parser_py/urdf.py
  * @sa https://github.com/robcog-iai/URoboSim/blob/master/Source/URoboSim/Public/RURDFParser.h
@@ -108,4 +111,24 @@ private:
     bool ProcessAttribute(const TCHAR* InAttributeName, const TCHAR* InAttributeValue);
     bool ProcessElement(const TCHAR* InElementName, const TCHAR* InElementData, int32 InXmlFileLineNumber);
     bool ProcessClose(const TCHAR* InElementName);
+
+    UFUNCTION(BlueprintCallable)
+    static FRREntityModelData ParseURDF(const FString& modelDescFilePath)
+    {
+        TUniquePtr<FRREntityDescriptionParser> urdfParser = MakeUnique<FRRURDFParser>();
+        return urdfParser->LoadModelInfoFromFile(*modelDescFilePath).Data;
+    }
+};
+
+UCLASS()
+class RAPYUTASIMULATIONPLUGINS_API UBPRRURDFParser : public UBlueprintFunctionLibrary
+{
+    GENERATED_BODY()
+public:
+    UFUNCTION(BlueprintCallable)
+    static FRREntityModelData ParseURDF(const FString& modelDescFilePath)
+    {
+        TUniquePtr<FRREntityDescriptionParser> urdfParser = MakeUnique<FRRURDFParser>();
+        return urdfParser->LoadModelInfoFromFile(*modelDescFilePath).Data;
+    }
 };

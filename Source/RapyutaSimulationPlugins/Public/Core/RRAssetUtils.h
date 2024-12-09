@@ -413,6 +413,22 @@ public:
      * @param InCDOFunc Function to get Class Default Object(CDO) as arg.
      * @param bInSaveBP Whether or not saving the output BP to disk
      * @param InBPBasePath Base UE path for saving BP
+     * @return UBlueprint*
+     * @sa [FKismetEditorUtilities::CreateBlueprintFromClass()]
+     * @sa [Objects](https://docs.unrealengine.com/5.1/en-US/objects-in-unreal-engine/)
+     */
+    static UBlueprint* CreateBlueprintClass2(UClass* InParentClass,
+                                             const FString& InBlueprintClassName,
+                                             const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr,
+                                             const bool bInSaveBP = false,
+                                             const FString& InBPBasePath = TEXT(""));
+    /**
+     * @brief Create a child blueprint class from parent UClass.
+     * @param InParentClass
+     * @param InBlueprintClassName
+     * @param InCDOFunc Function to get Class Default Object(CDO) as arg.
+     * @param bInSaveBP Whether or not saving the output BP to disk
+     * @param InBPBasePath Base UE path for saving BP
      * @return UClass*
      * @sa [FKismetEditorUtilities::CreateBlueprintFromClass()]
      * @sa [Objects](https://docs.unrealengine.com/5.1/en-US/objects-in-unreal-engine/)
@@ -421,7 +437,32 @@ public:
                                         const FString& InBlueprintClassName,
                                         const TFunction<void(UObject* InCDO)>& InCDOFunc = nullptr,
                                         const bool bInSaveBP = false,
-                                        const FString& InBPBasePath = TEXT(""));
+                                        const FString& InBPBasePath = TEXT(""))
+    {
+        UBlueprint* blueprint =
+            URRAssetUtils::CreateBlueprintClass2(InParentClass, InBlueprintClassName, nullptr, bInSaveBP, InBPBasePath);
+        return blueprint ? blueprint->GeneratedClass : nullptr;
+    }
+
+    /**
+     * @brief Create a child blueprint class from parent UClass.
+     * @param InParentClass
+     * @param InBlueprintClassName
+     * @param InCDOFunc Function to get Class Default Object(CDO) as arg.
+     * @param bInSaveBP Whether or not saving the output BP to disk
+     * @param InBPBasePath Base UE path for saving BP
+     * @return UClass*
+     * @sa [FKismetEditorUtilities::CreateBlueprintFromClass()]
+     * @sa [Objects](https://docs.unrealengine.com/5.1/en-US/objects-in-unreal-engine/)
+     */
+    UFUNCTION(BlueprintCallable)
+    static UBlueprint* BPCreateBlueprintClass(UClass* InParentClass,
+                                              const FString& InBlueprintClassName,
+                                              const bool bInSaveBP,
+                                              const FString& InBPBasePath)
+    {
+        return URRAssetUtils::CreateBlueprintClass2(InParentClass, InBlueprintClassName, nullptr, bInSaveBP, InBPBasePath);
+    }
     /**
      * @brief Create a blueprint from an AActor
      * Ref: [FKismetEditorUtilities::CreateBlueprintFromActor()]

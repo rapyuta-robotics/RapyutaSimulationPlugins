@@ -81,11 +81,11 @@ UClass* URRAssetUtils::FindBlueprintClass(const FString& InBlueprintClassName)
     return foundBPClass;
 }
 
-UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
-                                            const FString& InBlueprintClassName,
-                                            const TFunction<void(UObject* InCDO)>& InCDOFunc,
-                                            const bool bInSaveBP,
-                                            const FString& InBPBasePath)
+UBlueprint* URRAssetUtils::CreateBlueprintClass2(UClass* InParentClass,
+                                                 const FString& InBlueprintClassName,
+                                                 const TFunction<void(UObject* InCDO)>& InCDOFunc,
+                                                 const bool bInSaveBP,
+                                                 const FString& InBPBasePath)
 {
 #if WITH_EDITOR
     static IKismetCompilerInterface& kismetCompilerModule =
@@ -162,7 +162,7 @@ UClass* URRAssetUtils::CreateBlueprintClass(UClass* InParentClass,
             URRAssetUtils::SavePackageToAsset(bpPackage, blueprint);
         }
 
-        return bpGeneratedClass;
+        return blueprint;
     }
 #else
     UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("UClass runtime creation is Editor-only"));

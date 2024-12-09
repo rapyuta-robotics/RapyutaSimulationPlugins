@@ -759,7 +759,8 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
     {
         OutGeometryInfo.LinkType = ERRShapeType::BOX;
         OutGeometryInfo.MeshName = TEXT("box");
-        OutGeometryInfo.Size = ParseVector(boxSizeElementName, false);
+        OutGeometryInfo.WorldScale = ParseVector(boxSizeElementName, false);
+        OutGeometryInfo.Size = URRConversionUtils::SizeROSToUE(OutGeometryInfo.WorldScale);
     }
     else
     {
@@ -771,6 +772,7 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
             OutGeometryInfo.MeshName = TEXT("cylinder");
             OutGeometryInfo.Size =
                 ParseCylinderSize(cylinderRadiusElementName, FString::Printf(TEXT("%s_cylinder_length"), geometryTypePrefix));
+            OutGeometryInfo.WorldScale = URRConversionUtils::SizeUEToROS(OutGeometryInfo.Size);
         }
         else
         {
@@ -780,7 +782,8 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
             {
                 OutGeometryInfo.LinkType = ERRShapeType::SPHERE;
                 OutGeometryInfo.MeshName = TEXT("sphere");
-                OutGeometryInfo.Size = ParseVector(sphereRadiusElementName, false);
+                OutGeometryInfo.WorldScale = ParseVector(sphereRadiusElementName, false);
+                OutGeometryInfo.Size = URRConversionUtils::SizeROSToUE(OutGeometryInfo.WorldScale);
             }
             else
             {
@@ -856,6 +859,7 @@ bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRREntityMode
 #if RAPYUTA_URDF_PARSER_DEBUG
         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("PARSING URDF SUCCEEDED[%s]!"), *ModelName);
 #endif
+
         FRREntityModelData& outRobotModelData = OutRobotModelInfo.Data;
         outRobotModelData.ModelNameList.Emplace(MoveTemp(ModelName));
         outRobotModelData.bHasWorldJoint = bHasWorldJoint;
@@ -891,6 +895,36 @@ bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRREntityMode
 
         // 4- WholeBodyMaterialInfo
         outRobotModelData.WholeBodyMaterialInfo = MoveTemp(WholeBodyMaterialInfo);
+
+        // Additional process
+        // 1- Update Link's ParentName from Joint's ParentLinkName
+        for (auto jointProp : outRobotModelData.JointPropList)
+        {
+            UE_LOG_WITH_INFO(LogRapyutaCore,
+                             Warning,
+                             TEXT("ParseParent/Childlinks %s %s %s"),
+                             *jointProp.ChildLinkName,
+                             *jointProp.ParentLinkName,
+                             *jointProp.Name);
+            outRobotModelData.GetLinkPropRef(jointProp.ChildLinkName)->ParentJointNames.Emplace(jointProp.Name);
+            outRobotModelData.GetLinkPropRef(jointProp.ParentLinkName)->ChildJointNames.Emplace(jointProp.Name);
+        }
+
+        // for(auto linkProp : outRobotModelData.LinkPropList)
+        // {
+        //     UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("LinkProp %s"), *linkProp.Name);
+        //     for (auto parentJointName : linkProp.ParentJointNames)
+        //     {
+        //         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("ParentJointName %s"), *parentJointName);
+        //     }
+        //     for (auto childJointName : linkProp.ChildJointNames)
+        //     {
+        //         UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("ChildJointName %s"), *childJointName);
+        //     }
+        // }
+
+        // 2- set tree strucuture
+        outRobotModelData.SetTreeStructure();
     }
     else
     {
