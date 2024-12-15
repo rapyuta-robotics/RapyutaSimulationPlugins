@@ -5,7 +5,7 @@ AI Overview
 -----------
 
 AI Character/Robot is an actor controlled via `BP_ROSAIController`. It has preset
-movements such as pick, drop, and navigation ando those movement can be triggered from both BP and ROS 2.
+movements such as pick, drop, and navigation and those movement can be triggered from both BP and ROS 2.
 The primary purpose of these actors
 is to simulate humans, non-robot components such as manually controlled forklifts,
 or off-the-shelf robots that you won't develop but exists in the environment.

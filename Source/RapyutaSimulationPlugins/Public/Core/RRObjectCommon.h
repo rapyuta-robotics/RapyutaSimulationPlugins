@@ -250,19 +250,19 @@ struct RAPYUTASIMULATIONPLUGINS_API FRRMaterialProperty
     static constexpr const TCHAR* PROP_NAME_COLOR_ALBEDO = TEXT("ColorAlbedo");
     static constexpr const TCHAR* PROP_NAME_EMISSIVE_STRENGTH = TEXT("EmissiveStrength");
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadwrite)
     FString Name;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadwrite)
     FLinearColor Color = FLinearColor::Transparent;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadwrite)
     TArray<FString> AlbedoTextureNameList;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadwrite)
     TArray<FLinearColor> AlbedoColorList;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadwrite)
     FString MaskTextureName;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadwrite)
     FString ORMTextureName;
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadwrite)
     FString NormalTextureName;
 
     void PrintSelf() const

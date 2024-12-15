@@ -1172,6 +1172,8 @@ public:
     TArray<FRRRobotLinkProperty> LinkPropList;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FRRRobotJointProperty> JointPropList;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FRRMaterialProperty> MaterialList;
 
     //! Struct recursion is NOT yet supported for UPROPERTY
     // UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -1327,6 +1329,18 @@ public:
             }
         }
         return nullptr;
+    }
+
+    FRRMaterialProperty GetMaterialProp(const FString& InMaterialName) const
+    {
+        for (const auto& material : MaterialList)
+        {
+            if (material.Name == InMaterialName)
+            {
+                return material;
+            }
+        }
+        return FRRMaterialProperty();
     }
 
     /**
@@ -1856,6 +1870,12 @@ public:
     static FRRRobotJointProperty GetJointProp(const FRREntityModelData InData, const FString& InJointName)
     {
         return InData.GetJointProp(InJointName);
+    }
+
+    UFUNCTION(BlueprintCallable)
+    static FRRMaterialProperty GetMaterialProp(const FRREntityModelData InData, const FString& InMaterialName)
+    {
+        return InData.GetMaterialProp(InMaterialName);
     }
 };
 

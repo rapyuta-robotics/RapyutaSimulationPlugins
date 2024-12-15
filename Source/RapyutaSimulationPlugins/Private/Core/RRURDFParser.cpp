@@ -124,9 +124,9 @@ bool FRRURDFParser::ProcessAttribute(const TCHAR* InAttributeName, const TCHAR* 
         }
         else if (elementStackTop.Equals(TEXT("sensor")) || elementStackTop.Equals(TEXT("component")) ||
                  elementStackTop.Equals(TEXT("base_link")) || elementStackTop.Equals(TEXT("articulated_link")) ||
-                 elementStackTop.Equals(TEXT("wheel")) || elementStackTop.Equals(TEXT("end_effector")) ||
-                 elementStackTop.Equals(TEXT("material")))
+                 elementStackTop.Equals(TEXT("wheel")) || elementStackTop.Equals(TEXT("end_effector")))
         {
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("%s, %s, %s"), *elementStackTop, *attName, *attValueString);
             AttMap.Add(ComposeAttributeKey(elementStackTop, attName, TEXT("ue")), attValueString);
         }
         else if (elementStackTop.Equals(TEXT("albedo")) || elementStackTop.Equals(TEXT("orm")) ||
@@ -222,6 +222,17 @@ bool FRRURDFParser::ProcessClose(const TCHAR* InElementName)
         bElementSupported = true;
         bResult = ParseLinkProperty();
     }
+    else if (elementStackTop.Equals(TEXT("material")))
+    {
+        // Ignore value inside
+        const FString linkName = AttMap.FindRef(TEXT("link_name"));
+        if (linkName.IsEmpty())
+        {
+            bElementSupported = true;
+            bResult = ParseMaterialProperty();
+        }
+    }
+
     // NOTE: <ue> tags must stay at the end of .urdf file, after all <link> ones & each cannot have duplicated child tags
     else if (elementStackTop.Equals(TEXT("ue")))
     {
@@ -580,6 +591,48 @@ bool FRRURDFParser::ParseLinkProperty()
     return true;
 }
 
+bool FRRURDFParser::ParseMaterialProperty()
+{
+    // (NOTE) Except critical error case, always return true to keep reading until end of file!
+    const FString materialName = AttMap.FindRef(TEXT("material_name"));
+
+    for (auto& val : AttMap)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("mat Key: %s, Value: %s"), *val.Key, *val.Value);
+    }
+
+    // Ignore empty
+    if (materialName.IsEmpty())
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore, Error, TEXT("Missing material name in robot description."));
+        return false;
+    }
+
+    // Create a new Link property struct
+    FRRMaterialProperty newMaterialProp;
+    newMaterialProp.Name = materialName;
+
+    FLinearColor visualMaterialColor = FLinearColor::Transparent;
+    if (AttMap.Contains(TEXT("color_rgba")))
+    {
+        TArray<FString> visualColorArray;
+
+        AttMap.FindRef(TEXT("color_rgba")).ParseIntoArray(visualColorArray, URRActorCommon::SPACE_STR, true);
+        visualMaterialColor = FLinearColor(FCString::Atof(*visualColorArray[0]),
+                                           FCString::Atof(*visualColorArray[1]),
+                                           FCString::Atof(*visualColorArray[2]),
+                                           FCString::Atof(*visualColorArray[3]));
+        newMaterialProp.Color = visualMaterialColor;
+    }
+
+    UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("URDF: material: %s"), *materialName);
+    newMaterialProp.PrintSelf();
+
+    MaterialList.Emplace(MoveTemp(newMaterialProp));
+
+    return true;
+}
+
 bool FRRURDFParser::ParseSensorProperty(FRRSensorProperty& OutSensorProp)
 {
     // (NOTE) Except critical error case, always return true to keep reading until end of file!
@@ -646,15 +699,6 @@ bool FRRURDFParser::ParseSensorProperty(FRRSensorProperty& OutSensorProp)
 FVector FRRURDFParser::ParseVector(const FString& InElementName, bool bIsForLocation)
 {
     TArray<FString> vectorText;
-
-    // Output Vector's meaning is different for spheres.
-    if (InElementName.Contains(TEXT("sphere_radius")))
-    {
-        AttMap.FindRef(InElementName).ParseIntoArray(vectorText, URRActorCommon::SPACE_STR, true);
-        float diameter = 2.f * FCString::Atof(*vectorText[0]);
-
-        return URRConversionUtils::SizeROSToUE(FVector(diameter));
-    }
 
     const FString elementText = AttMap.FindRef(InElementName);
     elementText.ParseIntoArray(vectorText, URRActorCommon::SPACE_STR, true);
@@ -739,7 +783,15 @@ FVector FRRURDFParser::ParseCylinderSize(const FString& InRadiusElementName, con
 
     return URRConversionUtils::SizeROSToUE(FVector(diameter, diameter, length));
 }
+FVector FRRURDFParser::ParseSphereSize(const FString& InElementName)
+{
+    TArray<FString> vectorText;
 
+    AttMap.FindRef(InElementName).ParseIntoArray(vectorText, URRActorCommon::SPACE_STR, true);
+    float diameter = 2.f * FCString::Atof(*vectorText[0]);
+
+    return URRConversionUtils::SizeROSToUE(FVector(diameter));
+}
 bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
                                       const ERREntityGeometryType InGeometryType,
                                       FRREntityGeometryInfo& OutGeometryInfo)
@@ -782,8 +834,8 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
             {
                 OutGeometryInfo.LinkType = ERRShapeType::SPHERE;
                 OutGeometryInfo.MeshName = TEXT("sphere");
-                OutGeometryInfo.WorldScale = ParseVector(sphereRadiusElementName, false);
-                OutGeometryInfo.Size = URRConversionUtils::SizeROSToUE(OutGeometryInfo.WorldScale);
+                OutGeometryInfo.Size = ParseSphereSize(sphereRadiusElementName);
+                OutGeometryInfo.WorldScale = URRConversionUtils::SizeUEToROS(OutGeometryInfo.Size);
             }
             else
             {
@@ -868,9 +920,10 @@ bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRREntityMode
         // 0- BaseLink
         outRobotModelData.BaseLinkName = MoveTemp(BaseLinkName);
 
-        // 1- Links/Joints
+        // 1- Links/Joints/Material
         outRobotModelData.LinkPropList = MoveTemp(LinkPropList);
         outRobotModelData.JointPropList = MoveTemp(JointPropList);
+        outRobotModelData.MaterialList = MoveTemp(MaterialList);
 
         // 2- ArticulatedLinksNames
         // [Manipulator] as containing ARTICULATION_DRIVE only
@@ -900,12 +953,12 @@ bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRREntityMode
         // 1- Update Link's ParentName from Joint's ParentLinkName
         for (auto jointProp : outRobotModelData.JointPropList)
         {
-            UE_LOG_WITH_INFO(LogRapyutaCore,
-                             Warning,
-                             TEXT("ParseParent/Childlinks %s %s %s"),
-                             *jointProp.ChildLinkName,
-                             *jointProp.ParentLinkName,
-                             *jointProp.Name);
+            // UE_LOG_WITH_INFO(LogRapyutaCore,
+            //                  Warning,
+            //                  TEXT("ParseParent/Childlinks %s %s %s"),
+            //                  *jointProp.ChildLinkName,
+            //                  *jointProp.ParentLinkName,
+            //                  *jointProp.Name);
             outRobotModelData.GetLinkPropRef(jointProp.ChildLinkName)->ParentJointNames.Emplace(jointProp.Name);
             outRobotModelData.GetLinkPropRef(jointProp.ParentLinkName)->ChildJointNames.Emplace(jointProp.Name);
         }
@@ -925,6 +978,19 @@ bool FRRURDFParser::LoadModelInfoFromXML(const FString& InUrdfXml, FRREntityMode
 
         // 2- set tree strucuture
         outRobotModelData.SetTreeStructure();
+
+        // 3- Update material
+        for (auto& linkProp : outRobotModelData.LinkPropList)
+        {
+            for (auto& visualProp : linkProp.VisualList)
+            {
+                if (!visualProp.MaterialInfo.Name.IsEmpty())
+                {
+                    visualProp.MaterialInfo = outRobotModelData.GetMaterialProp(visualProp.MaterialInfo.Name);
+                    //todo  if it is not found, search in UE material as well.
+                }
+            }
+        }
     }
     else
     {

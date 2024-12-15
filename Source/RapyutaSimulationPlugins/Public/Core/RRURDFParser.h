@@ -47,6 +47,7 @@ private:
 
     TArray<FRRRobotLinkProperty> LinkPropList;
     TArray<FRRRobotJointProperty> JointPropList;
+    TArray<FRRMaterialProperty> MaterialList;
     FString BaseLinkName;
     TArray<FString> ArticulatedLinksNames;
     TArray<FString> EndEffectorNames;
@@ -92,11 +93,13 @@ private:
     FQuat ParseRotation(const FString& InElementName);
     FTransform ParsePose(const FString& InElementName);
     FVector ParseCylinderSize(const FString& InRadiusElementName, const FString& InLengthElementName);
+    FVector ParseSphereSize(const FString& InElementName);
     bool ParseGeometryInfo(const FString& InLinkName,
                            const ERREntityGeometryType InGeometryType,
                            FRREntityGeometryInfo& OutGeometryInfo);
     bool ParseJointProperty();
     bool ParseLinkProperty();
+    bool ParseMaterialProperty();
     bool ParseSensorProperty(FRRSensorProperty& OutSensorProp);
 
     // [IFastXmlCallback] methods
