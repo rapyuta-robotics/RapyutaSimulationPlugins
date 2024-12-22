@@ -14,6 +14,7 @@ static TArray<const TCHAR*> UE_ELEMENT_LIST = {TEXT("ue_sensor_topic"),
                                                TEXT("ue_sensor_ray_range"),
                                                TEXT("ue_sensor_ray_noise"),
                                                TEXT("ue_component"),
+                                               TEXT("ue_mesh"),
                                                TEXT("ue_base_link"),
                                                TEXT("ue_articulated_link"),
                                                TEXT("ue_wheel"),
@@ -840,7 +841,7 @@ bool FRRURDFParser::ParseGeometryInfo(const FString& InLinkName,
             else
             {
                 // [MESH] --
-                const FString meshFileElementName = FString::Printf(TEXT("%s_mesh_filename"), geometryTypePrefix);
+                const FString meshFileElementName = FString::Printf(TEXT("%s_ue_mesh_filename"), geometryTypePrefix);
                 if (AttMap.Contains(meshFileElementName))
                 {
                     OutGeometryInfo.LinkType = ERRShapeType::MESH;

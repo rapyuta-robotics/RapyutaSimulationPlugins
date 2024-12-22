@@ -62,7 +62,7 @@ enum class ERRFileType : uint8
 /**
  * @brief Shape types
  */
-UENUM()
+UENUM(BlueprintType)
 enum class ERRShapeType : uint8
 {
     NONE,
