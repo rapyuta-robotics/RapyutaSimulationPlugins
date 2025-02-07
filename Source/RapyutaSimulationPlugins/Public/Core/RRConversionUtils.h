@@ -23,7 +23,7 @@
 #include "RRConversionUtils.generated.h"
 
 UCLASS()
-class URRConversionUtils : public UBlueprintFunctionLibrary
+class RAPYUTASIMULATIONPLUGINS_API URRConversionUtils : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 
