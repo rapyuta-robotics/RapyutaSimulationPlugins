@@ -22,34 +22,43 @@ void URRROS2CameraComponent::PreInitializePublisher(UROS2NodeComponent* InROS2No
     SceneCaptureComponent->FOVAngle = CameraComponent->FieldOfView;
     SceneCaptureComponent->OrthoWidth = CameraComponent->OrthoWidth;
 
-    if (CameraType == EROS2CameraType::DEPTH)
+    // Set capture source and image properties based on camera type
+    if (CameraType == EROS2CameraType::RGB)
     {
-        FWeightedBlendable blendable(1.0f, GetBufferVisualizationData().GetMaterial(TEXT("SceneDepth")));
-        CameraComponent->PostProcessSettings.WeightedBlendables.Array.Add(blendable);
-        SceneCaptureComponent->PostProcessSettings = CameraComponent->PostProcessSettings;
         SceneCaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorHDR;
+        RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
+        RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_B8G8R8A8, true);
+
+        Data.Encoding = TEXT("bgr8");
+        Data.Step = Width * 3;
+    }
+    else if (CameraType == EROS2CameraType::DEPTH)
+    {
+        CameraComponent->PostProcessSettings.WeightedBlendables.Array.Add(
+            FWeightedBlendable(1.0f, GetBufferVisualizationData().GetMaterial(TEXT("SceneDepth"))));
+        SceneCaptureComponent->PostProcessSettings = CameraComponent->PostProcessSettings;
+        SceneCaptureComponent->CaptureSource = ESceneCaptureSource::SCS_SceneDepth;
+
+        RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
+        RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_FloatRGBA, false);
+        Data.Encoding = TEXT("32FC1");
+        Data.Step = Width * 4;
     }
 
-    RenderTarget = NewObject<UTextureRenderTarget2D>(this, UTextureRenderTarget2D::StaticClass());
-    RenderTarget->InitCustomFormat(Width, Height, EPixelFormat::PF_B8G8R8A8, true);
+    // Common setup
     SceneCaptureComponent->TextureTarget = RenderTarget;
-
-    // Initialize image data
     Data.Header.FrameId = FrameId;
     Data.Width = Width;
     Data.Height = Height;
-    Data.Encoding = Encoding;
-    Data.Step = Width * 3;    // todo should be variable based on encoding
-    Data.Data.AddUninitialized(Width * Height * 3);
-
+    Data.Data.AddUninitialized(Width * Height * (CameraType == EROS2CameraType::RGB ? 3 : 4));
     QueueSize = QueueSize < 1 ? 1 : QueueSize;    // QueueSize should be more than 1
-
     Super::PreInitializePublisher(InROS2Node, InTopicName);
 }
 
 void URRROS2CameraComponent::SensorUpdate()
 {
-    if (Render) {
+    if (Render)
+    {
         SceneCaptureComponent->CaptureScene();
         CaptureNonBlocking();
     }
@@ -62,10 +71,18 @@ void URRROS2CameraComponent::CaptureNonBlocking()
     // Get RenderContext
     FTextureRenderTargetResource* renderTargetResource = SceneCaptureComponent->TextureTarget->GameThread_GetRenderTargetResource();
 
-    struct FReadSurfaceContext
+    struct FReadSurfaceContextRGB
     {
         FRenderTarget* SrcRenderTarget;
         TArray<FColor>* OutData;
+        FIntRect Rect;
+        FReadSurfaceDataFlags Flags;
+    };
+
+    struct FReadSurfaceContextDepth
+    {
+        FRenderTarget* SrcRenderTarget;
+        TArray<FFloat16Color>* Depth;
         FIntRect Rect;
         FReadSurfaceDataFlags Flags;
     };
@@ -74,22 +91,37 @@ void URRROS2CameraComponent::CaptureNonBlocking()
     FRenderRequest* renderRequest = new FRenderRequest();
 
     // Setup GPU command
-    FReadSurfaceContext readSurfaceContext = {
-        renderTargetResource,
-        &(renderRequest->Image),
-        FIntRect(0, 0, renderTargetResource->GetSizeXY().X, renderTargetResource->GetSizeXY().Y),
-        FReadSurfaceDataFlags(RCM_UNorm, CubeFace_MAX)};
+    FIntRect rect(0, 0, renderTargetResource->GetSizeXY().X, renderTargetResource->GetSizeXY().Y);
+    FReadSurfaceDataFlags flags(RCM_UNorm, CubeFace_MAX);
 
-    // Above 4.22 use this
-    ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)
-    (
-        [readSurfaceContext, this](FRHICommandListImmediate& RHICmdList)
-        {
-            RHICmdList.ReadSurfaceData(readSurfaceContext.SrcRenderTarget->GetRenderTargetTexture(),
-                                       readSurfaceContext.Rect,
-                                       *readSurfaceContext.OutData,
-                                       readSurfaceContext.Flags);
-        });
+    if (CameraType == EROS2CameraType::RGB)
+    {
+        FReadSurfaceContextRGB readSurfaceContext = {renderTargetResource, &(renderRequest->Image), rect, flags};
+
+        ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)
+        (
+            [readSurfaceContext, this](FRHICommandListImmediate& RHICmdList)
+            {
+                RHICmdList.ReadSurfaceData(readSurfaceContext.SrcRenderTarget->GetRenderTargetTexture(),
+                                           readSurfaceContext.Rect,
+                                           *readSurfaceContext.OutData,
+                                           readSurfaceContext.Flags);
+            });
+    }
+    else if (CameraType == EROS2CameraType::DEPTH)
+    {
+        FReadSurfaceContextDepth readSurfaceContext = {renderTargetResource, &(renderRequest->Depth), rect, flags};
+
+        ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)
+        (
+            [readSurfaceContext, this](FRHICommandListImmediate& RHICmdList)
+            {
+                RHICmdList.ReadSurfaceFloatData(readSurfaceContext.SrcRenderTarget->GetRenderTargetTexture(),
+                                                readSurfaceContext.Rect,
+                                                *readSurfaceContext.Depth,
+                                                readSurfaceContext.Flags);
+            });
+    }
 
     // Notify new task in RenderQueue
     RenderRequestQueue.Enqueue(renderRequest);
@@ -112,43 +144,37 @@ FROSImg URRROS2CameraComponent::GetROS2Data()
     {
         // Timestamp
         Data.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
-
         // Peek the next RenderRequest from queue
         FRenderRequest* nextRenderRequest = nullptr;
         RenderRequestQueue.Peek(nextRenderRequest);
-        if (nextRenderRequest)
-        {    // nullptr check
-            if (nextRenderRequest->RenderFence.IsFenceComplete())
-            {    // Check if rendering is done, indicated by RenderFence
-                for (int I = 0; I < nextRenderRequest->Image.Num(); I++)
+        if (nextRenderRequest && nextRenderRequest->RenderFence.IsFenceComplete())
+        {
+            if (CameraType == EROS2CameraType::RGB)
+            {
+                // Process RGB data
+                for (int i = 0; i < nextRenderRequest->Image.Num(); i++)
                 {
-                    Data.Data[I * 3 + 0] = nextRenderRequest->Image[I].R;
-                    Data.Data[I * 3 + 1] = nextRenderRequest->Image[I].G;
-                    Data.Data[I * 3 + 2] = nextRenderRequest->Image[I].B;
+                    Data.Data[i * 3 + 0] = nextRenderRequest->Image[i].B;
+                    Data.Data[i * 3 + 1] = nextRenderRequest->Image[i].G;
+                    Data.Data[i * 3 + 2] = nextRenderRequest->Image[i].R;
                 }
-
-                // Delete the first element from RenderQueue
-                RenderRequestQueue.Pop();
-                QueueCount--;
-                delete nextRenderRequest;
             }
+            else if (CameraType == EROS2CameraType::DEPTH)
+            {
+                // Process Depth data
+                for (int i = 0; i < nextRenderRequest->Depth.Num(); i++)
+                {
+                    float value = nextRenderRequest->Depth[i].R.GetFloat() / 100;
+                    std::memcpy(&Data.Data[i * 4], &value, sizeof(value));
+                }
+            }
+
+            // Delete the first element from RenderQueue
+            RenderRequestQueue.Pop();
+            QueueCount--;
+            delete nextRenderRequest;
         }
     }
-
-    // SceneCaptureComponent->CaptureScene();
-    // FTextureRenderTarget2DResource* RenderTargetResource;
-    // RenderTargetResource = (FTextureRenderTarget2DResource*)RenderTarget->GameThread_GetRenderTargetResource();
-    // if (RenderTargetResource) {
-    //     TArray<FColor> buffer;
-    //     RenderTargetResource->ReadPixels(buffer);
-    //     for (int I = 0; I < buffer.Num(); I++)
-    //     {
-    //         Data.data[I * 3 + 0] = buffer[I].R;
-    //         Data.data[I * 3 + 1] = buffer[I].G;
-    //         Data.data[I * 3 + 2] = buffer[I].B;
-    //     }
-    // }
-
     return Data;
 }
 
