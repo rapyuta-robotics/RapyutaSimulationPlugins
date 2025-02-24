@@ -30,6 +30,7 @@ struct FRenderRequest
 {
     GENERATED_BODY()
     TArray<FColor> Image;
+    TArray<FFloat16Color> Depth;
     FRenderCommandFence RenderFence;
 };
 
@@ -114,6 +115,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EROS2CameraType CameraType = EROS2CameraType::RGB;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool Render = true;
+
     // ROS
     /**
      * @brief Update ROS 2 Msg structure from #RenderRequestQueue
@@ -129,7 +133,4 @@ public:
      * @param InMessage
      */
     virtual void SetROS2Msg(UROS2GenericMsg* InMessage) override;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString Encoding = TEXT("rgb8");
 };
