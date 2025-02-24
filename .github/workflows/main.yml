@@ -6,6 +6,9 @@ on:
       - devel
       - UE5.2
       - UE5.3
+      - UE5.4
+      - UE5.4.4
+      - UE5.5
     types: ["closed"]
 
   workflow_dispatch:
@@ -25,12 +28,21 @@ jobs:
           - devel
           - UE5.2
           - UE5.3
+          - UE5.4
+          - UE5.4.4
+          - UE5.5
     steps:
+    - name: Check token permissions
+      run: |
+        curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/${{ github.repository }}
     - name: Checkout
       uses: actions/checkout@v4
       if: matrix.version != github.base_ref
       with:
         ref: ${{ matrix.version }}
+        token: ${{ secrets.GITHUB_TOKEN }}
     - name: Debug
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
