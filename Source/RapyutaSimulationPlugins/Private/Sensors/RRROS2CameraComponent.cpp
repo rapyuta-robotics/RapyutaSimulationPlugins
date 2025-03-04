@@ -1,4 +1,4 @@
- // Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
+// Copyright 2020-2023 Rapyuta Robotics Co., Ltd.
 
 #include "Sensors/RRROS2CameraComponent.h"
 #include "BufferVisualizationData.h"
@@ -167,13 +167,13 @@ void URRROS2CameraComponent::CaptureNonBlocking()
 
 FROSImg URRROS2CameraComponent::GetROS2Data()
 {
-    if (!RenderRequestQueue.IsEmpty() && (Publish == true)) {
+    if (!RenderRequestQueue.IsEmpty()) {
         // Timestamp
         Data.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
         // Peek the next RenderRequest from queue
         FRenderRequest* nextRenderRequest = nullptr;
         RenderRequestQueue.Peek(nextRenderRequest);
-        if (nextRenderRequest && nextRenderRequest->RenderFence.IsFenceComplete()) 
+        if (nextRenderRequest && nextRenderRequest->RenderFence.IsFenceComplete())
         {
             if (CameraType == EROS2CameraType::RGB || CameraType == EROS2CameraType::SEGMENT)
             {
@@ -188,7 +188,7 @@ FROSImg URRROS2CameraComponent::GetROS2Data()
             else if (CameraType == EROS2CameraType::DEPTH) 
             {
                 // Process Depth data
-                for (int i = 0; i < nextRenderRequest->Depth.Num(); i++) 
+                for (int i = 0; i < nextRenderRequest->Depth.Num(); i++)
                 {
                     float value = nextRenderRequest->Depth[i].R.GetFloat() / 100;
                     std::memcpy(&Data.Data[i * 4], &value, sizeof(value));

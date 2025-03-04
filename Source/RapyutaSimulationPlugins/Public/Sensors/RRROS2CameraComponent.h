@@ -120,10 +120,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool Render = true;
 
-    // Allow to disable publishing (no image will be published)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool Publish = true;
-
     // ROS
     /**
      * @brief Update ROS 2 Msg structure from #RenderRequestQueue
