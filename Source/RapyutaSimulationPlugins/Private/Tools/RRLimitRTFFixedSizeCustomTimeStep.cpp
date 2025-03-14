@@ -96,9 +96,6 @@ void URRLimitRTFFixedSizeCustomTimeStep::SetTargetRTF(const float InTargetRTF)
 bool URRLimitRTFFixedSizeCustomTimeStep::WaitForSync()
 {
     const double currentPlatformTime = FPlatformTime::Seconds();
-    // const double LastTime = FApp::GetLastTime();
-
-    // Calculate delta time
     double deltaRealTime = currentPlatformTime - LastPlatformTime;
 
     // Handle the unexpected case of a negative DeltaRealTime by forcing LastTime to CurrentPlatformTime.
@@ -106,26 +103,33 @@ bool URRLimitRTFFixedSizeCustomTimeStep::WaitForSync()
     {
         FApp::SetCurrentTime(currentPlatformTime);    // Necessary since we don't have direct access to FApp's LastTime
         FApp::UpdateLastTime();
-        deltaRealTime = currentPlatformTime - FApp::GetLastTime();    // DeltaRealTime should be zero now, which will force a sleep
+        deltaRealTime = 0.0;    // DeltaRealTime should be zero now, which will force a sleep
     }
 
-    const double waitTime = FMath::Max(StepSize / TargetRTF - deltaRealTime, 0.0);
+     // Calculate the remaining time to maintain the target RTF
+    const double desiredStepTime = StepSize / TargetRTF;
+    double remainingWaitTime = FMath::Max(desiredStepTime - deltaRealTime, 0.0);
 
     double actualWaitTime = 0.0;
     {
         FSimpleScopeSecondsCounter ActualWaitTimeCounter(actualWaitTime);
 
-        if (waitTime > 5.f / 1000.f)
+        // If there's significant remaining time, sleep for most of it
+        constexpr double MinSleepThreshold = 0.002;  // 2ms
+        constexpr double SleepSafetyMargin = 0.0005;  // 0.5ms margin for finer adjustment
+
+        if (remainingWaitTime > MinSleepThreshold)
         {
-            FPlatformProcess::SleepNoStats(waitTime - 0.002f);
+            FPlatformProcess::SleepNoStats(remainingWaitTime - MinSleepThreshold);
         }
 
-        // Give up timeslice for remainder of wait time.
-        const double WaitEndTime = LastPlatformTime + StepSize / TargetRTF;
-        while (FPlatformTime::Seconds() < WaitEndTime)
+        // Fine-tune waiting for precise synchronization
+        const double waitEndTime = LastPlatformTime + desiredStepTime;
+        while (FPlatformTime::Seconds() < waitEndTime)
         {
-            FPlatformProcess::SleepNoStats(0.f);
+            FPlatformProcess::SleepNoStats(SleepSafetyMargin);  // Avoid busy waiting, sleep for 0.5ms
         }
+
     }
 
     // Use fixed delta time and update time.
