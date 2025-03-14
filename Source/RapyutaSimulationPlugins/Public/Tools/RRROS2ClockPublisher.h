@@ -40,6 +40,9 @@ protected:
     //! Handle to various registered delegates 
     FTSTicker::FDelegateHandle TickDelegateHandle;
 
+    int32 InitialSystemTimeSec;
+    int32 InitialSystemTimeNsec;
+    bool bStartROSTimeFromWalltime = false;
     /**
      * @brief
      * Called with every simulation step. Publishing clock msg with simulation step.
