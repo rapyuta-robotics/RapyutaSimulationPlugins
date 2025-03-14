@@ -29,6 +29,20 @@ bool URRROS2ClockPublisher::Init()
     TickDelegate = FTickerDelegate::CreateUObject(this, &URRROS2ClockPublisher::Tick);
     TickDelegateHandle = FTSTicker::GetCoreTicker().AddTicker(TickDelegate);
 
+    FDateTime Now = FDateTime::UtcNow();
+    InitialSystemTimeSec = Now.ToUnixTimestamp();
+    InitialSystemTimeNsec = Now.GetMillisecond() / 1e-09f;
+
+    FString TempInputString;
+    if (FParse::Value(FCommandLine::Get(), TEXT("START_ROSTIME_FROM_WALLTIME"), TempInputString)) {
+        TempInputString = TempInputString.Replace(TEXT("="), TEXT(""));
+        bStartROSTimeFromWalltime = TempInputString.ToBool();
+        UE_LOG(LogTemp, Log, TEXT("START_ROSTIME_FROM_WALLTIME %s"), *TempInputString);
+    }else{
+        UE_LOG(LogTemp, Error, TEXT("Failed to parse START_ROSTIME_FROM_WALLTIME!"));
+    }
+    
+
     return res;
 }
 
@@ -36,12 +50,16 @@ bool URRROS2ClockPublisher::Tick(float DeltaSeconds)
 {
     // Noted: Elapsed time: time in seconds since world was brought up for play
     auto* gameState = GetWorld()->GetGameState();
+
     if (gameState)
     {
         // update msg
         FROSClock msg;
         msg.Clock = URRConversionUtils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
-
+        if (bStartROSTimeFromWalltime){
+            msg.Clock.Sec = msg.Clock.Sec + InitialSystemTimeSec;
+            msg.Clock.Nanosec = msg.Clock.Nanosec + InitialSystemTimeNsec;
+        }
         // publish
         Publish<UROS2ClockMsg, FROSClock>(msg);
     }
