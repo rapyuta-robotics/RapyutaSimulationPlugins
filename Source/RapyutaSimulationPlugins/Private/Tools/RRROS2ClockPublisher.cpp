@@ -31,7 +31,6 @@ bool URRROS2ClockPublisher::Init()
 
     FDateTime Now = FDateTime::UtcNow();
     InitialSystemTimeSec = Now.ToUnixTimestamp();
-    InitialSystemTimeNsec = Now.GetMillisecond() / 1e-09f;
 
     FString TempInputString;
     if (FParse::Value(FCommandLine::Get(), TEXT("START_ROSTIME_FROM_WALLTIME"), TempInputString)) {
@@ -39,7 +38,7 @@ bool URRROS2ClockPublisher::Init()
         bStartROSTimeFromWalltime = TempInputString.ToBool();
         UE_LOG(LogTemp, Log, TEXT("START_ROSTIME_FROM_WALLTIME %s"), *TempInputString);
     }else{
-        UE_LOG(LogTemp, Error, TEXT("Failed to parse START_ROSTIME_FROM_WALLTIME!"));
+        UE_LOG(LogTemp, Warning, TEXT("Failed to parse  !"));
     }
     
 
@@ -58,7 +57,7 @@ bool URRROS2ClockPublisher::Tick(float DeltaSeconds)
         msg.Clock = URRConversionUtils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
         if (bStartROSTimeFromWalltime){
             msg.Clock.Sec = msg.Clock.Sec + InitialSystemTimeSec;
-            msg.Clock.Nanosec = msg.Clock.Nanosec + InitialSystemTimeNsec;
+            msg.Clock.Nanosec = msg.Clock.Nanosec;
         }
         // publish
         Publish<UROS2ClockMsg, FROSClock>(msg);

@@ -41,7 +41,6 @@ protected:
     FTSTicker::FDelegateHandle TickDelegateHandle;
 
     int32 InitialSystemTimeSec;
-    int32 InitialSystemTimeNsec;
     bool bStartROSTimeFromWalltime = false;
     /**
      * @brief
