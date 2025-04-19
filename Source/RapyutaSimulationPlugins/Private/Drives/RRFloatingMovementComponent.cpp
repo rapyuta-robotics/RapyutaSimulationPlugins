@@ -364,7 +364,10 @@ void URRFloatingMovementComponent::CalculateRVOAvoidanceVelocity(float InDeltaTi
         return;
     }
 
-    const bool bRVODebugEnabled = RAPYUTA_SIM_DEBUG && RVOAvoidanceManager->IsDebugEnabled(RVOAvoidanceUID);
+    bool bRVODebugEnabled = false;
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+    bRVODebugEnabled = RAPYUTA_SIM_DEBUG && RVOAvoidanceManager->IsDebugEnabled(RVOAvoidanceUID);
+#endif
 
     //Adjust velocity only if we're in "Walking" mode. We should also check if we're dazed, being knocked around, maybe off-navmesh, etc.
     if (!Velocity.IsZero() && IsMovingOnGround() && UpdatedPrimitive)
