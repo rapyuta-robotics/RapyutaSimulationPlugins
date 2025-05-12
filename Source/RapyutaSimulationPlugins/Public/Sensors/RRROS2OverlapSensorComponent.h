@@ -43,7 +43,6 @@ public:
      * @param InROS2Node
      * @param InPublisherName
      * @param InTopicName
-     * @param InQoS
      */
     virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                    const FString& InPublisherName = EMPTY_STR,
