@@ -97,6 +97,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     float OdomPublicationFrequencyHz = 30;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+    UROS2QoS OdomQoS = UROS2QoS::SensorData;
+
+
     //! Movement command topic. If empty is given, subscriber will not be initiated.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     FString CmdVelTopicName = TEXT("cmd_vel");
