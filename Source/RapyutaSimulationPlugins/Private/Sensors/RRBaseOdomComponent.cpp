@@ -6,6 +6,7 @@ URRBaseOdomComponent::URRBaseOdomComponent()
 {
     SensorPublisherClass = URRROS2OdomPublisher::StaticClass();
     TopicName = TEXT("odom");
+    QoS = UROS2QoS::SensorData;
     PublicationFrequencyHz = 30;
     FrameId = TEXT("odom");    //default frame id
 }
