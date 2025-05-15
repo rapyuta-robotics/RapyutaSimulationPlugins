@@ -102,9 +102,24 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
+                                   const FString& InPublisherName,
+                                   const FString& InTopicName,
+                                   const UROS2QoS InQoS);
+
+    /**
+     * @brief Create and initialize publisher and start sensor update by calling
+     * #CreatePublisher, #PreInitializePublisher, #InitializePublisher and #Run with #QoS
+     *
+     * @param InROS2Node ROS2Node which this publisher belongs to
+     * @param InPublisherName Publisher component name
+     * @param InTopicName Topic name
+     *      *
+     * @sa [UROS2NodeComponent](https://rclue.readthedocs.io/en/devel/doxygen_generated/html/d1/d79/_r_o_s2_node_component_8h.html)
+     * @sa [ROS 2 QoS](https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html)
+     */
+    virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                    const FString& InPublisherName = TEXT(""),
-                                   const FString& InTopicName = TEXT(""),
-                                   const UROS2QoS InQoS = UROS2QoS::SensorData);
+                                   const FString& InTopicName = TEXT(""));
 
     /**
      * @brief Create a Publisher with #SensorPublisherClass.
@@ -183,6 +198,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 PublicationFrequencyHz = 30;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UROS2QoS QoS = UROS2QoS::SensorData;
 
     //! Append namespace to #FrameId or not.
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
