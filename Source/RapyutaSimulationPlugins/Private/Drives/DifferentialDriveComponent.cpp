@@ -7,8 +7,9 @@
 
 // RapyutaSimulationPlugins
 #include "Core/RRConversionUtils.h"
+#include "Core/RRGeneralUtils.h"
 
-void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight)
+void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight, UStaticMeshComponent* InWheelLeftLink, UStaticMeshComponent* InWheelRightLink)
 {
     auto fSetWheel = [this](UPhysicsConstraintComponent*& CurWheel, UPhysicsConstraintComponent* NewWheel)
     {
@@ -27,6 +28,20 @@ void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheel
 
     fSetWheel(WheelLeft, InWheelLeft);
     fSetWheel(WheelRight, InWheelRight);
+    if(!IsValid(InWheelLeftLink) || !IsValid(InWheelRightLink))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogDifferentialDriveComponent, Error, TEXT("Wheel Links are not set"));
+        return;
+    }
+    else
+    {
+        WheelLeftLink = InWheelLeftLink;
+        WheelRightLink = InWheelRightLink;
+        LeftJointToChildLink =
+                URRGeneralUtils::GetRelativeTransform(WheelLeft->GetComponentTransform(), WheelLeftLink->GetComponentTransform());
+        RightJointToChildLink = 
+                URRGeneralUtils::GetRelativeTransform(WheelRight->GetComponentTransform(), WheelRightLink->GetComponentTransform());
+    }
 }
 
 void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
@@ -46,21 +61,49 @@ void UDifferentialDriveComponent::UpdateMovement(float DeltaTime)
     }
 }
 
-float UDifferentialDriveComponent::GetWheelVelocity(const EDiffDriveWheel WheelIndex)
+float UDifferentialDriveComponent::GetWheelVelocity(const EDiffDriveWheel WheelIndex, float DeltaTime)
 {
+    if(!IsValid(WheelLeftLink) || !IsValid(WheelRightLink))
+    {
+        return 0;
+    }
     // todo calculate from wheel pose
-    const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
+    // const float angularVelRad = FMath::DegreesToRadians(AngularVelocity.Z);
     float out = 0;
+
+    FVector dummyPosition = FVector::ZeroVector;
+    FVector angularVelocity = FVector::ZeroVector;
+    FRotator prevOrientation = FRotator::ZeroRotator;
+    FVector prevOrientationEuler = FVector::ZeroVector;
+    FVector OrientationEuler = FVector::ZeroVector;
+     
     if (WheelIndex == EDiffDriveWheel::LEFT)
     {
         // left wheel
-        out = Velocity.X + angularVelRad * WheelSeparationHalf;    //cm
+        // out = Velocity.X + angularVelRad * WheelSeparationHalf;    //cm
+        prevOrientation = LeftWheelOrientation;
+        prevOrientationEuler = prevOrientation.Euler();
+        URRGeneralUtils::GetPhysicsConstraintTransform(WheelLeft, LeftJointToChildLink, dummyPosition, LeftWheelOrientation, WheelLeftLink);
+        OrientationEuler = LeftWheelOrientation.Euler();
+        for (uint8 i = 0; i < 3; i++)
+        {
+            angularVelocity[i] =
+                 UKismetMathLibrary::SafeDivide(FRotator::NormalizeAxis(OrientationEuler[i] - prevOrientationEuler[i]), DeltaTime);
+        }
     }
     else if (WheelIndex == EDiffDriveWheel::RIGHT)
     {
         // right wheel
-        out = Velocity.X - angularVelRad * WheelSeparationHalf;    //cm
+        // out = Velocity.X - angularVelRad * WheelSeparationHalf;    //cm
+        prevOrientation = RightWheelOrientation;
+        prevOrientationEuler = prevOrientation.Euler();
+        URRGeneralUtils::GetPhysicsConstraintTransform(WheelRight, RightJointToChildLink, dummyPosition, RightWheelOrientation, WheelRightLink);
+        OrientationEuler = RightWheelOrientation.Euler();
+        for (uint8 i = 0; i < 3; i++)
+        {
+            angularVelocity[i] =
+                - UKismetMathLibrary::SafeDivide(FRotator::NormalizeAxis(OrientationEuler[i] - prevOrientationEuler[i]), DeltaTime);
+        }
     }
-
-    return out;
+    return FMath::DegreesToRadians(angularVelocity[0]) * WheelRadius;
 }
