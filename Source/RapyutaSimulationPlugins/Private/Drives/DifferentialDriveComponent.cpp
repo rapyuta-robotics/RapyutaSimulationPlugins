@@ -28,9 +28,14 @@ void UDifferentialDriveComponent::SetWheels(UPhysicsConstraintComponent* InWheel
 
     fSetWheel(WheelLeft, InWheelLeft);
     fSetWheel(WheelRight, InWheelRight);
-    if(!IsValid(InWheelLeftLink) || !IsValid(InWheelRightLink))
+    if (!IsValid(InWheelLeftLink))
     {
-        UE_LOG_WITH_INFO_NAMED(LogDifferentialDriveComponent, Error, TEXT("Wheel Links are not set"));
+        UE_LOG_WITH_INFO_NAMED(LogDifferentialDriveComponent, Error, TEXT("Wheel Left Link is invalid! Ensure it is properly initialized and assigned."));
+        return;
+    }
+    if (!IsValid(InWheelRightLink))
+    {
+        UE_LOG_WITH_INFO_NAMED(LogDifferentialDriveComponent, Error, TEXT("Wheel Right Link is invalid! Ensure it is properly initialized and assigned."));
         return;
     }
     else
