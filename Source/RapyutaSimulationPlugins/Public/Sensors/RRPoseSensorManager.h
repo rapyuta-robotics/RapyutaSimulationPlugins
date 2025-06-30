@@ -70,8 +70,7 @@ public:
      */
     virtual void InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                    const FString& InPublisherName = EMPTY_STR,
-                                   const FString& InTopicName = EMPTY_STR,
-                                   const UROS2QoS InQoS = UROS2QoS::SensorData) override;
+                                   const FString& InTopicName = EMPTY_STR) override;
 
     /**
      * @brief Calculate relative pose with #URRGeneralUtils and update #Data
