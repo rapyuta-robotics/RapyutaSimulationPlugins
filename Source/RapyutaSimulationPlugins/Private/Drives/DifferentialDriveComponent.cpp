@@ -105,5 +105,7 @@ float UDifferentialDriveComponent::GetWheelVelocity(const EDiffDriveWheel WheelI
                 - UKismetMathLibrary::SafeDivide(FRotator::NormalizeAxis(OrientationEuler[i] - prevOrientationEuler[i]), DeltaTime);
         }
     }
+    // Only the first element of angularVelocity is used because it represents the rotation around the axis
+    // relevant to the wheel's movement (typically the X-axis in this context).
     return FMath::DegreesToRadians(angularVelocity[0]) * WheelRadius;
 }
