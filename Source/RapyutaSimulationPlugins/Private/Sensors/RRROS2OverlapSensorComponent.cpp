@@ -18,10 +18,9 @@ URRROS2OverlapSensorComponent::URRROS2OverlapSensorComponent()
 
 void URRROS2OverlapSensorComponent::InitalizeWithROS2(UROS2NodeComponent* InROS2Node,
                                                       const FString& InPublisherName,
-                                                      const FString& InTopicName,
-                                                      const UROS2QoS InQoS)
+                                                      const FString& InTopicName)
 {
-    Super::InitalizeWithROS2(InROS2Node, InPublisherName, InTopicName, InQoS);
+    Super::InitalizeWithROS2(InROS2Node, InPublisherName, InTopicName);
     EventPublisher =
         InROS2Node->CreatePublisher(EventTopicName, UROS2Publisher::StaticClass(), UROS2OverlapEventMsg::StaticClass());
 }

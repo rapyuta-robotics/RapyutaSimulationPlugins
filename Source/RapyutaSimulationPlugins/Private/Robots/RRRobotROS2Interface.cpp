@@ -51,6 +51,7 @@ void URRRobotROS2Interface::InitInterfaces()
                 URRUObjectUtils::CreateChildComponent<URRBaseOdomComponent>(Robot, *FString::Printf(TEXT("%sOdom"), *GetName()));
             OdomComponent->bPublishOdomTf = bPublishOdomTf;
             OdomComponent->PublicationFrequencyHz = OdomPublicationFrequencyHz;
+            OdomComponent->QoS = OdomQoS;
             OdomComponent->RootOffset = Robot->RootOffset;
         }
     }

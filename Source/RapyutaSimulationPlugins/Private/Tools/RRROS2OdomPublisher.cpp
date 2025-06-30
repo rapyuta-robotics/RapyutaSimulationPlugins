@@ -9,7 +9,7 @@
 URRROS2OdomPublisher::URRROS2OdomPublisher()
 {
     MsgClass = UROS2OdomMsg::StaticClass();
-    QoS = UROS2QoS::KeepLast;
+    QoS = UROS2QoS::SensorData;
     SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
