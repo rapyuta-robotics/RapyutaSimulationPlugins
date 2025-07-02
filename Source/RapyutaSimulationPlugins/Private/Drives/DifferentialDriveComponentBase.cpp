@@ -25,7 +25,7 @@ void UDifferentialDriveComponentBase::TickComponent(float InDeltaTime,
                                                     FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(InDeltaTime, TickType, ThisTickFunction);
-    if (!ShouldSkipUpdate(InDeltaTime))
+    if (!ShouldSkipUpdate(InDeltaTime) && bUseWheelOdom)
     {
         UpdateOdom(InDeltaTime);
     }
@@ -36,7 +36,7 @@ void UDifferentialDriveComponentBase::UpdateMovement(float DeltaTime)
     UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("This method should be implemented in child class."));
 }
 
-float UDifferentialDriveComponentBase::GetWheelVelocity(const EDiffDriveWheel WheelIndex)
+float UDifferentialDriveComponentBase::GetWheelVelocity(const EDiffDriveWheel WheelIndex, float DeltaTime)
 {
     UE_LOG_WITH_INFO_SHORT(LogRapyutaCore, Error, TEXT("This method should be implemented in child class."));
     return 0;
@@ -70,8 +70,8 @@ void UDifferentialDriveComponentBase::UpdateOdom(float DeltaTime)
     // in the kinematics case, (dx,dy,dtheta) can be simplified considerably
     // but as this is not a performance bottleneck, for the moment we leave the full general formulation,
     // at least until the odom for the physics version of the agent is implemented, so that we have a reference
-    float vl = GetWheelVelocity(EDiffDriveWheel::LEFT);
-    float vr = GetWheelVelocity(EDiffDriveWheel::RIGHT);
+    float vl = GetWheelVelocity(EDiffDriveWheel::LEFT, DeltaTime);
+    float vr = GetWheelVelocity(EDiffDriveWheel::RIGHT, DeltaTime);
 
     // noise added as a component of vl, vr
     // Gazebo links this Book here: Sigwart 2011 Autonomous Mobile Robots page:337
@@ -151,7 +151,15 @@ void UDifferentialDriveComponentBase::Initialize()
     SetPerimeter();
     if (OdomComponent)
     {
-        // Odom update is done by this class instead of OdomComponent.
-        OdomComponent->bManualUpdate = true;
+        if (bUseWheelOdom)
+        {
+            // Odom update is done by this class instead of OdomComponent.
+            OdomComponent->bManualUpdate = true;
+        }
+        else
+        {
+            // Odom update is done by original OdomComponent.
+            OdomComponent->bManualUpdate = false;
+        }
     }
 }
