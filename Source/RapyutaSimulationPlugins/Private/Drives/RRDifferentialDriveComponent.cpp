@@ -44,7 +44,7 @@ void URRDifferentialDriveComponent::UpdateMovement(float DeltaTime)
     }
 }
 
-float URRDifferentialDriveComponent::GetWheelVelocity(const EDiffDriveWheel WheelIndex)
+float URRDifferentialDriveComponent::GetWheelVelocity(const EDiffDriveWheel WheelIndex, float DeltaTime)
 {
     float out = 0;
     if (WheelIndex == EDiffDriveWheel::LEFT)
