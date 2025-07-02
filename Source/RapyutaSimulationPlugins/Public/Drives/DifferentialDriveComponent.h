@@ -48,18 +48,37 @@ public:
      * @param InWheelRight
      */
     UFUNCTION(BlueprintCallable)
-    void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight);
+    void SetWheels(UPhysicsConstraintComponent* InWheelLeft, UPhysicsConstraintComponent* InWheelRight, UStaticMeshComponent* InWheelLeftLink, UStaticMeshComponent* InWheelRightLink);
 
     /**
      * @brief Get the Wheel Velocity [cm/s]
      *
      * @param index index of wheels
      */
-    virtual float GetWheelVelocity(const EDiffDriveWheel WheelIndex) override;
+    virtual float GetWheelVelocity(const EDiffDriveWheel WheelIndex, float DeltaTime) override;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UPhysicsConstraintComponent* WheelLeft = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* WheelLeftLink = nullptr;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    FTransform LeftJointToChildLink = FTransform::Identity;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    FRotator LeftWheelOrientation = FRotator::ZeroRotator;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UPhysicsConstraintComponent* WheelRight = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* WheelRightLink = nullptr;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    FTransform RightJointToChildLink = FTransform::Identity;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    FRotator RightWheelOrientation = FRotator::ZeroRotator;
+    
 };

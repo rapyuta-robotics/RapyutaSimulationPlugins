@@ -46,7 +46,7 @@ public:
      *
      * @param index index of wheels
      */
-    virtual float GetWheelVelocity(const EDiffDriveWheel WheelIndex) override;
+    virtual float GetWheelVelocity(const EDiffDriveWheel WheelIndex, float DeltaTime) override;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     URRPhysicsJointComponent* WheelLeft = nullptr;
