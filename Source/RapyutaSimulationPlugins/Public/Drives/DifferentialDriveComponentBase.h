@@ -70,7 +70,7 @@ public:
      * @param index index of wheels
      */
     UFUNCTION(BlueprintCallable)
-    virtual float GetWheelVelocity(const EDiffDriveWheel WheelIndex);
+    virtual float GetWheelVelocity(const EDiffDriveWheel WheelIndex, float DeltaTime);
 
     /**
      * @brief Call Super::Initialize() and #SetPerimeter.
@@ -96,6 +96,12 @@ public:
     //! @todo get data from physics constraints
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxForce = 1000.f;
+
+    //! if this is false, use original OdomComponent to update odom
+    //! if this is true, use this class's wheel odom to update odom
+    //! This value should sync with #bManualUpdate in #URRBaseOdomComponent
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bUseWheelOdom = true;
 
 protected:
     //! [cm]
