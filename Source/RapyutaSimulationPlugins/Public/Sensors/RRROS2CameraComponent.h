@@ -38,7 +38,8 @@ UENUM(BlueprintType)
 enum class EROS2CameraType : uint8
 {
     RGB UMETA(DisplayName = "RGB"),
-    DEPTH UMETA(DisplayName = "Depth")
+    DEPTH UMETA(DisplayName = "Depth"),
+    SEGMENT UMETA(DisplayName = "Segment")
 };
 
 /**
@@ -115,6 +116,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EROS2CameraType CameraType = EROS2CameraType::RGB;
 
+    // Allow to disable rendering (for performance, it still publishes still image)
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool Render = true;
 
