@@ -56,5 +56,16 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FROSMarker BaseMarker;
 
+    /**
+    * @brief Add a target actor to #Actors
+    */
+    void AddTargetActor(AActor* InActor);
+
+    /**
+    * @brief Callback upon a target actor in #Actors gets destroyed
+    */
+    UFUNCTION()
+    void OnTargetActorDestroyed(AActor* InActor);
+
     void UpdateMessage(UROS2GenericMsg* InMessage) override;
 };

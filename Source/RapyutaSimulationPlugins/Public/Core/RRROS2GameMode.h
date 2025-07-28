@@ -108,6 +108,16 @@ public:
         return NativeSpawnableClassPaths.FindRef(InEntityModelName);
     }
 
+    //! Blueprint class names (also used as their entity model names) to be registered as spawnable entity types
+    //! Eg: {"BP_TurtlebotBurger", "BP_TurtlebotBurgerVehicle"}
+    UPROPERTY(config)
+    TArray<FString> BPSpawnableClassNames;
+
+    //! Asset paths of classes to be registered as spawnable entity types
+    //! Eg: {{"TurtlebotBurger", "/Script/RapyutaSimulationPlugins.TurtlebotBurger"]}
+    UPROPERTY(config)
+    TMap<FString /*Entity model name*/, FString /*Class path*/> NativeSpawnableClassPaths;
+
 protected:
     /**
      * @brief Initialize Game.
@@ -130,16 +140,6 @@ protected:
      * @brief Set timestep with startplay and call #InitSim
      */
     virtual void StartPlay() override;
-
-    //! Blueprint class names (also used as their entity model names) to be registered as spawnable entity types
-    //! Eg: {"BP_TurtlebotBurger", "BP_TurtlebotBurgerVehicle"}
-    UPROPERTY(config)
-    TArray<FString> BPSpawnableClassNames;
-
-    //! Asset paths of classes to be registered as spawnable entity types
-    //! Eg: {{"TurtlebotBurger", "/Script/RapyutaSimulationPlugins.TurtlebotBurger"]}
-    UPROPERTY(config)
-    TMap<FString /*Entity model name*/, FString /*Class path*/> NativeSpawnableClassPaths;
 
 private:
     /**

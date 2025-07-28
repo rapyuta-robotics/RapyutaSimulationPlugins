@@ -15,6 +15,20 @@ URRROS2ActorsRvizMarkerPublisher::URRROS2ActorsRvizMarkerPublisher()
     SetDefaultDelegates();    //use UpdateMessage as update delegate
 }
 
+void URRROS2ActorsRvizMarkerPublisher::AddTargetActor(AActor* InActor)
+{
+    if (false == Actors.Contains(InActor))
+    {
+        InActor->OnDestroyed.AddDynamic(this, &URRROS2ActorsRvizMarkerPublisher::OnTargetActorDestroyed);
+        Actors.Add(InActor);
+    }
+}
+
+void URRROS2ActorsRvizMarkerPublisher::OnTargetActorDestroyed(AActor* InActor)
+{
+    Actors.RemoveSwap(InActor);
+}
+
 void URRROS2ActorsRvizMarkerPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
 {
     if (bUpdateActorsList)
@@ -26,6 +40,10 @@ void URRROS2ActorsRvizMarkerPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
     BaseMarker.Header.Stamp = URRConversionUtils::FloatToROSStamp(UGameplayStatics::GetTimeSeconds(GetWorld()));
     for (AActor* actor : Actors)
     {
+        if (!IsValid(actor))
+        {
+            continue;
+        }
         FROSMarker marker = BaseMarker;
         FTransform tf =
             URRConversionUtils::TransformUEToROS(URRGeneralUtils::GetRelativeTransform(ReferenceActor, actor->GetTransform()));
@@ -35,5 +53,8 @@ void URRROS2ActorsRvizMarkerPublisher::UpdateMessage(UROS2GenericMsg* InMessage)
         msg.Markers.Add(marker);
     }
 
-    CastChecked<UROS2MarkerArrayMsg>(InMessage)->SetMsg(msg);
+    if (msg.Markers.Num() > 0)
+    {
+        CastChecked<UROS2MarkerArrayMsg>(InMessage)->SetMsg(msg);
+    }
 }
