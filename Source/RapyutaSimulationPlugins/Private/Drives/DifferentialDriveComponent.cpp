@@ -66,7 +66,7 @@ void UDifferentialDriveComponent::UpdateOdom(float DeltaTime)
 
     if (!bIsOdomInitialized)
     {
-        InitOdom();
+        // InitOdom();
         PoseEncoderX = 0;
         PoseEncoderY = 0;
         PoseEncoderTheta = 0;

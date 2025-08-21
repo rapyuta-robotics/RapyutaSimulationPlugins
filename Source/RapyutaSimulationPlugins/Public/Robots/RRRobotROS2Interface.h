@@ -105,7 +105,7 @@ public:
     virtual void JointStateCallback(const UROS2GenericMsg* Msg);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    bool bPublishOdom = true;
+    bool bPublishOdom = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     bool bPublishOdomTf = false;

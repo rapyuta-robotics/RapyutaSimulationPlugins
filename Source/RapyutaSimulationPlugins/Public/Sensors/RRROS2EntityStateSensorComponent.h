@@ -56,6 +56,7 @@ public:
     FOnNewReferenceActorDetected OnNewReferenceActorDetected;
     FTransform pastRelativeTransf;
     float pastTime;
+    FVector pastTwist = FVector::ZeroVector;;
 
     UFUNCTION(BlueprintCallable)
     virtual void SetReferenceActorByName(const FString& InName);

@@ -82,12 +82,25 @@ void URRROS2EntityStateSensorComponent::SensorUpdate()
     float currentTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
     float deltaTime = (currentTime - pastTime);
     FVector deltaVector = relativeTransf.GetTranslation() - pastRelativeTransf.GetTranslation();
-
-    Data.Twist.Linear = deltaVector/deltaTime;
+    
+    if (deltaTime == 0)
+    {
+        if (!pastTwist.IsZero())
+        {
+            Data.Twist.Linear = pastTwist;
+        }
+        Data.Twist.Linear = FVector::ZeroVector;
+    }
+    else
+    {
+        Data.Twist.Linear = deltaVector/deltaTime;
+    }
+    
     Data.Twist.Angular = FVector::ZeroVector;
 
     pastRelativeTransf = relativeTransf;
     pastTime = currentTime;
+    pastTwist =  Data.Twist.Linear;
     
     bIsValid = true;
 }

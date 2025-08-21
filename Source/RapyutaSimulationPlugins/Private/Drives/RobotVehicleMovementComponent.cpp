@@ -76,7 +76,7 @@ void URobotVehicleMovementComponent::TickComponent(float InDeltaTime,
 
                 //2- Movement control for OwnerVehicle
                 UpdateMovement(InDeltaTime);
-                UpdateOdom(InDeltaTime);
+                // UpdateOdom(InDeltaTime);
 
                 //3- Update OwnerVehicle's velocity to [Velocity], must be after [UpdateMovement()]
                 UpdateComponentVelocity();
@@ -288,7 +288,7 @@ void URobotVehicleMovementComponent::UpdateOdom(float InDeltaTime)
 {
     if (!bIsOdomInitialized)
     {
-        InitOdom();
+        // InitOdom();
     }
 
     // time
@@ -333,7 +333,7 @@ FTransform URobotVehicleMovementComponent::GetOdomTF() const
 
 void URobotVehicleMovementComponent::InitData()
 {
-    InitOdom();
+    // InitOdom();
 
     AActor* owner = GetOwner();
     ContactPoints.Empty();
