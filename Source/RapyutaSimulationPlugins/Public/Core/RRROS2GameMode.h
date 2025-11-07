@@ -9,6 +9,7 @@
 // UE
 #include "Engine/EngineTypes.h"
 #include "GameFramework/GameMode.h"
+#include "Engine/Engine.h"
 #include "Tools/RRLimitRTFFixedSizeCustomTimeStep.h"
 
 // RapyutaSimulationPlugins
@@ -34,6 +35,11 @@ class RAPYUTASIMULATIONPLUGINS_API ARRROS2GameMode : public AGameMode
 
 public:
     ARRROS2GameMode();
+    
+    /**
+     * @brief Destructor - cleanup RTF logging timer
+     */
+    virtual ~ARRROS2GameMode();
 
     //! Sim's Main ROS 2 node. This is not used by client-server and #ARRNetworkPlayerController has ROS2Node instead.
     UPROPERTY(BlueprintReadOnly)
@@ -62,6 +68,12 @@ public:
 
     //! Delegate signalling ROS 2 having been initialized with #MainROS2Node, #MainROS2SimStateClient, #ClockPublisher ready
     FRROnROS2Initialized OnROS2Initialized;
+
+
+
+    //! Callback function for periodic RTF logging
+    UFUNCTION()
+    void LogCurrentRTF();
     /**
      * @brief Set timestep by FApp::SetFixedDeltaTime.
      *
@@ -94,6 +106,38 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     virtual float GetTargetRTF() const;
+
+    /**
+     * @brief Calculate and get the current Real Time Factor (RTF)
+     * RTF = Simulation Time / Real Time
+     *
+     * @return float Current RTF value
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual float GetCurrentRTF() const;
+
+    /**
+     * @brief Reset RTF calculation counters
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void ResetRTFCalculation();
+    
+    /**
+     * @brief Set RTF calculation window size
+     *
+     * @param WindowSize Size of the sliding window in seconds
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetRTFWindowSize(float WindowSize);
+
+    /**
+     * @brief Enable/disable periodic RTF logging
+     *
+     * @param bEnable Whether to enable periodic RTF logging
+     * @param LogInterval Interval in seconds for RTF logging (default: 5.0s)
+     */
+    UFUNCTION(BlueprintCallable)
+    virtual void SetRTFLogging(bool bEnable, float LogInterval = 5.0f);
 
     /**
      * @brief Print GameMode's user configs in INI
@@ -140,6 +184,33 @@ protected:
     //! Eg: {{"TurtlebotBurger", "/Script/RapyutaSimulationPlugins.TurtlebotBurger"]}
     UPROPERTY(config)
     TMap<FString /*Entity model name*/, FString /*Class path*/> NativeSpawnableClassPaths;
+
+    //! RTF calculation window size in seconds
+    UPROPERTY(BlueprintReadWrite, Category = "RTF")
+    float RTFWindowSize = 10.0f;
+    
+    //! Time when RTF window calculation started (in seconds since application start)
+    mutable double RTFWindowStartTime = 0.0;
+    
+    //! Simulation time when RTF window calculation started
+    mutable double RTFWindowStartSimTime = 0.0;
+    
+    //! Last calculated RTF value (maintained until new window completes)
+    mutable float LastCalculatedRTF = 0.0f;
+    
+    //! Whether RTF calculation has been initialized
+    mutable bool bRTFCalculationInitialized = false;
+
+    //! Whether periodic RTF logging is enabled
+    UPROPERTY(BlueprintReadWrite, Category = "RTF")
+    bool bRTFLoggingEnabled = false;
+
+    //! Interval for RTF logging in seconds
+    UPROPERTY(BlueprintReadWrite, Category = "RTF")
+    float RTFLoggingInterval = 5.0f;
+
+    //! Timer handle for RTF logging
+    FTimerHandle RTFLoggingTimerHandle;
 
 private:
     /**
