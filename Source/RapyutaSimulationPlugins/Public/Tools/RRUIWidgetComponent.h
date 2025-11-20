@@ -7,8 +7,12 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/WidgetComponent.h"
+#include "Blueprint/UserWidget.h"
 
 #include "RRUIWidgetComponent.generated.h"
+
+class URRUserWidget;
 
 /**
  * @brief
