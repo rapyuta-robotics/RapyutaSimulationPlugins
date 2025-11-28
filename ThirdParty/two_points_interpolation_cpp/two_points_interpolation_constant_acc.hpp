@@ -83,10 +83,12 @@ public:
 
     void setConstraints(const double amax, const double vmax, const double dec_max = -1.0) {
         if (amax <= 0) {
-            throw std::invalid_argument("amax must be positive");
+            // Invalid input: amax must be positive
+            return;
         }
         if (vmax <= 0) {
-            throw std::invalid_argument("vmax must be positive");
+            // Invalid input: vmax must be positive
+            return;
         }
         _amax_accel = amax;
         _vmax = vmax;
@@ -96,7 +98,8 @@ public:
             _amax_decel = amax;
         } else {
             if (dec_max == 0) {
-                throw std::invalid_argument("dec_max must be positive (non-zero)");
+                // Invalid input: dec_max must be positive (non-zero)
+                return;
             }
             _amax_decel = dec_max;
         }
@@ -119,13 +122,13 @@ public:
 
     double calcTrajectory() {
         if (!_pointSetted) {
-            throw std::runtime_error("End point not set. Call setPoint() first.");
+            return -1.0; // End point not set
         }
         if (!_constraintsSetted) {
-            throw std::runtime_error("Constraints not set. Call setConstraints() first.");
+            return -1.0; // Constraints not set
         }
         if (!_initialStateSetted) {
-            throw std::runtime_error("Initial state not set. Call setInitial() first.");
+            return -1.0; // Initial state not set
         }
 
         double dp = _pe - _p0;
@@ -145,7 +148,7 @@ public:
                 _trajectoryCalced = true;
                 return 0.0;
             } else {
-                throw std::invalid_argument("Cannot have different velocities at the same position (dp=0, but dv!=0)");
+                return -1.0; // Cannot have different velocities at same position
             }
         }
 
@@ -188,7 +191,7 @@ public:
             } else if (dt01_minus > 0) {
                 dt01 = dt01_minus;
             } else {
-                throw std::runtime_error("No positive time solution found for trajectory");
+                return -1.0; // No positive time solution found
             }
             
             double v1 = vInteg(_v0, acc, dt01);
@@ -230,11 +233,7 @@ public:
                 // - Implementation bug
                 // - Invalid input data
                 if (dt12 < 0) {
-                    throw std::runtime_error(
-                        "Invalid trajectory: cannot reach target with given constraints. "
-                        "Distance too short (" + std::to_string(std::fabs(dp)) + ") for vmax (" + 
-                        std::to_string(_vmax) + "). Consider reducing vmax or increasing distance."
-                    );
+                    return -1.0; // Invalid trajectory: distance too short
                 }
                 
                 double p2 = _pe - dp2e;
@@ -249,8 +248,7 @@ public:
             if (_verbose) {
                 std::cout << "TwoPointInterpolation::calcTrajectory error" << std::endl;
             }
-            throw std::runtime_error("No valid trajectory found (discriminant < 0). "
-                                   "The constraints might be too restrictive for the given end conditions.");
+            return -1.0; // No valid trajectory found (discriminant < 0)
         }
 
         if (_verbose) {

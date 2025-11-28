@@ -17,6 +17,13 @@ URRPhysicsJointComponent::URRPhysicsJointComponent()
     // This work but component name become %sPhysicsConstraint.
     Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("%sPhysicsConstraint"), *GetName());
     Constraint->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
+
+    // Initialize trajectory interpolation objects
+    for (int32 i = 0; i < 3; ++i)
+    {
+        PositionTPI[i] = CreateDefaultSubobject<URRTwoPointInterpolation>(FName(*FString::Printf(TEXT("PositionTPI_%d"), i)));
+        OrientationTPI[i] = CreateDefaultSubobject<URRTwoAngleInterpolation>(FName(*FString::Printf(TEXT("OrientationTPI_%d"), i)));
+    }
 }
 
 bool URRPhysicsJointComponent::IsValid()
@@ -191,25 +198,25 @@ void URRPhysicsJointComponent::SetPoseTarget(const FVector& InPosition, const FR
         {
             if (!FMath::IsNearlyEqual(Position[i], PositionTarget[i], PositionTolerance))
             {
-                PositionTPI[i].calcTrajectory(Position[i],
-                                              PositionTarget[i],    //pose
-                                              LinearVelocitySmoothingAcc,
-                                              LinearVelMax[i],    //max
-                                              t0,
-                                              LinearVelocity[i],
-                                              0.0    //velocity
+                PositionTPI[i]->CalculateTrajectoryWithParams(Position[i],
+                                                             PositionTarget[i],    //pose
+                                                             LinearVelocitySmoothingAcc,
+                                                             LinearVelMax[i],    //max
+                                                             t0,
+                                                             LinearVelocity[i],
+                                                             0.0    //velocity
                 );
             }
 
             if (!FMath::IsNearlyEqual(OrientationEuler[i], OrientationTargetEuler[i], OrientationTolerance))
             {
-                OrientationTPI[i].calcTrajectory(FMath::DegreesToRadians(OrientationEuler[i]),
-                                                 FMath::DegreesToRadians(OrientationTargetEuler[i]),    //pose
-                                                 FMath::DegreesToRadians(AngularVelocitySmoothingAcc),
-                                                 FMath::DegreesToRadians(AngularVelMax[i]),    //max
-                                                 t0,
-                                                 FMath::DegreesToRadians(AngularVelocity[i]),
-                                                 0.0    //velocity
+                OrientationTPI[i]->CalculateTrajectoryWithParams(OrientationEuler[i],    // Use degrees directly
+                                                                OrientationTargetEuler[i],    //pose
+                                                                AngularVelocitySmoothingAcc,  // Use degrees directly
+                                                                AngularVelMax[i],    //max
+                                                                t0,
+                                                                AngularVelocity[i],  // Use degrees directly
+                                                                0.0    //velocity
                 );
             }
         }
@@ -309,17 +316,17 @@ void URRPhysicsJointComponent::UpdateControl(const float DeltaTime)
             bool initialized = true;
             for (i = 0; i < 3; i++)
             {
-                if (PositionTPI[i].isInitialized())
+                if (PositionTPI[i]->IsInitialized())
                 {
-                    std::vector<double> resPos = PositionTPI[i].getPoint(t);
-                    MidPositionTarget[i] = resPos[0];
-                    MidLinearVelocityTarget[i] = resPos[1];
+                    FTrajectoryPoint resPos = PositionTPI[i]->GetPointAtTime(t);
+                    MidPositionTarget[i] = resPos.Position;
+                    MidLinearVelocityTarget[i] = resPos.Velocity;
                 }
-                if (OrientationTPI[i].isInitialized())
+                if (OrientationTPI[i]->IsInitialized())
                 {
-                    std::vector<double> resOri = OrientationTPI[i].getPoint(t);
-                    MidOrientationTargetEuler[i] = FMath::RadiansToDegrees(resOri[0]);
-                    MidAngularVelocityTarget[i] = FMath::RadiansToDegrees(resOri[1]);
+                    FTrajectoryPoint resOri = OrientationTPI[i]->GetPointAtTime(t);
+                    MidOrientationTargetEuler[i] = resOri.Position;  // Already in degrees from wrapper
+                    MidAngularVelocityTarget[i] = resOri.Velocity;   // Already in degrees from wrapper
                 }
             }
             Constraint->SetLinearVelocityTarget(MidLinearVelocityTarget);

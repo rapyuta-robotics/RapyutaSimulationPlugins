@@ -16,9 +16,7 @@
 //RapyutaSimulationPlugins
 #include "Core/RRGeneralUtils.h"
 #include "Drives/RRJointComponent.h"
-
-//Thirdparty
-#include "two_points_interpolation_constant_acc.hpp"
+#include "Tools/RRTwoPointInterpolation.h"
 
 #include "RRPhysicsJointComponent.generated.h"
 
@@ -204,10 +202,12 @@ protected:
     virtual FRotator GetOrientationTargetFromEuler(const FVector& InOrientationTarget);
 
     //! Position Two Point Interpolation used with #bSmoothing = true
-    TStaticArray<TwoPointInterpolation, 3> PositionTPI;
+    UPROPERTY(VisibleAnywhere)
+    URRTwoPointInterpolation* PositionTPI[3];
 
     //! Angular Two Point Interpolation used with #bSmoothing = true
-    TStaticArray<TwoAngleInterpolation, 3> OrientationTPI;
+    UPROPERTY(VisibleAnywhere)
+    URRTwoAngleInterpolation* OrientationTPI[3];
 
     //! Position Error Integral used with #bSmoothing = false
     UPROPERTY(VisibleAnywhere)
