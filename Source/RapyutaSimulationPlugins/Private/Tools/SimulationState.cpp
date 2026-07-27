@@ -253,7 +253,10 @@ void ASimulationState::ServerSetEntityState(const FROSSetEntityStateReq& InReque
                          TargetActor ? *TargetActor->GetActorLocation().ToString() : TEXT("N/A"),
                          *worldTransf.GetLocation().ToString(),
                          *InRequest.State.ReferenceFrame);
-        TargetActor->SetActorTransform(worldTransf);
+        if (TargetActor)
+        {
+            TargetActor->SetActorTransform(worldTransf);
+        }
     }
 
     PrevSetEntityStateRequest = InRequest;
