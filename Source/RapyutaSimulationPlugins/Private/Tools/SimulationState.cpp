@@ -245,6 +245,14 @@ void ASimulationState::ServerSetEntityState(const FROSSetEntityStateReq& InReque
         relativeTransf = URRConversionUtils::TransformROSToUE(relativeTransf);
         FTransform worldTransf;
         URRGeneralUtils::GetWorldTransform(RefActor, relativeTransf, worldTransf);
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("SetEntityState [%s] (found=%d) old=%s new=%s ReferenceFrame=%s"),
+                         *InRequest.State.Name,
+                         (TargetActor != nullptr),
+                         TargetActor ? *TargetActor->GetActorLocation().ToString() : TEXT("N/A"),
+                         *worldTransf.GetLocation().ToString(),
+                         *InRequest.State.ReferenceFrame);
         TargetActor->SetActorTransform(worldTransf);
     }
 
