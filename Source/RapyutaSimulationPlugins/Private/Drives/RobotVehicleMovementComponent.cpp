@@ -298,6 +298,11 @@ void URobotVehicleMovementComponent::InitData()
 
 void URobotVehicleMovementComponent::SetMovingPlatform(AActor* InPlatform)
 {
+    UE_LOG_WITH_INFO(LogRapyutaCore,
+                     Warning,
+                     TEXT("[%s] Setting moving platform : %s"),
+                     GetOwner() ? *GetOwner()->GetName() : TEXT("?"),
+                     *InPlatform->GetName());
     MovingPlatform = InPlatform;
     LastPlatformLocation = InPlatform->GetActorLocation();
     LastPlatformRotation = InPlatform->GetActorQuat();
@@ -310,5 +315,13 @@ bool URobotVehicleMovementComponent::IsOnMovingPlatform()
 
 void URobotVehicleMovementComponent::RemoveMovingPlatform()
 {
+    if (MovingPlatform)
+    {
+        UE_LOG_WITH_INFO(LogRapyutaCore,
+                         Warning,
+                         TEXT("[%s] Removing moving platform : %s"),
+                         GetOwner() ? *GetOwner()->GetName() : TEXT("?"),
+                         *MovingPlatform->GetName());
+    }
     MovingPlatform = nullptr;
 }
