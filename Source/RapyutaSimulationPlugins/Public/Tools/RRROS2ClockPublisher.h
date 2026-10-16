@@ -11,6 +11,7 @@
 #include "CoreMinimal.h"
 
 // rclUE
+#include "Msgs/ROS2Time.h"
 #include "ROS2Publisher.h"
 
 #include "RRROS2ClockPublisher.generated.h"
@@ -32,6 +33,14 @@ public:
      *
      */
     virtual bool Init() override;
+
+    /**
+     * @brief Current ROS time, computed exactly as published on /clock (server world time, plus the
+     * wall-clock offset when START_ROSTIME_FROM_WALLTIME is set). Use it to stamp messages so their
+     * header.stamp is in the same time base as /clock.
+     */
+    UFUNCTION(BlueprintCallable)
+    FROSTime GetROSTime() const;
 
 protected:
     //! Delegate for callbacks to Tick 

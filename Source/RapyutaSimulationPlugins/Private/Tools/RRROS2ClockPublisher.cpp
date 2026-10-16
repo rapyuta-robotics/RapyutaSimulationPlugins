@@ -2,6 +2,9 @@
 
 #include "Tools/RRROS2ClockPublisher.h"
 
+// UE
+#include "GameFramework/GameStateBase.h"
+
 // rclUE
 #include "Msgs/ROS2Clock.h"
 #include "rclcUtilities.h"
@@ -45,20 +48,26 @@ bool URRROS2ClockPublisher::Init()
     return res;
 }
 
-bool URRROS2ClockPublisher::Tick(float DeltaSeconds)
+FROSTime URRROS2ClockPublisher::GetROSTime() const
 {
     // Noted: Elapsed time: time in seconds since world was brought up for play
-    auto* gameState = GetWorld()->GetGameState();
+    const UWorld* world = GetWorld();
+    const AGameStateBase* gameState = world ? world->GetGameState() : nullptr;
+    FROSTime rosTime = URRConversionUtils::FloatToROSStamp(gameState ? gameState->GetServerWorldTimeSeconds() : 0.f);
+    if (bStartROSTimeFromWalltime)
+    {
+        rosTime.Sec = rosTime.Sec + InitialSystemTimeSec;
+    }
+    return rosTime;
+}
 
-    if (gameState)
+bool URRROS2ClockPublisher::Tick(float DeltaSeconds)
+{
+    if (GetWorld()->GetGameState())
     {
         // update msg
         FROSClock msg;
-        msg.Clock = URRConversionUtils::FloatToROSStamp(gameState->GetServerWorldTimeSeconds());
-        if (bStartROSTimeFromWalltime){
-            msg.Clock.Sec = msg.Clock.Sec + InitialSystemTimeSec;
-            msg.Clock.Nanosec = msg.Clock.Nanosec;
-        }
+        msg.Clock = GetROSTime();
         // publish
         Publish<UROS2ClockMsg, FROSClock>(msg);
     }
