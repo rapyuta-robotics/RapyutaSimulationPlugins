@@ -53,7 +53,12 @@ FROSTime URRROS2ClockPublisher::GetROSTime() const
     // Noted: Elapsed time: time in seconds since world was brought up for play
     const UWorld* world = GetWorld();
     const AGameStateBase* gameState = world ? world->GetGameState() : nullptr;
-    FROSTime rosTime = URRConversionUtils::FloatToROSStamp(gameState ? gameState->GetServerWorldTimeSeconds() : 0.f);
+    const double worldTimeSec = gameState ? gameState->GetServerWorldTimeSeconds() : 0.0;
+    // Split in double: URRConversionUtils::FloatToROSStamp takes a float, which loses sub-millisecond precision
+    // after ~1 h of sim time.
+    FROSTime rosTime;
+    rosTime.Sec = static_cast<int32>(FMath::FloorToDouble(worldTimeSec));
+    rosTime.Nanosec = static_cast<uint32>(FMath::Clamp((worldTimeSec - rosTime.Sec) * 1e9, 0.0, 999999999.0));
     if (bStartROSTimeFromWalltime)
     {
         rosTime.Sec = rosTime.Sec + InitialSystemTimeSec;
