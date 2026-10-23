@@ -132,7 +132,12 @@ public:
 protected:
     mutable TwoPointInterpolation Interpolator;
     
-    // Cache for avoiding unnecessary recalculation (only target-related parameters)
+    // Cache for avoiding unnecessary recalculation. The start state is part of the key: the
+    // trajectory depends on it, and a goal resent while moving must be planned from where the
+    // body is now, not replayed from where it was when the goal first arrived.
+    float CachedStartPosition = 0.0f;
+    float CachedStartVelocity = 0.0f;
+    float CachedStartTime = 0.0f;
     float CachedEndPosition = 0.0f;
     float CachedEndVelocity = 0.0f;
     float CachedMaxAcceleration = 0.0f;
