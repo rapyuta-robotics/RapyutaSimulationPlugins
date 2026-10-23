@@ -19,6 +19,7 @@ URRTwoPointInterpolation::URRTwoPointInterpolation()
 
 void URRTwoPointInterpolation::SetStartPoint(float StartPosition, float StartVelocity)
 {
+    bCacheValid = false;    // the interpolator no longer holds the cached trajectory
     try 
     {
         // Convert UE units (cm, cm/s) to library units (m, m/s)
@@ -36,6 +37,7 @@ void URRTwoPointInterpolation::SetStartPoint(float StartPosition, float StartVel
 
 void URRTwoPointInterpolation::SetTargetPoint(float EndPosition, float EndVelocity)
 {
+    bCacheValid = false;    // the interpolator no longer holds the cached trajectory
     try 
     {
         // Convert UE units (cm, cm/s) to library units (m, m/s)
@@ -53,6 +55,7 @@ void URRTwoPointInterpolation::SetTargetPoint(float EndPosition, float EndVeloci
 
 void URRTwoPointInterpolation::SetConstraints(float MaxAcceleration, float MaxVelocity, float MaxDeceleration)
 {
+    bCacheValid = false;    // the interpolator no longer holds the cached trajectory
     try 
     {
         // Convert UE units (cm/s², cm/s) to library units (m/s², m/s)
@@ -73,6 +76,7 @@ void URRTwoPointInterpolation::SetConstraints(float MaxAcceleration, float MaxVe
 void URRTwoPointInterpolation::Initialize(float StartPosition, float EndPosition, float MaxAcceleration, float MaxVelocity,
                                          float StartTime, float StartVelocity, float EndVelocity, float MaxDeceleration)
 {
+    bCacheValid = false;    // the interpolator no longer holds the cached trajectory
     try 
     {
         // Convert UE units to library units
@@ -119,8 +123,11 @@ float URRTwoPointInterpolation::CalculateTrajectory()
 float URRTwoPointInterpolation::CalculateTrajectoryWithParams(float StartPosition, float EndPosition, float MaxAcceleration, float MaxVelocity,
                                                              float StartTime, float StartVelocity, float EndVelocity, float MaxDeceleration, bool bVerbose)
 {
-    // Check if parameters are the same as cached ones (only target-related parameters matter)
-    if (bCacheValid && 
+    // Check if parameters are the same as cached ones, start state included
+    if (bCacheValid &&
+        CachedStartTime == StartTime &&
+        FMath::IsNearlyEqual(CachedStartPosition, StartPosition, 0.01f) &&
+        FMath::IsNearlyEqual(CachedStartVelocity, StartVelocity, 0.01f) &&
         FMath::IsNearlyEqual(CachedEndPosition, EndPosition, 0.01f) &&
         FMath::IsNearlyEqual(CachedEndVelocity, EndVelocity, 0.01f) &&
         FMath::IsNearlyEqual(CachedMaxAcceleration, MaxAcceleration, 0.01f) &&
@@ -129,7 +136,7 @@ float URRTwoPointInterpolation::CalculateTrajectoryWithParams(float StartPositio
     {
         if (bVerbose)
         {
-            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("TrajectoryCalc CACHE: Using cached result Duration=%.3fs (Same target parameters: EndPos=%.2fcm EndVel=%.2fcm/s)"), CachedDuration, EndPosition, EndVelocity);
+            UE_LOG_WITH_INFO(LogRapyutaCore, Warning, TEXT("TrajectoryCalc CACHE: Using cached result Duration=%.3fs (Same parameters: StartPos=%.2fcm StartVel=%.2fcm/s EndPos=%.2fcm EndVel=%.2fcm/s)"), CachedDuration, StartPosition, StartVelocity, EndPosition, EndVelocity);
         }
         return CachedDuration;
     }
@@ -161,7 +168,10 @@ float URRTwoPointInterpolation::CalculateTrajectoryWithParams(float StartPositio
                 result);
         }
         
-        // Update cache (only target-related parameters)
+        // Update cache
+        CachedStartPosition = StartPosition;
+        CachedStartVelocity = StartVelocity;
+        CachedStartTime = StartTime;
         CachedEndPosition = EndPosition;
         CachedEndVelocity = EndVelocity;
         CachedMaxAcceleration = MaxAcceleration;
