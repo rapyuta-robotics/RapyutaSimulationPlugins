@@ -256,6 +256,7 @@ void ASimulationState::ServerSetEntityState(const FROSSetEntityStateReq& InReque
         if (TargetActor)
         {
             TargetActor->SetActorTransform(worldTransf);
+            OnEntityStateSet.Broadcast(TargetActor);
         }
     }
 

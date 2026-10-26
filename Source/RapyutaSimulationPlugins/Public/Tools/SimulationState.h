@@ -76,6 +76,9 @@ struct RAPYUTASIMULATIONPLUGINS_API FRREntities
  * SimulationState can spawn only actors in #SpawnableEntities which actors can be added to by #AddSpawnableEntityTypes.
  *
  */
+//! Broadcast by ASimulationState::ServerSetEntityState with the actor it set, even if the actor was already there
+DECLARE_MULTICAST_DELEGATE_OneParam(FRREntityStateSetSignature, AActor* /* InActor */);
+
 UCLASS()
 class RAPYUTASIMULATIONPLUGINS_API ASimulationState : public AActor
 {
@@ -119,6 +122,10 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     void ServerSetEntityState(const FROSSetEntityStateReq& InRequest);
+
+    //! Lets an actor tell a SetEntityState addressed to it from its own moves; a pose equal to the current one moves
+    //! nothing and leaves no other trace
+    FRREntityStateSetSignature OnEntityStateSet;
 
     //! Cached the previous [SetEntityState] request for duplicated incoming request filtering
     //! @todo is this necessary?
